@@ -17,6 +17,20 @@ app.use(express.json());
 // Serve static files from the app directory
 app.use('/app', express.static(path.join(__dirname, 'app')));
 
+// Serve login.html
+app.get('/login.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'login.html'));
+});
+
+// Serve test pages
+app.get('/test-auth-flow-final.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'test-auth-flow-final.html'));
+});
+
+app.get('/verify-firebase-auth.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'verify-firebase-auth.html'));
+});
+
 // Redirect root to /app (preserving query parameters)
 app.get('/', (req, res) => {
     const queryString = req.originalUrl.includes('?') ? req.originalUrl.substring(req.originalUrl.indexOf('?')) : '';

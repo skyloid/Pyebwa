@@ -38,7 +38,9 @@
       "Bash(git add:*)",
       "Bash(cat:*)",
       "Bash(timeout:*)",
-      "Bash(bash:*)"
+      "Bash(bash:*)",
+      "Bash(git commit:*)",
+      "Bash(tar:*)"
     ],
     "deny": []
   }

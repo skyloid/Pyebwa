@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Login - Pyebwa</title>
+    <title>Login - Pyebwa Family Tree</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -56,11 +56,27 @@
             background: linear-gradient(90deg, var(--primary-blue) 50%, var(--primary-red) 50%);
         }
         
-        h1 {
+        .logo {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .logo h1 {
+            color: var(--primary-blue);
+            font-size: 32px;
+            font-weight: 700;
+        }
+        
+        .logo p {
+            color: var(--gray-700);
+            font-size: 14px;
+        }
+        
+        h2 {
             color: var(--gray-900);
             text-align: center;
-            font-size: 28px;
-            font-weight: 700;
+            font-size: 24px;
+            font-weight: 600;
             margin-bottom: 30px;
         }
         
@@ -103,18 +119,34 @@
             cursor: pointer;
             transition: all 0.3s ease;
             margin-top: 10px;
+        }
+        
+        .btn-primary {
             background: var(--primary-blue);
             color: var(--white);
         }
         
-        button:hover:not(:disabled) {
+        .btn-primary:hover:not(:disabled) {
             background: #001654;
             transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 33, 125, 0.3);
         }
         
-        button:disabled {
+        .btn-primary:disabled {
             background: #ccc;
             cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary-blue);
+            border: 2px solid var(--primary-blue);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--primary-blue);
+            color: var(--white);
         }
         
         .message {
@@ -143,11 +175,49 @@
             color: #1E40AF;
             border: 1px solid #BFDBFE;
         }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .links {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .links a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .links a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Pyebwa Login</h1>
+        <div class="logo">
+            <h1>Pyebwa</h1>
+            <p>Your Family Tree</p>
+        </div>
+        
+        <h2>Welcome Back</h2>
         
         <div id="message" class="message info" style="display: none;"></div>
         
@@ -162,27 +232,41 @@
                 <input type="password" id="password" required placeholder="Enter your password" autocomplete="current-password">
             </div>
             
-            <button type="submit" id="loginBtn">Sign In</button>
+            <button type="submit" class="btn-primary" id="loginBtn">Sign In</button>
         </form>
         
-        <button onclick="window.location.href='/app/'" style="background: #6c757d; margin-top: 20px;">Go to App</button>
-        <button onclick="window.location.href='/'" style="background: #374151; margin-top: 10px;">Go to Homepage</button>
+        <button onclick="window.location.href='/app/'" class="btn-secondary">Go to App</button>
+        
+        <div class="links">
+            <a href="https://pyebwa.com">← Back to Homepage</a>
+        </div>
     </div>
     
     <script>
-        // Firebase configuration embedded directly
+        // Firebase configuration - Same as app
         const firebaseConfig = {
-            apiKey: "AIzaSyDW3XLnIR8QQyWeYb3kR2EKqXoJGNNHNsE",
-            authDomain: "pyebwa-8f81f.firebaseapp.com",
-            projectId: "pyebwa-8f81f",
-            storageBucket: "pyebwa-8f81f.appspot.com",
-            messagingSenderId: "635176217953",
-            appId: "1:635176217953:web:d088f17c87e2e088ad4e0f",
-            measurementId: "G-9RXPY0YNS1"
+            apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
+            authDomain: "pyebwa-f5960.firebaseapp.com",
+            projectId: "pyebwa-f5960",
+            storageBucket: "pyebwa-f5960.firebasestorage.app",
+            messagingSenderId: "1042887343749",
+            appId: "1:1042887343749:web:c276bf69b6c0895111f3ec",
+            measurementId: "G-ZX92K1TMM3"
         };
         
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
+        
+        const auth = firebase.auth();
+        
+        // Set auth persistence to LOCAL (persists across browser sessions)
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+            .then(() => {
+                console.log('Auth persistence set to LOCAL');
+            })
+            .catch((error) => {
+                console.error('Error setting auth persistence:', error);
+            });
         
         const messageDiv = document.getElementById('message');
         const loginForm = document.getElementById('loginForm');
@@ -194,6 +278,16 @@
             messageDiv.style.display = 'block';
         }
         
+        // Check if already logged in
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                showMessage(`Already logged in as ${user.email}. Redirecting...`, 'success');
+                setTimeout(() => {
+                    window.location.href = '/app/';
+                }, 1500);
+            }
+        });
+        
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -201,23 +295,18 @@
             const password = document.getElementById('password').value;
             
             loginBtn.disabled = true;
-            loginBtn.textContent = 'Signing in...';
-            showMessage('Authenticating...', 'info');
+            loginBtn.innerHTML = '<span class="loading"></span> Signing in...';
             
             try {
-                // Set persistence
-                await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-                
                 // Sign in
-                const result = await firebase.auth().signInWithEmailAndPassword(email, password);
+                const result = await auth.signInWithEmailAndPassword(email, password);
                 
-                showMessage(`Success! Logged in as ${result.user.email}`, 'success');
+                showMessage(`Success! Welcome back, ${result.user.email}`, 'success');
                 
-                // Redirect to app after 2 seconds
+                // Redirect to app after 1.5 seconds
                 setTimeout(() => {
-                    // Always redirect to rasin.pyebwa.com/app/
-                    window.location.href = 'https://rasin.pyebwa.com/app/';
-                }, 2000);
+                    window.location.href = '/app/';
+                }, 1500);
                 
             } catch (error) {
                 console.error('Login error:', error);
@@ -234,24 +323,16 @@
                         errorMessage = 'Invalid email address.';
                         break;
                     case 'auth/too-many-requests':
-                        errorMessage = 'Too many attempts. Try again later.';
+                        errorMessage = 'Too many failed attempts. Try again later.';
+                        break;
+                    case 'auth/network-request-failed':
+                        errorMessage = 'Network error. Check your connection.';
                         break;
                 }
                 
                 showMessage(errorMessage, 'error');
                 loginBtn.disabled = false;
                 loginBtn.textContent = 'Sign In';
-            }
-        });
-        
-        // Check if already logged in
-        firebase.auth().onAuthStateChanged((user) => {
-            if (user) {
-                showMessage(`Already logged in as ${user.email}`, 'success');
-                // Auto-redirect to app after 1 second
-                setTimeout(() => {
-                    window.location.href = 'https://rasin.pyebwa.com/app/';
-                }, 1000);
             }
         });
     </script>

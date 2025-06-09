@@ -223,8 +223,8 @@ function initializeAuth() {
             } else {
                 // No user authenticated - redirect to login
                 log('No user authenticated - redirecting to login');
-                // Redirect to pyebwa.com where the login pages exist
-                window.location.href = 'https://pyebwa.com/login/';
+                // Use the login page on the same domain
+                window.location.href = '/login.html';
                 return;
             }
         }, (error) => {

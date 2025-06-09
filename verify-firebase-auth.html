@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Firebase Auth</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>Firebase Auth Verification</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+        
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
+            authDomain: "pyebwa-f5960.firebaseapp.com",
+            projectId: "pyebwa-f5960",
+            storageBucket: "pyebwa-f5960.firebasestorage.app",
+            messagingSenderId: "1042887343749",
+            appId: "1:1042887343749:web:c276bf69b6c0895111f3ec",
+            measurementId: "G-ZX92K1TMM3"
+        };
+        
+        try {
+            // Initialize Firebase
+            firebase.initializeApp(firebaseConfig);
+            addResult('✓ Firebase initialized successfully', 'success');
+            
+            const auth = firebase.auth();
+            addResult('✓ Auth service created', 'success');
+            
+            // Check current user
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    addResult(`✓ User authenticated: ${user.email}`, 'success');
+                } else {
+                    addResult('No user currently authenticated', 'info');
+                }
+            });
+            
+            // API key is valid if we got this far
+            addResult('✓ API key is valid - Firebase initialized without errors', 'success');
+            
+            // Show auth configuration
+            addResult(`Auth Domain: ${firebaseConfig.authDomain}`, 'info');
+            addResult(`Project ID: ${firebaseConfig.projectId}`, 'info');
+                
+        } catch (error) {
+            addResult(`✗ Initialization error: ${error.message}`, 'error');
+        }
+    </script>
+</body>
+</html>

@@ -110,10 +110,10 @@ function updateLanguage() {
     });
 }
 
-// Authentication functions - redirects to rasin.pyebwa.com/login.html
+// Authentication functions - redirects to pyebwa.com/login/
 function redirectToLogin() {
-    console.log('Redirecting to login page on rasin.pyebwa.com');
-    window.location.href = 'https://rasin.pyebwa.com/login.html';
+    console.log('Redirecting to login page');
+    window.location.href = 'https://pyebwa.com/login/';
 }
 
 // Event listeners - Redirect to pyebwa.com/login/ for auth
