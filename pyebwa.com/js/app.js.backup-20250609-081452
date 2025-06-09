@@ -1,0 +1,539 @@
+// Apply saved theme immediately to prevent flash
+(function() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+    }
+})();
+
+// Debug: Log when script loads
+console.log('App.js loaded');
+
+// Translations
+const translations = {
+    en: {
+        tagline: "Your Family Roots",
+        login: "Login",
+        signup: "Sign Up",
+        heroTitle: "Keep Your Family History Alive",
+        heroSubtitle: "Create your family tree, share stories, and connect generations",
+        getStarted: "Get Started Now",
+        featuresTitle: "Why Pyebwa?",
+        feature1Title: "Build Your Tree",
+        feature1Desc: "Add family members, photos, and important dates easily",
+        feature2Title: "Share Stories",
+        feature2Desc: "Preserve memories and family stories for future generations",
+        feature3Title: "Connect Family",
+        feature3Desc: "Find and connect with family members everywhere",
+        loginTitle: "Login to Pyebwa",
+        signupTitle: "Create Pyebwa Account",
+        email: "Email",
+        password: "Password",
+        confirmPassword: "Confirm Password",
+        fullName: "Full Name",
+        loginButton: "Login",
+        createAccountButton: "Create Account",
+        noAccount: "Don't have an account?",
+        createAccount: "Create one",
+        haveAccount: "Already have an account?",
+        loginLink: "Login",
+        allRights: "All rights reserved.",
+        orContinueWith: "Or continue with",
+        poweredBy: "Powered by",
+        home: "Home",
+        about: "About",
+        ourMission: "Our Mission",
+        contact: "Contact",
+        humanLevelTech: "Technologies Humanitaires"
+    },
+    fr: {
+        tagline: "Vos Racines Familiales",
+        login: "Connexion",
+        signup: "S'inscrire",
+        heroTitle: "Gardez Votre Histoire Familiale Vivante",
+        heroSubtitle: "Créez votre arbre généalogique, partagez des histoires et connectez les générations",
+        getStarted: "Commencer Maintenant",
+        featuresTitle: "Pourquoi Pyebwa?",
+        feature1Title: "Construisez Votre Arbre",
+        feature1Desc: "Ajoutez des membres de la famille, des photos et des dates importantes facilement",
+        feature2Title: "Partagez des Histoires",
+        feature2Desc: "Préservez les souvenirs et les histoires familiales pour les générations futures",
+        feature3Title: "Connectez la Famille",
+        feature3Desc: "Trouvez et connectez-vous avec des membres de la famille partout",
+        loginTitle: "Connexion à Pyebwa",
+        signupTitle: "Créer un Compte Pyebwa",
+        email: "Courriel",
+        password: "Mot de passe",
+        confirmPassword: "Confirmer le mot de passe",
+        fullName: "Nom complet",
+        loginButton: "Se connecter",
+        createAccountButton: "Créer un compte",
+        noAccount: "Pas de compte?",
+        createAccount: "Créez-en un",
+        haveAccount: "Vous avez déjà un compte?",
+        loginLink: "Connexion",
+        allRights: "Tous droits réservés.",
+        orContinueWith: "Ou continuer avec",
+        poweredBy: "Propulsé par",
+        home: "Accueil",
+        about: "À propos",
+        ourMission: "Notre Mission",
+        contact: "Contact",
+        humanLevelTech: "Technologies Humanitaires"
+    },
+    ht: {
+        tagline: "Rasin Fanmi w",
+        login: "Konekte",
+        signup: "Enskri",
+        heroTitle: "Kenbe Istwa Fanmi w Vivan",
+        heroSubtitle: "Kreye pyebwa fanmi w, pataje istwa, epi konekte jenerasyon yo",
+        getStarted: "Kòmanse Kounye a",
+        featuresTitle: "Poukisa Pyebwa?",
+        feature1Title: "Bati Pyebwa w",
+        feature1Desc: "Ajoute manm fanmi, foto, ak dat enpòtan yo fasil",
+        feature2Title: "Pataje Istwa",
+        feature2Desc: "Prezève memwa ak istwa fanmi pou jenerasyon k ap vini yo",
+        feature3Title: "Konekte Fanmi",
+        feature3Desc: "Jwenn ak konekte ak fanmi ou toupatou",
+        loginTitle: "Konekte nan Pyebwa",
+        signupTitle: "Kreye Kont Pyebwa",
+        email: "Imèl",
+        password: "Mo pas",
+        confirmPassword: "Konfime mo pas",
+        fullName: "Non konplè",
+        loginButton: "Konekte",
+        createAccountButton: "Kreye Kont",
+        noAccount: "Pa gen kont?",
+        createAccount: "Kreye youn",
+        haveAccount: "Gen kont deja?",
+        loginLink: "Konekte",
+        allRights: "Tout dwa rezève.",
+        orContinueWith: "Oswa kontinye avèk",
+        poweredBy: "Pwodwi pa",
+        home: "Akèy",
+        about: "Konsènan",
+        ourMission: "Misyon Nou",
+        contact: "Kontak",
+        humanLevelTech: "Technologies Humanitaires"
+    }
+};
+
+// Current language
+let currentLang = 'ht';
+
+// DOM Elements
+const modalOverlay = document.getElementById('modalOverlay');
+const loginBtn = document.getElementById('loginBtn');
+const signupBtn = document.getElementById('signupBtn');
+const ctaBtn = document.getElementById('ctaBtn');
+// Modal elements removed - authentication handled at pyebwa.com/login/
+
+// Language switching
+document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        document.querySelector('.lang-btn.active').classList.remove('active');
+        e.target.classList.add('active');
+        currentLang = e.target.dataset.lang;
+        updateLanguage();
+    });
+});
+
+function updateLanguage() {
+    document.querySelectorAll('[data-i18n]').forEach(element => {
+        const key = element.dataset.i18n;
+        if (translations[currentLang] && translations[currentLang][key]) {
+            element.textContent = translations[currentLang][key];
+        }
+    });
+}
+
+// Authentication functions - redirects to pyebwa.com/login/
+function redirectToLogin() {
+    console.log('Redirecting to login page');
+    window.location.href = 'https://pyebwa.com/login/';
+}
+
+// Event listeners - Redirect to secure.pyebwa.com for auth
+// Remove any existing listeners and prevent modal from showing
+if (loginBtn) {
+    // Remove any existing event listeners by cloning the button
+    const newLoginBtn = loginBtn.cloneNode(true);
+    loginBtn.parentNode.replaceChild(newLoginBtn, loginBtn);
+    
+    // Add new event listener
+    newLoginBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        console.log('Login button clicked - redirecting to secure.pyebwa.com');
+        window.location.href = 'https://secure.pyebwa.com/?redirect=' + encodeURIComponent(window.location.href);
+    });
+}
+
+if (signupBtn) {
+    // Remove any existing event listeners by cloning the button
+    const newSignupBtn = signupBtn.cloneNode(true);
+    signupBtn.parentNode.replaceChild(newSignupBtn, signupBtn);
+    
+    // Add new event listener
+    newSignupBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        console.log('Signup button clicked - redirecting to secure.pyebwa.com');
+        window.location.href = 'https://secure.pyebwa.com/?redirect=' + encodeURIComponent(window.location.href);
+    });
+}
+
+if (ctaBtn) {
+    // Remove any existing event listeners by cloning the button
+    const newCtaBtn = ctaBtn.cloneNode(true);
+    ctaBtn.parentNode.replaceChild(newCtaBtn, ctaBtn);
+    
+    // Add new event listener
+    newCtaBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        console.log('CTA button clicked - redirecting to secure.pyebwa.com');
+        window.location.href = 'https://secure.pyebwa.com/?redirect=' + encodeURIComponent(window.location.href);
+    });
+}
+
+// Modal event listeners - DISABLED: Now using secure.pyebwa.com for auth
+// These are kept to prevent JavaScript errors but redirect to secure.pyebwa.com
+if (closeLogin) {
+    closeLogin.addEventListener('click', () => hideModal(loginModal));
+}
+if (closeSignup) {
+    closeSignup.addEventListener('click', () => hideModal(signupModal));
+}
+
+if (modalOverlay) {
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+            hideAllModals();
+        }
+    });
+}
+
+if (switchToSignup) {
+    switchToSignup.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = 'https://secure.pyebwa.com/?redirect=' + encodeURIComponent(window.location.href);
+    });
+}
+
+if (switchToLogin) {
+    switchToLogin.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = 'https://secure.pyebwa.com/?redirect=' + encodeURIComponent(window.location.href);
+    });
+}
+
+// Form submissions - DISABLED: Now redirecting to secure.pyebwa.com
+/*
+loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    
+    // Show loading state
+    const submitBtn = loginForm.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Loading...';
+    
+    // Attempt login with Firebase
+    const result = await signInWithEmail(email, password);
+    
+    if (result.success) {
+        // Redirect to rasin.pyebwa.com with email hint
+        setTimeout(() => {
+            const email = encodeURIComponent(result.user.email || email);
+            window.location.href = `https://rasin.pyebwa.com/app/?login=true&email=${email}`;
+        }, 500);
+    } else {
+        // Show error message
+        alert(result.error);
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+    }
+});
+*/
+
+// Signup form - DISABLED: Now redirecting to secure.pyebwa.com
+/*
+signupForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const name = document.getElementById('signupName').value;
+    const email = document.getElementById('signupEmail').value;
+    const password = document.getElementById('signupPassword').value;
+    const confirmPassword = document.getElementById('signupConfirm').value;
+    
+    // Validate passwords match
+    if (password !== confirmPassword) {
+        const errorMsg = currentLang === 'en' ? 'Passwords do not match!' : 
+                        currentLang === 'fr' ? 'Les mots de passe ne correspondent pas!' : 
+                        'Mo pas yo pa menm!';
+        alert(errorMsg);
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = signupForm.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = currentLang === 'en' ? 'Creating account...' : 
+                           currentLang === 'fr' ? 'Création du compte...' : 
+                           'N ap kreye kont lan...';
+    
+    // Attempt signup with Firebase
+    const result = await signUpWithEmail(email, password, name);
+    
+    if (result.success) {
+        // Show success message
+        const successMsg = currentLang === 'en' ? 'Account created successfully! Redirecting...' : 
+                          currentLang === 'fr' ? 'Compte créé avec succès! Redirection...' : 
+                          'Kont lan kreye avèk siksè! N ap redirijé w...';
+        alert(successMsg);
+        
+        // Redirect to rasin.pyebwa.com
+        setTimeout(() => {
+            window.location.href = 'https://rasin.pyebwa.com/app/?login=true';
+        }, 1500);
+    } else {
+        // Show error message
+        alert(result.error);
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+    }
+});
+*/
+
+// Social login event handlers - DISABLED: Now handled by secure.pyebwa.com
+/*
+document.getElementById('googleSignIn').addEventListener('click', async () => {
+    const result = await signInWithGoogle();
+    if (result.success) {
+        // Redirect to rasin.pyebwa.com with email hint
+        setTimeout(() => {
+            const email = encodeURIComponent(result.user.email || email);
+            window.location.href = `https://rasin.pyebwa.com/app/?login=true&email=${email}`;
+        }, 500);
+    } else {
+        alert(result.error);
+    }
+});
+
+document.getElementById('googleSignUp').addEventListener('click', async () => {
+    const result = await signInWithGoogle();
+    if (result.success) {
+        // Redirect to rasin.pyebwa.com with email hint
+        setTimeout(() => {
+            const email = encodeURIComponent(result.user.email || email);
+            window.location.href = `https://rasin.pyebwa.com/app/?login=true&email=${email}`;
+        }, 500);
+    } else {
+        alert(result.error);
+    }
+});
+
+document.getElementById('facebookSignIn').addEventListener('click', async () => {
+    const result = await signInWithFacebook();
+    if (result.success) {
+        // Redirect to rasin.pyebwa.com with email hint
+        setTimeout(() => {
+            const email = encodeURIComponent(result.user.email || email);
+            window.location.href = `https://rasin.pyebwa.com/app/?login=true&email=${email}`;
+        }, 500);
+    } else {
+        alert(result.error);
+    }
+});
+
+document.getElementById('facebookSignUp').addEventListener('click', async () => {
+    const result = await signInWithFacebook();
+    if (result.success) {
+        // Redirect to rasin.pyebwa.com with email hint
+        setTimeout(() => {
+            const email = encodeURIComponent(result.user.email || email);
+            window.location.href = `https://rasin.pyebwa.com/app/?login=true&email=${email}`;
+        }, 500);
+    } else {
+        alert(result.error);
+    }
+});
+*/
+
+// Initialize language on load
+updateLanguage();
+
+// Mobile menu toggle
+const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+const navMenu = document.getElementById('navMenu');
+
+if (mobileMenuToggle) {
+    mobileMenuToggle.addEventListener('click', () => {
+        navMenu.classList.toggle('active');
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.navbar') && navMenu.classList.contains('active')) {
+            navMenu.classList.remove('active');
+        }
+    });
+    
+    // Close menu when clicking a link
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+            navMenu.classList.remove('active');
+        });
+    });
+}
+
+// Mobile buttons removed - using same buttons for desktop and mobile
+
+// Check if there's a redirect parameter or auth success
+const urlParams = new URLSearchParams(window.location.search);
+const redirectUrl = urlParams.get('redirect');
+const authSuccess = urlParams.get('auth');
+const fromLogin = urlParams.get('login');
+
+// Store redirect URL for after login
+if (redirectUrl) {
+    sessionStorage.setItem('loginRedirect', redirectUrl);
+}
+
+// REMOVED: Extra redirect handling that was causing loops
+// Now secure.pyebwa.com redirects directly to the final destination
+
+// Theme Toggle Functionality - Simplified
+window.addEventListener('load', () => {
+    console.log('Window loaded, initializing theme toggle...');
+    
+    const themeToggle = document.getElementById('themeToggle');
+    console.log('Theme toggle button:', themeToggle);
+
+    if (themeToggle) {
+        themeToggle.onclick = function(e) {
+            e.preventDefault();
+            console.log('Theme toggle clicked!');
+            
+            document.body.classList.toggle('dark-mode');
+            
+            const theme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+            localStorage.setItem('theme', theme);
+            
+            console.log('Theme changed to:', theme);
+        };
+        
+        console.log('Theme toggle initialized');
+    } else {
+        console.error('Theme toggle button not found!');
+    }
+});
+
+// Slideshow functionality
+function initSlideshow() {
+    const slides = document.querySelectorAll('.slide');
+    if (slides.length === 0) return;
+    
+    let currentSlide = 0;
+    
+    function showNextSlide() {
+        // Hide current slide
+        slides[currentSlide].classList.remove('active');
+        
+        // Move to next slide
+        currentSlide = (currentSlide + 1) % slides.length;
+        
+        // Show next slide
+        slides[currentSlide].classList.add('active');
+    }
+    
+    // Change slide every 5 seconds
+    setInterval(showNextSlide, 5000);
+}
+
+// Initialize slideshow when page loads
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSlideshow);
+} else {
+    initSlideshow();
+}
+
+// Return to Top Button Functionality
+document.addEventListener('DOMContentLoaded', () => {
+    const returnToTopBtn = document.getElementById('returnToTop');
+    
+    // Show/hide button based on scroll position
+    window.addEventListener('scroll', () => {
+        if (window.pageYOffset > 300) {
+            returnToTopBtn.classList.add('visible');
+        } else {
+            returnToTopBtn.classList.remove('visible');
+        }
+    });
+    
+    // Scroll to top when clicked
+    returnToTopBtn.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+});
+
+// REMOVED: pyebwaAuthSuccess handler - no longer needed
+// secure.pyebwa.com now redirects directly to final destination
+
+// Final override to ensure auth buttons always redirect to secure.pyebwa.com
+// This runs after all other scripts have loaded
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        console.log('Applying final auth button overrides...');
+        
+        // Override login button
+        const finalLoginBtn = document.getElementById('loginBtn');
+        if (finalLoginBtn) {
+            finalLoginBtn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                console.log('Login override - redirecting to secure.pyebwa.com');
+                window.location.href = 'https://secure.pyebwa.com/?redirect=' + encodeURIComponent(window.location.href);
+                return false;
+            };
+        }
+        
+        // Override signup button
+        const finalSignupBtn = document.getElementById('signupBtn');
+        if (finalSignupBtn) {
+            finalSignupBtn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                console.log('Signup override - redirecting to secure.pyebwa.com');
+                window.location.href = 'https://secure.pyebwa.com/?redirect=' + encodeURIComponent(window.location.href);
+                return false;
+            };
+        }
+        
+        // Override CTA button
+        const finalCtaBtn = document.getElementById('ctaBtn');
+        if (finalCtaBtn) {
+            finalCtaBtn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                console.log('CTA override - redirecting to secure.pyebwa.com');
+                window.location.href = 'https://secure.pyebwa.com/?redirect=' + encodeURIComponent(window.location.href);
+                return false;
+            };
+        }
+    }, 100);
+});

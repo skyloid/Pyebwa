@@ -3,6 +3,26 @@ let currentUser = null;
 let userFamilyTreeId = null;
 let familyMembers = [];
 
+// Redirect cooldown configuration
+const REDIRECT_COOLDOWN = 30000; // 30 seconds cooldown between redirects
+
+function canRedirect() {
+    const lastRedirect = parseInt(localStorage.getItem('lastRedirectTime') || '0');
+    const now = Date.now();
+    
+    if (now - lastRedirect < REDIRECT_COOLDOWN) {
+        console.log(`[Redirect Cooldown] Active - ${Math.round((REDIRECT_COOLDOWN - (now - lastRedirect)) / 1000)}s remaining`);
+        const logs = JSON.parse(localStorage.getItem('pyebwaDebugLogs') || '[]');
+        logs.push(`${new Date().toISOString()}: Redirect blocked by cooldown`);
+        localStorage.setItem('pyebwaDebugLogs', JSON.stringify(logs.slice(-20)));
+        return false;
+    }
+    
+    console.log('[Redirect Cooldown] Ready to redirect');
+    localStorage.setItem('lastRedirectTime', now.toString());
+    return true;
+}
+
 // Global error handler
 window.addEventListener('error', (event) => {
     console.error('Global error:', event.error);
@@ -16,6 +36,14 @@ window.addEventListener('error', (event) => {
     if (event.error && event.error.message && event.error.message.includes('addEventListener')) {
         event.preventDefault();
     }
+});
+
+// Listen for auth success event from auth-token-bridge
+window.addEventListener('pyebwaAuthSuccess', (event) => {
+    console.log('[App] Auth success event received:', event.detail);
+    const logs = JSON.parse(localStorage.getItem('pyebwaDebugLogs') || '[]');
+    logs.push(`${new Date().toISOString()}: Auth success event received`);
+    localStorage.setItem('pyebwaDebugLogs', JSON.stringify(logs.slice(-20)));
 });
 
 // Initialize app when DOM is loaded
@@ -102,21 +130,11 @@ function initializeAuth() {
     // Show loading state
     showLoadingState();
     
-    // Check if coming from login
-    const urlParams = new URLSearchParams(window.location.search);
-    const fromLogin = urlParams.get('login');
-    const authSuccess = urlParams.get('auth');
-    log(`From login: ${fromLogin}, Auth success: ${authSuccess}`);
+    // Single-domain auth - no URL parameters needed
+    log('Using single-domain authentication');
     
     // IMPORTANT: Track if we've already set up auth listener to prevent duplicates
     let authListenerSet = false;
-    
-    // Clean URL parameters immediately to prevent confusion
-    if (fromLogin || authSuccess) {
-        const cleanUrl = window.location.pathname;
-        window.history.replaceState({}, document.title, cleanUrl);
-        log('Cleaned URL parameters');
-    }
     
     // Add redirect loop prevention with timestamp
     const redirectData = JSON.parse(sessionStorage.getItem('pyebwaRedirectData') || '{}');
@@ -181,9 +199,11 @@ function initializeAuth() {
                     userEmailEl.textContent = user.email;
                 }
                 
-                // Clear redirect data on successful auth
+                // Clear redirect data and cooldown on successful auth
                 sessionStorage.removeItem('pyebwaRedirectData');
-                log('Cleared redirect data after successful auth');
+                localStorage.removeItem('lastRedirectTime'); // Clear cooldown on successful auth
+                localStorage.removeItem('pyebwaVisitCount'); // Clear visit count
+                log('Cleared redirect data and cooldown after successful auth');
                 
                 try {
                     // Get or create user's family tree
@@ -201,48 +221,11 @@ function initializeAuth() {
                     showError('Error loading your family tree. Please try again.');
                 }
             } else {
-                // No user authenticated
-                log('No user authenticated');
-                
-                if (fromLogin || authSuccess === 'success') {
-                    // Just came from login, wait a bit for auth to sync
-                    log('User just logged in - waiting for auth to sync...');
-                    showLoadingState('Verifying authentication...');
-                    
-                    // Give Firebase Auth some time to sync (5 seconds max)
-                    setTimeout(() => {
-                        // Check once more after delay
-                        if (auth.currentUser) {
-                            log('Auth synced successfully after delay');
-                            // Trigger the auth state change manually
-                            window.location.reload();
-                        } else {
-                            log('Auth sync failed - redirecting to login');
-                            // Update redirect data
-                            sessionStorage.setItem('pyebwaRedirectData', JSON.stringify({
-                                count: redirectCount + 1,
-                                timestamp: Date.now()
-                            }));
-                            
-                            // Use clean URL without query parameters for redirect
-                            const cleanRedirectUrl = window.location.origin + window.location.pathname;
-                            window.location.href = 'https://secure.pyebwa.com/?redirect=' + encodeURIComponent(cleanRedirectUrl);
-                        }
-                    }, 15000); // Wait 15 seconds max (increased from 10)
-                } else {
-                    // Not from login - redirect to login page
-                    log('Not from login - redirecting to login');
-                    
-                    // Update redirect data
-                    sessionStorage.setItem('pyebwaRedirectData', JSON.stringify({
-                        count: redirectCount + 1,
-                        timestamp: Date.now()
-                    }));
-                    
-                    // Use clean URL without query parameters for redirect
-                    const cleanRedirectUrl = window.location.origin + window.location.pathname;
-                    window.location.href = 'https://secure.pyebwa.com/?redirect=' + encodeURIComponent(cleanRedirectUrl);
-                }
+                // No user authenticated - redirect to login
+                log('No user authenticated - redirecting to login');
+                // Redirect to pyebwa.com where the login pages exist
+                window.location.href = 'https://pyebwa.com/login/';
+                return;
             }
         }, (error) => {
             // Auth error

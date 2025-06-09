@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirect Cooldown Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .warning { background: #fff3cd; color: #856404; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { 
+            background: #6c757d; 
+            cursor: not-allowed;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .timer {
+            font-size: 24px;
+            font-weight: bold;
+            color: #dc3545;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Redirect Cooldown Test</h1>
+        
+        <div id="status" class="status info">
+            Ready to test redirect cooldown functionality
+        </div>
+        
+        <div id="timer" class="timer" style="display: none;">
+            Cooldown: <span id="countdown">30</span>s
+        </div>
+        
+        <div>
+            <button onclick="testRedirect()">Test Redirect</button>
+            <button onclick="clearCooldown()">Clear Cooldown</button>
+            <button onclick="checkStatus()">Check Status</button>
+            <button onclick="clearAll()">Clear All Data</button>
+        </div>
+        
+        <h3>Test Log:</h3>
+        <div id="log" class="log"></div>
+        
+        <h3>LocalStorage Data:</h3>
+        <div id="localStorage" class="log"></div>
+    </div>
+
+    <script>
+        const REDIRECT_COOLDOWN = 30000; // 30 seconds
+        let countdownInterval;
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+            entry.style.color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+        }
+
+        function updateLocalStorageDisplay() {
+            const div = document.getElementById('localStorage');
+            const lastRedirect = localStorage.getItem('lastRedirectTime');
+            const authComplete = localStorage.getItem('authComplete');
+            const loopDetected = localStorage.getItem('pyebwaLoopDetected');
+            
+            div.innerHTML = `
+                <strong>lastRedirectTime:</strong> ${lastRedirect ? new Date(parseInt(lastRedirect)).toLocaleString() : 'Not set'}<br>
+                <strong>authComplete:</strong> ${authComplete || 'Not set'}<br>
+                <strong>pyebwaLoopDetected:</strong> ${loopDetected || 'Not set'}<br>
+                <strong>Current time:</strong> ${new Date().toLocaleString()}
+            `;
+        }
+
+        function canRedirect() {
+            const lastRedirect = parseInt(localStorage.getItem('lastRedirectTime') || '0');
+            const now = Date.now();
+            
+            if (now - lastRedirect < REDIRECT_COOLDOWN) {
+                const remaining = Math.round((REDIRECT_COOLDOWN - (now - lastRedirect)) / 1000);
+                return { allowed: false, remaining };
+            }
+            
+            return { allowed: true, remaining: 0 };
+        }
+
+        function startCountdown(seconds) {
+            clearInterval(countdownInterval);
+            document.getElementById('timer').style.display = 'block';
+            let remaining = seconds;
+            
+            countdownInterval = setInterval(() => {
+                document.getElementById('countdown').textContent = remaining;
+                remaining--;
+                
+                if (remaining < 0) {
+                    clearInterval(countdownInterval);
+                    document.getElementById('timer').style.display = 'none';
+                    updateStatus('Cooldown expired - redirects allowed', 'success');
+                    log('Cooldown expired', 'success');
+                }
+            }, 1000);
+        }
+
+        function testRedirect() {
+            log('Testing redirect...');
+            const result = canRedirect();
+            
+            if (result.allowed) {
+                localStorage.setItem('lastRedirectTime', Date.now().toString());
+                updateStatus('Redirect allowed - cooldown timer started', 'success');
+                log('Redirect would be allowed - cooldown started', 'success');
+                startCountdown(30);
+            } else {
+                updateStatus(`Redirect blocked - ${result.remaining}s cooldown remaining`, 'warning');
+                log(`Redirect blocked by cooldown - ${result.remaining}s remaining`, 'error');
+                startCountdown(result.remaining);
+            }
+            
+            updateLocalStorageDisplay();
+        }
+
+        function clearCooldown() {
+            localStorage.removeItem('lastRedirectTime');
+            clearInterval(countdownInterval);
+            document.getElementById('timer').style.display = 'none';
+            updateStatus('Cooldown cleared', 'success');
+            log('Cooldown cleared');
+            updateLocalStorageDisplay();
+        }
+
+        function checkStatus() {
+            const result = canRedirect();
+            if (result.allowed) {
+                updateStatus('Redirects are currently allowed', 'success');
+                log('Status: Redirects allowed');
+            } else {
+                updateStatus(`Redirects blocked - ${result.remaining}s remaining`, 'warning');
+                log(`Status: Redirects blocked - ${result.remaining}s remaining`);
+                startCountdown(result.remaining);
+            }
+            updateLocalStorageDisplay();
+        }
+
+        function clearAll() {
+            localStorage.clear();
+            sessionStorage.clear();
+            clearInterval(countdownInterval);
+            document.getElementById('timer').style.display = 'none';
+            updateStatus('All storage cleared', 'info');
+            log('All localStorage and sessionStorage cleared');
+            updateLocalStorageDisplay();
+        }
+
+        // Initialize
+        updateLocalStorageDisplay();
+        checkStatus();
+        
+        // Auto-update localStorage display
+        setInterval(updateLocalStorageDisplay, 1000);
+    </script>
+</body>
+</html>

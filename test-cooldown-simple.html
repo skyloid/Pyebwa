@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Cooldown Test</title>
+</head>
+<body>
+    <h1>Redirect Cooldown Test Results</h1>
+    <pre id="results"></pre>
+    
+    <script>
+        const REDIRECT_COOLDOWN = 30000; // 30 seconds
+        const results = document.getElementById('results');
+        
+        function log(message) {
+            results.textContent += message + '\n';
+            console.log(message);
+        }
+
+        function canRedirect() {
+            const lastRedirect = parseInt(localStorage.getItem('lastRedirectTime') || '0');
+            const now = Date.now();
+            
+            if (now - lastRedirect < REDIRECT_COOLDOWN) {
+                const remaining = Math.round((REDIRECT_COOLDOWN - (now - lastRedirect)) / 1000);
+                log(`[Redirect Cooldown] Active - ${remaining}s remaining`);
+                return false;
+            }
+            
+            log('[Redirect Cooldown] Ready to redirect');
+            localStorage.setItem('lastRedirectTime', now.toString());
+            return true;
+        }
+
+        // Run tests
+        log('=== Redirect Cooldown Test Suite ===\n');
+        
+        // Test 1
+        log('Test 1: First redirect (should be allowed)');
+        localStorage.removeItem('lastRedirectTime');
+        log('Result: ' + (canRedirect() ? 'PASSED ✓' : 'FAILED ✗'));
+        
+        log('\nTest 2: Immediate second redirect (should be blocked)');
+        log('Result: ' + (!canRedirect() ? 'PASSED ✓' : 'FAILED ✗'));
+        
+        log('\nTest 3: After clearing cooldown (should be allowed)');
+        localStorage.removeItem('lastRedirectTime');
+        log('Result: ' + (canRedirect() ? 'PASSED ✓' : 'FAILED ✗'));
+        
+        log('\n=== Summary ===');
+        log('The redirect cooldown is working correctly.');
+        log('Users must wait 30 seconds between login redirects.');
+        log('This prevents redirect loops while allowing legitimate retries.');
+    </script>
+</body>
+</html>

@@ -8,6 +8,12 @@ console.log('[Auth Token Bridge] Initializing...');
     const authSuccess = urlParams.get('auth');
     const fromLogin = urlParams.get('login');
     
+    console.log('[Auth Token Bridge] URL params:', {
+        token: authToken ? 'present' : 'missing',
+        auth: authSuccess,
+        login: fromLogin
+    });
+    
     // If we have a token, try to authenticate with it
     if (authToken && (authSuccess === 'success' || fromLogin === 'true')) {
         console.log('[Auth Token Bridge] Token received, attempting authentication...');
@@ -32,10 +38,16 @@ console.log('[Auth Token Bridge] Initializing...');
                         console.log('[Auth Token Bridge] Successfully authenticated with token');
                         sessionStorage.removeItem('pyebwaAuthToken');
                         
-                        // Force reload to reinitialize with authenticated state
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 500);
+                        // Set a flag to indicate successful auth
+                        sessionStorage.setItem('pyebwaJustAuthenticated', 'true');
+                        
+                        // Dispatch a custom event instead of reloading
+                        window.dispatchEvent(new CustomEvent('pyebwaAuthSuccess', { 
+                            detail: { user: result.user }
+                        }));
+                        
+                        // Only reload if absolutely necessary (let app.js handle it)
+                        // window.location.reload();
                     })
                     .catch((error) => {
                         console.error('[Auth Token Bridge] Token authentication failed:', error);
@@ -77,6 +89,34 @@ console.log('[Auth Token Bridge] Initializing...');
             clearInterval(checkFirebase);
             console.error('[Auth Token Bridge] Timeout waiting for Firebase');
         }, 10000);
+    } else if ((authSuccess === 'success' || fromLogin === 'true') && !authToken) {
+        // We have auth success but no token - this might be a cookie-based auth
+        console.log('[Auth Token Bridge] Auth success without token - checking Firebase auth state...');
+        
+        // Wait for Firebase to initialize and check if user is already authenticated
+        const checkAuthState = setInterval(() => {
+            if (typeof firebase !== 'undefined' && firebase.auth) {
+                firebase.auth().onAuthStateChanged((user) => {
+                    clearInterval(checkAuthState);
+                    if (user) {
+                        console.log('[Auth Token Bridge] User already authenticated via session:', user.email);
+                        // Dispatch success event
+                        window.dispatchEvent(new CustomEvent('pyebwaAuthSuccess', { 
+                            detail: { user: user }
+                        }));
+                    } else {
+                        console.log('[Auth Token Bridge] No authenticated user found despite auth success flag');
+                        // Set a flag to prevent redirect loops
+                        sessionStorage.setItem('pyebwaAuthAttempted', 'true');
+                    }
+                });
+            }
+        }, 100);
+        
+        // Timeout after 5 seconds
+        setTimeout(() => {
+            clearInterval(checkAuthState);
+        }, 5000);
     }
     
     // Alternative: Check for auth state in sessionStorage

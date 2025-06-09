@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Login - Pyebwa</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Haitian Flag Colors */
+            --primary-red: #D41125;
+            --primary-blue: #00217D;
+            --accent-yellow: #FFC72C;
+            
+            /* Additional Colors */
+            --white: #FFFFFF;
+            --black: #000000;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: var(--shadow-xl);
+            width: 100%;
+            max-width: 420px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Decorative top border with Haitian flag colors */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-blue) 50%, var(--primary-red) 50%);
+        }
+        
+        .logo-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: var(--primary-blue);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            box-shadow: var(--shadow-md);
+        }
+        
+        h1 {
+            color: var(--gray-900);
+            text-align: center;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: var(--gray-600);
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--gray-700);
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: var(--gray-50);
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            background: var(--white);
+            box-shadow: 0 0 0 3px rgba(0, 33, 125, 0.1);
+        }
+        
+        input::placeholder {
+            color: var(--gray-400);
+        }
+        
+        button {
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        #loginBtn {
+            background: var(--primary-blue);
+            color: var(--white);
+        }
+        
+        #loginBtn:hover:not(:disabled) {
+            background: #001654;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        #loginBtn:disabled {
+            background: var(--gray-300);
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .secondary-btn {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border: 2px solid var(--gray-200);
+        }
+        
+        .secondary-btn:hover {
+            background: var(--gray-200);
+            border-color: var(--gray-300);
+        }
+        
+        .success-btn {
+            background: #10B981;
+            color: var(--white);
+        }
+        
+        .success-btn:hover {
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .message {
+            margin: 20px 0;
+            padding: 12px 16px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .error {
+            background: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #FECACA;
+        }
+        
+        .success {
+            background: #D1FAE5;
+            color: #065F46;
+            border: 1px solid #A7F3D0;
+        }
+        
+        .info {
+            background: #DBEAFE;
+            color: #1E40AF;
+            border: 1px solid #BFDBFE;
+        }
+        
+        .divider {
+            text-align: center;
+            margin: 30px 0 20px;
+            position: relative;
+        }
+        
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--gray-200);
+        }
+        
+        .divider span {
+            background: var(--white);
+            padding: 0 16px;
+            color: var(--gray-500);
+            font-size: 14px;
+            position: relative;
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--white);
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-container">
+            <div class="logo">P</div>
+            <h1>Pyebwa</h1>
+            <p class="subtitle">Sign in to access your family tree</p>
+        </div>
+        
+        <div id="message" class="message info" style="display: none;"></div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" required placeholder="your@email.com" autocomplete="email">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required placeholder="Enter your password" autocomplete="current-password">
+            </div>
+            
+            <button type="submit" id="loginBtn">
+                <span id="loginText">Sign In</span>
+                <span class="spinner" style="display: none;"></span>
+            </button>
+        </form>
+        
+        <div class="divider">
+            <span>Quick Actions</span>
+        </div>
+        
+        <button onclick="checkAuth()" class="success-btn">Check Current Auth</button>
+        <button onclick="goToApp()" class="secondary-btn">Go to App</button>
+    </div>
+    
+    <script>
+        const messageDiv = document.getElementById('message');
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginText = document.getElementById('loginText');
+        const spinner = loginBtn.querySelector('.spinner');
+        
+        function showMessage(text, type = 'info') {
+            messageDiv.textContent = text;
+            messageDiv.className = 'message ' + type;
+            messageDiv.style.display = 'flex';
+            
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        function setLoading(isLoading) {
+            loginBtn.disabled = isLoading;
+            loginText.textContent = isLoading ? 'Signing in...' : 'Sign In';
+            spinner.style.display = isLoading ? 'inline-block' : 'none';
+        }
+        
+        function checkAuth() {
+            const user = firebase.auth().currentUser;
+            if (user) {
+                showMessage(`✓ Authenticated as: ${user.email}`, 'success');
+            } else {
+                showMessage('✗ Not authenticated', 'error');
+            }
+        }
+        
+        function goToApp() {
+            window.location.href = '/app/';
+        }
+        
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                showMessage('Please enter both email and password', 'error');
+                return;
+            }
+            
+            setLoading(true);
+            showMessage('Authenticating...', 'info');
+            
+            try {
+                // Set persistence first
+                await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+                
+                // Sign in
+                const result = await firebase.auth().signInWithEmailAndPassword(email, password);
+                
+                showMessage(`✓ Success! Logged in as ${result.user.email}`, 'success');
+                
+                // Wait a moment then redirect to app
+                setTimeout(() => {
+                    showMessage('Redirecting to app...', 'info');
+                    window.location.href = '/app/';
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                let errorMessage = 'Login failed. Please try again.';
+                
+                // Provide user-friendly error messages
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        errorMessage = 'No account found with this email address.';
+                        break;
+                    case 'auth/wrong-password':
+                        errorMessage = 'Incorrect password. Please try again.';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = 'Please enter a valid email address.';
+                        break;
+                    case 'auth/too-many-requests':
+                        errorMessage = 'Too many failed attempts. Please try again later.';
+                        break;
+                    case 'auth/network-request-failed':
+                        errorMessage = 'Network error. Please check your connection.';
+                        break;
+                    default:
+                        errorMessage = error.message;
+                }
+                
+                showMessage(`✗ ${errorMessage}`, 'error');
+                setLoading(false);
+            }
+        });
+        
+        // Check initial auth state
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                showMessage(`Already logged in as ${user.email}`, 'success');
+            }
+        });
+    </script>
+</body>
+</html>

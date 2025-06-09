@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Single-Domain Auth Test - Pyebwa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f7fa;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #00217D;
+            margin-bottom: 30px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #D1FAE5;
+            color: #065F46;
+            border: 1px solid #A7F3D0;
+        }
+        .error {
+            background: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #FECACA;
+        }
+        .info {
+            background: #DBEAFE;
+            color: #1E40AF;
+            border: 1px solid #BFDBFE;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+        button {
+            background: #00217D;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #001654;
+        }
+        .log-entry {
+            font-family: monospace;
+            font-size: 12px;
+            padding: 2px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Single-Domain Authentication Test</h1>
+        
+        <div class="test-section">
+            <h2>Test Status</h2>
+            <div id="testStatus" class="status info">Starting tests...</div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test Actions</h2>
+            <button onclick="testLogin()">Test Login Page</button>
+            <button onclick="testApp()">Test App Page</button>
+            <button onclick="clearAuth()">Clear Auth Data</button>
+            <button onclick="checkAuthState()">Check Auth State</button>
+        </div>
+        
+        <div class="test-section">
+            <h2>Debug Logs</h2>
+            <div id="debugLogs" style="max-height: 300px; overflow-y: auto; background: white; padding: 10px; border-radius: 4px;">
+                <div class="log-entry">Waiting for tests...</div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Authentication Flow Summary</h2>
+            <ol>
+                <li><strong>Homepage (pyebwa.com)</strong> - Redirects to /login/ via app.js</li>
+                <li><strong>Login Page (/login/)</strong> - Single-domain authentication</li>
+                <li><strong>App Page (/app/)</strong> - Checks auth state locally</li>
+                <li><strong>No Cross-Domain Issues</strong> - All on rasin.pyebwa.com</li>
+            </ol>
+        </div>
+    </div>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDW3XLnIR8QQyWeYb3kR2EKqXoJGNNHNsE",
+            authDomain: "pyebwa-8f81f.firebaseapp.com",
+            projectId: "pyebwa-8f81f",
+            storageBucket: "pyebwa-8f81f.appspot.com",
+            messagingSenderId: "635176217953",
+            appId: "1:635176217953:web:d088f17c87e2e088ad4e0f",
+            measurementId: "G-9RXPY0YNS1"
+        };
+        firebase.initializeApp(firebaseConfig);
+        
+        const statusDiv = document.getElementById('testStatus');
+        const logsDiv = document.getElementById('debugLogs');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span style="color: ${type === 'error' ? 'red' : type === 'success' ? 'green' : 'blue'}">[${timestamp}]</span> ${message}`;
+            logsDiv.appendChild(entry);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+        
+        function updateStatus(message, type = 'info') {
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            log(message, type);
+        }
+        
+        // Check auth state on load
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                updateStatus(`Authenticated as: ${user.email}`, 'success');
+                log(`User ID: ${user.uid}`, 'info');
+                log(`Auth persistence: ${firebase.auth().currentUser ? 'Active' : 'Not active'}`, 'info');
+            } else {
+                updateStatus('Not authenticated', 'info');
+                log('No user signed in', 'info');
+            }
+        });
+        
+        function testLogin() {
+            log('Navigating to login page...', 'info');
+            window.location.href = '/login/';
+        }
+        
+        function testApp() {
+            log('Navigating to app page...', 'info');
+            window.location.href = '/app/';
+        }
+        
+        async function clearAuth() {
+            try {
+                log('Clearing authentication...', 'info');
+                await firebase.auth().signOut();
+                
+                // Clear all auth-related storage
+                localStorage.removeItem('lastRedirectTime');
+                localStorage.removeItem('pyebwaDebugLogs');
+                localStorage.removeItem('pyebwaVisitCount');
+                sessionStorage.removeItem('pyebwaRedirectData');
+                sessionStorage.removeItem('pyebwaAuthAttempted');
+                
+                updateStatus('Authentication cleared', 'success');
+                log('All auth data cleared', 'success');
+            } catch (error) {
+                updateStatus(`Error clearing auth: ${error.message}`, 'error');
+                log(`Clear auth error: ${error}`, 'error');
+            }
+        }
+        
+        async function checkAuthState() {
+            log('Checking authentication state...', 'info');
+            
+            const user = firebase.auth().currentUser;
+            if (user) {
+                log(`Current user: ${user.email}`, 'success');
+                log(`Provider: ${user.providerData[0]?.providerId || 'Unknown'}`, 'info');
+                
+                // Check token
+                try {
+                    const token = await user.getIdToken();
+                    log('ID token retrieved successfully', 'success');
+                    log(`Token expires: ${new Date(JSON.parse(atob(token.split('.')[1])).exp * 1000).toLocaleString()}`, 'info');
+                } catch (error) {
+                    log(`Token error: ${error.message}`, 'error');
+                }
+            } else {
+                log('No authenticated user', 'info');
+            }
+            
+            // Check localStorage
+            log('--- LocalStorage ---', 'info');
+            log(`lastRedirectTime: ${localStorage.getItem('lastRedirectTime') || 'Not set'}`, 'info');
+            log(`pyebwaLang: ${localStorage.getItem('pyebwaLang') || 'Not set'}`, 'info');
+            
+            // Check sessionStorage
+            log('--- SessionStorage ---', 'info');
+            log(`pyebwaRedirectData: ${sessionStorage.getItem('pyebwaRedirectData') || 'Not set'}`, 'info');
+            
+            // Show app debug logs if any
+            const debugLogs = JSON.parse(localStorage.getItem('pyebwaDebugLogs') || '[]');
+            if (debugLogs.length > 0) {
+                log('--- App Debug Logs ---', 'info');
+                debugLogs.forEach(entry => log(entry, 'info'));
+            }
+        }
+        
+        // Initial check
+        setTimeout(() => checkAuthState(), 1000);
+    </script>
+</body>
+</html>

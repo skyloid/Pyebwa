@@ -3,30 +3,62 @@ console.log('[EMERGENCY FIX] Loading auth emergency fix...');
 
 // Aggressive loop prevention
 (function() {
+    // Skip if we're already handling a loop
+    if (window.pyebwaLoopHandling) {
+        return;
+    }
+    
     // Check if we're in a loop
     const loopKey = 'pyebwaLoopDetected';
     const lastVisitKey = 'pyebwaLastVisit';
+    const visitCountKey = 'pyebwaVisitCount';
     const currentTime = Date.now();
     const lastVisit = parseInt(localStorage.getItem(lastVisitKey) || '0');
     
-    // If visited within last 2 seconds, we're in a loop
-    if (currentTime - lastVisit < 2000) {
+    // Get visit count in last 10 seconds
+    let visitCount = parseInt(localStorage.getItem(visitCountKey) || '0');
+    
+    // Reset count if more than 10 seconds since last visit
+    if (currentTime - lastVisit > 10000) {
+        visitCount = 0;
+    }
+    
+    // Increment visit count
+    visitCount++;
+    localStorage.setItem(visitCountKey, visitCount.toString());
+    
+    // If more than 3 visits in 10 seconds, we're likely in a loop
+    if (visitCount > 3 && currentTime - lastVisit < 10000) {
         console.error('[EMERGENCY FIX] LOOP DETECTED! Stopping all redirects...');
+        console.log('[EMERGENCY FIX] Visit count:', visitCount, 'in last 10 seconds');
         localStorage.setItem(loopKey, 'true');
+        window.pyebwaLoopHandling = true;
         
         // Clear EVERYTHING
         sessionStorage.clear();
         localStorage.removeItem('pyebwaRedirectData');
         localStorage.removeItem(lastVisitKey);
+        localStorage.removeItem(visitCountKey);
         
         // Stop all execution
         window.stop();
         
-        // Show emergency UI
-        document.body.innerHTML = `
+        // Wait for DOM to be ready before showing emergency UI
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', showEmergencyUI);
+        } else {
+            showEmergencyUI();
+        }
+        
+        function showEmergencyUI() {
+            // Show emergency UI
+            document.body.innerHTML = `
             <div style="max-width: 600px; margin: 100px auto; padding: 20px; font-family: Arial, sans-serif; text-align: center;">
                 <h1 style="color: red;">Authentication Loop Stopped</h1>
                 <p>We've detected and stopped an authentication loop.</p>
+                <p style="background: #fffacd; padding: 10px; border-radius: 5px; margin: 20px 0;">
+                    <strong>Note:</strong> There is a 30-second cooldown between login attempts to prevent loops.
+                </p>
                 <p>Please choose an option:</p>
                 <button onclick="clearAndRestart()" style="background: green; color: white; padding: 10px 20px; margin: 10px; border: none; border-radius: 5px; cursor: pointer;">
                     Clear Everything & Start Fresh
@@ -45,6 +77,7 @@ URL: ${window.location.href}
 Last Visit: ${new Date(lastVisit).toLocaleString()}
 Current Time: ${new Date(currentTime).toLocaleString()}
 Time Difference: ${currentTime - lastVisit}ms
+Cooldown Active: ${localStorage.getItem('lastRedirectTime') ? 'Yes' : 'No'}
                     </pre>
                 </details>
             </div>
@@ -54,6 +87,9 @@ Time Difference: ${currentTime - lastVisit}ms
         window.clearAndRestart = function() {
             localStorage.clear();
             sessionStorage.clear();
+            // Specifically clear redirect cooldown and loop detection
+            localStorage.removeItem('lastRedirectTime');
+            localStorage.removeItem('pyebwaLoopDetected');
             // Delete all cookies
             document.cookie.split(";").forEach(function(c) { 
                 document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
@@ -70,6 +106,7 @@ Time Difference: ${currentTime - lastVisit}ms
             localStorage.removeItem(loopKey);
             location.reload();
         };
+        } // End of showEmergencyUI function
         
         // Prevent any further execution
         throw new Error('Loop stopped');
@@ -88,9 +125,11 @@ Time Difference: ${currentTime - lastVisit}ms
 const originalLocation = window.location.href;
 let redirectCount = 0;
 
-// Intercept location changes
-const originalLocationSetter = Object.getOwnPropertyDescriptor(window, 'location');
-Object.defineProperty(window, 'location', {
+// Intercept location changes (wrapped in try-catch to prevent conflicts)
+try {
+    const originalLocationSetter = Object.getOwnPropertyDescriptor(window, 'location');
+    if (originalLocationSetter && originalLocationSetter.configurable !== false) {
+        Object.defineProperty(window, 'location', {
     get: function() {
         return originalLocationSetter.get.call(window);
     },
@@ -113,6 +152,10 @@ Object.defineProperty(window, 'location', {
         }
     }
 });
+    }
+} catch (error) {
+    console.warn('[EMERGENCY FIX] Could not override location (another script may have already done this):', error);
+}
 
 // Add visible indicator
 if (!localStorage.getItem('pyebwaLoopDetected')) {

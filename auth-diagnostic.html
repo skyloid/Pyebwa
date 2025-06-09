@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Diagnostic - Pyebwa</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+        .status { font-weight: bold; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .info { color: #17a2b8; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .log {
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th { background: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Authentication Diagnostic</h1>
+        
+        <div class="section">
+            <h2>Current Status</h2>
+            <p>Firebase Auth State: <span id="authState" class="status">Checking...</span></p>
+            <p>Current User: <span id="currentUser" class="status">None</span></p>
+            <p>Auth Persistence: <span id="persistence" class="status">Checking...</span></p>
+        </div>
+        
+        <div class="section">
+            <h2>URL Parameters</h2>
+            <table id="urlParams">
+                <tr><th>Parameter</th><th>Value</th></tr>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>Storage Data</h2>
+            <h3>Local Storage</h3>
+            <table id="localStorage">
+                <tr><th>Key</th><th>Value</th></tr>
+            </table>
+            
+            <h3>Session Storage</h3>
+            <table id="sessionStorage">
+                <tr><th>Key</th><th>Value</th></tr>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>Actions</h2>
+            <button onclick="checkAuth()">Check Auth State</button>
+            <button onclick="clearStorage()">Clear All Storage</button>
+            <button onclick="testLogin()">Test Login Flow</button>
+            <button onclick="signOut()">Sign Out</button>
+        </div>
+        
+        <div class="section">
+            <h2>Console Log</h2>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+    
+    <script>
+        const logDiv = document.getElementById('log');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const color = {
+                error: '#f00',
+                success: '#0f0',
+                warning: '#ff0',
+                info: '#0ff'
+            }[type] || '#fff';
+            
+            logDiv.innerHTML += `<span style="color: ${color}">[${timestamp}] ${message}</span>\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(`[Auth Diagnostic] ${message}`);
+        }
+        
+        function updateURLParams() {
+            const params = new URLSearchParams(window.location.search);
+            const table = document.getElementById('urlParams');
+            table.innerHTML = '<tr><th>Parameter</th><th>Value</th></tr>';
+            
+            if (params.toString()) {
+                for (const [key, value] of params) {
+                    table.innerHTML += `<tr><td>${key}</td><td>${value}</td></tr>`;
+                }
+            } else {
+                table.innerHTML += '<tr><td colspan="2">No URL parameters</td></tr>';
+            }
+        }
+        
+        function updateStorage() {
+            // Local Storage
+            const localTable = document.getElementById('localStorage');
+            localTable.innerHTML = '<tr><th>Key</th><th>Value</th></tr>';
+            
+            const localKeys = Object.keys(localStorage).filter(k => 
+                k.includes('pyebwa') || k.includes('firebase') || k.includes('auth')
+            );
+            
+            if (localKeys.length > 0) {
+                localKeys.forEach(key => {
+                    let value = localStorage.getItem(key);
+                    if (value && value.length > 50) {
+                        value = value.substring(0, 50) + '...';
+                    }
+                    localTable.innerHTML += `<tr><td>${key}</td><td>${value}</td></tr>`;
+                });
+            } else {
+                localTable.innerHTML += '<tr><td colspan="2">No relevant data</td></tr>';
+            }
+            
+            // Session Storage
+            const sessionTable = document.getElementById('sessionStorage');
+            sessionTable.innerHTML = '<tr><th>Key</th><th>Value</th></tr>';
+            
+            const sessionKeys = Object.keys(sessionStorage).filter(k => 
+                k.includes('pyebwa') || k.includes('firebase') || k.includes('auth')
+            );
+            
+            if (sessionKeys.length > 0) {
+                sessionKeys.forEach(key => {
+                    let value = sessionStorage.getItem(key);
+                    if (value && value.length > 50) {
+                        value = value.substring(0, 50) + '...';
+                    }
+                    sessionTable.innerHTML += `<tr><td>${key}</td><td>${value}</td></tr>`;
+                });
+            } else {
+                sessionTable.innerHTML += '<tr><td colspan="2">No relevant data</td></tr>';
+            }
+        }
+        
+        function checkAuth() {
+            log('Checking authentication state...', 'info');
+            
+            if (!firebase.auth) {
+                log('Firebase Auth not initialized!', 'error');
+                return;
+            }
+            
+            const user = firebase.auth().currentUser;
+            if (user) {
+                log(`User authenticated: ${user.email} (${user.uid})`, 'success');
+                document.getElementById('currentUser').textContent = user.email;
+                document.getElementById('currentUser').className = 'status success';
+            } else {
+                log('No authenticated user', 'warning');
+                document.getElementById('currentUser').textContent = 'None';
+                document.getElementById('currentUser').className = 'status error';
+            }
+            
+            // Check persistence
+            firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+                .then(() => {
+                    log('Auth persistence set to LOCAL', 'success');
+                    document.getElementById('persistence').textContent = 'LOCAL';
+                    document.getElementById('persistence').className = 'status success';
+                })
+                .catch((error) => {
+                    log(`Persistence error: ${error.message}`, 'error');
+                    document.getElementById('persistence').textContent = 'ERROR';
+                    document.getElementById('persistence').className = 'status error';
+                });
+        }
+        
+        function clearStorage() {
+            if (confirm('Clear all storage data?')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                log('All storage cleared', 'success');
+                updateStorage();
+            }
+        }
+        
+        function testLogin() {
+            log('Redirecting to secure.pyebwa.com for login test...', 'info');
+            const redirect = encodeURIComponent(window.location.href);
+            window.location.href = `https://secure.pyebwa.com/?redirect=${redirect}`;
+        }
+        
+        function signOut() {
+            firebase.auth().signOut()
+                .then(() => {
+                    log('Signed out successfully', 'success');
+                    checkAuth();
+                })
+                .catch((error) => {
+                    log(`Sign out error: ${error.message}`, 'error');
+                });
+        }
+        
+        // Initialize
+        log('Authentication diagnostic started', 'info');
+        updateURLParams();
+        updateStorage();
+        
+        // Set up Firebase auth observer
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                log(`Auth state changed: User ${user.email} authenticated`, 'success');
+                document.getElementById('authState').textContent = 'Authenticated';
+                document.getElementById('authState').className = 'status success';
+                document.getElementById('currentUser').textContent = user.email;
+                document.getElementById('currentUser').className = 'status success';
+            } else {
+                log('Auth state changed: No user', 'warning');
+                document.getElementById('authState').textContent = 'Not authenticated';
+                document.getElementById('authState').className = 'status error';
+                document.getElementById('currentUser').textContent = 'None';
+                document.getElementById('currentUser').className = 'status error';
+            }
+            updateStorage();
+        });
+        
+        // Auto-refresh storage every 2 seconds
+        setInterval(updateStorage, 2000);
+        
+        // Initial auth check
+        setTimeout(checkAuth, 1000);
+    </script>
+</body>
+</html>

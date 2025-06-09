@@ -6,20 +6,14 @@
     <title>Pyebwa - Your Family Tree</title>
     
     <!-- CSS -->
-    <link rel="stylesheet" href="css/app.css?v=3">
-    <link rel="stylesheet" href="css/tree.css?v=3">
-    <link rel="stylesheet" href="css/footer.css?v=3">
+    <link rel="stylesheet" href="/app/css/app.css?v=3">
+    <link rel="stylesheet" href="/app/css/tree.css?v=3">
+    <link rel="stylesheet" href="/app/css/footer.css?v=3">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
-    <!-- Emergency Auth Fix - MUST LOAD FIRST -->
-    <script src="js/auth-emergency-fix.js"></script>
-    
-    <!-- Auth Token Bridge - MUST LOAD BEFORE FIREBASE -->
-    <script src="js/auth-token-bridge.js"></script>
-    
-    <!-- Auth Persistence Fix -->
-    <script src="js/auth-persistence-fix.js"></script>
+    <!-- Cross-domain auth scripts removed - using single-domain auth now -->
+    <!-- All authentication handled on same domain at /login/ -->
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
@@ -210,13 +204,12 @@
     </footer>
 
     <!-- JavaScript -->
-    <script src="js/firebase-config.js?v=3"></script>
-    <script src="js/translations.js?v=3"></script>
-    <script src="js/app-loop-fix.js"></script>
-    <script src="js/app.js?v=20250108-fixed"></script>
-    <script src="js/tree.js"></script>
-    <script src="js/members.js"></script>
-    <script src="js/stories.js"></script>
-    <script src="js/share-modal.js"></script>
+    <script src="/app/js/firebase-config.js?v=3"></script>
+    <script src="/app/js/translations.js?v=3"></script>
+    <script src="/app/js/app.js?v=20250109-single-domain"></script>
+    <script src="/app/js/tree.js"></script>
+    <script src="/app/js/members.js"></script>
+    <script src="/app/js/stories.js"></script>
+    <!-- Share modal removed - using pyebwa.com authentication flow -->
 </body>
 </html>
