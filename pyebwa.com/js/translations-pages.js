@@ -11,7 +11,6 @@ const pageTranslations = {
         
         // Common footer
         poweredBy: "Powered by",
-        allRights: "All rights reserved.",
         humanLevelTech: "Technologies Humanitaires",
         quickLinks: "Quick Links",
         privacyPolicy: "Privacy Policy",
@@ -176,7 +175,6 @@ const pageTranslations = {
         
         // Pied de page commun
         poweredBy: "Propulsé par",
-        allRights: "Tous droits réservés.",
         humanLevelTech: "Technologies Humanitaires",
         quickLinks: "Liens Rapides",
         privacyPolicy: "Politique de Confidentialité",
@@ -341,7 +339,6 @@ const pageTranslations = {
         
         // Pye paj komen
         poweredBy: "Pwodwi pa",
-        allRights: "Tout dwa rezève.",
         humanLevelTech: "Technologies Humanitaires",
         quickLinks: "Lyen Rapid",
         privacyPolicy: "Politik Konfidansyalite",

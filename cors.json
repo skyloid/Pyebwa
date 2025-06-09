@@ -1,8 +1,16 @@
 [
   {
-    "origin": ["https://www.pyebwa.com", "https://rasin.pyebwa.com", "http://localhost:3000"],
-    "method": ["GET", "POST", "PUT", "DELETE", "HEAD"],
+    "origin": ["https://www.pyebwa.com", "https://pyebwa.com", "https://rasin.pyebwa.com", "http://localhost:3000"],
+    "method": ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"],
     "maxAgeSeconds": 3600,
-    "responseHeader": ["Content-Type", "Authorization", "Content-Length", "X-Requested-With"]
+    "responseHeader": [
+      "Content-Type",
+      "Authorization",
+      "Content-Length",
+      "X-Requested-With",
+      "Access-Control-Allow-Origin",
+      "Access-Control-Allow-Headers",
+      "Access-Control-Allow-Methods"
+    ]
   }
 ]

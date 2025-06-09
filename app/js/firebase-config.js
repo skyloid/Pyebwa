@@ -3,7 +3,7 @@ const firebaseConfig = {
     apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
     authDomain: "pyebwa-f5960.firebaseapp.com",
     projectId: "pyebwa-f5960",
-    storageBucket: "pyebwa-f5960.firebasestorage.app",
+    storageBucket: "pyebwa-f5960.appspot.com",
     messagingSenderId: "1042887343749",
     appId: "1:1042887343749:web:c276bf69b6c0895111f3ec",
     measurementId: "G-ZX92K1TMM3"

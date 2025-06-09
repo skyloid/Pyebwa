@@ -82,8 +82,9 @@ body {
 }
 
 .app-logo-img {
-    height: 36px;
+    height: 40px;
     width: auto;
+    object-fit: contain;
 }
 
 .app-logo {
@@ -717,4 +718,3 @@ body {
     color: #FFB800;
     text-decoration: underline;
 }
-EOF < /dev/null

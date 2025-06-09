@@ -542,6 +542,7 @@ function showAddMemberModal(member = null) {
         form.lastName.value = member.lastName || '';
         form.gender.value = member.gender || '';
         form.birthDate.value = member.birthDate || '';
+        form.email.value = member.email || '';
         form.biography.value = member.biography || '';
         form.relationship.value = member.relationship || '';
         
@@ -593,6 +594,7 @@ async function handleAddMember(e) {
             lastName: form.lastName.value,
             gender: form.gender.value,
             birthDate: form.birthDate.value || null,
+            email: form.email.value || null,
             biography: form.biography.value || '',
             relationship: form.relationship.value,
             relatedTo: form.relatedTo?.value || null,
@@ -679,12 +681,66 @@ async function uploadPhoto(file) {
 
 // Show success message
 function showSuccess(message) {
-    // TODO: Implement toast notification
-    alert(message);
+    // Create toast notification
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification success';
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #4CAF50;
+        color: white;
+        padding: 16px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 10000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Fade in
+    setTimeout(() => toast.style.opacity = '1', 10);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
 
 // Show error message
 function showError(message) {
-    // TODO: Implement toast notification
-    alert(message);
+    // Create toast notification
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification error';
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #f44336;
+        color: white;
+        padding: 16px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 10000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Fade in
+    setTimeout(() => toast.style.opacity = '1', 10);
+    
+    // Remove after 5 seconds (longer for errors)
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 5000);
 }

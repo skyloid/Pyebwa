@@ -20,7 +20,6 @@
                 login: "Login",
                 signup: "Sign Up",
                 poweredBy: "Powered by",
-                allRights: "All rights reserved.",
                 humanLevelTech: "Technologies Humanitaires"
             },
             fr: {
@@ -31,7 +30,6 @@
                 login: "Connexion",
                 signup: "S'inscrire",
                 poweredBy: "Propulsé par",
-                allRights: "Tous droits réservés.",
                 humanLevelTech: "Technologies Humanitaires"
             },
             ht: {
@@ -42,7 +40,6 @@
                 login: "Konekte",
                 signup: "Enskri",
                 poweredBy: "Pwodwi pa",
-                allRights: "Tout dwa rezève.",
                 humanLevelTech: "Technologies Humanitaires"
             }
         };

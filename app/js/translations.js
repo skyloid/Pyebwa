@@ -35,6 +35,7 @@ const translations = {
         deathDate: "Death Date",
         biography: "Biography",
         photo: "Photo",
+        email: "Email",
         
         // Relationships
         relationship: "Relationship",
@@ -104,6 +105,7 @@ const translations = {
         deathDate: "Date de Décès",
         biography: "Biographie",
         photo: "Photo",
+        email: "Email",
         
         // Relationships
         relationship: "Relation",
@@ -173,6 +175,7 @@ const translations = {
         deathDate: "Dat lanmò",
         biography: "Biyografi",
         photo: "Foto",
+        email: "Imèl",
         
         // Relationships
         relationship: "Relasyon",
@@ -209,7 +212,8 @@ const translations = {
 };
 
 // Current language (default to Haitian Creole)
-let currentLanguage = localStorage.getItem('pyebwaLang') || 'ht';
+// Check cookie first for cross-domain persistence
+let currentLanguage = window.getUserPreference ? window.getUserPreference('lang', 'ht') : (localStorage.getItem('pyebwaLang') || 'ht');
 
 // Translation function
 window.t = function(key, params = {}) {
@@ -240,7 +244,12 @@ window.updateTranslations = function() {
 // Change language
 window.setLanguage = function(lang) {
     currentLanguage = lang;
-    localStorage.setItem('pyebwaLang', lang);
+    // Store in both cookie and localStorage
+    if (window.storeUserPreference) {
+        window.storeUserPreference('lang', lang);
+    } else {
+        localStorage.setItem('pyebwaLang', lang);
+    }
     updateTranslations();
     
     // Update active language button
