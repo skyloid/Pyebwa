@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translation Test - Pyebwa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #00217D;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        .test-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .key {
+            font-weight: bold;
+            color: #00217D;
+            min-width: 200px;
+        }
+        .translation {
+            flex: 1;
+            padding: 0 20px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .status {
+            width: 100px;
+            text-align: center;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .status.pass {
+            background: #10b981;
+            color: white;
+        }
+        .status.fail {
+            background: #ef4444;
+            color: white;
+        }
+        .language-selector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .lang-btn {
+            padding: 8px 16px;
+            border: none;
+            background: #e0e0e0;
+            color: #333;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        .lang-btn:hover {
+            background: #d0d0d0;
+        }
+        .lang-btn.active {
+            background: #00217D;
+            color: white;
+        }
+        .summary {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f0f0f0;
+            border-radius: 8px;
+        }
+        .footer-test {
+            background: #00217D;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .footer-test a {
+            color: #FFC72C;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Language Selector -->
+    <div class="language-selector">
+        <button class="lang-btn active" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="fr">FR</button>
+        <button class="lang-btn" data-lang="ht">HT</button>
+    </div>
+
+    <div class="container">
+        <h1>Pyebwa Translation Test Suite</h1>
+        
+        <div class="summary">
+            <h2>Test Summary</h2>
+            <p><strong>Total Keys Tested:</strong> <span id="totalKeys">0</span></p>
+            <p><strong>Passed:</strong> <span id="passedKeys" style="color: #10b981;">0</span></p>
+            <p><strong>Failed:</strong> <span id="failedKeys" style="color: #ef4444;">0</span></p>
+            <p><strong>Current Language:</strong> <span id="currentLang">en</span></p>
+        </div>
+
+        <div class="test-section">
+            <h2>Critical Translation: "Technologies Humanitaires"</h2>
+            <div id="humanLevelTest" class="test-item">
+                <span class="key">humanLevelTech</span>
+                <span class="translation" id="humanLevelTranslation">-</span>
+                <span class="status" id="humanLevelStatus">-</span>
+            </div>
+            <p style="margin-top: 10px; color: #666;">
+                Expected in English: "Technologies Humanitaires"<br>
+                Expected in French: "Technologies Humanitaires"<br>
+                Expected in Haitian Creole: "Technologies Humanitaires"
+            </p>
+        </div>
+
+        <div class="test-section">
+            <h2>Navigation Translations</h2>
+            <div id="navTests"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Footer Test</h2>
+            <div class="footer-test">
+                <p>&copy; 2025 <span data-i18n="poweredBy">Powered by</span> 
+                <a href="#" data-i18n="humanLevelTech">Technologies Humanitaires</a> 
+                <span data-i18n="allRights">All rights reserved.</span></p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>All Translation Keys</h2>
+            <div id="allTests"></div>
+        </div>
+    </div>
+
+    <script src="js/translations-pages.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // Test runner
+        let currentLanguage = 'en';
+        let testResults = { passed: 0, failed: 0, total: 0 };
+
+        // Critical keys to test
+        const criticalKeys = [
+            'humanLevelTech',
+            'home',
+            'about',
+            'ourMission',
+            'contact',
+            'login',
+            'signup',
+            'poweredBy',
+            'allRights'
+        ];
+
+        // Get all translations from both sources
+        function getAllTranslations() {
+            const allTranslations = {};
+            
+            // From app.js translations
+            if (typeof translations !== 'undefined') {
+                Object.keys(translations).forEach(lang => {
+                    allTranslations[lang] = { ...translations[lang] };
+                });
+            }
+            
+            // From pageTranslations
+            if (typeof pageTranslations !== 'undefined') {
+                Object.keys(pageTranslations).forEach(lang => {
+                    allTranslations[lang] = { ...allTranslations[lang], ...pageTranslations[lang] };
+                });
+            }
+            
+            return allTranslations;
+        }
+
+        function testTranslation(key, expectedValue) {
+            const allTrans = getAllTranslations();
+            const actualValue = allTrans[currentLanguage] && allTrans[currentLanguage][key];
+            const passed = actualValue && (expectedValue ? actualValue === expectedValue : true);
+            
+            return {
+                key,
+                expected: expectedValue || 'Any non-empty value',
+                actual: actualValue || 'MISSING',
+                passed
+            };
+        }
+
+        function runTests() {
+            testResults = { passed: 0, failed: 0, total: 0 };
+            const allTrans = getAllTranslations();
+            
+            // Test critical humanLevelTech translation
+            const humanLevelResult = testTranslation('humanLevelTech', 'Technologies Humanitaires');
+            updateTestDisplay('humanLevelTranslation', humanLevelResult.actual);
+            updateTestStatus('humanLevelStatus', humanLevelResult.passed);
+            if (humanLevelResult.passed) testResults.passed++; else testResults.failed++;
+            testResults.total++;
+            
+            // Test navigation keys
+            const navContainer = document.getElementById('navTests');
+            navContainer.innerHTML = '';
+            criticalKeys.forEach(key => {
+                const result = testTranslation(key);
+                const testDiv = createTestItem(result);
+                navContainer.appendChild(testDiv);
+                if (result.passed) testResults.passed++; else testResults.failed++;
+                testResults.total++;
+            });
+            
+            // Test all keys
+            const allContainer = document.getElementById('allTests');
+            allContainer.innerHTML = '';
+            if (allTrans[currentLanguage]) {
+                Object.keys(allTrans[currentLanguage]).forEach(key => {
+                    if (!criticalKeys.includes(key) && key !== 'humanLevelTech') {
+                        const result = testTranslation(key);
+                        const testDiv = createTestItem(result);
+                        allContainer.appendChild(testDiv);
+                        if (result.passed) testResults.passed++; else testResults.failed++;
+                        testResults.total++;
+                    }
+                });
+            }
+            
+            // Update summary
+            updateSummary();
+            
+            // Update translations on page
+            updatePageTranslations();
+        }
+
+        function createTestItem(result) {
+            const div = document.createElement('div');
+            div.className = 'test-item';
+            div.innerHTML = `
+                <span class="key">${result.key}</span>
+                <span class="translation">${result.actual}</span>
+                <span class="status ${result.passed ? 'pass' : 'fail'}">${result.passed ? 'PASS' : 'FAIL'}</span>
+            `;
+            return div;
+        }
+
+        function updateTestDisplay(id, value) {
+            document.getElementById(id).textContent = value;
+        }
+
+        function updateTestStatus(id, passed) {
+            const element = document.getElementById(id);
+            element.textContent = passed ? 'PASS' : 'FAIL';
+            element.className = 'status ' + (passed ? 'pass' : 'fail');
+        }
+
+        function updateSummary() {
+            document.getElementById('totalKeys').textContent = testResults.total;
+            document.getElementById('passedKeys').textContent = testResults.passed;
+            document.getElementById('failedKeys').textContent = testResults.failed;
+            document.getElementById('currentLang').textContent = currentLanguage;
+        }
+
+        function updatePageTranslations() {
+            const allTrans = getAllTranslations();
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.dataset.i18n;
+                if (allTrans[currentLanguage] && allTrans[currentLanguage][key]) {
+                    element.textContent = allTrans[currentLanguage][key];
+                }
+            });
+        }
+
+        // Language switcher
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelector('.lang-btn.active').classList.remove('active');
+                e.target.classList.add('active');
+                currentLanguage = e.target.dataset.lang;
+                runTests();
+            });
+        });
+
+        // Run tests on load
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('Running translation tests...');
+            console.log('Available translations:', getAllTranslations());
+            runTests();
+        });
+    </script>
+</body>
+</html>

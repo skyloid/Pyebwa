@@ -1,0 +1,237 @@
+/* Family Tree Styles */
+.tree-container {
+    padding: 20px;
+    overflow: auto;
+    min-height: 400px;
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-icon {
+    font-size: 72px;
+    margin-bottom: 20px;
+}
+
+.empty-state h3 {
+    font-size: 24px;
+    color: var(--gray-900);
+    margin-bottom: 10px;
+}
+
+.empty-state p {
+    color: var(--gray-600);
+    margin-bottom: 30px;
+    font-size: 16px;
+}
+
+/* Tree structure */
+.tree-wrapper {
+    display: inline-block;
+    min-width: 100%;
+    padding: 40px;
+}
+
+.tree {
+    display: flex;
+    justify-content: center;
+}
+
+.tree-roots {
+    display: flex;
+    gap: 60px;
+    justify-content: center;
+}
+
+.tree-root {
+    flex-shrink: 0;
+}
+
+.tree-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+/* Members container (couple) */
+.tree-members {
+    display: flex;
+    gap: 20px;
+    position: relative;
+    margin-bottom: 40px;
+}
+
+/* Connect spouses */
+.tree-members::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: calc(50% - 40px);
+    right: calc(50% - 40px);
+    height: 2px;
+    background: var(--gray-300);
+    z-index: -1;
+}
+
+.tree-members:has(.member-card:only-child)::after {
+    display: none;
+}
+
+/* Member card */
+.member-card {
+    background: var(--white);
+    border: 2px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+    min-width: 140px;
+    position: relative;
+}
+
+.member-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-blue);
+}
+
+/* Edit indicator on hover */
+.member-card::after {
+    content: '✏️';
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 14px;
+}
+
+.member-card:hover::after {
+    opacity: 0.7;
+}
+
+.member-card.male {
+    border-color: #3B82F6;
+}
+
+.member-card.female {
+    border-color: #EC4899;
+}
+
+.member-photo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin: 0 auto 10px;
+    background: var(--gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+}
+
+.member-photo .material-icons {
+    font-size: 36px;
+    color: var(--gray-400);
+}
+
+.member-name {
+    font-weight: 600;
+    color: var(--gray-900);
+    font-size: 14px;
+    line-height: 1.3;
+    margin-bottom: 4px;
+}
+
+.member-year {
+    font-size: 12px;
+    color: var(--gray-500);
+}
+
+/* Children container */
+.tree-children {
+    display: flex;
+    gap: 40px;
+    position: relative;
+    padding-top: 40px;
+}
+
+/* Vertical line from parent to children */
+.tree-node:has(.tree-children) > .tree-members::before {
+    content: '';
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    width: 2px;
+    height: 40px;
+    background: var(--gray-300);
+    transform: translateX(-50%);
+}
+
+/* Horizontal line connecting children */
+.tree-children::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 20px;
+    right: 20px;
+    height: 2px;
+    background: var(--gray-300);
+}
+
+/* Vertical lines to each child */
+.tree-child {
+    position: relative;
+}
+
+.tree-child::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    width: 2px;
+    height: 40px;
+    background: var(--gray-300);
+    transform: translateX(-50%);
+}
+
+/* Single child - no horizontal line */
+.tree-children:has(.tree-child:only-child)::before {
+    display: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .tree-wrapper {
+        padding: 20px;
+    }
+    
+    .tree-members {
+        gap: 10px;
+    }
+    
+    .member-card {
+        min-width: 120px;
+        padding: 10px;
+    }
+    
+    .member-photo {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .member-name {
+        font-size: 13px;
+    }
+    
+    .tree-children {
+        gap: 20px;
+    }
+}

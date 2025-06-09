@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slideshow Debug Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        
+        /* Test slideshow container */
+        .test-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            background: #000;
+            overflow: hidden;
+        }
+        
+        /* Slideshow styles */
+        .forest-slideshow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+        
+        .forest-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 2s ease-in-out, visibility 0s 2s;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            will-change: opacity;
+        }
+        
+        .forest-slide.active {
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 2s ease-in-out, visibility 0s;
+        }
+        
+        /* Debug info */
+        .debug-info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 100;
+        }
+        
+        /* Test overlay */
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0, 33, 125, 0.7), rgba(0, 33, 125, 0.7));
+            z-index: 1;
+        }
+        
+        /* Test content */
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            color: white;
+            text-align: center;
+            padding: 120px 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Slideshow Debug Test</h1>
+    <p>This page tests the slideshow functionality in isolation.</p>
+    
+    <div class="test-container">
+        <!-- Debug info -->
+        <div class="debug-info">
+            <div id="slideStatus">Loading...</div>
+            <div id="currentSlide">Current slide: 1</div>
+            <div id="imageStatus">Images loading...</div>
+        </div>
+        
+        <!-- Slideshow -->
+        <div class="forest-slideshow">
+            <!-- Tropical palm trees and beach vegetation typical of Caribbean -->
+            <div class="forest-slide active" style="background-image: url('https://images.unsplash.com/photo-1519046904884-53103b34b206?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2000&q=80');"></div>
+            <!-- Caribbean mangrove forests -->
+            <div class="forest-slide" style="background-image: url('https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2000&q=80');"></div>
+            <!-- Tropical rainforest with palm trees -->
+            <div class="forest-slide" style="background-image: url('https://images.unsplash.com/photo-1505142468610-359e7d316be0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2000&q=80');"></div>
+            <!-- Caribbean coastal forest -->
+            <div class="forest-slide" style="background-image: url('https://images.unsplash.com/photo-1573790387438-4da905039392?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2000&q=80');"></div>
+            <!-- Tropical mountain forest typical of Haiti's terrain -->
+            <div class="forest-slide" style="background-image: url('https://images.unsplash.com/photo-1601556840095-2e96775079a8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2000&q=80');"></div>
+        </div>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1>One Billion Trees for Haiti</h1>
+            <p>Our commitment to reforesting Haiti and restoring its natural beauty</p>
+        </div>
+    </div>
+    
+    <h2>Diagnostic Information</h2>
+    <div id="diagnostics">
+        <h3>Slide Elements Found:</h3>
+        <ul id="slideList"></ul>
+        
+        <h3>Console Output:</h3>
+        <pre id="consoleOutput" style="background: #f0f0f0; padding: 10px; overflow: auto;"></pre>
+    </div>
+    
+    <script>
+        // Debug logging
+        const consoleLog = [];
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            consoleLog.push('[LOG] ' + args.join(' '));
+            updateConsoleOutput();
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            consoleLog.push('[ERROR] ' + args.join(' '));
+            updateConsoleOutput();
+        };
+        
+        function updateConsoleOutput() {
+            document.getElementById('consoleOutput').textContent = consoleLog.join('\n');
+        }
+        
+        // Slideshow functionality
+        console.log('Starting slideshow debug...');
+        
+        const slides = document.querySelectorAll('.forest-slide');
+        const slideStatus = document.getElementById('slideStatus');
+        const currentSlideDiv = document.getElementById('currentSlide');
+        const imageStatus = document.getElementById('imageStatus');
+        const slideList = document.getElementById('slideList');
+        
+        // List all slides
+        slides.forEach((slide, index) => {
+            const li = document.createElement('li');
+            const bgImage = slide.style.backgroundImage;
+            li.textContent = `Slide ${index + 1}: ${bgImage ? 'Has background image' : 'No background image'}`;
+            slideList.appendChild(li);
+        });
+        
+        if (!slides || slides.length === 0) {
+            console.error('No slides found!');
+            slideStatus.textContent = 'ERROR: No slides found';
+        } else {
+            console.log(`Found ${slides.length} slides`);
+            slideStatus.textContent = `Found ${slides.length} slides`;
+            
+            let currentSlide = 0;
+            let imagesLoaded = 0;
+            
+            // Check if images are loading
+            slides.forEach((slide, index) => {
+                const bgImage = slide.style.backgroundImage;
+                if (bgImage) {
+                    const urlMatch = bgImage.match(/url\(["']?(.+?)["']?\)/);
+                    if (urlMatch) {
+                        const img = new Image();
+                        img.onload = function() {
+                            imagesLoaded++;
+                            console.log(`Image ${index + 1} loaded successfully`);
+                            imageStatus.textContent = `Images loaded: ${imagesLoaded}/${slides.length}`;
+                        };
+                        img.onerror = function() {
+                            console.error(`Image ${index + 1} failed to load`);
+                            imageStatus.textContent = `Image ${index + 1} failed to load!`;
+                        };
+                        img.src = urlMatch[1];
+                    }
+                }
+            });
+            
+            function showSlide(index) {
+                slides.forEach(slide => {
+                    slide.classList.remove('active');
+                });
+                slides[index].classList.add('active');
+                console.log(`Showing slide ${index + 1}`);
+                currentSlideDiv.textContent = `Current slide: ${index + 1}`;
+            }
+            
+            function showNextSlide() {
+                currentSlide = (currentSlide + 1) % slides.length;
+                showSlide(currentSlide);
+            }
+            
+            // Start slideshow
+            showSlide(0);
+            setInterval(showNextSlide, 3000); // Faster for testing
+            console.log('Slideshow started with 3-second intervals');
+        }
+    </script>
+</body>
+</html>

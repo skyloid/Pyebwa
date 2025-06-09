@@ -1,0 +1,156 @@
+{
+  "timestamp": "2025-06-08T20:38:37.794Z",
+  "summary": {
+    "total": 24,
+    "passed": 21,
+    "failed": 0,
+    "warnings": 3,
+    "successRate": "87.5"
+  },
+  "tests": [
+    {
+      "name": "pyebwaApp file exists",
+      "status": "passed",
+      "message": "",
+      "timestamp": "2025-06-08T20:38:37.269Z"
+    },
+    {
+      "name": "rasinApp file exists",
+      "status": "passed",
+      "message": "",
+      "timestamp": "2025-06-08T20:38:37.269Z"
+    },
+    {
+      "name": "secureApp file exists",
+      "status": "passed",
+      "message": "",
+      "timestamp": "2025-06-08T20:38:37.270Z"
+    },
+    {
+      "name": "firebaseConfig file exists",
+      "status": "passed",
+      "message": "",
+      "timestamp": "2025-06-08T20:38:37.270Z"
+    },
+    {
+      "name": "pyebwa.com login redirect",
+      "status": "passed",
+      "message": "",
+      "timestamp": "2025-06-08T20:38:37.273Z"
+    },
+    {
+      "name": "Modal code disabled",
+      "status": "passed",
+      "message": "",
+      "timestamp": "2025-06-08T20:38:37.273Z"
+    },
+    {
+      "name": "Auth state listener",
+      "status": "passed",
+      "message": "",
+      "timestamp": "2025-06-08T20:38:37.274Z"
+    },
+    {
+      "name": "Unauthenticated redirect",
+      "status": "passed",
+      "message": "",
+      "timestamp": "2025-06-08T20:38:37.274Z"
+    },
+    {
+      "name": "Redirect loop prevention",
+      "status": "passed",
+      "message": "",
+      "timestamp": "2025-06-08T20:38:37.274Z"
+    },
+    {
+      "name": "Immediate auth check",
+      "status": "passed",
+      "message": "",
+      "timestamp": "2025-06-08T20:38:37.274Z"
+    },
+    {
+      "name": "Secure auth handler",
+      "status": "passed",
+      "message": "",
+      "timestamp": "2025-06-08T20:38:37.274Z"
+    },
+    {
+      "name": "No auth-bridge redirect",
+      "status": "passed",
+      "message": "",
+      "timestamp": "2025-06-08T20:38:37.274Z"
+    },
+    {
+      "name": "Auth success parameters",
+      "status": "passed",
+      "message": "",
+      "timestamp": "2025-06-08T20:38:37.274Z"
+    },
+    {
+      "name": "Firebase configuration",
+      "status": "passed",
+      "message": "",
+      "timestamp": "2025-06-08T20:38:37.275Z"
+    },
+    {
+      "name": "Language persistence",
+      "status": "warning",
+      "message": "",
+      "timestamp": "2025-06-08T20:38:37.276Z"
+    },
+    {
+      "name": "pyebwa.com/js/app.js redirects",
+      "status": "passed",
+      "message": "",
+      "timestamp": "2025-06-08T20:38:37.276Z"
+    },
+    {
+      "name": "app/js/app.js redirects",
+      "status": "passed",
+      "message": "",
+      "timestamp": "2025-06-08T20:38:37.277Z"
+    },
+    {
+      "name": "secure-app.js redirects",
+      "status": "passed",
+      "message": "",
+      "timestamp": "2025-06-08T20:38:37.277Z"
+    },
+    {
+      "name": "Redirect loop prevention",
+      "status": "passed",
+      "message": "",
+      "timestamp": "2025-06-08T20:38:37.279Z"
+    },
+    {
+      "name": "Auth sync timing",
+      "status": "warning",
+      "message": "",
+      "timestamp": "2025-06-08T20:38:37.279Z"
+    },
+    {
+      "name": "Immediate auth check",
+      "status": "warning",
+      "message": "",
+      "timestamp": "2025-06-08T20:38:37.279Z"
+    },
+    {
+      "name": "pyebwa.com accessibility",
+      "status": "passed",
+      "message": "",
+      "timestamp": "2025-06-08T20:38:37.475Z"
+    },
+    {
+      "name": "secure.pyebwa.com accessibility",
+      "status": "passed",
+      "message": "",
+      "timestamp": "2025-06-08T20:38:37.592Z"
+    },
+    {
+      "name": "rasin.pyebwa.com/app accessibility",
+      "status": "passed",
+      "message": "",
+      "timestamp": "2025-06-08T20:38:37.793Z"
+    }
+  ]
+}

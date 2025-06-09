@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Loop Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .status {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        .info { color: blue; }
+        button {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #001654;
+        }
+        .log {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Authentication Loop Fix Test</h1>
+    
+    <div class="status">
+        <h2>Quick Actions</h2>
+        <button onclick="testAuthFlow()">Test Auth Flow</button>
+        <button onclick="clearAllData()">Clear All Data</button>
+        <button onclick="checkCurrentAuth()">Check Current Auth</button>
+        <button onclick="goToApp()">Go to App</button>
+        <button onclick="goToLogin()">Go to Login</button>
+    </div>
+    
+    <div class="status">
+        <h2>Redirect Loop Prevention</h2>
+        <p>Redirect Count: <span id="redirectCount">0</span></p>
+        <p>Last Redirect: <span id="lastRedirect">Never</span></p>
+        <button onclick="resetRedirectCount()">Reset Redirect Count</button>
+    </div>
+    
+    <div class="status">
+        <h2>Authentication Status</h2>
+        <p id="authStatus">Checking...</p>
+    </div>
+    
+    <div class="status">
+        <h2>Test Results</h2>
+        <div id="testResults"></div>
+    </div>
+    
+    <div class="status">
+        <h2>Debug Log</h2>
+        <div id="debugLog" class="log"></div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="/js/firebase-config.js"></script>
+    
+    <script>
+        // Debug logging
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('debugLog');
+            const entry = document.createElement('div');
+            entry.className = type;
+            entry.textContent = `[${timestamp}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        // Check redirect data
+        function checkRedirectData() {
+            try {
+                const data = sessionStorage.getItem('pyebwaRedirectData');
+                if (data) {
+                    const parsed = JSON.parse(data);
+                    document.getElementById('redirectCount').textContent = parsed.count;
+                    document.getElementById('lastRedirect').textContent = new Date(parsed.timestamp).toLocaleString();
+                    
+                    if (parsed.count >= 3) {
+                        log('WARNING: Redirect loop detected! Count: ' + parsed.count, 'warning');
+                    }
+                } else {
+                    document.getElementById('redirectCount').textContent = '0';
+                    document.getElementById('lastRedirect').textContent = 'Never';
+                }
+            } catch (e) {
+                log('Error reading redirect data: ' + e.message, 'error');
+            }
+        }
+        
+        // Reset redirect count
+        function resetRedirectCount() {
+            sessionStorage.removeItem('pyebwaRedirectData');
+            checkRedirectData();
+            log('Redirect count reset', 'success');
+        }
+        
+        // Clear all data
+        function clearAllData() {
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // Clear Firebase auth
+            auth.signOut().then(() => {
+                log('All data cleared', 'success');
+                checkRedirectData();
+                checkAuthStatus();
+            });
+        }
+        
+        // Check current auth
+        function checkCurrentAuth() {
+            const user = auth.currentUser;
+            if (user) {
+                log(`Currently authenticated as: ${user.email}`, 'success');
+            } else {
+                log('Not authenticated', 'warning');
+            }
+        }
+        
+        // Check auth status
+        function checkAuthStatus() {
+            auth.onAuthStateChanged((user) => {
+                const statusEl = document.getElementById('authStatus');
+                if (user) {
+                    statusEl.innerHTML = `<span class="success">Authenticated as: ${user.email}</span>`;
+                    log('Auth state: Authenticated', 'success');
+                } else {
+                    statusEl.innerHTML = `<span class="warning">Not authenticated</span>`;
+                    log('Auth state: Not authenticated', 'warning');
+                }
+            });
+        }
+        
+        // Test auth flow
+        async function testAuthFlow() {
+            log('Starting auth flow test...', 'info');
+            const results = document.getElementById('testResults');
+            results.innerHTML = '';
+            
+            // Test 1: Check redirect URLs
+            log('Test 1: Checking redirect URLs...', 'info');
+            try {
+                const response = await fetch('/app/js/app.js');
+                const appJs = await response.text();
+                
+                if (appJs.includes('secure.pyebwa.com')) {
+                    results.innerHTML += '<p class="success">✓ App.js uses correct redirect URL (secure.pyebwa.com)</p>';
+                    log('App.js redirect URL is correct', 'success');
+                } else if (appJs.includes('www.pyebwa.com')) {
+                    results.innerHTML += '<p class="error">✗ App.js uses incorrect redirect URL (www.pyebwa.com)</p>';
+                    log('App.js has incorrect redirect URL!', 'error');
+                }
+            } catch (e) {
+                log('Error checking app.js: ' + e.message, 'error');
+            }
+            
+            // Test 2: Check auth timeout
+            log('Test 2: Checking auth timeout...', 'info');
+            if (sessionStorage.getItem('pyebwaRedirectData')) {
+                const data = JSON.parse(sessionStorage.getItem('pyebwaRedirectData'));
+                results.innerHTML += `<p class="info">Current redirect count: ${data.count}</p>`;
+            }
+            
+            // Test 3: Check Firebase config
+            log('Test 3: Checking Firebase configuration...', 'info');
+            if (typeof firebase !== 'undefined' && firebase.auth) {
+                results.innerHTML += '<p class="success">✓ Firebase is properly configured</p>';
+                log('Firebase configured correctly', 'success');
+            } else {
+                results.innerHTML += '<p class="error">✗ Firebase not properly configured</p>';
+                log('Firebase configuration error!', 'error');
+            }
+            
+            // Test 4: Check auth persistence
+            log('Test 4: Checking auth persistence...', 'info');
+            const persistence = auth.currentUser ? 'Persisted' : 'Not persisted';
+            results.innerHTML += `<p class="info">Auth persistence: ${persistence}</p>`;
+            
+            log('Auth flow test completed', 'success');
+        }
+        
+        // Navigation helpers
+        function goToApp() {
+            window.location.href = '/app/';
+        }
+        
+        function goToLogin() {
+            window.location.href = 'https://secure.pyebwa.com/';
+        }
+        
+        // Initialize on load
+        window.addEventListener('load', () => {
+            log('Page loaded', 'info');
+            checkRedirectData();
+            checkAuthStatus();
+            
+            // Auto-run test
+            setTimeout(() => {
+                testAuthFlow();
+            }, 1000);
+        });
+        
+        // Monitor auth state changes
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                log(`Auth state changed: Authenticated as ${user.email}`, 'success');
+            } else {
+                log('Auth state changed: Not authenticated', 'warning');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pyebwa Image Upload Test Suite</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        h2 {
+            color: #555;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .test-case {
+            margin: 15px 0;
+            padding: 15px;
+            border-left: 4px solid #4CAF50;
+            background-color: #f9f9f9;
+        }
+        .test-case h3 {
+            margin-top: 0;
+            color: #4CAF50;
+        }
+        .test-input {
+            margin: 10px 0;
+        }
+        .test-input label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .test-input input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .test-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .test-button:hover {
+            background-color: #45a049;
+        }
+        .test-button.danger {
+            background-color: #f44336;
+        }
+        .test-button.danger:hover {
+            background-color: #da190b;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .result.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .result.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .result.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .preview-image {
+            max-width: 200px;
+            max-height: 200px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .status-indicator.connected {
+            background-color: #4CAF50;
+        }
+        .status-indicator.disconnected {
+            background-color: #f44336;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .file-info {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #4CAF50;
+            transition: width 0.3s ease;
+        }
+    </style>
+    
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
+</head>
+<body>
+    <h1>🖼️ Pyebwa Image Upload Test Suite</h1>
+    
+    <!-- Connection Status -->
+    <div class="test-section">
+        <h2>Connection Status</h2>
+        <div>
+            <span class="status-indicator" id="authStatus"></span>
+            <span id="authStatusText">Checking authentication...</span>
+        </div>
+        <div>
+            <span class="status-indicator" id="storageStatus"></span>
+            <span id="storageStatusText">Checking Firebase Storage...</span>
+        </div>
+        <div id="userInfo" style="margin-top: 10px;"></div>
+    </div>
+
+    <!-- Test Cases Grid -->
+    <div class="test-grid">
+        <!-- Test Case 1: Basic Upload -->
+        <div class="test-section">
+            <h2>Test 1: Basic Image Upload</h2>
+            <div class="test-case">
+                <h3>Upload a standard image</h3>
+                <div class="test-input">
+                    <label>Select image (JPG, PNG, GIF):</label>
+                    <input type="file" id="basicUpload" accept="image/*">
+                    <div class="file-info" id="basicFileInfo"></div>
+                </div>
+                <button class="test-button" onclick="testBasicUpload()">Upload Image</button>
+                <div id="basicResult"></div>
+                <img id="basicPreview" class="preview-image" style="display:none;">
+                <div class="progress-bar" id="basicProgress" style="display:none;">
+                    <div class="progress-fill" id="basicProgressFill"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Case 2: Large File Upload -->
+        <div class="test-section">
+            <h2>Test 2: Large File Upload</h2>
+            <div class="test-case">
+                <h3>Test with large image (>5MB)</h3>
+                <div class="test-input">
+                    <label>Select large image:</label>
+                    <input type="file" id="largeUpload" accept="image/*">
+                    <div class="file-info" id="largeFileInfo"></div>
+                </div>
+                <button class="test-button" onclick="testLargeUpload()">Upload Large Image</button>
+                <div id="largeResult"></div>
+                <div class="progress-bar" id="largeProgress" style="display:none;">
+                    <div class="progress-fill" id="largeProgressFill"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Case 3: Invalid File Type -->
+        <div class="test-section">
+            <h2>Test 3: Invalid File Type</h2>
+            <div class="test-case">
+                <h3>Try uploading non-image file</h3>
+                <div class="test-input">
+                    <label>Select any file (to test validation):</label>
+                    <input type="file" id="invalidUpload">
+                    <div class="file-info" id="invalidFileInfo"></div>
+                </div>
+                <button class="test-button" onclick="testInvalidUpload()">Test Invalid Upload</button>
+                <div id="invalidResult"></div>
+            </div>
+        </div>
+
+        <!-- Test Case 4: Multiple Uploads -->
+        <div class="test-section">
+            <h2>Test 4: Multiple Uploads</h2>
+            <div class="test-case">
+                <h3>Upload multiple images simultaneously</h3>
+                <div class="test-input">
+                    <label>Select multiple images:</label>
+                    <input type="file" id="multiUpload" accept="image/*" multiple>
+                    <div class="file-info" id="multiFileInfo"></div>
+                </div>
+                <button class="test-button" onclick="testMultipleUploads()">Upload All</button>
+                <div id="multiResult"></div>
+            </div>
+        </div>
+
+        <!-- Test Case 5: Special Characters -->
+        <div class="test-section">
+            <h2>Test 5: Special Characters in Filename</h2>
+            <div class="test-case">
+                <h3>Test with special characters (é, è, à, ç)</h3>
+                <div class="test-input">
+                    <label>Select image with special filename:</label>
+                    <input type="file" id="specialUpload" accept="image/*">
+                    <div class="file-info" id="specialFileInfo"></div>
+                </div>
+                <button class="test-button" onclick="testSpecialCharUpload()">Upload Special</button>
+                <div id="specialResult"></div>
+            </div>
+        </div>
+
+        <!-- Test Case 6: Storage Path Test -->
+        <div class="test-section">
+            <h2>Test 6: Storage Path Verification</h2>
+            <div class="test-case">
+                <h3>Verify correct storage structure</h3>
+                <button class="test-button" onclick="testStoragePaths()">Check Storage Paths</button>
+                <div id="pathResult"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Uploaded Files List -->
+    <div class="test-section">
+        <h2>Uploaded Files</h2>
+        <button class="test-button" onclick="listUploadedFiles()">Refresh List</button>
+        <button class="test-button danger" onclick="clearTestFiles()">Clear Test Files</button>
+        <div id="filesList" style="margin-top: 15px;"></div>
+    </div>
+
+    <!-- Test Results Summary -->
+    <div class="test-section">
+        <h2>Test Results Summary</h2>
+        <div id="testSummary"></div>
+    </div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
+            authDomain: "pyebwa-f5960.firebaseapp.com",
+            projectId: "pyebwa-f5960",
+            storageBucket: "pyebwa-f5960.firebasestorage.app",
+            messagingSenderId: "1042887343749",
+            appId: "1:1042887343749:web:c276bf69b6c0895111f3ec",
+            measurementId: "G-ZX92K1TMM3"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const storage = firebase.storage();
+        const db = firebase.firestore();
+
+        // Test results tracking
+        const testResults = {
+            passed: 0,
+            failed: 0,
+            tests: []
+        };
+
+        // Check authentication status
+        auth.onAuthStateChanged(user => {
+            const authStatus = document.getElementById('authStatus');
+            const authStatusText = document.getElementById('authStatusText');
+            const userInfo = document.getElementById('userInfo');
+
+            if (user) {
+                authStatus.className = 'status-indicator connected';
+                authStatusText.textContent = 'Authenticated';
+                userInfo.innerHTML = `<strong>User:</strong> ${user.email} <br><strong>UID:</strong> ${user.uid}`;
+                checkStorageConnection();
+            } else {
+                authStatus.className = 'status-indicator disconnected';
+                authStatusText.textContent = 'Not authenticated - Please login first';
+                userInfo.innerHTML = '<a href="../login.html">Go to Login</a>';
+            }
+        });
+
+        // Check storage connection
+        async function checkStorageConnection() {
+            const storageStatus = document.getElementById('storageStatus');
+            const storageStatusText = document.getElementById('storageStatusText');
+
+            try {
+                // Try to get storage root reference
+                const rootRef = storage.ref();
+                storageStatus.className = 'status-indicator connected';
+                storageStatusText.textContent = 'Firebase Storage connected';
+            } catch (error) {
+                storageStatus.className = 'status-indicator disconnected';
+                storageStatusText.textContent = 'Firebase Storage error: ' + error.message;
+            }
+        }
+
+        // File input handlers
+        document.getElementById('basicUpload').addEventListener('change', function(e) {
+            showFileInfo('basicFileInfo', e.target.files[0]);
+            previewImage('basicPreview', e.target.files[0]);
+        });
+
+        document.getElementById('largeUpload').addEventListener('change', function(e) {
+            showFileInfo('largeFileInfo', e.target.files[0]);
+        });
+
+        document.getElementById('invalidUpload').addEventListener('change', function(e) {
+            showFileInfo('invalidFileInfo', e.target.files[0]);
+        });
+
+        document.getElementById('multiUpload').addEventListener('change', function(e) {
+            const info = `Selected ${e.target.files.length} files`;
+            document.getElementById('multiFileInfo').textContent = info;
+        });
+
+        document.getElementById('specialUpload').addEventListener('change', function(e) {
+            showFileInfo('specialFileInfo', e.target.files[0]);
+        });
+
+        // Helper functions
+        function showFileInfo(elementId, file) {
+            if (!file) return;
+            const info = `${file.name} (${formatFileSize(file.size)}) - ${file.type}`;
+            document.getElementById(elementId).textContent = info;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function previewImage(elementId, file) {
+            if (!file || !file.type.startsWith('image/')) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById(elementId);
+                img.src = e.target.result;
+                img.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function showResult(elementId, message, type = 'info') {
+            const resultDiv = document.getElementById(elementId);
+            resultDiv.className = `result ${type}`;
+            resultDiv.textContent = message;
+        }
+
+        // Test Case 1: Basic Upload
+        async function testBasicUpload() {
+            const file = document.getElementById('basicUpload').files[0];
+            if (!file) {
+                showResult('basicResult', 'Please select a file', 'error');
+                return;
+            }
+
+            const progressBar = document.getElementById('basicProgress');
+            const progressFill = document.getElementById('basicProgressFill');
+            progressBar.style.display = 'block';
+
+            try {
+                const user = auth.currentUser;
+                if (!user) throw new Error('Not authenticated');
+
+                // Create storage reference
+                const timestamp = Date.now();
+                const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+                const storagePath = `test-uploads/${user.uid}/${timestamp}_${safeName}`;
+                const storageRef = storage.ref(storagePath);
+
+                // Upload with progress tracking
+                const uploadTask = storageRef.put(file);
+
+                uploadTask.on('state_changed', 
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        progressFill.style.width = progress + '%';
+                    },
+                    (error) => {
+                        showResult('basicResult', `Upload failed: ${error.message}`, 'error');
+                        recordTest('Basic Upload', false, error.message);
+                    },
+                    async () => {
+                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                        showResult('basicResult', `Success! URL: ${downloadURL}`, 'success');
+                        recordTest('Basic Upload', true, 'File uploaded successfully');
+                        
+                        // Save metadata to Firestore
+                        await db.collection('test-uploads').add({
+                            fileName: file.name,
+                            fileSize: file.size,
+                            fileType: file.type,
+                            uploadPath: storagePath,
+                            downloadURL: downloadURL,
+                            uploadedBy: user.uid,
+                            uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                );
+            } catch (error) {
+                showResult('basicResult', `Error: ${error.message}`, 'error');
+                recordTest('Basic Upload', false, error.message);
+            }
+        }
+
+        // Test Case 2: Large File Upload
+        async function testLargeUpload() {
+            const file = document.getElementById('largeUpload').files[0];
+            if (!file) {
+                showResult('largeResult', 'Please select a file', 'error');
+                return;
+            }
+
+            // Check file size
+            const maxSize = 10 * 1024 * 1024; // 10MB limit
+            if (file.size > maxSize) {
+                showResult('largeResult', `File too large: ${formatFileSize(file.size)} (max: 10MB)`, 'error');
+                recordTest('Large File Upload', false, 'File exceeds size limit');
+                return;
+            }
+
+            const progressBar = document.getElementById('largeProgress');
+            const progressFill = document.getElementById('largeProgressFill');
+            progressBar.style.display = 'block';
+
+            try {
+                const user = auth.currentUser;
+                if (!user) throw new Error('Not authenticated');
+
+                const timestamp = Date.now();
+                const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+                const storagePath = `test-uploads/${user.uid}/large/${timestamp}_${safeName}`;
+                const storageRef = storage.ref(storagePath);
+
+                const uploadTask = storageRef.put(file);
+
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        progressFill.style.width = progress + '%';
+                    },
+                    (error) => {
+                        showResult('largeResult', `Upload failed: ${error.message}`, 'error');
+                        recordTest('Large File Upload', false, error.message);
+                    },
+                    async () => {
+                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                        showResult('largeResult', `Success! Large file uploaded`, 'success');
+                        recordTest('Large File Upload', true, 'Large file uploaded successfully');
+                    }
+                );
+            } catch (error) {
+                showResult('largeResult', `Error: ${error.message}`, 'error');
+                recordTest('Large File Upload', false, error.message);
+            }
+        }
+
+        // Test Case 3: Invalid File Type
+        async function testInvalidUpload() {
+            const file = document.getElementById('invalidUpload').files[0];
+            if (!file) {
+                showResult('invalidResult', 'Please select a file', 'error');
+                return;
+            }
+
+            // Check if file is an image
+            if (!file.type.startsWith('image/')) {
+                showResult('invalidResult', `Invalid file type: ${file.type}. Only images are allowed.`, 'error');
+                recordTest('Invalid File Type', true, 'Validation working correctly');
+                return;
+            }
+
+            showResult('invalidResult', 'File is a valid image type', 'success');
+            recordTest('Invalid File Type', false, 'Expected non-image file for this test');
+        }
+
+        // Test Case 4: Multiple Uploads
+        async function testMultipleUploads() {
+            const files = document.getElementById('multiUpload').files;
+            if (files.length === 0) {
+                showResult('multiResult', 'Please select files', 'error');
+                return;
+            }
+
+            try {
+                const user = auth.currentUser;
+                if (!user) throw new Error('Not authenticated');
+
+                const uploadPromises = [];
+                
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const timestamp = Date.now();
+                    const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+                    const storagePath = `test-uploads/${user.uid}/batch/${timestamp}_${i}_${safeName}`;
+                    const storageRef = storage.ref(storagePath);
+                    
+                    uploadPromises.push(storageRef.put(file));
+                }
+
+                await Promise.all(uploadPromises);
+                showResult('multiResult', `Success! Uploaded ${files.length} files`, 'success');
+                recordTest('Multiple Uploads', true, `${files.length} files uploaded successfully`);
+            } catch (error) {
+                showResult('multiResult', `Error: ${error.message}`, 'error');
+                recordTest('Multiple Uploads', false, error.message);
+            }
+        }
+
+        // Test Case 5: Special Characters
+        async function testSpecialCharUpload() {
+            const file = document.getElementById('specialUpload').files[0];
+            if (!file) {
+                showResult('specialResult', 'Please select a file', 'error');
+                return;
+            }
+
+            try {
+                const user = auth.currentUser;
+                if (!user) throw new Error('Not authenticated');
+
+                // Test with original filename (including special characters)
+                const timestamp = Date.now();
+                const storagePath = `test-uploads/${user.uid}/special/${timestamp}_${file.name}`;
+                const storageRef = storage.ref(storagePath);
+
+                await storageRef.put(file);
+                const downloadURL = await storageRef.getDownloadURL();
+                
+                showResult('specialResult', `Success! Special characters handled: ${file.name}`, 'success');
+                recordTest('Special Characters', true, 'Special characters in filename handled correctly');
+            } catch (error) {
+                showResult('specialResult', `Error: ${error.message}`, 'error');
+                recordTest('Special Characters', false, error.message);
+            }
+        }
+
+        // Test Case 6: Storage Paths
+        async function testStoragePaths() {
+            try {
+                const user = auth.currentUser;
+                if (!user) throw new Error('Not authenticated');
+
+                // Test different path structures
+                const testPaths = [
+                    `familyTrees/testTree/photos/test.jpg`,
+                    `test-uploads/${user.uid}/test.jpg`,
+                    `users/${user.uid}/profile/avatar.jpg`
+                ];
+
+                let results = [];
+                
+                for (const path of testPaths) {
+                    try {
+                        const ref = storage.ref(path);
+                        results.push(`✓ Valid path: ${path}`);
+                    } catch (error) {
+                        results.push(`✗ Invalid path: ${path} - ${error.message}`);
+                    }
+                }
+
+                showResult('pathResult', results.join('\n'), 'info');
+                recordTest('Storage Paths', true, 'Path validation completed');
+            } catch (error) {
+                showResult('pathResult', `Error: ${error.message}`, 'error');
+                recordTest('Storage Paths', false, error.message);
+            }
+        }
+
+        // List uploaded files
+        async function listUploadedFiles() {
+            try {
+                const user = auth.currentUser;
+                if (!user) throw new Error('Not authenticated');
+
+                const snapshot = await db.collection('test-uploads')
+                    .where('uploadedBy', '==', user.uid)
+                    .orderBy('uploadedAt', 'desc')
+                    .limit(10)
+                    .get();
+
+                const filesList = document.getElementById('filesList');
+                
+                if (snapshot.empty) {
+                    filesList.innerHTML = '<p>No files uploaded yet</p>';
+                    return;
+                }
+
+                let html = '<ul>';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    html += `
+                        <li>
+                            <strong>${data.fileName}</strong> - 
+                            ${formatFileSize(data.fileSize)} - 
+                            <a href="${data.downloadURL}" target="_blank">View</a> - 
+                            <button onclick="deleteFile('${doc.id}', '${data.uploadPath}')">Delete</button>
+                        </li>
+                    `;
+                });
+                html += '</ul>';
+                
+                filesList.innerHTML = html;
+            } catch (error) {
+                document.getElementById('filesList').innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Delete a file
+        async function deleteFile(docId, storagePath) {
+            try {
+                // Delete from Storage
+                await storage.ref(storagePath).delete();
+                
+                // Delete from Firestore
+                await db.collection('test-uploads').doc(docId).delete();
+                
+                alert('File deleted successfully');
+                listUploadedFiles();
+            } catch (error) {
+                alert(`Error deleting file: ${error.message}`);
+            }
+        }
+
+        // Clear all test files
+        async function clearTestFiles() {
+            if (!confirm('Are you sure you want to delete all test files?')) return;
+
+            try {
+                const user = auth.currentUser;
+                if (!user) throw new Error('Not authenticated');
+
+                const snapshot = await db.collection('test-uploads')
+                    .where('uploadedBy', '==', user.uid)
+                    .get();
+
+                const deletePromises = [];
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    // Delete from Storage
+                    deletePromises.push(storage.ref(data.uploadPath).delete().catch(() => {}));
+                    // Delete from Firestore
+                    deletePromises.push(doc.ref.delete());
+                });
+
+                await Promise.all(deletePromises);
+                alert('All test files cleared');
+                listUploadedFiles();
+            } catch (error) {
+                alert(`Error clearing files: ${error.message}`);
+            }
+        }
+
+        // Record test results
+        function recordTest(testName, passed, details) {
+            testResults.tests.push({
+                name: testName,
+                passed: passed,
+                details: details,
+                timestamp: new Date().toISOString()
+            });
+            
+            if (passed) {
+                testResults.passed++;
+            } else {
+                testResults.failed++;
+            }
+            
+            updateTestSummary();
+        }
+
+        // Update test summary
+        function updateTestSummary() {
+            const summary = document.getElementById('testSummary');
+            let html = `
+                <p><strong>Total Tests Run:</strong> ${testResults.tests.length}</p>
+                <p><strong>Passed:</strong> <span style="color: green;">${testResults.passed}</span></p>
+                <p><strong>Failed:</strong> <span style="color: red;">${testResults.failed}</span></p>
+                <h3>Test Details:</h3>
+                <ul>
+            `;
+            
+            testResults.tests.forEach(test => {
+                const icon = test.passed ? '✓' : '✗';
+                const color = test.passed ? 'green' : 'red';
+                html += `<li style="color: ${color};">${icon} ${test.name}: ${test.details}</li>`;
+            });
+            
+            html += '</ul>';
+            summary.innerHTML = html;
+        }
+
+        // Initial load
+        window.addEventListener('load', () => {
+            setTimeout(listUploadedFiles, 2000); // Wait for auth
+        });
+    </script>
+</body>
+</html>

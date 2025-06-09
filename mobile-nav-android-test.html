@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Android Mobile Navigation Test - Pyebwa</title>
+    <link rel="stylesheet" href="pyebwa.com/css/styles.css?v=2345567">
+    <link rel="stylesheet" href="pyebwa.com/css/mobile.css?v=2" media="(max-width: 768px)">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        /* Debug styles */
+        .debug-info {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            font-size: 12px;
+            z-index: 9999;
+        }
+        
+        /* Force mobile view for testing */
+        @media (min-width: 769px) {
+            body.force-mobile .mobile-menu-toggle {
+                display: block !important;
+            }
+            
+            body.force-mobile .desktop-only,
+            body.force-mobile .nav-actions {
+                display: none !important;
+            }
+            
+            body.force-mobile .nav-menu {
+                display: none;
+                position: fixed;
+                top: 70px;
+                left: 0;
+                right: 0;
+                background: rgba(0, 0, 0, 0.95);
+                flex-direction: column;
+                padding: 20px;
+                gap: 15px;
+                z-index: 1000;
+            }
+            
+            body.force-mobile .nav-menu.active {
+                display: flex !important;
+            }
+        }
+        
+        /* Highlight hamburger menu for visibility */
+        .highlight-menu .mobile-menu-toggle {
+            background: yellow !important;
+            border: 2px solid red !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section (same structure as main site) -->
+    <header class="hero">
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-brand">
+                    <img src="https://pyebwa.com/images/Pyebwa.png" alt="Pyebwa" class="logo-header">
+                    <span class="tagline">Rasin Fanmi w</span>
+                </div>
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <span class="material-icons">menu</span>
+                </button>
+                <div class="nav-menu" id="navMenu">
+                    <a href="#" class="nav-link">Home</a>
+                    <a href="#" class="nav-link">About</a>
+                    <a href="#" class="nav-link">Our Mission</a>
+                    <a href="#" class="nav-link">Contact</a>
+                    <div class="nav-actions-mobile">
+                        <button class="btn btn-ghost">Konekte</button>
+                        <button class="btn btn-primary">Enskri</button>
+                    </div>
+                </div>
+                <div class="nav-actions desktop-only">
+                    <button class="btn btn-ghost">Konekte</button>
+                    <button class="btn btn-primary">Enskri</button>
+                </div>
+            </div>
+        </nav>
+        
+        <div class="hero-content" style="padding: 40px 20px;">
+            <h1>Mobile Navigation Test</h1>
+            <p>Testing hamburger menu visibility on Android devices</p>
+            
+            <div style="background: white; color: black; padding: 20px; border-radius: 8px; margin-top: 20px; text-align: left;">
+                <h3>Test Controls:</h3>
+                <button onclick="toggleForceMobile()" style="padding: 10px; margin: 5px;">Toggle Force Mobile View</button>
+                <button onclick="toggleHighlight()" style="padding: 10px; margin: 5px;">Highlight Menu Button</button>
+                <button onclick="testMenuClick()" style="padding: 10px; margin: 5px;">Test Menu Click</button>
+                
+                <h3 style="margin-top: 20px;">Expected Behavior:</h3>
+                <ul>
+                    <li>✓ Hamburger menu icon (☰) should be visible in top-right corner</li>
+                    <li>✓ Icon should be dark gray (#1F2937) on light navbar background</li>
+                    <li>✓ Desktop login/signup buttons should be hidden on mobile</li>
+                    <li>✓ Clicking hamburger opens dropdown menu with all navigation items</li>
+                </ul>
+                
+                <h3 style="margin-top: 20px;">Common Issues Fixed:</h3>
+                <ul>
+                    <li>White icon on white background (now dark gray)</li>
+                    <li>Container flex-direction changed to column (now stays row)</li>
+                    <li>Missing Material Icons font (added fallback ☰)</li>
+                    <li>Small touch target (now minimum 44x44px)</li>
+                </ul>
+            </div>
+        </div>
+    </header>
+    
+    <div class="debug-info" id="debugInfo">
+        Loading debug info...
+    </div>
+    
+    <script>
+        // Mobile menu functionality
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const navMenu = document.getElementById('navMenu');
+        
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+                updateDebugInfo();
+            });
+        }
+        
+        // Debug functions
+        function updateDebugInfo() {
+            const menuToggle = document.getElementById('mobileMenuToggle');
+            const navMenu = document.getElementById('navMenu');
+            const computedStyle = window.getComputedStyle(menuToggle);
+            const container = document.querySelector('.navbar .container');
+            const containerStyle = window.getComputedStyle(container);
+            
+            const debugInfo = `
+                <strong>Viewport:</strong> ${window.innerWidth}x${window.innerHeight} | 
+                <strong>User Agent:</strong> ${navigator.userAgent.includes('Android') ? 'Android' : 'Not Android'} | 
+                <strong>Menu Toggle Display:</strong> ${computedStyle.display} | 
+                <strong>Menu Toggle Color:</strong> ${computedStyle.color} | 
+                <strong>Menu Toggle Size:</strong> ${menuToggle.offsetWidth}x${menuToggle.offsetHeight} | 
+                <strong>Container Flex:</strong> ${containerStyle.flexDirection} | 
+                <strong>Menu State:</strong> ${navMenu.classList.contains('active') ? 'Open' : 'Closed'} | 
+                <strong>Material Icons Loaded:</strong> ${document.fonts.check('24px Material Icons') ? 'Yes' : 'No'}
+            `;
+            
+            document.getElementById('debugInfo').innerHTML = debugInfo;
+        }
+        
+        function toggleForceMobile() {
+            document.body.classList.toggle('force-mobile');
+            updateDebugInfo();
+        }
+        
+        function toggleHighlight() {
+            document.body.classList.toggle('highlight-menu');
+        }
+        
+        function testMenuClick() {
+            const event = new MouseEvent('click', {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+            mobileMenuToggle.dispatchEvent(event);
+        }
+        
+        // Initial debug info
+        updateDebugInfo();
+        setInterval(updateDebugInfo, 1000);
+        
+        // Log important info
+        console.log('Mobile Menu Toggle Element:', mobileMenuToggle);
+        console.log('Computed Styles:', window.getComputedStyle(mobileMenuToggle));
+    </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+/* Footer Styles */
+.app-footer {
+    margin-top: auto;
+    padding: 20px 0;
+    background: var(--primary-blue);
+    color: var(--white);
+    text-align: center;
+}
+
+.footer-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.app-footer p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.app-footer a {
+    color: var(--gray-300);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.app-footer a:hover {
+    color: var(--white);
+    text-decoration: underline;
+}

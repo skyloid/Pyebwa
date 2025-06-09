@@ -1,0 +1,12 @@
+// UPDATE for www.pyebwa.com app.js
+// Find the login and signup form handlers and update the redirect URL
+
+// In the loginForm.addEventListener handler, change:
+// window.location.href = 'https://rasin.pyebwa.com';
+// TO:
+window.location.href = 'https://rasin.pyebwa.com/auth-handler.html';
+
+// In the signupForm.addEventListener handler, change:
+// window.location.href = 'https://rasin.pyebwa.com';
+// TO:
+window.location.href = 'https://rasin.pyebwa.com/auth-handler.html';

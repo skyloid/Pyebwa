@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Authentication - Fixed Version</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { margin: 20px 0; padding: 15px; border-radius: 5px; }
+        .success { background: #e8f5e9; color: #2e7d32; }
+        .error { background: #ffebee; color: #c62828; }
+        .info { background: #e3f2fd; color: #1976d2; }
+        button { margin: 5px; padding: 10px 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Test Authentication - Fixed Version</h1>
+    
+    <div id="status" class="status info">Checking authentication...</div>
+    
+    <div>
+        <h3>Test Actions:</h3>
+        <button onclick="testNormalVisit()">Test Normal Visit (No Auth)</button>
+        <button onclick="testLoginReturn()">Test Login Return</button>
+        <button onclick="clearSession()">Clear Session Data</button>
+        <button onclick="signOut()">Sign Out</button>
+    </div>
+    
+    <div>
+        <h3>Debug Info:</h3>
+        <pre id="debug"></pre>
+    </div>
+    
+    <!-- Load Firebase config and updated app.js -->
+    <script src="js/firebase-config.js"></script>
+    
+    <script>
+        const statusDiv = document.getElementById('status');
+        const debugDiv = document.getElementById('debug');
+        
+        function updateStatus(message, type = 'info') {
+            statusDiv.className = 'status ' + type;
+            statusDiv.textContent = message;
+            updateDebug();
+        }
+        
+        function updateDebug() {
+            const redirectData = JSON.parse(sessionStorage.getItem('pyebwaRedirectData') || '{}');
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            debugDiv.textContent = JSON.stringify({
+                currentUser: auth.currentUser ? auth.currentUser.email : null,
+                urlParams: Object.fromEntries(urlParams),
+                redirectData: redirectData,
+                sessionStorage: {
+                    pyebwaRedirectData: redirectData
+                },
+                localStorage: {
+                    debugLogsCount: JSON.parse(localStorage.getItem('pyebwaDebugLogs') || '[]').length
+                }
+            }, null, 2);
+        }
+        
+        // Monitor auth state
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                updateStatus(`Authenticated as: ${user.email}`, 'success');
+            } else {
+                updateStatus('Not authenticated', 'error');
+            }
+        });
+        
+        function testNormalVisit() {
+            window.location.href = window.location.pathname;
+        }
+        
+        function testLoginReturn() {
+            window.location.href = '?login=true&auth=success';
+        }
+        
+        function clearSession() {
+            sessionStorage.clear();
+            localStorage.removeItem('pyebwaDebugLogs');
+            updateStatus('Session data cleared', 'info');
+            updateDebug();
+        }
+        
+        async function signOut() {
+            try {
+                await auth.signOut();
+                updateStatus('Signed out successfully', 'info');
+            } catch (error) {
+                updateStatus('Error signing out: ' + error.message, 'error');
+            }
+        }
+        
+        // Initial update
+        setTimeout(updateDebug, 100);
+    </script>
+</body>
+</html>

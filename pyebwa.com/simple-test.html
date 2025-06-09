@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Translation Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { margin: 5px; padding: 10px; cursor: pointer; }
+        .active { background: #007bff; color: white; }
+        .test { margin: 20px 0; padding: 10px; background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>Simple Translation Test</h1>
+    
+    <div>
+        <button onclick="setLang('en')">English</button>
+        <button onclick="setLang('fr')">Français</button>
+        <button onclick="setLang('ht')">Kreyòl</button>
+    </div>
+    
+    <div class="test">
+        <p>Home: <span id="test-home">-</span></p>
+        <p>About: <span id="test-about">-</span></p>
+        <p>Contact: <span id="test-contact">-</span></p>
+    </div>
+    
+    <div class="test">
+        <p>Current Language: <span id="current-lang">-</span></p>
+        <p>Stored Language: <span id="stored-lang">-</span></p>
+    </div>
+    
+    <script src="js/translations-pages.js"></script>
+    <script>
+        function updateDisplay() {
+            const lang = localStorage.getItem('language') || 'ht';
+            document.getElementById('current-lang').textContent = lang;
+            document.getElementById('stored-lang').textContent = localStorage.getItem('language') || 'not set';
+            
+            if (typeof pageTranslations !== 'undefined' && pageTranslations[lang]) {
+                document.getElementById('test-home').textContent = pageTranslations[lang].home || 'not found';
+                document.getElementById('test-about').textContent = pageTranslations[lang].about || 'not found';
+                document.getElementById('test-contact').textContent = pageTranslations[lang].contact || 'not found';
+            } else {
+                document.getElementById('test-home').textContent = 'translations not loaded';
+                document.getElementById('test-about').textContent = 'translations not loaded';
+                document.getElementById('test-contact').textContent = 'translations not loaded';
+            }
+        }
+        
+        function setLang(lang) {
+            localStorage.setItem('language', lang);
+            updateDisplay();
+        }
+        
+        // Initial update
+        updateDisplay();
+        
+        // Log status
+        console.log('pageTranslations defined?', typeof pageTranslations !== 'undefined');
+        if (typeof pageTranslations !== 'undefined') {
+            console.log('Available languages:', Object.keys(pageTranslations));
+        }
+    </script>
+</body>
+</html>

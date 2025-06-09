@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pyebwa - Your Family Tree</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/app.css?v=3">
+    <link rel="stylesheet" href="css/tree.css?v=3">
+    <link rel="stylesheet" href="css/footer.css?v=3">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- Emergency Auth Fix - MUST LOAD FIRST -->
+    <script src="js/auth-emergency-fix.js"></script>
+    
+    <!-- Auth Token Bridge - MUST LOAD BEFORE FIREBASE -->
+    <script src="js/auth-token-bridge.js"></script>
+    
+    <!-- Auth Persistence Fix -->
+    <script src="js/auth-persistence-fix.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
+</head>
+<body>
+    <!-- App Container -->
+    <div id="app">
+        <!-- Header Navigation -->
+        <header class="app-header">
+            <div class="header-container">
+                <div class="header-left">
+                    <h1 class="app-logo">Pyebwa</h1>
+                    <nav class="nav-menu">
+                        <button class="nav-item active" data-view="tree">
+                            <span class="material-icons">account_tree</span>
+                            <span data-i18n="navTree">Pyebwa Fanmi</span>
+                        </button>
+                        <button class="nav-item" data-view="members">
+                            <span class="material-icons">people</span>
+                            <span data-i18n="navMembers">Manm yo</span>
+                        </button>
+                        <button class="nav-item" data-view="stories">
+                            <span class="material-icons">history_edu</span>
+                            <span data-i18n="navStories">Istwa</span>
+                        </button>
+                    </nav>
+                </div>
+                <div class="header-right">
+                    <div class="language-selector">
+                        <button class="lang-btn" data-lang="en">EN</button>
+                        <button class="lang-btn" data-lang="fr">FR</button>
+                        <button class="lang-btn active" data-lang="ht">HT</button>
+                    </div>
+                    <div class="user-menu">
+                        <button class="user-menu-btn">
+                            <span class="material-icons">account_circle</span>
+                            <span class="user-email"></span>
+                            <span class="material-icons">arrow_drop_down</span>
+                        </button>
+                        <div class="user-dropdown">
+                            <a href="#" data-i18n="profile">Pwofil</a>
+                            <a href="#" data-i18n="settings">Paramèt</a>
+                            <hr>
+                            <a href="https://pyebwa.com">Home</a>
+                            <a href="https://pyebwa.com/about.html">About</a>
+                            <a href="https://pyebwa.com/mission.html">Our Mission</a>
+                            <a href="https://pyebwa.com/contact.html">Contact</a>
+                            <hr>
+                            <a href="#" id="logoutBtn" data-i18n="logout">Dekonekte</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="app-main">
+            <!-- Loading State -->
+            <div id="loadingView" class="view-container">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p data-i18n="loading">Chajman...</p>
+                </div>
+            </div>
+
+            <!-- Tree View -->
+            <div id="treeView" class="view-container" style="display: none;">
+                <div class="view-header">
+                    <h2 data-i18n="familyTree">Pyebwa Fanmi Mwen</h2>
+                    <button class="btn btn-primary" id="addMemberBtn">
+                        <span class="material-icons">person_add</span>
+                        <span data-i18n="addMember">Ajoute Manm</span>
+                    </button>
+                </div>
+                
+                <div id="treeContainer" class="tree-container">
+                    <!-- Tree visualization will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Members List View -->
+            <div id="membersView" class="view-container" style="display: none;">
+                <div class="view-header">
+                    <h2 data-i18n="familyMembers">Manm Fanmi yo</h2>
+                    <div class="search-box">
+                        <span class="material-icons">search</span>
+                        <input type="text" id="memberSearch" placeholder="Chèche..." data-i18n-placeholder="search">
+                    </div>
+                </div>
+                <div class="members-grid" id="membersGrid">
+                    <!-- Member cards will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Stories View -->
+            <div id="storiesView" class="view-container" style="display: none;">
+                <div class="view-header">
+                    <h2 data-i18n="familyStories">Istwa Fanmi</h2>
+                    <button class="btn btn-primary" id="addStoryBtn">
+                        <span class="material-icons">add_circle</span>
+                        <span data-i18n="addStory">Ajoute Istwa</span>
+                    </button>
+                </div>
+                <div class="stories-list" id="storiesList">
+                    <!-- Stories will be rendered here -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Add Member Modal -->
+        <div class="modal" id="addMemberModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 data-i18n="addFamilyMember">Ajoute Manm Fanmi</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <form id="addMemberForm" class="modal-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label data-i18n="firstName">Non</label>
+                            <input type="text" name="firstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="lastName">Siyati</label>
+                            <input type="text" name="lastName" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label data-i18n="gender">Sèks</label>
+                            <select name="gender" required>
+                                <option value="male" data-i18n="male">Gason</option>
+                                <option value="female" data-i18n="female">Fi</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="birthDate">Dat nesans</label>
+                            <input type="date" name="birthDate">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label data-i18n="relationship">Relasyon</label>
+                        <select name="relationship" required>
+                            <option value="" data-i18n="selectRelationship">Chwazi relasyon</option>
+                            <option value="parent" data-i18n="parent">Paran</option>
+                            <option value="child" data-i18n="child">Pitit</option>
+                            <option value="spouse" data-i18n="spouse">Mari/Madanm</option>
+                            <option value="sibling" data-i18n="sibling">Frè/Sè</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="relatedToGroup" style="display: none;">
+                        <label data-i18n="relatedTo">An relasyon ak</label>
+                        <select name="relatedTo" id="relatedToSelect">
+                            <!-- Options will be populated dynamically -->
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label data-i18n="biography">Biyografi</label>
+                        <textarea name="biography" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label data-i18n="photo">Foto</label>
+                        <input type="file" name="photo" accept="image/*">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" data-i18n="cancel">Anile</button>
+                        <button type="submit" class="btn btn-primary" data-i18n="save">Anrejistre</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="footer-container">
+            <p>&copy; 2025 Powered by <a href="https://humanlevel.ai" target="_blank" rel="noopener noreferrer">Technologies Humanitaires</a> <span data-i18n="allRights">Tout dwa rezève.</span></p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/firebase-config.js?v=3"></script>
+    <script src="js/translations.js?v=3"></script>
+    <script src="js/app-loop-fix.js"></script>
+    <script src="js/app.js?v=20250108-fixed"></script>
+    <script src="js/tree.js"></script>
+    <script src="js/members.js"></script>
+    <script src="js/stories.js"></script>
+    <script src="js/share-modal.js"></script>
+</body>
+</html>

@@ -1,0 +1,212 @@
+/* Mobile menu button */
+.mobile-menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: #1F2937; /* Dark gray color for visibility on light background */
+    font-size: 24px;
+    cursor: pointer;
+    padding: 10px;
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+    touch-action: manipulation; /* Improve touch responsiveness */
+}
+
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+    /* Language selector on mobile */
+    .language-selector {
+        top: 10px;
+        right: 10px;
+        padding: 3px;
+    }
+    
+    .lang-btn {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+    /* Show mobile menu button with high specificity */
+    .mobile-menu-toggle {
+        display: block !important;
+        position: relative;
+        z-index: 1001;
+        min-width: 44px; /* Minimum touch target size */
+        min-height: 44px; /* Minimum touch target size */
+        color: #1F2937 !important; /* Ensure dark color on light background */
+    }
+    
+    /* Override hero section white color */
+    .hero .mobile-menu-toggle {
+        color: #1F2937 !important;
+    }
+    
+    /* Ensure Material Icons are visible */
+    .mobile-menu-toggle .material-icons {
+        font-size: 24px;
+        line-height: 1;
+        vertical-align: middle;
+    }
+    
+    /* Fallback icon - hidden by default */
+    .menu-icon-fallback {
+        display: none;
+        font-size: 24px;
+        line-height: 1;
+    }
+    
+    /* Show fallback if Material Icons fail to load */
+    .mobile-menu-toggle .material-icons:empty ~ .menu-icon-fallback,
+    .mobile-menu-toggle:not(:has(.material-icons)) .menu-icon-fallback {
+        display: inline-block;
+    }
+    
+    /* Hide Material Icons if they show placeholder text */
+    .mobile-menu-toggle .material-icons:not(:empty) {
+        font-family: 'Material Icons', sans-serif;
+    }
+    
+    /* Hide desktop nav actions */
+    .desktop-only {
+        display: none !important;
+    }
+    
+    /* Mobile nav menu */
+    .nav-menu {
+        display: none;
+        position: fixed;
+        top: 70px;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.95);
+        flex-direction: column;
+        padding: 20px;
+        gap: 15px;
+        z-index: 1000;
+    }
+    
+    .nav-menu.active {
+        display: flex;
+    }
+    
+    .nav-link {
+        color: white !important;
+        text-decoration: none;
+        padding: 10px;
+        font-size: 18px;
+        text-align: center;
+    }
+    
+    .nav-actions-mobile {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .nav-actions-mobile button {
+        flex: 1;
+    }
+    
+    /* Adjust navbar layout */
+    .navbar .container {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0;
+    }
+    #themeToggle {
+        left: 20px !important;
+        right: auto !important;
+        top: 20px !important;
+    }
+    
+    .hero-title {
+        font-size: 36px;
+    }
+    
+    .hero-subtitle {
+        font-size: 18px;
+    }
+    
+    .features-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .modal {
+        padding: 30px 20px;
+    }
+    
+    /* Keep navbar container as flex row to show hamburger menu */
+    .navbar .container {
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        gap: 0;
+    }
+    
+    .nav-brand {
+        flex-direction: row;
+        align-items: center;
+        gap: 5px;
+        flex: 0 1 auto; /* Don't let brand take up too much space */
+    }
+    
+    .nav-actions {
+        margin-right: 0;
+    }
+    
+    .language-selector {
+        top: 10px;
+        right: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    #themeToggle {
+        left: 10px !important;
+        right: auto !important;
+        top: 10px !important;
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    #themeToggle .material-icons {
+        font-size: 20px !important;
+    }
+    
+    .hero-title {
+        font-size: 28px;
+    }
+    
+    .btn-cta {
+        padding: 14px 32px;
+        font-size: 16px;
+    }
+    
+    .language-selector {
+        top: 10px;
+        right: 10px;
+    }
+    
+    .return-to-top {
+        bottom: 20px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
+    }
+    
+    .return-to-top .material-icons {
+        font-size: 20px;
+    }
+    
+    .logo-header {
+        height: 30px;
+    }
+    
+    .social-buttons {
+        flex-direction: column;
+    }
+    
+    .btn-social {
+        width: 100%;
+    }
+}

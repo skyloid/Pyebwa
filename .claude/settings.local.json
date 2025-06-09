@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(tree:*)",
+      "Bash(mv:*)",
+      "Bash(npx react-native:*)",
+      "Bash(ls:*)",
+      "Bash(chmod:*)",
+      "Bash(find:*)",
+      "Bash(python3:*)",
+      "Bash(curl:*)",
+      "Bash(npm install)",
+      "Bash(pm2 start:*)",
+      "Bash(npm install:*)",
+      "Bash(pm2 status:*)",
+      "Bash(pm2 logs:*)",
+      "Bash(pm2 restart:*)",
+      "Bash(hostname:*)",
+      "Bash(nslookup:*)",
+      "Bash(wget:*)",
+      "Bash(dig:*)",
+      "Bash(grep:*)",
+      "Bash(lftp:*)",
+      "Bash(sed:*)",
+      "Bash(crontab:*)",
+      "Bash(scp:*)",
+      "Bash(echo:*)",
+      "Bash(time curl:*)",
+      "Bash(./test-auth-flow.sh:*)",
+      "Bash(./test-auth-errors.sh:*)",
+      "Bash(touch:*)",
+      "Bash(cp:*)",
+      "Bash(rm:*)",
+      "Bash(rg:*)",
+      "Bash(node:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": []
+  }
+}

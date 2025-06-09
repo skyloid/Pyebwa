@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auth State Test</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        .info { color: blue; }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Authentication State Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Firebase Configuration</h2>
+        <div id="firebase-config"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Current Auth State</h2>
+        <div id="auth-state"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Session Storage</h2>
+        <div id="session-storage"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. URL Parameters</h2>
+        <div id="url-params"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>5. Auth Flow Test</h2>
+        <button onclick="testAuthFlow()">Test Auth Flow</button>
+        <div id="auth-flow-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>6. Cross-Domain Communication Test</h2>
+        <button onclick="testCrossDomain()">Test Cross-Domain Auth</button>
+        <div id="cross-domain-results"></div>
+    </div>
+
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
+            authDomain: "pyebwa-f5960.firebaseapp.com",
+            projectId: "pyebwa-f5960",
+            storageBucket: "pyebwa-f5960.firebasestorage.app",
+            messagingSenderId: "1042887343749",
+            appId: "1:1042887343749:web:c276bf69b6c0895111f3ec",
+            measurementId: "G-ZX92K1TMM3"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        
+        // Test 1: Firebase Configuration
+        document.getElementById('firebase-config').innerHTML = `
+            <p class="success">✓ Firebase initialized</p>
+            <pre>${JSON.stringify(firebaseConfig, null, 2)}</pre>
+        `;
+        
+        // Test 2: Auth State
+        auth.onAuthStateChanged((user) => {
+            const authStateDiv = document.getElementById('auth-state');
+            if (user) {
+                authStateDiv.innerHTML = `
+                    <p class="success">✓ User authenticated</p>
+                    <pre>${JSON.stringify({
+                        uid: user.uid,
+                        email: user.email,
+                        displayName: user.displayName,
+                        emailVerified: user.emailVerified
+                    }, null, 2)}</pre>
+                `;
+            } else {
+                authStateDiv.innerHTML = `<p class="warning">⚠ No user authenticated</p>`;
+            }
+        });
+        
+        // Test 3: Session Storage
+        function checkSessionStorage() {
+            const sessionData = {};
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                if (key.includes('pyebwa') || key.includes('auth')) {
+                    sessionData[key] = sessionStorage.getItem(key);
+                }
+            }
+            
+            document.getElementById('session-storage').innerHTML = sessionData.length === 0 
+                ? '<p class="info">ℹ No auth-related session storage found</p>'
+                : `<pre>${JSON.stringify(sessionData, null, 2)}</pre>`;
+        }
+        checkSessionStorage();
+        
+        // Test 4: URL Parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const params = {};
+        urlParams.forEach((value, key) => {
+            params[key] = value;
+        });
+        
+        document.getElementById('url-params').innerHTML = Object.keys(params).length === 0
+            ? '<p class="info">ℹ No URL parameters</p>'
+            : `<pre>${JSON.stringify(params, null, 2)}</pre>`;
+        
+        // Test 5: Auth Flow
+        async function testAuthFlow() {
+            const resultsDiv = document.getElementById('auth-flow-results');
+            resultsDiv.innerHTML = '<p class="info">Testing auth flow...</p>';
+            
+            const tests = [];
+            
+            // Check if auth=success parameter exists
+            if (urlParams.get('auth') === 'success') {
+                tests.push('<p class="success">✓ Auth success parameter detected</p>');
+                
+                // Check for login parameter
+                if (urlParams.get('login') === 'true') {
+                    tests.push('<p class="success">✓ Login parameter detected</p>');
+                }
+                
+                // Check for redirect parameter
+                const redirect = urlParams.get('redirect');
+                if (redirect) {
+                    tests.push(`<p class="success">✓ Redirect parameter: ${redirect}</p>`);
+                }
+            }
+            
+            // Check auth persistence
+            const user = auth.currentUser;
+            if (user) {
+                tests.push('<p class="success">✓ Auth state persisted</p>');
+                try {
+                    const token = await user.getIdToken();
+                    tests.push('<p class="success">✓ ID token available</p>');
+                } catch (e) {
+                    tests.push(`<p class="error">✗ ID token error: ${e.message}</p>`);
+                }
+            } else {
+                tests.push('<p class="warning">⚠ No authenticated user</p>');
+            }
+            
+            resultsDiv.innerHTML = tests.join('');
+        }
+        
+        // Test 6: Cross-Domain Communication
+        function testCrossDomain() {
+            const resultsDiv = document.getElementById('cross-domain-results');
+            resultsDiv.innerHTML = '<p class="info">Testing cross-domain auth...</p>';
+            
+            // Create iframe to pyebwa.com auth relay
+            const iframe = document.createElement('iframe');
+            iframe.src = 'https://pyebwa.com/auth-relay.html';
+            iframe.style.display = 'none';
+            document.body.appendChild(iframe);
+            
+            const tests = [];
+            let messageReceived = false;
+            
+            // Listen for messages
+            window.addEventListener('message', (event) => {
+                if (event.origin === 'https://pyebwa.com' && event.data.type === 'pyebwa-auth-state') {
+                    messageReceived = true;
+                    tests.push(`<p class="success">✓ Received auth state from pyebwa.com</p>`);
+                    tests.push(`<pre>${JSON.stringify(event.data, null, 2)}</pre>`);
+                    resultsDiv.innerHTML = tests.join('');
+                }
+            });
+            
+            // Send auth check request
+            setTimeout(() => {
+                iframe.contentWindow.postMessage({
+                    type: 'pyebwa-auth-check'
+                }, 'https://pyebwa.com');
+                
+                tests.push('<p class="info">ℹ Auth check request sent</p>');
+                resultsDiv.innerHTML = tests.join('');
+            }, 1000);
+            
+            // Check if no response after 3 seconds
+            setTimeout(() => {
+                if (!messageReceived) {
+                    tests.push('<p class="error">✗ No response from auth relay</p>');
+                    resultsDiv.innerHTML = tests.join('');
+                }
+                document.body.removeChild(iframe);
+            }, 3000);
+        }
+        
+        // Auto-run auth flow test if coming from login
+        if (urlParams.get('auth') === 'success') {
+            setTimeout(testAuthFlow, 1000);
+        }
+    </script>
+</body>
+</html>

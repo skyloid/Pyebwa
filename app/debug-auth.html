@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auth Debug</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .log { margin: 5px 0; padding: 5px; background: #f0f0f0; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Firebase Auth Debug</h1>
+    <div id="logs"></div>
+    <br>
+    <button onclick="checkAuth()">Check Auth State</button>
+    <button onclick="clearLogs()">Clear Logs</button>
+    <button onclick="window.location.href='https://secure.pyebwa.com/?redirect=' + encodeURIComponent(window.location.href)">Login via Secure</button>
+    
+    <script>
+        const logsDiv = document.getElementById('logs');
+        
+        function log(msg, type = '') {
+            const div = document.createElement('div');
+            div.className = 'log ' + type;
+            div.textContent = `[${new Date().toISOString()}] ${msg}`;
+            logsDiv.appendChild(div);
+            console.log(msg);
+        }
+        
+        function clearLogs() {
+            logsDiv.innerHTML = '';
+            localStorage.removeItem('pyebwaDebugLogs');
+        }
+        
+        // Log URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        log('URL Params: ' + urlParams.toString());
+        
+        // Check persistence
+        auth.getPersistence().then(persistence => {
+            log('Auth Persistence: ' + persistence);
+        });
+        
+        // Monitor auth state
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                log('Auth State: USER LOGGED IN', 'success');
+                log('User Email: ' + user.email);
+                log('User UID: ' + user.uid);
+                log('Email Verified: ' + user.emailVerified);
+                
+                // Get ID token
+                user.getIdToken().then(token => {
+                    log('ID Token: ' + token.substring(0, 50) + '...');
+                }).catch(err => {
+                    log('Error getting ID token: ' + err.message, 'error');
+                });
+            } else {
+                log('Auth State: NO USER', 'error');
+            }
+        });
+        
+        function checkAuth() {
+            const currentUser = auth.currentUser;
+            if (currentUser) {
+                log('Current User: ' + currentUser.email, 'success');
+            } else {
+                log('No current user', 'error');
+            }
+            
+            // Check localStorage
+            const debugLogs = localStorage.getItem('pyebwaDebugLogs');
+            if (debugLogs) {
+                log('Debug logs found in localStorage');
+                JSON.parse(debugLogs).forEach(l => log('  > ' + l));
+            }
+        }
+        
+        // Auto-check on load
+        setTimeout(checkAuth, 1000);
+    </script>
+</body>
+</html>

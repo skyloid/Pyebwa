@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Pyebwa - Your Family Tree Platform</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/mobile.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        .about-hero {
+            background: linear-gradient(135deg, #D41125 0%, #FF1744 100%);
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+        }
+        
+        .about-hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        .about-section {
+            padding: 60px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .about-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            color: #00217D;
+        }
+        
+        .about-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 40px;
+        }
+        
+        .value-card {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .value-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .value-card .icon {
+            font-size: 48px;
+            color: #D41125;
+            margin-bottom: 20px;
+        }
+        
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .team-member {
+            text-align: center;
+        }
+        
+        .team-member img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+        }
+        
+        .timeline {
+            position: relative;
+            padding: 40px 0;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #D41125;
+            transform: translateX(-50%);
+        }
+        
+        .timeline-item {
+            position: relative;
+            width: 50%;
+            padding: 20px 40px;
+        }
+        
+        .timeline-item:nth-child(odd) {
+            left: 0;
+            text-align: right;
+        }
+        
+        .timeline-item:nth-child(even) {
+            left: 50%;
+            text-align: left;
+        }
+        
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            top: 30px;
+            width: 20px;
+            height: 20px;
+            background: #D41125;
+            border-radius: 50%;
+        }
+        
+        .timeline-item:nth-child(odd)::after {
+            right: -10px;
+        }
+        
+        .timeline-item:nth-child(even)::after {
+            left: -10px;
+        }
+        
+        @media (max-width: 768px) {
+            .about-hero h1 {
+                font-size: 2rem;
+            }
+            
+            .timeline::before {
+                left: 20px;
+            }
+            
+            .timeline-item {
+                width: 100%;
+                left: 0 !important;
+                padding-left: 60px;
+                text-align: left !important;
+            }
+            
+            .timeline-item::after {
+                left: 10px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Language Selector -->
+    <div class="language-selector">
+        <button class="lang-btn" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="fr">FR</button>
+        <button class="lang-btn active" data-lang="ht">HT</button>
+    </div>
+    
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="images/Pyebwa.png" alt="Pyebwa Logo" class="logo-img">
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link" data-i18n="home">Home</a>
+                <a href="about.html" class="nav-link active" data-i18n="about">About</a>
+                <a href="mission.html" class="nav-link" data-i18n="ourMission">Our Mission</a>
+                <a href="contact.html" class="nav-link" data-i18n="contact">Contact</a>
+                <div class="nav-buttons">
+                    <button class="btn btn-ghost" id="loginBtn" data-i18n="login">Login</button>
+                    <button class="btn btn-primary" id="signupBtn" data-i18n="signup">Sign Up</button>
+                </div>
+            </div>
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <span class="material-icons">menu</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="about-hero">
+        <h1>About Pyebwa</h1>
+        <p class="hero-subtitle">Connecting Families, Preserving Heritage</p>
+    </section>
+
+    <!-- Mission Section -->
+    <section class="about-section">
+        <h2>Our Mission</h2>
+        <p style="font-size: 1.2rem; line-height: 1.8; color: #4B5563;">
+            At Pyebwa, we believe every family has a story worth preserving. Our mission is to provide 
+            families with the tools they need to document, share, and celebrate their unique heritage. 
+            We're building bridges between generations, ensuring that precious memories and family 
+            histories are never lost.
+        </p>
+    </section>
+
+    <!-- Values Section -->
+    <section class="about-section" style="background: #f8f9fa;">
+        <h2>Our Values</h2>
+        <div class="about-grid">
+            <div class="value-card">
+                <div class="icon">🌳</div>
+                <h3>Heritage</h3>
+                <p>We honor the importance of family history and cultural roots in shaping who we are.</p>
+            </div>
+            <div class="value-card">
+                <div class="icon">🤝</div>
+                <h3>Connection</h3>
+                <p>We facilitate meaningful connections between family members across distances and generations.</p>
+            </div>
+            <div class="value-card">
+                <div class="icon">🔒</div>
+                <h3>Privacy</h3>
+                <p>We protect your family's precious memories with industry-leading security and privacy measures.</p>
+            </div>
+            <div class="value-card">
+                <div class="icon">🌍</div>
+                <h3>Inclusivity</h3>
+                <p>We celebrate all families and cultures, providing tools that work for everyone.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Story Section -->
+    <section class="about-section">
+        <h2>Our Story</h2>
+        <div class="timeline">
+            <div class="timeline-item">
+                <h3>2023</h3>
+                <p>Pyebwa was born from a simple idea: families should have an easy way to preserve their stories.</p>
+            </div>
+            <div class="timeline-item">
+                <h3>Early 2024</h3>
+                <p>We launched our beta version, working closely with Haitian families to build the perfect platform.</p>
+            </div>
+            <div class="timeline-item">
+                <h3>Mid 2024</h3>
+                <p>Expanded to support multiple languages and cultures, making Pyebwa accessible to more families.</p>
+            </div>
+            <div class="timeline-item">
+                <h3>Today</h3>
+                <p>Thousands of families use Pyebwa to connect, share stories, and preserve their heritage.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="about-section" style="background: #f8f9fa;">
+        <h2>Meet Our Team</h2>
+        <p style="text-align: center; margin-bottom: 40px; color: #4B5563;">
+            Passionate about families, technology, and preserving heritage.
+        </p>
+        <div class="team-grid">
+            <div class="team-member">
+                <img src="images/team-placeholder.jpg" alt="Team Member" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjRTVFN0VCIi8+CjxjaXJjbGUgY3g9Ijc1IiBjeT0iNTAiIHI9IjI1IiBmaWxsPSIjOUI5Q0E0Ii8+CjxwYXRoIGQ9Ik0zMCAxMzBDMzAgMTAyLjM4NiA1MC4zODU4IDgwIDc1IDgwQzk5LjYxNDIgODAgMTIwIDEwMi4zODYgMTIwIDEzMFYxNTBIMzBWMTMwWiIgZmlsbD0iIzlCOUNBNCIvPgo8L3N2Zz4='">
+                <h4>Founder & CEO</h4>
+                <p>Passionate about connecting families through technology.</p>
+            </div>
+            <div class="team-member">
+                <img src="images/team-placeholder.jpg" alt="Team Member" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjRTVFN0VCIi8+CjxjaXJjbGUgY3g9Ijc1IiBjeT0iNTAiIHI9IjI1IiBmaWxsPSIjOUI5Q0E0Ii8+CjxwYXRoIGQ9Ik0zMCAxMzBDMzAgMTAyLjM4NiA1MC4zODU4IDgwIDc1IDgwQzk5LjYxNDIgODAgMTIwIDEwMi4zODYgMTIwIDEzMFYxNTBIMzBWMTMwWiIgZmlsbD0iIzlCOUNBNCIvPgo8L3N2Zz4='">
+                <h4>Lead Developer</h4>
+                <p>Building secure and intuitive family tree experiences.</p>
+            </div>
+            <div class="team-member">
+                <img src="images/team-placeholder.jpg" alt="Team Member" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjRTVFN0VCIi8+CjxjaXJjbGUgY3g9Ijc1IiBjeT0iNTAiIHI9IjI1IiBmaWxsPSIjOUI5Q0E0Ii8+CjxwYXRoIGQ9Ik0zMCAxMzBDMzAgMTAyLjM4NiA1MC4zODU4IDgwIDc1IDgwQzk5LjYxNDIgODAgMTIwIDEwMi4zODYgMTIwIDEzMFYxNTBIMzBWMTMwWiIgZmlsbD0iIzlCOUNBNCIvPgo8L3N2Zz4='">
+                <h4>Community Manager</h4>
+                <p>Helping families make the most of their Pyebwa experience.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="about-section" style="text-align: center; background: #00217D; color: white;">
+        <h2 style="color: white;">Ready to Start Your Family Tree?</h2>
+        <p style="font-size: 1.2rem; margin-bottom: 30px;">
+            Join thousands of families preserving their heritage with Pyebwa.
+        </p>
+        <button class="btn btn-cta" style="background: #FFC72C; color: #00217D;">Get Started Free</button>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Pyebwa</h3>
+                <p>Connecting families, preserving heritage.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="index.html">Home</a>
+                <a href="about.html">About</a>
+                <a href="contact.html">Contact</a>
+                <a href="privacy.html">Privacy Policy</a>
+            </div>
+            <div class="footer-section">
+                <h4>Connect</h4>
+                <a href="#">Facebook</a>
+                <a href="#">Twitter</a>
+                <a href="#">Instagram</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 <span data-i18n="poweredBy">Powered by</span> <a href="https://humanlevel.ai" target="_blank" data-i18n="humanLevelTech">Human Level Technologies Inc.</a> <span data-i18n="allRights">All rights reserved.</span></p>
+        </div>
+    </footer>
+
+    <script src="js/language.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        // Mobile menu toggle
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const navMenu = document.querySelector('.nav-menu');
+        
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+            });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.navbar') && navMenu.classList.contains('active')) {
+                    navMenu.classList.remove('active');
+                }
+            });
+            
+            // Close menu when clicking a link
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    navMenu.classList.remove('active');
+                });
+            });
+        }
+        
+        // Redirect login/signup buttons to secure.pyebwa.com
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            window.location.href = 'https://secure.pyebwa.com/?redirect=' + encodeURIComponent(window.location.href);
+        });
+        document.getElementById('signupBtn').addEventListener('click', () => {
+            window.location.href = 'https://secure.pyebwa.com/?redirect=' + encodeURIComponent(window.location.href);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "welcomeMessage": "Bienvenue à Pyebwa",
+  "emailLabel": "Courriel",
+  "passwordLabel": "Mot de passe",
+  "loginButton": "Se connecter",
+  "firstName": "Prénom",
+  "lastName": "Nom de famille",
+  "biography": "Biographie",
+  "birthDate": "Date de naissance",
+  "saveMember": "Enregistrer le membre",
+  "selectDate": "Sélectionner la date",
+  "addFamilyMember": "Ajouter un membre de la famille"
+}

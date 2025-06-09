@@ -1,0 +1,30 @@
+/* Logo Center Display Styles */
+.logo-center-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 40px auto;
+    padding: 20px;
+    width: 100%;
+}
+
+.logo-center {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* For larger screens, allow the logo to be its full size */
+@media (min-width: 1200px) {
+    .logo-center {
+        max-width: none;
+    }
+}
+
+/* For mobile, ensure it fits within the viewport */
+@media (max-width: 768px) {
+    .logo-center-container {
+        margin: 20px auto;
+        padding: 10px;
+    }
+}

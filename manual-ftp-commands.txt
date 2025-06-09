@@ -1,0 +1,61 @@
+# Manual FTP Upload Instructions
+
+Since the automated FTP login is failing, here are the manual steps to upload the files:
+
+## Option 1: Using Command Line FTP
+
+1. Open terminal and connect:
+```bash
+ftp 145.223.107.9
+```
+
+2. When prompted, enter:
+- Username: u316621955
+- Password: 3!xuk?tkj]L$$Q>A
+
+3. Navigate to the public_html directory:
+```
+cd /home/u316621955/domains/pyebwa.com/public_html
+```
+
+4. Upload the files:
+```
+put /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/pyebwa.com/index.html
+mkdir css
+cd css
+put /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/pyebwa.com/css/styles.css
+cd ..
+mkdir js
+cd js
+put /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/pyebwa.com/js/firebase-config.js
+put /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/pyebwa.com/js/auth.js
+put /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/pyebwa.com/js/app.js
+cd ..
+put /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/pyebwa.com/.htaccess
+mkdir images
+mkdir locales
+quit
+```
+
+## Option 2: Using an FTP Client (FileZilla, Cyberduck, etc.)
+
+1. Server: 145.223.107.9
+2. Username: u316621955
+3. Password: 3!xuk?tkj]L$$Q>A
+4. Port: 21 (default FTP)
+5. Navigate to: /home/u316621955/domains/pyebwa.com/public_html
+6. Upload the entire contents of /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/pyebwa.com/
+
+## Files to Upload:
+- index.html
+- .htaccess
+- css/styles.css
+- js/firebase-config.js
+- js/auth.js
+- js/app.js
+- Create empty folders: images/, locales/
+
+## Important Notes:
+- Make sure to update the redirect URLs in app.js as mentioned earlier
+- Update firebase-config.js with your actual Firebase configuration
+- The password contains special characters that might need escaping in some FTP clients

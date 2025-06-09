@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translation Debug</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .debug-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+        .debug-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        pre {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .test-element {
+            padding: 10px;
+            margin: 5px 0;
+            background: #e0e0e0;
+            border-radius: 4px;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+    </style>
+</head>
+<body>
+    <!-- Language Selector -->
+    <div class="language-selector">
+        <button class="lang-btn" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="fr">FR</button>
+        <button class="lang-btn active" data-lang="ht">HT</button>
+    </div>
+
+    <div class="debug-container">
+        <h1>Translation System Debug Page</h1>
+        
+        <div class="debug-section">
+            <h2>System Status</h2>
+            <div id="systemStatus"></div>
+        </div>
+        
+        <div class="debug-section">
+            <h2>Translation Test Elements</h2>
+            <div class="test-element">
+                Home: <strong data-i18n="home">Home</strong>
+            </div>
+            <div class="test-element">
+                About: <strong data-i18n="about">About</strong>
+            </div>
+            <div class="test-element">
+                Our Mission: <strong data-i18n="ourMission">Our Mission</strong>
+            </div>
+            <div class="test-element">
+                Contact: <strong data-i18n="contact">Contact</strong>
+            </div>
+            <div class="test-element">
+                About Title: <strong data-i18n="aboutTitle">About Pyebwa</strong>
+            </div>
+            <div class="test-element">
+                One Billion Trees: <strong data-i18n="oneBillionTrees">One Billion Trees for Haiti</strong>
+            </div>
+        </div>
+        
+        <div class="debug-section">
+            <h2>Console Output</h2>
+            <pre id="consoleOutput"></pre>
+        </div>
+        
+        <div class="debug-section">
+            <h2>Manual Controls</h2>
+            <button onclick="forceUpdateLanguage('en')">Force English</button>
+            <button onclick="forceUpdateLanguage('fr')">Force French</button>
+            <button onclick="forceUpdateLanguage('ht')">Force Haitian Creole</button>
+            <button onclick="clearLocalStorage()">Clear LocalStorage</button>
+            <button onclick="location.reload()">Reload Page</button>
+        </div>
+    </div>
+
+    <script src="js/translations-pages.js"></script>
+    <script src="js/language.js"></script>
+    
+    <script>
+        // Capture console output
+        const consoleOutput = document.getElementById('consoleOutput');
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+        
+        const logMessages = [];
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            logMessages.push('[LOG] ' + args.join(' '));
+            updateConsoleOutput();
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            logMessages.push('[WARN] ' + args.join(' '));
+            updateConsoleOutput();
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            logMessages.push('[ERROR] ' + args.join(' '));
+            updateConsoleOutput();
+        };
+        
+        function updateConsoleOutput() {
+            consoleOutput.textContent = logMessages.join('\n');
+        }
+        
+        // System status
+        function updateSystemStatus() {
+            const status = document.getElementById('systemStatus');
+            let html = '';
+            
+            // Check pageTranslations
+            if (typeof pageTranslations !== 'undefined') {
+                html += '<p class="success">✓ pageTranslations loaded</p>';
+                html += '<p>Available languages: ' + Object.keys(pageTranslations).join(', ') + '</p>';
+                
+                // Check translation counts
+                Object.keys(pageTranslations).forEach(lang => {
+                    const count = Object.keys(pageTranslations[lang]).length;
+                    html += '<p>- ' + lang + ': ' + count + ' translations</p>';
+                });
+            } else {
+                html += '<p class="error">✗ pageTranslations not loaded</p>';
+            }
+            
+            // Check localStorage
+            const storedLang = localStorage.getItem('language');
+            html += '<p>localStorage language: ' + (storedLang || 'not set') + '</p>';
+            
+            // Check current language
+            if (typeof currentLang !== 'undefined') {
+                html += '<p>Current language variable: ' + currentLang + '</p>';
+            }
+            
+            // Check elements with data-i18n
+            const i18nElements = document.querySelectorAll('[data-i18n]');
+            html += '<p>Elements with data-i18n: ' + i18nElements.length + '</p>';
+            
+            status.innerHTML = html;
+        }
+        
+        // Force update language
+        function forceUpdateLanguage(lang) {
+            localStorage.setItem('language', lang);
+            location.reload();
+        }
+        
+        // Clear localStorage
+        function clearLocalStorage() {
+            localStorage.clear();
+            alert('LocalStorage cleared. Page will reload.');
+            location.reload();
+        }
+        
+        // Update status after page load
+        setTimeout(updateSystemStatus, 500);
+        
+        // Re-run language update manually
+        setTimeout(() => {
+            console.log('=== Manual translation update attempt ===');
+            if (typeof updateLanguage === 'function') {
+                updateLanguage();
+                console.log('updateLanguage() called successfully');
+            } else {
+                console.error('updateLanguage function not found');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

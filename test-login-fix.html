@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Login Loop Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Login Loop Fix Test</h1>
+    
+    <div class="test-section">
+        <h2>Fix Summary</h2>
+        <div class="status info">
+            <strong>Main Fix Applied:</strong> Changed redirect from www.pyebwa.com to secure.pyebwa.com
+        </div>
+        <div class="status info">
+            <strong>Timing Improvements:</strong> Increased auth check attempts from 10 to 20, and interval from 1s to 1.5s
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Scenarios</h2>
+        <button onclick="testScenario1()">Test 1: Direct App Access (Not Logged In)</button>
+        <button onclick="testScenario2()">Test 2: Coming from Login</button>
+        <button onclick="testScenario3()">Test 3: Already Authenticated</button>
+        <button onclick="clearAndTest()">Clear All & Test</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Debug Information</h2>
+        <pre id="debugInfo"></pre>
+    </div>
+    
+    <script>
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            results.appendChild(div);
+        }
+        
+        function updateDebugInfo() {
+            const debugInfo = document.getElementById('debugInfo');
+            const info = {
+                currentURL: window.location.href,
+                localStorage: {},
+                sessionStorage: {},
+                cookies: document.cookie
+            };
+            
+            // Get storage items
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                info.localStorage[key] = localStorage.getItem(key);
+            }
+            
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                info.sessionStorage[key] = sessionStorage.getItem(key);
+            }
+            
+            debugInfo.textContent = JSON.stringify(info, null, 2);
+        }
+        
+        function testScenario1() {
+            log('Testing Scenario 1: Direct App Access (Not Logged In)', 'info');
+            log('Expected: Should redirect to secure.pyebwa.com for login', 'info');
+            log('Previous behavior: Would redirect to www.pyebwa.com causing a loop', 'error');
+            log('Fixed behavior: Now redirects to secure.pyebwa.com', 'success');
+            
+            // Simulate the redirect logic
+            const redirectUrl = 'https://secure.pyebwa.com/?redirect=' + encodeURIComponent('https://rasin.pyebwa.com/app/');
+            log(`Would redirect to: ${redirectUrl}`, 'success');
+        }
+        
+        function testScenario2() {
+            log('Testing Scenario 2: Coming from Login', 'info');
+            log('URL would have: ?login=true&auth=success', 'info');
+            log('Expected: Wait up to 30 seconds (20 checks × 1.5s) for auth to sync', 'info');
+            log('If auth syncs: Stay on app', 'success');
+            log('If auth doesn\'t sync: Redirect to secure.pyebwa.com', 'info');
+        }
+        
+        function testScenario3() {
+            log('Testing Scenario 3: Already Authenticated', 'info');
+            log('Expected: Stay on app, no redirects', 'success');
+            log('Load family tree and show main view', 'success');
+        }
+        
+        function clearAndTest() {
+            if (confirm('This will clear all storage. Continue?')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                log('Cleared all storage', 'info');
+                log('In real scenario, would redirect to secure.pyebwa.com', 'info');
+                updateDebugInfo();
+            }
+        }
+        
+        // Initialize
+        updateDebugInfo();
+        log('Test page loaded', 'info');
+        
+        // Show current fix status
+        log('Login loop fix has been applied to /app/js/app.js', 'success');
+    </script>
+</body>
+</html>

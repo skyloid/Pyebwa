@@ -1,0 +1,5 @@
+Authentication server running on port 9112
+Server is accessible at:
+  - http://localhost:9112
+  - http://145.223.119.193:9112
+  - https://secure.pyebwa.com (via proxy)

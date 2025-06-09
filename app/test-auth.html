@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Auth - Pyebwa</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { padding: 20px; margin: 10px 0; border-radius: 5px; }
+        .authenticated { background-color: #d4edda; color: #155724; }
+        .not-authenticated { background-color: #f8d7da; color: #721c24; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .log { margin: 5px 0; font-family: monospace; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>Pyebwa Authentication Test</h1>
+    
+    <div id="status" class="status">Checking authentication status...</div>
+    
+    <div id="userInfo"></div>
+    
+    <div>
+        <button onclick="redirectToLogin()">Login via Secure Domain</button>
+        <button onclick="signOut()">Sign Out</button>
+        <button onclick="clearAllData()">Clear All Data</button>
+    </div>
+    
+    <h3>Debug Information:</h3>
+    <div id="debugInfo"></div>
+    
+    <h3>Event Log:</h3>
+    <div id="eventLog"></div>
+
+    <script>
+        const statusDiv = document.getElementById('status');
+        const userInfoDiv = document.getElementById('userInfo');
+        const debugInfoDiv = document.getElementById('debugInfo');
+        const eventLogDiv = document.getElementById('eventLog');
+        
+        function log(message) {
+            const timestamp = new Date().toISOString();
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log';
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            eventLogDiv.appendChild(logEntry);
+            console.log(message);
+        }
+        
+        function updateDebugInfo() {
+            const urlParams = new URLSearchParams(window.location.search);
+            let debugHtml = '<h4>URL Parameters:</h4>';
+            debugHtml += '<ul>';
+            for (const [key, value] of urlParams) {
+                debugHtml += `<li>${key}: ${value}</li>`;
+            }
+            debugHtml += '</ul>';
+            
+            debugHtml += '<h4>Session Storage:</h4>';
+            debugHtml += '<ul>';
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                debugHtml += `<li>${key}: ${sessionStorage.getItem(key)}</li>`;
+            }
+            debugHtml += '</ul>';
+            
+            debugInfoDiv.innerHTML = debugHtml;
+        }
+        
+        function updateStatus(user) {
+            if (user) {
+                statusDiv.className = 'status authenticated';
+                statusDiv.textContent = '✓ Authenticated';
+                
+                userInfoDiv.innerHTML = `
+                    <h3>User Information:</h3>
+                    <ul>
+                        <li>Email: ${user.email}</li>
+                        <li>UID: ${user.uid}</li>
+                        <li>Display Name: ${user.displayName || 'Not set'}</li>
+                        <li>Email Verified: ${user.emailVerified}</li>
+                        <li>Provider: ${user.providerData[0]?.providerId || 'Unknown'}</li>
+                    </ul>
+                `;
+            } else {
+                statusDiv.className = 'status not-authenticated';
+                statusDiv.textContent = '✗ Not Authenticated';
+                userInfoDiv.innerHTML = '';
+            }
+        }
+        
+        function redirectToLogin() {
+            log('Redirecting to secure.pyebwa.com for login...');
+            const redirectUrl = window.location.origin + '/app/';
+            window.location.href = 'https://secure.pyebwa.com/?redirect=' + encodeURIComponent(redirectUrl);
+        }
+        
+        function signOut() {
+            log('Signing out...');
+            auth.signOut().then(() => {
+                log('Sign out successful');
+            }).catch((error) => {
+                log('Sign out error: ' + error.message);
+            });
+        }
+        
+        function clearAllData() {
+            if (confirm('This will clear all authentication data. Continue?')) {
+                log('Clearing all data...');
+                auth.signOut();
+                localStorage.clear();
+                sessionStorage.clear();
+                log('All data cleared');
+                location.reload();
+            }
+        }
+        
+        // Initialize
+        log('Test page loaded');
+        updateDebugInfo();
+        
+        // Check for authentication parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('login') === 'true') {
+            log('Detected login=true parameter');
+        }
+        if (urlParams.get('auth') === 'success') {
+            log('Detected auth=success parameter');
+        }
+        
+        // Monitor auth state
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                log(`Auth state changed: User authenticated (${user.email})`);
+            } else {
+                log('Auth state changed: No user');
+            }
+            updateStatus(user);
+        });
+        
+        // Check current auth state after a delay
+        setTimeout(() => {
+            const currentUser = auth.currentUser;
+            log(`Current auth state check: ${currentUser ? 'User: ' + currentUser.email : 'No user'}`);
+        }, 2000);
+    </script>
+</body>
+</html>

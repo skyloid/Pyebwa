@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translation Test</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        body {
+            padding: 40px;
+            font-family: Arial, sans-serif;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .debug-info {
+            background: #f0f0f0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Language Selector -->
+    <div class="language-selector">
+        <button class="lang-btn" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="fr">FR</button>
+        <button class="lang-btn active" data-lang="ht">HT</button>
+    </div>
+
+    <h1>Translation System Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Elements</h2>
+        <p data-i18n="aboutHeroTitle">About Pyebwa</p>
+        <p data-i18n="aboutHeroSubtitle">Connecting Families, Preserving Heritage</p>
+        <p data-i18n="missionHeroTitle">One Billion Trees for Haiti</p>
+        <p data-i18n="contactHeroTitle">Get in Touch</p>
+    </div>
+
+    <div class="test-section">
+        <h2>Debug Information</h2>
+        <div id="debugInfo" class="debug-info">Loading...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Translation Keys Available</h2>
+        <div id="translationKeys" class="debug-info">Loading...</div>
+    </div>
+
+    <script src="js/translations-pages.js"></script>
+    <script src="js/language.js"></script>
+    <script>
+        // Debug script
+        function updateDebugInfo() {
+            const currentLang = localStorage.getItem('language') || 'ht';
+            const debugDiv = document.getElementById('debugInfo');
+            const keysDiv = document.getElementById('translationKeys');
+            
+            let debugHtml = `
+                <p><strong>Current Language:</strong> ${currentLang}</p>
+                <p><strong>localStorage language:</strong> ${localStorage.getItem('language')}</p>
+                <p><strong>window.pageTranslations exists:</strong> ${typeof window.pageTranslations !== 'undefined'}</p>
+                <p><strong>Translation update function exists:</strong> ${typeof window.updatePageTranslations === 'function'}</p>
+            `;
+            
+            debugDiv.innerHTML = debugHtml;
+            
+            // Show available translation keys
+            if (typeof window.pageTranslations !== 'undefined') {
+                const keys = Object.keys(window.pageTranslations.en || {}).slice(0, 10);
+                keysDiv.innerHTML = `<p><strong>Sample translation keys:</strong></p><ul>${keys.map(key => `<li>${key}</li>`).join('')}</ul>`;
+            } else {
+                keysDiv.innerHTML = '<p class="error">No translations loaded!</p>';
+            }
+        }
+        
+        // Check for language changes
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                setTimeout(updateDebugInfo, 100);
+            });
+        });
+        
+        // Initial debug info
+        setTimeout(updateDebugInfo, 500);
+        
+        // Manual translation test
+        function testTranslation(key, lang) {
+            if (window.pageTranslations && window.pageTranslations[lang] && window.pageTranslations[lang][key]) {
+                return window.pageTranslations[lang][key];
+            }
+            return 'Not found';
+        }
+        
+        // Make test function available globally
+        window.testTranslation = testTranslation;
+        
+        console.log('Test page loaded. Use testTranslation(key, lang) to test specific translations.');
+    </script>
+</body>
+</html>

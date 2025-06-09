@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Status Test</title>
+    <meta charset="UTF-8">
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Firebase Storage Upload Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Configuration Check</h2>
+        <div id="config-status"></div>
+        <button onclick="checkConfig()">Check Configuration</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Quick Upload Test</h2>
+        <input type="file" id="testFile" accept="image/*">
+        <button onclick="testQuickUpload()">Test Upload</button>
+        <div id="upload-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Storage Rules Test</h2>
+        <button onclick="testStorageRules()">Test Storage Access</button>
+        <div id="rules-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Current Issues</h2>
+        <div id="issues"></div>
+    </div>
+
+    <script>
+        // Check configuration
+        async function checkConfig() {
+            const status = document.getElementById('config-status');
+            status.innerHTML = '';
+            
+            try {
+                // Check auth
+                const user = auth.currentUser;
+                if (user) {
+                    status.innerHTML += '<div class="status success">✓ User authenticated: ' + user.email + '</div>';
+                } else {
+                    status.innerHTML += '<div class="status error">✗ No user authenticated</div>';
+                    return;
+                }
+                
+                // Check storage
+                if (typeof storage !== 'undefined' && storage) {
+                    status.innerHTML += '<div class="status success">✓ Firebase Storage initialized</div>';
+                    
+                    // Check bucket
+                    const bucket = storage.app.options.storageBucket;
+                    status.innerHTML += '<div class="status info">Storage bucket: ' + bucket + '</div>';
+                } else {
+                    status.innerHTML += '<div class="status error">✗ Firebase Storage not initialized</div>';
+                }
+                
+                // Check if we have a family tree ID
+                const userFamilyTreeId = localStorage.getItem('userFamilyTreeId');
+                if (userFamilyTreeId) {
+                    status.innerHTML += '<div class="status success">✓ Family tree ID: ' + userFamilyTreeId + '</div>';
+                } else {
+                    status.innerHTML += '<div class="status error">✗ No family tree ID found</div>';
+                }
+                
+            } catch (error) {
+                status.innerHTML += '<div class="status error">Error: ' + error.message + '</div>';
+            }
+        }
+        
+        // Test quick upload
+        async function testQuickUpload() {
+            const status = document.getElementById('upload-status');
+            const fileInput = document.getElementById('testFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                status.innerHTML = '<div class="status error">Please select a file</div>';
+                return;
+            }
+            
+            status.innerHTML = '<div class="status info">Uploading...</div>';
+            
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    throw new Error('Not authenticated');
+                }
+                
+                // Create a test path
+                const testPath = `test-uploads/${user.uid}/${Date.now()}_${file.name}`;
+                const storageRef = storage.ref();
+                const fileRef = storageRef.child(testPath);
+                
+                // Upload
+                const snapshot = await fileRef.put(file);
+                const downloadUrl = await snapshot.ref.getDownloadURL();
+                
+                status.innerHTML = `
+                    <div class="status success">✓ Upload successful!</div>
+                    <div class="status info">Path: ${testPath}</div>
+                    <div class="status info">Size: ${(file.size / 1024).toFixed(2)} KB</div>
+                    <div class="status info">Download URL: <a href="${downloadUrl}" target="_blank">View</a></div>
+                `;
+                
+                // Try to delete test file
+                setTimeout(async () => {
+                    try {
+                        await fileRef.delete();
+                        status.innerHTML += '<div class="status info">Test file deleted</div>';
+                    } catch (e) {
+                        console.log('Could not delete test file:', e);
+                    }
+                }, 5000);
+                
+            } catch (error) {
+                status.innerHTML = `<div class="status error">Upload failed: ${error.message}</div>`;
+                console.error('Upload error:', error);
+            }
+        }
+        
+        // Test storage rules
+        async function testStorageRules() {
+            const status = document.getElementById('rules-status');
+            status.innerHTML = '<div class="status info">Testing storage rules...</div>';
+            
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    throw new Error('Not authenticated');
+                }
+                
+                // Test 1: Can we list files?
+                try {
+                    const listRef = storage.ref(`familyTrees/`);
+                    const result = await listRef.listAll();
+                    status.innerHTML += '<div class="status info">List operation: ' + (result ? 'Allowed' : 'Blocked') + '</div>';
+                } catch (e) {
+                    status.innerHTML += '<div class="status info">List operation: Blocked (good for security)</div>';
+                }
+                
+                // Test 2: Can we upload to our path?
+                const testData = new Blob(['test'], {type: 'text/plain'});
+                const testRef = storage.ref(`familyTrees/test-${user.uid}/test.txt`);
+                
+                try {
+                    await testRef.put(testData);
+                    status.innerHTML += '<div class="status success">✓ Upload allowed for user path</div>';
+                    await testRef.delete();
+                } catch (e) {
+                    status.innerHTML += '<div class="status error">✗ Upload blocked: ' + e.message + '</div>';
+                }
+                
+            } catch (error) {
+                status.innerHTML = `<div class="status error">Rules test failed: ${error.message}</div>`;
+            }
+        }
+        
+        // Show current issues
+        function showIssues() {
+            const issues = document.getElementById('issues');
+            issues.innerHTML = `
+                <div class="status info">
+                    <h4>Identified Issues:</h4>
+                    <ol>
+                        <li>No file size validation (could upload very large files)</li>
+                        <li>No file type validation in code (relies on accept attribute)</li>
+                        <li>No upload progress indication</li>
+                        <li>Limited error feedback to users</li>
+                        <li>No image optimization/compression</li>
+                        <li>Storage rules may not be deployed</li>
+                    </ol>
+                </div>
+                <div class="status success">
+                    <h4>Working Features:</h4>
+                    <ol>
+                        <li>Basic upload functionality</li>
+                        <li>Firebase Storage integration</li>
+                        <li>Unique file naming with timestamps</li>
+                        <li>Download URL generation</li>
+                        <li>Organization by family tree ID</li>
+                    </ol>
+                </div>
+            `;
+        }
+        
+        // Auto-check auth state
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                document.getElementById('config-status').innerHTML = 
+                    '<div class="status success">Authenticated as: ' + user.email + '</div>';
+            } else {
+                document.getElementById('config-status').innerHTML = 
+                    '<div class="status error">Not authenticated. <a href="/">Login</a></div>';
+            }
+        });
+        
+        // Show issues on load
+        showIssues();
+    </script>
+</body>
+</html>

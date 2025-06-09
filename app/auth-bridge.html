@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Authenticating...</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+</head>
+<body>
+    <div style="text-align: center; margin-top: 50px; font-family: Arial, sans-serif;">
+        <h2>Authenticating...</h2>
+        <p>Please wait while we complete your login.</p>
+    </div>
+    
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
+            authDomain: "pyebwa-f5960.firebaseapp.com",
+            projectId: "pyebwa-f5960",
+            storageBucket: "pyebwa-f5960.firebasestorage.app",
+            messagingSenderId: "1042887343749",
+            appId: "1:1042887343749:web:c276bf69b6c0895111f3ec",
+            measurementId: "G-ZX92K1TMM3"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        
+        // Get token from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        
+        if (token) {
+            // Wait for auth state to be ready
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    // User is already signed in, redirect to app
+                    window.location.href = '/app/?login=true';
+                } else {
+                    // Try to get auth state from www.pyebwa.com
+                    // For now, just redirect with the login flag
+                    window.location.href = '/app/?login=true';
+                }
+            });
+        } else {
+            // No token, redirect to login
+            window.location.href = 'https://secure.pyebwa.com/?redirect=' + encodeURIComponent(window.location.origin + '/app/');
+        }
+    </script>
+</body>
+</html>

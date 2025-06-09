@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Authentication Relay</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+</head>
+<body>
+    <script>
+        // This page acts as a relay for authentication state
+        // It's loaded in an iframe on rasin.pyebwa.com to share auth state
+        
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
+            authDomain: "pyebwa-f5960.firebaseapp.com",
+            projectId: "pyebwa-f5960",
+            storageBucket: "pyebwa-f5960.firebasestorage.app",
+            messagingSenderId: "1042887343749",
+            appId: "1:1042887343749:web:c276bf69b6c0895111f3ec",
+            measurementId: "G-ZX92K1TMM3"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        
+        // Listen for auth state changes
+        auth.onAuthStateChanged(async (user) => {
+            if (user && window.parent !== window) {
+                // Get the ID token
+                const idToken = await user.getIdToken();
+                
+                // Send auth state to parent window
+                window.parent.postMessage({
+                    type: 'pyebwa-auth-state',
+                    authenticated: true,
+                    user: {
+                        uid: user.uid,
+                        email: user.email,
+                        displayName: user.displayName,
+                        photoURL: user.photoURL,
+                        idToken: idToken
+                    }
+                }, 'https://rasin.pyebwa.com');
+            } else if (!user && window.parent !== window) {
+                // Send no auth state
+                window.parent.postMessage({
+                    type: 'pyebwa-auth-state',
+                    authenticated: false
+                }, 'https://rasin.pyebwa.com');
+            }
+        });
+        
+        // Also respond to direct requests
+        window.addEventListener('message', async (event) => {
+            if (event.origin !== 'https://rasin.pyebwa.com') return;
+            
+            if (event.data.type === 'pyebwa-auth-check') {
+                const user = auth.currentUser;
+                if (user) {
+                    const idToken = await user.getIdToken();
+                    event.source.postMessage({
+                        type: 'pyebwa-auth-response',
+                        authenticated: true,
+                        user: {
+                            uid: user.uid,
+                            email: user.email,
+                            displayName: user.displayName,
+                            photoURL: user.photoURL,
+                            idToken: idToken
+                        }
+                    }, event.origin);
+                } else {
+                    event.source.postMessage({
+                        type: 'pyebwa-auth-response',
+                        authenticated: false
+                    }, event.origin);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

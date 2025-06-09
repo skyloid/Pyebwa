@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .lang-selector {
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+        .lang-btn {
+            padding: 8px 16px;
+            margin: 0 5px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        .lang-btn.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Translation System Test</h1>
+    
+    <div class="lang-selector">
+        <button class="lang-btn" data-lang="en">English</button>
+        <button class="lang-btn" data-lang="fr">Français</button>
+        <button class="lang-btn active" data-lang="ht">Kreyòl</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Basic Navigation Test</h2>
+        <p>Home: <span data-i18n="home">Akèy</span></p>
+        <p>About: <span data-i18n="about">Konsènan</span></p>
+        <p>Our Mission: <span data-i18n="ourMission">Misyon Nou</span></p>
+        <p>Contact: <span data-i18n="contact">Kontak</span></p>
+    </div>
+    
+    <div class="test-section">
+        <h2>Page-Specific Content Test</h2>
+        <p>About Title: <span data-i18n="aboutTitle">Konsènan Pyebwa</span></p>
+        <p>About Subtitle: <span data-i18n="aboutSubtitle">Konekte Fanmi yo, Prezève Eritaj</span></p>
+        <p>One Billion Trees: <span data-i18n="oneBillionTrees">Yon Milya Pyebwa pou Ayiti</span></p>
+        <p>Get In Touch: <span data-i18n="getInTouch">Antre an Kontak</span></p>
+    </div>
+    
+    <div class="status" id="status">
+        <h3>Debug Information:</h3>
+        <div id="debugInfo"></div>
+    </div>
+    
+    <script src="js/translations-pages.js"></script>
+    <script src="js/language.js"></script>
+    
+    <script>
+        // Debug script
+        const debugInfo = document.getElementById('debugInfo');
+        
+        // Check if translations are loaded
+        if (typeof pageTranslations !== 'undefined') {
+            debugInfo.innerHTML += '<p class="success">✓ pageTranslations loaded successfully</p>';
+            debugInfo.innerHTML += '<p>Available languages: ' + Object.keys(pageTranslations).join(', ') + '</p>';
+            
+            // Show sample translations
+            const currentLang = localStorage.getItem('language') || 'ht';
+            debugInfo.innerHTML += '<p>Current language: ' + currentLang + '</p>';
+            
+            if (pageTranslations[currentLang]) {
+                debugInfo.innerHTML += '<p class="success">✓ Translations available for ' + currentLang + '</p>';
+                debugInfo.innerHTML += '<p>Sample keys: ' + Object.keys(pageTranslations[currentLang]).slice(0, 5).join(', ') + '...</p>';
+            } else {
+                debugInfo.innerHTML += '<p class="error">✗ No translations found for ' + currentLang + '</p>';
+            }
+        } else {
+            debugInfo.innerHTML += '<p class="error">✗ pageTranslations not loaded</p>';
+        }
+        
+        // Check localStorage
+        debugInfo.innerHTML += '<p>localStorage language: ' + (localStorage.getItem('language') || 'not set') + '</p>';
+        
+        // Test manual translation
+        setTimeout(() => {
+            const testElement = document.querySelector('[data-i18n="home"]');
+            if (testElement) {
+                debugInfo.innerHTML += '<p>Home element current text: "' + testElement.textContent + '"</p>';
+            }
+        }, 100);
+    </script>
+</body>
+</html>

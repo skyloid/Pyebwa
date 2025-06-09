@@ -1,0 +1,15 @@
+[Unit]
+Description=Pyebwa Authentication Server
+After=network.target
+
+[Service]
+Type=simple
+User=pyebwa-rasin
+WorkingDirectory=/home/pyebwa-rasin/htdocs/rasin.pyebwa.com/auth-server
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=10
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target

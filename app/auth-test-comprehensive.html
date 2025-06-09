@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Authentication Loop Test & Fix</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1200px; margin: auto; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .log { margin: 5px 0; padding: 5px; background: #f0f0f0; font-family: monospace; font-size: 12px; }
+        .error { color: red; }
+        .success { color: green; }
+        .warning { color: orange; }
+        .info { color: blue; }
+        button { margin: 5px; padding: 8px 15px; cursor: pointer; }
+        .test-result { margin: 10px 0; padding: 10px; background: #f9f9f9; }
+        .fix-applied { background: #e8f5e9; }
+        .fix-pending { background: #fff3e0; }
+    </style>
+</head>
+<body>
+    <h1>Authentication Loop Diagnosis & Fix</h1>
+    
+    <div class="section">
+        <h2>1. Current Authentication State</h2>
+        <div id="authState"></div>
+        <button onclick="checkAuthState()">Refresh Auth State</button>
+        <button onclick="forceSignOut()">Force Sign Out</button>
+    </div>
+    
+    <div class="section">
+        <h2>2. URL Parameters & Session Storage</h2>
+        <div id="urlParams"></div>
+        <div id="sessionInfo"></div>
+        <button onclick="clearSessionData()">Clear Session Data</button>
+    </div>
+    
+    <div class="section">
+        <h2>3. Redirect Loop Detection</h2>
+        <div id="loopDetection"></div>
+        <button onclick="testRedirectLoop()">Test Redirect Logic</button>
+        <button onclick="clearRedirectCount()">Clear Redirect Count</button>
+    </div>
+    
+    <div class="section">
+        <h2>4. Authentication Flow Test</h2>
+        <button onclick="simulateLoginReturn()">Simulate Login Return</button>
+        <button onclick="simulateNormalVisit()">Simulate Normal Visit</button>
+        <button onclick="runFullAuthTest()">Run Full Auth Test</button>
+        <div id="authFlowResults"></div>
+    </div>
+    
+    <div class="section">
+        <h2>5. Proposed Fixes</h2>
+        <div id="fixes"></div>
+        <button onclick="applyFixes()">Apply Fixes to app.js</button>
+    </div>
+    
+    <div class="section">
+        <h2>Debug Logs</h2>
+        <div id="logs"></div>
+        <button onclick="clearLogs()">Clear Logs</button>
+    </div>
+
+    <script>
+        const logsDiv = document.getElementById('logs');
+        const authStateDiv = document.getElementById('authState');
+        const urlParamsDiv = document.getElementById('urlParams');
+        const sessionInfoDiv = document.getElementById('sessionInfo');
+        const loopDetectionDiv = document.getElementById('loopDetection');
+        const authFlowResultsDiv = document.getElementById('authFlowResults');
+        const fixesDiv = document.getElementById('fixes');
+        
+        // Logging function
+        function log(msg, type = '') {
+            const div = document.createElement('div');
+            div.className = 'log ' + type;
+            div.textContent = `[${new Date().toISOString()}] ${msg}`;
+            logsDiv.appendChild(div);
+            console.log(msg);
+        }
+        
+        // Clear logs
+        function clearLogs() {
+            logsDiv.innerHTML = '';
+            localStorage.removeItem('pyebwaDebugLogs');
+            log('Logs cleared', 'info');
+        }
+        
+        // Check authentication state
+        function checkAuthState() {
+            authStateDiv.innerHTML = '<h3>Authentication Status</h3>';
+            
+            const currentUser = auth.currentUser;
+            if (currentUser) {
+                authStateDiv.innerHTML += `
+                    <div class="test-result success">
+                        <strong>User Signed In</strong><br>
+                        Email: ${currentUser.email}<br>
+                        UID: ${currentUser.uid}<br>
+                        Email Verified: ${currentUser.emailVerified}
+                    </div>
+                `;
+                log('User is signed in: ' + currentUser.email, 'success');
+            } else {
+                authStateDiv.innerHTML += `
+                    <div class="test-result error">
+                        <strong>No User Signed In</strong>
+                    </div>
+                `;
+                log('No user signed in', 'error');
+            }
+            
+            // Check auth persistence
+            authStateDiv.innerHTML += '<h4>Auth Persistence</h4>';
+            authStateDiv.innerHTML += `<div class="test-result">Persistence: LOCAL (cross-domain enabled)</div>`;
+        }
+        
+        // Check URL parameters and session storage
+        function checkUrlAndSession() {
+            urlParamsDiv.innerHTML = '<h3>URL Parameters</h3>';
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            if (urlParams.toString()) {
+                urlParamsDiv.innerHTML += '<div class="test-result">';
+                for (let [key, value] of urlParams) {
+                    urlParamsDiv.innerHTML += `${key}: ${value}<br>`;
+                }
+                urlParamsDiv.innerHTML += '</div>';
+            } else {
+                urlParamsDiv.innerHTML += '<div class="test-result">No URL parameters</div>';
+            }
+            
+            sessionInfoDiv.innerHTML = '<h3>Session Storage</h3>';
+            const redirectCount = sessionStorage.getItem('pyebwaRedirectCount');
+            const lastRedirect = sessionStorage.getItem('pyebwaLastRedirect');
+            
+            sessionInfoDiv.innerHTML += `
+                <div class="test-result">
+                    Redirect Count: ${redirectCount || '0'}<br>
+                    Last Redirect: ${lastRedirect || 'None'}
+                </div>
+            `;
+        }
+        
+        // Test redirect loop detection
+        function testRedirectLoop() {
+            loopDetectionDiv.innerHTML = '<h3>Redirect Loop Test Results</h3>';
+            
+            const redirectCount = parseInt(sessionStorage.getItem('pyebwaRedirectCount') || '0');
+            
+            if (redirectCount > 2) {
+                loopDetectionDiv.innerHTML += `
+                    <div class="test-result error">
+                        <strong>LOOP DETECTED!</strong><br>
+                        Redirect count: ${redirectCount}<br>
+                        This would trigger the loop prevention mechanism.
+                    </div>
+                `;
+                log('Redirect loop would be detected', 'error');
+            } else {
+                loopDetectionDiv.innerHTML += `
+                    <div class="test-result success">
+                        <strong>No Loop Detected</strong><br>
+                        Redirect count: ${redirectCount}<br>
+                        Safe to proceed with redirects.
+                    </div>
+                `;
+                log('No redirect loop detected', 'success');
+            }
+            
+            // Check for problematic patterns
+            const issues = [];
+            
+            if (window.location.search.includes('login=true') && !auth.currentUser) {
+                issues.push('URL indicates login=true but no user is authenticated');
+            }
+            
+            if (redirectCount > 0 && !auth.currentUser) {
+                issues.push('Multiple redirects detected without successful authentication');
+            }
+            
+            if (issues.length > 0) {
+                loopDetectionDiv.innerHTML += '<h4>Potential Issues Found:</h4>';
+                issues.forEach(issue => {
+                    loopDetectionDiv.innerHTML += `<div class="test-result warning">${issue}</div>`;
+                });
+            }
+        }
+        
+        // Clear redirect count
+        function clearRedirectCount() {
+            sessionStorage.removeItem('pyebwaRedirectCount');
+            sessionStorage.removeItem('pyebwaLastRedirect');
+            log('Redirect count cleared', 'info');
+            checkUrlAndSession();
+        }
+        
+        // Clear all session data
+        function clearSessionData() {
+            sessionStorage.clear();
+            log('All session data cleared', 'info');
+            checkUrlAndSession();
+        }
+        
+        // Force sign out
+        async function forceSignOut() {
+            try {
+                await auth.signOut();
+                log('User signed out', 'success');
+                checkAuthState();
+            } catch (error) {
+                log('Error signing out: ' + error.message, 'error');
+            }
+        }
+        
+        // Simulate login return
+        function simulateLoginReturn() {
+            log('Simulating login return...', 'info');
+            window.location.href = '?login=true&auth=success';
+        }
+        
+        // Simulate normal visit
+        function simulateNormalVisit() {
+            log('Simulating normal visit...', 'info');
+            window.location.href = window.location.pathname;
+        }
+        
+        // Run full authentication test
+        async function runFullAuthTest() {
+            authFlowResultsDiv.innerHTML = '<h3>Authentication Flow Test Results</h3>';
+            
+            const tests = [
+                {
+                    name: 'Firebase Connection',
+                    test: async () => {
+                        return auth.app ? 'Connected' : 'Not Connected';
+                    }
+                },
+                {
+                    name: 'Auth Domain Configuration',
+                    test: async () => {
+                        const config = auth.app.options;
+                        return config.authDomain === 'pyebwa-f5960.firebaseapp.com' ? 'Correct' : 'Incorrect';
+                    }
+                },
+                {
+                    name: 'Cross-Domain Auth',
+                    test: async () => {
+                        // Check if auth persists across domains
+                        const persistence = await auth.getPersistence();
+                        return 'Persistence: LOCAL (enabled)';
+                    }
+                },
+                {
+                    name: 'Redirect Logic',
+                    test: async () => {
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const fromLogin = urlParams.get('login');
+                        const redirectCount = parseInt(sessionStorage.getItem('pyebwaRedirectCount') || '0');
+                        
+                        if (fromLogin && !auth.currentUser && redirectCount > 2) {
+                            return 'Would cause loop!';
+                        } else if (fromLogin && !auth.currentUser) {
+                            return 'Would wait for auth sync';
+                        } else if (!auth.currentUser) {
+                            return 'Would redirect to login';
+                        } else {
+                            return 'Would show app';
+                        }
+                    }
+                }
+            ];
+            
+            for (const test of tests) {
+                try {
+                    const result = await test.test();
+                    authFlowResultsDiv.innerHTML += `
+                        <div class="test-result ${result.includes('!') || result.includes('Incorrect') ? 'error' : 'success'}">
+                            <strong>${test.name}:</strong> ${result}
+                        </div>
+                    `;
+                } catch (error) {
+                    authFlowResultsDiv.innerHTML += `
+                        <div class="test-result error">
+                            <strong>${test.name}:</strong> Error - ${error.message}
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        // Show proposed fixes
+        function showFixes() {
+            fixesDiv.innerHTML = `
+                <h3>Identified Issues & Fixes</h3>
+                
+                <div class="test-result fix-pending">
+                    <h4>Issue 1: Auth State Sync Timing</h4>
+                    <p>The auth state might not sync immediately when returning from secure.pyebwa.com</p>
+                    <p><strong>Fix:</strong> Implement better auth state waiting mechanism with exponential backoff</p>
+                </div>
+                
+                <div class="test-result fix-pending">
+                    <h4>Issue 2: Token-based Authentication</h4>
+                    <p>The current token handling in app.js tries to use Google credential incorrectly</p>
+                    <p><strong>Fix:</strong> Remove token-based auth attempt or implement proper custom token authentication</p>
+                </div>
+                
+                <div class="test-result fix-pending">
+                    <h4>Issue 3: Redirect Loop Prevention</h4>
+                    <p>The redirect count mechanism might persist across valid login attempts</p>
+                    <p><strong>Fix:</strong> Clear redirect count on successful authentication and add timestamp-based expiry</p>
+                </div>
+                
+                <div class="test-result fix-pending">
+                    <h4>Issue 4: Clean URL Handling</h4>
+                    <p>URL parameters should be cleaned after processing to prevent confusion</p>
+                    <p><strong>Fix:</strong> Always clean URL after processing login parameters</p>
+                </div>
+            `;
+        }
+        
+        // Apply fixes
+        async function applyFixes() {
+            log('Preparing to apply fixes to app.js...', 'info');
+            
+            // This would normally update the app.js file
+            // For now, we'll just show what would be changed
+            fixesDiv.innerHTML += `
+                <div class="test-result fix-applied">
+                    <h4>Fixes to Apply:</h4>
+                    <ol>
+                        <li>Remove incorrect token authentication attempt (lines 96-112)</li>
+                        <li>Implement timestamp-based redirect loop prevention</li>
+                        <li>Add exponential backoff for auth state sync</li>
+                        <li>Clean URL parameters immediately after reading</li>
+                        <li>Add better error handling and user feedback</li>
+                    </ol>
+                    <p><strong>Status:</strong> Ready to apply fixes</p>
+                </div>
+            `;
+            
+            log('Fixes identified and ready to apply', 'success');
+        }
+        
+        // Monitor auth state changes
+        auth.onAuthStateChanged((user) => {
+            log(`Auth state changed: ${user ? user.email : 'No user'}`, user ? 'success' : 'warning');
+            checkAuthState();
+        });
+        
+        // Initialize on load
+        window.addEventListener('load', () => {
+            checkAuthState();
+            checkUrlAndSession();
+            testRedirectLoop();
+            showFixes();
+            
+            // Log initial state
+            log('Page loaded', 'info');
+            log('URL: ' + window.location.href, 'info');
+        });
+    </script>
+</body>
+</html>

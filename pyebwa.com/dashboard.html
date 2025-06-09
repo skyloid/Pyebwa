@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pyebwa Dashboard - Welcome</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    
+    <style>
+        .dashboard {
+            min-height: 100vh;
+            background: #f5f5f5;
+            padding: 40px 20px;
+        }
+        .dashboard-header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .welcome-message {
+            font-size: 28px;
+            color: #D41125;
+            margin-bottom: 10px;
+        }
+        .user-email {
+            color: #666;
+            font-size: 18px;
+        }
+        .dashboard-content {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .coming-soon {
+            font-size: 24px;
+            color: #00217D;
+            margin-bottom: 20px;
+        }
+        .info-text {
+            color: #666;
+            line-height: 1.8;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+        .logout-btn {
+            background: #D41125;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .logout-btn:hover {
+            background: #B00E20;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="container">
+            <div class="dashboard-header">
+                <h1 class="welcome-message">Byenveni nan Pyebwa!</h1>
+                <p class="user-email" id="userEmail">Loading...</p>
+            </div>
+            
+            <div class="dashboard-content">
+                <h2 class="coming-soon">Pyebwa Fanmi App - Coming Soon!</h2>
+                <p class="info-text">
+                    Mèsi pou enskri! N ap travay sou aplikasyon pyebwa fanmi an. Ou pral kapab:<br><br>
+                    ✓ Kreye pyebwa fanmi w<br>
+                    ✓ Ajoute manm fanmi yo<br>
+                    ✓ Pataje istwa ak foto<br>
+                    ✓ Konekte ak tout fanmi w<br><br>
+                    
+                    Aplikasyon an pral disponib byento!
+                </p>
+                <button class="logout-btn" onclick="logout()">Dekonekte</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/firebase-config.js?v=2"></script>
+    <script>
+        // Check authentication
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // User is signed in
+                document.getElementById('userEmail').textContent = user.email;
+            } else {
+                // No user signed in, redirect to home
+                window.location.href = '/';
+            }
+        });
+
+        // Logout function
+        function logout() {
+            auth.signOut().then(() => {
+                window.location.href = '/';
+            }).catch((error) => {
+                console.error('Logout error:', error);
+            });
+        }
+    </script>
+</body>
+</html>

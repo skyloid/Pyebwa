@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slideshow Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        
+        /* Test 1: Basic Slideshow */
+        .test-section {
+            margin: 50px;
+            border: 2px solid #333;
+            padding: 20px;
+        }
+        
+        .test-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        /* Test 1: Slideshow with absolute positioning */
+        .slideshow-container-1 {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: #000;
+            overflow: hidden;
+        }
+        
+        .slide-1 {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .slide-1.active {
+            opacity: 1;
+        }
+        
+        /* Test 2: Simplified slideshow */
+        .slideshow-container-2 {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: #333;
+        }
+        
+        .slide-2 {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+        
+        .slide-2.active {
+            display: block;
+        }
+        
+        .slide-2 img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Test 3: Z-index test */
+        .slideshow-container-3 {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: #666;
+        }
+        
+        .slide-3 {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+        
+        .slide-3.active {
+            z-index: 10;
+            opacity: 1;
+        }
+        
+        .slide-3 img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Debug info */
+        .debug-info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 100;
+            font-size: 14px;
+        }
+        
+        /* Hero section similar to mission page */
+        .hero-test {
+            position: relative;
+            height: 500px;
+            overflow: hidden;
+            background: #000;
+            color: white;
+            text-align: center;
+        }
+        
+        .forest-slideshow-test {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        
+        .forest-slide-test {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .forest-slide-test.active {
+            opacity: 1;
+        }
+        
+        .hero-overlay-test {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 33, 125, 0.7);
+            z-index: 1;
+        }
+        
+        .hero-content-test {
+            position: relative;
+            z-index: 2;
+            padding-top: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; margin: 40px 0;">Slideshow Diagnostic Tests</h1>
+    
+    <!-- Test 1: Basic Background Image Slideshow -->
+    <div class="test-section">
+        <h2 class="test-title">Test 1: Background Image Slideshow (Like Mission Page)</h2>
+        <div class="slideshow-container-1">
+            <div class="debug-info">
+                Current slide: <span id="slide-counter-1">1</span>
+            </div>
+            <div class="slide-1 active" style="background-image: url('https://images.unsplash.com/photo-1511497584788-876760111969?w=800');"></div>
+            <div class="slide-1" style="background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800');"></div>
+            <div class="slide-1" style="background-image: url('https://images.unsplash.com/photo-1448375240586-882707db888b?w=800');"></div>
+        </div>
+    </div>
+    
+    <!-- Test 2: Simple Display Toggle -->
+    <div class="test-section">
+        <h2 class="test-title">Test 2: Simple Display Toggle</h2>
+        <div class="slideshow-container-2">
+            <div class="debug-info">
+                Current slide: <span id="slide-counter-2">1</span>
+            </div>
+            <div class="slide-2 active">
+                <img src="https://images.unsplash.com/photo-1511497584788-876760111969?w=800" alt="Forest 1">
+            </div>
+            <div class="slide-2">
+                <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800" alt="Forest 2">
+            </div>
+            <div class="slide-2">
+                <img src="https://images.unsplash.com/photo-1448375240586-882707db888b?w=800" alt="Forest 3">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Test 3: Z-index Based -->
+    <div class="test-section">
+        <h2 class="test-title">Test 3: Z-index Based Slideshow</h2>
+        <div class="slideshow-container-3">
+            <div class="debug-info">
+                Current slide: <span id="slide-counter-3">1</span>
+            </div>
+            <div class="slide-3 active">
+                <img src="https://images.unsplash.com/photo-1511497584788-876760111969?w=800" alt="Forest 1">
+            </div>
+            <div class="slide-3">
+                <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800" alt="Forest 2">
+            </div>
+            <div class="slide-3">
+                <img src="https://images.unsplash.com/photo-1448375240586-882707db888b?w=800" alt="Forest 3">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Test 4: Exact Mission Page Structure -->
+    <div class="test-section">
+        <h2 class="test-title">Test 4: Exact Mission Page Hero Structure</h2>
+        <div class="hero-test">
+            <div class="forest-slideshow-test">
+                <div class="forest-slide-test active" style="background-image: url('https://images.unsplash.com/photo-1511497584788-876760111969?w=800');"></div>
+                <div class="forest-slide-test" style="background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800');"></div>
+                <div class="forest-slide-test" style="background-image: url('https://images.unsplash.com/photo-1448375240586-882707db888b?w=800');"></div>
+            </div>
+            <div class="hero-overlay-test"></div>
+            <div class="hero-content-test">
+                <h1>Test Hero Content</h1>
+                <p>This text should appear above the slideshow</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Console output area -->
+    <div class="test-section">
+        <h2 class="test-title">Console Output</h2>
+        <div id="console-output" style="background: #f0f0f0; padding: 20px; font-family: monospace; height: 200px; overflow-y: auto;">
+            Loading...
+        </div>
+    </div>
+    
+    <script>
+        // Utility to log to both console and page
+        const consoleOutput = document.getElementById('console-output');
+        function log(message) {
+            console.log(message);
+            const time = new Date().toLocaleTimeString();
+            consoleOutput.innerHTML += `[${time}] ${message}<br>`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+        
+        // Clear initial loading message
+        consoleOutput.innerHTML = '';
+        
+        // Test 1: Background image slideshow
+        (function() {
+            log('Initializing Test 1: Background image slideshow');
+            const slides = document.querySelectorAll('.slide-1');
+            const counter = document.getElementById('slide-counter-1');
+            let currentSlide = 0;
+            
+            log(`Test 1: Found ${slides.length} slides`);
+            
+            function showNextSlide() {
+                slides[currentSlide].classList.remove('active');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active');
+                counter.textContent = currentSlide + 1;
+                log(`Test 1: Showing slide ${currentSlide + 1}`);
+            }
+            
+            setInterval(showNextSlide, 3000);
+        })();
+        
+        // Test 2: Simple display toggle
+        (function() {
+            log('Initializing Test 2: Simple display toggle');
+            const slides = document.querySelectorAll('.slide-2');
+            const counter = document.getElementById('slide-counter-2');
+            let currentSlide = 0;
+            
+            log(`Test 2: Found ${slides.length} slides`);
+            
+            function showNextSlide() {
+                slides[currentSlide].classList.remove('active');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active');
+                counter.textContent = currentSlide + 1;
+                log(`Test 2: Showing slide ${currentSlide + 1}`);
+            }
+            
+            setInterval(showNextSlide, 3000);
+        })();
+        
+        // Test 3: Z-index based
+        (function() {
+            log('Initializing Test 3: Z-index based slideshow');
+            const slides = document.querySelectorAll('.slide-3');
+            const counter = document.getElementById('slide-counter-3');
+            let currentSlide = 0;
+            
+            log(`Test 3: Found ${slides.length} slides`);
+            
+            function showNextSlide() {
+                slides[currentSlide].classList.remove('active');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active');
+                counter.textContent = currentSlide + 1;
+                log(`Test 3: Showing slide ${currentSlide + 1}`);
+            }
+            
+            setInterval(showNextSlide, 3000);
+        })();
+        
+        // Test 4: Mission page exact structure
+        (function() {
+            log('Initializing Test 4: Mission page structure');
+            const slides = document.querySelectorAll('.forest-slide-test');
+            let currentSlide = 0;
+            
+            log(`Test 4: Found ${slides.length} slides`);
+            
+            // Check if slides are visible
+            slides.forEach((slide, index) => {
+                const styles = window.getComputedStyle(slide);
+                log(`Test 4 - Slide ${index + 1}: opacity=${styles.opacity}, display=${styles.display}, position=${styles.position}`);
+            });
+            
+            function showNextSlide() {
+                slides[currentSlide].classList.remove('active');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active');
+                log(`Test 4: Showing slide ${currentSlide + 1}`);
+            }
+            
+            setInterval(showNextSlide, 3000);
+        })();
+        
+        // Check for image loading
+        window.addEventListener('load', () => {
+            log('=== Page fully loaded ===');
+            log('Checking image loading status...');
+            
+            // Check background images
+            document.querySelectorAll('[style*="background-image"]').forEach((el, index) => {
+                const bgImage = window.getComputedStyle(el).backgroundImage;
+                log(`Element ${index + 1} background-image: ${bgImage.substring(0, 50)}...`);
+            });
+        });
+        
+        // Monitor for errors
+        window.addEventListener('error', (e) => {
+            log(`ERROR: ${e.message} at ${e.filename}:${e.lineno}`);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Firebase Auth Diagnostic</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #0f0;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #0f0;
+        }
+        .error { color: #f00; }
+        .success { color: #0f0; }
+        .info { color: #ff0; }
+        button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 10px;
+            margin: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Firebase Auth Diagnostic Tool</h1>
+    
+    <div class="section">
+        <h2>1. Firebase Configuration</h2>
+        <div id="config"></div>
+    </div>
+    
+    <div class="section">
+        <h2>2. Current Auth State</h2>
+        <div id="authState">Checking...</div>
+    </div>
+    
+    <div class="section">
+        <h2>3. Storage Data</h2>
+        <div id="storage"></div>
+    </div>
+    
+    <div class="section">
+        <h2>4. Cookies</h2>
+        <div id="cookies"></div>
+    </div>
+    
+    <div class="section">
+        <h2>5. Actions</h2>
+        <button onclick="checkPersistence()">Check Persistence</button>
+        <button onclick="manualSignIn()">Manual Sign In Test</button>
+        <button onclick="refreshAuth()">Refresh Auth</button>
+        <button onclick="clearAll()">Clear All Auth Data</button>
+    </div>
+    
+    <div class="section">
+        <h2>6. Live Log</h2>
+        <div id="log" style="height: 200px; overflow-y: scroll;"></div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
+            authDomain: "pyebwa-f5960.firebaseapp.com",
+            projectId: "pyebwa-f5960",
+            storageBucket: "pyebwa-f5960.firebasestorage.app",
+            messagingSenderId: "1042887343749",
+            appId: "1:1042887343749:web:c276bf69b6c0895111f3ec",
+            measurementId: "G-ZX92K1TMM3"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        
+        function log(msg, type = 'info') {
+            const logEl = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            logEl.innerHTML += `<div class="${type}">[${time}] ${msg}</div>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        // Display config
+        document.getElementById('config').innerHTML = `
+            <div>API Key: ${firebaseConfig.apiKey.substring(0, 10)}...</div>
+            <div>Auth Domain: ${firebaseConfig.authDomain}</div>
+            <div>Project ID: ${firebaseConfig.projectId}</div>
+        `;
+        
+        // Check auth state
+        auth.onAuthStateChanged((user) => {
+            const stateEl = document.getElementById('authState');
+            if (user) {
+                stateEl.innerHTML = `
+                    <div class="success">✓ Authenticated</div>
+                    <div>UID: ${user.uid}</div>
+                    <div>Email: ${user.email}</div>
+                    <div>Display Name: ${user.displayName || 'Not set'}</div>
+                    <div>Provider: ${user.providerData[0]?.providerId}</div>
+                `;
+                log('Auth state changed: User logged in', 'success');
+            } else {
+                stateEl.innerHTML = '<div class="error">✗ Not authenticated</div>';
+                log('Auth state changed: No user', 'error');
+            }
+        });
+        
+        // Check storage
+        function checkStorage() {
+            const storageEl = document.getElementById('storage');
+            let html = '<h3>LocalStorage:</h3>';
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.includes('firebase') || key.includes('auth')) {
+                    const value = localStorage.getItem(key);
+                    html += `<div>${key}: ${value.substring(0, 50)}...</div>`;
+                }
+            }
+            
+            html += '<h3>SessionStorage:</h3>';
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                if (key.includes('firebase') || key.includes('auth')) {
+                    const value = sessionStorage.getItem(key);
+                    html += `<div>${key}: ${value.substring(0, 50)}...</div>`;
+                }
+            }
+            
+            storageEl.innerHTML = html;
+        }
+        
+        // Check cookies
+        function checkCookies() {
+            const cookiesEl = document.getElementById('cookies');
+            const cookies = document.cookie.split(';');
+            let html = '';
+            
+            cookies.forEach(cookie => {
+                if (cookie.includes('firebase') || cookie.includes('auth')) {
+                    html += `<div>${cookie}</div>`;
+                }
+            });
+            
+            cookiesEl.innerHTML = html || '<div>No relevant cookies found</div>';
+        }
+        
+        // Check persistence
+        async function checkPersistence() {
+            try {
+                log('Checking persistence setting...');
+                await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+                log('Persistence set to LOCAL', 'success');
+            } catch (error) {
+                log('Persistence error: ' + error.message, 'error');
+            }
+        }
+        
+        // Manual sign in test
+        async function manualSignIn() {
+            const email = prompt('Enter email:');
+            const password = prompt('Enter password:');
+            
+            if (email && password) {
+                try {
+                    log('Attempting sign in...');
+                    const result = await auth.signInWithEmailAndPassword(email, password);
+                    log('Sign in successful!', 'success');
+                } catch (error) {
+                    log('Sign in error: ' + error.message, 'error');
+                }
+            }
+        }
+        
+        // Refresh auth
+        async function refreshAuth() {
+            try {
+                log('Refreshing auth...');
+                const user = auth.currentUser;
+                if (user) {
+                    await user.reload();
+                    const token = await user.getIdToken(true);
+                    log('Auth refreshed, token: ' + token.substring(0, 20) + '...', 'success');
+                } else {
+                    log('No user to refresh', 'error');
+                }
+            } catch (error) {
+                log('Refresh error: ' + error.message, 'error');
+            }
+        }
+        
+        // Clear all
+        function clearAll() {
+            if (confirm('Clear all auth data?')) {
+                auth.signOut();
+                localStorage.clear();
+                sessionStorage.clear();
+                log('All auth data cleared', 'info');
+                setTimeout(() => location.reload(), 1000);
+            }
+        }
+        
+        // Initial checks
+        checkStorage();
+        checkCookies();
+        
+        // Auto-refresh
+        setInterval(() => {
+            checkStorage();
+            checkCookies();
+        }, 5000);
+        
+        log('Diagnostic tool loaded', 'success');
+    </script>
+</body>
+</html>

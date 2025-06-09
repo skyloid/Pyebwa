@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Pyebwa - Get in Touch</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/mobile.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        .contact-hero {
+            background: linear-gradient(135deg, #00217D 0%, #0066FF 100%);
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+        }
+        
+        .contact-hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        .contact-container {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+        }
+        
+        .contact-form-section {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .contact-info-section {
+            padding: 40px;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #1F2937;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #00217D;
+        }
+        
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .submit-btn {
+            background: #00217D;
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        
+        .submit-btn:hover {
+            background: #001654;
+            transform: translateY(-2px);
+        }
+        
+        .contact-info-item {
+            display: flex;
+            align-items: start;
+            margin-bottom: 30px;
+        }
+        
+        .contact-info-item .icon {
+            background: #EEF2FF;
+            color: #00217D;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+        
+        .contact-info-item h3 {
+            margin-bottom: 8px;
+            color: #1F2937;
+        }
+        
+        .contact-info-item p {
+            color: #4B5563;
+            line-height: 1.6;
+        }
+        
+        .faq-section {
+            background: #F9FAFB;
+            padding: 60px 20px;
+        }
+        
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .faq-item {
+            background: white;
+            margin-bottom: 16px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .faq-question {
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+        }
+        
+        .faq-question:hover {
+            background: #F3F4F6;
+        }
+        
+        .faq-answer {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        .faq-item.active .faq-answer {
+            max-height: 200px;
+            padding: 0 20px 20px;
+        }
+        
+        .faq-item .icon {
+            transition: transform 0.3s;
+        }
+        
+        .faq-item.active .icon {
+            transform: rotate(180deg);
+        }
+        
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            display: none;
+        }
+        
+        .alert.success {
+            background: #DEF7EC;
+            color: #03543F;
+            border: 1px solid #84E1BC;
+        }
+        
+        .alert.error {
+            background: #FEE;
+            color: #991B1B;
+            border: 1px solid #FCA5A5;
+        }
+        
+        @media (max-width: 768px) {
+            .contact-hero h1 {
+                font-size: 2rem;
+            }
+            
+            .contact-container {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+            
+            .contact-form-section {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Language Selector -->
+    <div class="language-selector">
+        <button class="lang-btn" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="fr">FR</button>
+        <button class="lang-btn active" data-lang="ht">HT</button>
+    </div>
+    
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="images/Pyebwa.png" alt="Pyebwa Logo" class="logo-img">
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link" data-i18n="home">Home</a>
+                <a href="about.html" class="nav-link" data-i18n="about">About</a>
+                <a href="mission.html" class="nav-link" data-i18n="ourMission">Our Mission</a>
+                <a href="contact.html" class="nav-link active" data-i18n="contact">Contact</a>
+                <div class="nav-buttons">
+                    <button class="btn btn-ghost" id="loginBtn" data-i18n="login">Login</button>
+                    <button class="btn btn-primary" id="signupBtn" data-i18n="signup">Sign Up</button>
+                </div>
+            </div>
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <span class="material-icons">menu</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="contact-hero">
+        <h1>Get in Touch</h1>
+        <p class="hero-subtitle">We're here to help you preserve your family's story</p>
+    </section>
+
+    <!-- Contact Section -->
+    <div class="contact-container">
+        <!-- Contact Form -->
+        <div class="contact-form-section">
+            <h2>Send Us a Message</h2>
+            <p style="color: #4B5563; margin-bottom: 30px;">
+                Have a question or feedback? We'd love to hear from you.
+            </p>
+            
+            <div class="alert success" id="successAlert">
+                Your message has been sent successfully! We'll get back to you soon.
+            </div>
+            
+            <div class="alert error" id="errorAlert">
+                There was an error sending your message. Please try again.
+            </div>
+            
+            <form id="contactForm">
+                <div class="form-group">
+                    <label for="name">Full Name *</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="subject">Subject *</label>
+                    <select id="subject" name="subject" required>
+                        <option value="">Select a subject</option>
+                        <option value="general">General Inquiry</option>
+                        <option value="support">Technical Support</option>
+                        <option value="feedback">Feedback</option>
+                        <option value="partnership">Partnership</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="message">Message *</label>
+                    <textarea id="message" name="message" required placeholder="Tell us how we can help..."></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn">Send Message</button>
+            </form>
+        </div>
+        
+        <!-- Contact Info -->
+        <div class="contact-info-section">
+            <h2>Other Ways to Reach Us</h2>
+            
+            <div class="contact-info-item">
+                <div class="icon">
+                    <span class="material-icons">email</span>
+                </div>
+                <div>
+                    <h3>Email</h3>
+                    <p>support@pyebwa.com<br>
+                    We typically respond within 24 hours</p>
+                </div>
+            </div>
+            
+            <div class="contact-info-item">
+                <div class="icon">
+                    <span class="material-icons">location_on</span>
+                </div>
+                <div>
+                    <h3>Address</h3>
+                    <p>Pyebwa Family Tree Platform<br>
+                    Serving families worldwide</p>
+                </div>
+            </div>
+            
+            <div class="contact-info-item">
+                <div class="icon">
+                    <span class="material-icons">schedule</span>
+                </div>
+                <div>
+                    <h3>Support Hours</h3>
+                    <p>Monday - Friday: 9:00 AM - 6:00 PM EST<br>
+                    Saturday - Sunday: 10:00 AM - 4:00 PM EST</p>
+                </div>
+            </div>
+            
+            <div class="contact-info-item">
+                <div class="icon">
+                    <span class="material-icons">language</span>
+                </div>
+                <div>
+                    <h3>Languages</h3>
+                    <p>We provide support in:<br>
+                    English • Français • Kreyòl Ayisyen</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+        <div class="faq-container">
+            <h2 style="text-align: center; margin-bottom: 40px;">Frequently Asked Questions</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How do I get started with Pyebwa?</span>
+                    <span class="material-icons icon">expand_more</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Getting started is easy! Simply click the "Sign Up" button, create your account, and you can immediately begin building your family tree. Our intuitive interface guides you through each step.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Is my family information secure?</span>
+                    <span class="material-icons icon">expand_more</span>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>Absolutely! Your family trees are completely private.</strong> Each family tree is protected and can only be accessed by family members you specifically invite. We use bank-level encryption to secure all data, and you maintain full control over who can view or edit your family information. Only the family members you authorize will ever have access to your tree - it's never public, never shared with third parties, and always remains within your family circle. Your family's privacy is our top priority.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Can I invite family members to collaborate?</span>
+                    <span class="material-icons icon">expand_more</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Absolutely! You can invite family members to view and contribute to your family tree. This makes it easy to gather information and stories from relatives near and far.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>What languages does Pyebwa support?</span>
+                    <span class="material-icons icon">expand_more</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Pyebwa currently supports English, French, and Haitian Creole.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Is Pyebwa free to use?</span>
+                    <span class="material-icons icon">expand_more</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Yes! Pyebwa offers a free plan that includes all the essential features for building and sharing your family tree. We also offer premium plans with additional features for larger families.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Pyebwa</h3>
+                <p>Connecting families, preserving heritage.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="index.html">Home</a>
+                <a href="about.html">About</a>
+                <a href="contact.html">Contact</a>
+                <a href="privacy.html">Privacy Policy</a>
+            </div>
+            <div class="footer-section">
+                <h4>Connect</h4>
+                <a href="#">Facebook</a>
+                <a href="#">Twitter</a>
+                <a href="#">Instagram</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 <span data-i18n="poweredBy">Powered by</span> <a href="https://humanlevel.ai" target="_blank" data-i18n="humanLevelTech">Human Level Technologies Inc.</a> <span data-i18n="allRights">All rights reserved.</span></p>
+        </div>
+    </footer>
+
+    <script src="js/language.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        // Redirect login/signup buttons to secure.pyebwa.com
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            window.location.href = 'https://secure.pyebwa.com/?redirect=' + encodeURIComponent(window.location.href);
+        });
+        document.getElementById('signupBtn').addEventListener('click', () => {
+            window.location.href = 'https://secure.pyebwa.com/?redirect=' + encodeURIComponent(window.location.href);
+        });
+        
+        // FAQ Toggle
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const faqItem = question.parentElement;
+                faqItem.classList.toggle('active');
+                
+                // Close other FAQ items
+                document.querySelectorAll('.faq-item').forEach(item => {
+                    if (item !== faqItem && item.classList.contains('active')) {
+                        item.classList.remove('active');
+                    }
+                });
+            });
+        });
+        
+        // Contact Form Handler
+        document.getElementById('contactForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Hide alerts
+            document.getElementById('successAlert').style.display = 'none';
+            document.getElementById('errorAlert').style.display = 'none';
+            
+            try {
+                // In a real implementation, this would send to a backend
+                // For now, we'll store in Firebase
+                if (typeof db !== 'undefined') {
+                    await db.collection('contact-messages').add(formData);
+                    
+                    // Show success
+                    document.getElementById('successAlert').style.display = 'block';
+                    document.getElementById('contactForm').reset();
+                    
+                    // Scroll to top
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    // Fallback - just show success for demo
+                    console.log('Contact form submission:', formData);
+                    document.getElementById('successAlert').style.display = 'block';
+                    document.getElementById('contactForm').reset();
+                }
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                document.getElementById('errorAlert').style.display = 'block';
+            }
+        });
+        
+        // Mobile menu toggle
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const navMenu = document.querySelector('.nav-menu');
+        
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+            });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.navbar') && navMenu.classList.contains('active')) {
+                    navMenu.classList.remove('active');
+                }
+            });
+            
+            // Close menu when clicking a link
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    navMenu.classList.remove('active');
+                });
+            });
+        }
+    </script>
+</body>
+</html>

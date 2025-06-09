@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Authentication Loop - Pyebwa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            color: #D41125;
+            margin-bottom: 20px;
+        }
+        .status {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        button {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #001654;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .warning {
+            color: orange;
+            font-weight: bold;
+        }
+        .step {
+            text-align: left;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f9f9f9;
+            border-left: 4px solid #00217D;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fix Authentication Loop</h1>
+        
+        <p>If you're experiencing an authentication loop, this page will help fix it.</p>
+        
+        <div id="status" class="status">
+            Checking current status...
+        </div>
+        
+        <div id="actions">
+            <h2>Quick Fix Options:</h2>
+            
+            <button onclick="executeQuickFix()">
+                🚀 Execute Quick Fix
+            </button>
+            
+            <button onclick="clearEverything()">
+                🧹 Clear All Data
+            </button>
+            
+            <button onclick="testAuth()">
+                🔍 Test Authentication
+            </button>
+        </div>
+        
+        <div id="results" style="margin-top: 20px; display: none;">
+            <h3>Fix Results:</h3>
+            <div id="resultContent"></div>
+        </div>
+        
+        <hr style="margin: 30px 0;">
+        
+        <div style="text-align: left;">
+            <h3>Manual Steps (if quick fix doesn't work):</h3>
+            <div class="step">
+                <strong>Step 1:</strong> Open Browser Developer Tools (F12)
+            </div>
+            <div class="step">
+                <strong>Step 2:</strong> Go to Application/Storage tab
+            </div>
+            <div class="step">
+                <strong>Step 3:</strong> Click "Clear site data" for all pyebwa domains
+            </div>
+            <div class="step">
+                <strong>Step 4:</strong> Close this tab and open a new one
+            </div>
+            <div class="step">
+                <strong>Step 5:</strong> Go to <a href="https://pyebwa.com">pyebwa.com</a> and try logging in again
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Status display
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.innerHTML = `<span class="${type}">${message}</span>`;
+        }
+        
+        // Show results
+        function showResult(message, type = 'info') {
+            const results = document.getElementById('results');
+            const content = document.getElementById('resultContent');
+            results.style.display = 'block';
+            content.innerHTML += `<p class="${type}">${message}</p>`;
+        }
+        
+        // Quick fix function
+        function executeQuickFix() {
+            updateStatus('Executing quick fix...', 'warning');
+            document.getElementById('resultContent').innerHTML = '';
+            
+            try {
+                // 1. Clear sessionStorage
+                sessionStorage.clear();
+                showResult('✓ Cleared session storage', 'success');
+                
+                // 2. Remove specific localStorage items
+                const itemsToRemove = [
+                    'pyebwaRedirectData',
+                    'pyebwaLastVisit',
+                    'pyebwaLoopDetected',
+                    'authLoopStopped'
+                ];
+                
+                itemsToRemove.forEach(item => {
+                    localStorage.removeItem(item);
+                });
+                showResult('✓ Removed loop detection data', 'success');
+                
+                // 3. Clear cookies for this domain
+                document.cookie.split(";").forEach(function(c) { 
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+                });
+                showResult('✓ Cleared cookies', 'success');
+                
+                // 4. Set a flag to prevent future loops
+                localStorage.setItem('loopFixApplied', new Date().toISOString());
+                showResult('✓ Applied loop prevention', 'success');
+                
+                updateStatus('Quick fix completed successfully!', 'success');
+                
+                // Offer to redirect
+                setTimeout(() => {
+                    if (confirm('Fix applied! Would you like to go to the homepage now?')) {
+                        window.location.href = 'https://pyebwa.com';
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                updateStatus('Error during quick fix: ' + error.message, 'error');
+                showResult('✗ ' + error.message, 'error');
+            }
+        }
+        
+        // Clear everything
+        function clearEverything() {
+            if (!confirm('This will clear ALL stored data. Continue?')) {
+                return;
+            }
+            
+            updateStatus('Clearing all data...', 'warning');
+            document.getElementById('resultContent').innerHTML = '';
+            
+            try {
+                // Clear everything
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // Clear all cookies
+                document.cookie.split(";").forEach(function(c) { 
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+                });
+                
+                showResult('✓ All data cleared', 'success');
+                updateStatus('All data cleared successfully!', 'success');
+                
+                setTimeout(() => {
+                    if (confirm('All data cleared! Would you like to start fresh at the homepage?')) {
+                        window.location.href = 'https://pyebwa.com';
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                updateStatus('Error clearing data: ' + error.message, 'error');
+            }
+        }
+        
+        // Test authentication
+        function testAuth() {
+            updateStatus('Testing authentication...', 'warning');
+            document.getElementById('resultContent').innerHTML = '';
+            
+            // Check localStorage
+            const redirectData = localStorage.getItem('pyebwaRedirectData');
+            const lastVisit = localStorage.getItem('pyebwaLastVisit');
+            const loopDetected = localStorage.getItem('pyebwaLoopDetected');
+            
+            showResult('LocalStorage Check:', 'info');
+            showResult(`- Redirect Data: ${redirectData ? 'Found' : 'Not found'}`, redirectData ? 'warning' : 'success');
+            showResult(`- Last Visit: ${lastVisit ? new Date(parseInt(lastVisit)).toLocaleString() : 'Not found'}`, lastVisit ? 'warning' : 'success');
+            showResult(`- Loop Detected: ${loopDetected ? 'YES' : 'No'}`, loopDetected ? 'error' : 'success');
+            
+            // Check sessionStorage
+            const sessionRedirect = sessionStorage.getItem('pyebwaRedirectData');
+            showResult('SessionStorage Check:', 'info');
+            showResult(`- Redirect Data: ${sessionRedirect ? 'Found' : 'Not found'}`, sessionRedirect ? 'warning' : 'success');
+            
+            if (!redirectData && !lastVisit && !loopDetected && !sessionRedirect) {
+                updateStatus('No loop indicators found - system is clean!', 'success');
+            } else {
+                updateStatus('Loop indicators detected - use Quick Fix', 'warning');
+            }
+        }
+        
+        // Check on load
+        window.addEventListener('load', () => {
+            testAuth();
+        });
+    </script>
+</body>
+</html>

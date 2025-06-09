@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Complete Auth Flow Test</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .status { 
+            padding: 10px; 
+            border-radius: 5px; 
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button {
+            background: #D41125;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #b00e20; }
+        .log-entry {
+            font-family: monospace;
+            font-size: 12px;
+            padding: 5px;
+            background: #f5f5f5;
+            margin: 2px 0;
+        }
+        #logs {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Complete Authentication Flow Test</h1>
+        
+        <div class="test-section">
+            <h2>Current Status</h2>
+            <div id="currentStatus"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test Actions</h2>
+            <button onclick="testFullFlow()">Test Full Auth Flow</button>
+            <button onclick="testCrossDomain()">Test Cross-Domain Auth</button>
+            <button onclick="simulateLogin()">Simulate Login Success</button>
+            <button onclick="clearAllData()">Clear All Data</button>
+        </div>
+        
+        <div class="test-section">
+            <h2>Auth Flow Visualization</h2>
+            <div id="flowVisualization"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test Results</h2>
+            <div id="testResults"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Debug Logs</h2>
+            <div id="logs"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
+            authDomain: "pyebwa-f5960.firebaseapp.com",
+            projectId: "pyebwa-f5960",
+            storageBucket: "pyebwa-f5960.firebasestorage.app",
+            messagingSenderId: "1042887343749",
+            appId: "1:1042887343749:web:c276bf69b6c0895111f3ec",
+            measurementId: "G-ZX92K1TMM3"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+        // Logging
+        function log(message, type = 'info') {
+            const timestamp = new Date().toISOString();
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.textContent = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            document.getElementById('logs').appendChild(logEntry);
+            
+            // Auto-scroll to bottom
+            document.getElementById('logs').scrollTop = document.getElementById('logs').scrollHeight;
+        }
+        
+        // Show status
+        function showStatus(message, type = 'info') {
+            const status = document.createElement('div');
+            status.className = `status ${type}`;
+            status.textContent = message;
+            document.getElementById('currentStatus').appendChild(status);
+        }
+        
+        // Update current status
+        function updateCurrentStatus() {
+            const statusDiv = document.getElementById('currentStatus');
+            statusDiv.innerHTML = '';
+            
+            // Check auth state
+            const user = auth.currentUser;
+            if (user) {
+                showStatus(`Authenticated as: ${user.email}`, 'success');
+                showStatus(`UID: ${user.uid}`, 'info');
+            } else {
+                showStatus('Not authenticated', 'warning');
+            }
+            
+            // Check URL parameters
+            const params = new URLSearchParams(window.location.search);
+            if (params.toString()) {
+                showStatus(`URL Parameters: ${params.toString()}`, 'info');
+            }
+            
+            // Check storage
+            const redirectData = sessionStorage.getItem('pyebwaRedirectData');
+            if (redirectData) {
+                showStatus(`Redirect Data: ${redirectData}`, 'info');
+            }
+        }
+        
+        // Test full authentication flow
+        async function testFullFlow() {
+            log('Starting full authentication flow test');
+            const results = document.getElementById('testResults');
+            results.innerHTML = '<h3>Test Results:</h3>';
+            
+            // Step 1: Check current auth state
+            log('Step 1: Checking current auth state');
+            const user = auth.currentUser;
+            if (user) {
+                results.innerHTML += '<div class="status success">✓ User already authenticated</div>';
+                log(`User authenticated: ${user.email}`, 'success');
+            } else {
+                results.innerHTML += '<div class="status warning">⚠ No user authenticated</div>';
+                log('No user authenticated', 'warning');
+            }
+            
+            // Step 2: Check redirect logic
+            log('Step 2: Testing redirect logic');
+            const redirectUrls = [
+                { from: 'rasin.pyebwa.com/app', to: 'secure.pyebwa.com', condition: 'Not authenticated' },
+                { from: 'secure.pyebwa.com', to: 'rasin.pyebwa.com/app', condition: 'After login' }
+            ];
+            
+            redirectUrls.forEach(redirect => {
+                results.innerHTML += `<div class="status info">→ ${redirect.from} → ${redirect.to} (${redirect.condition})</div>`;
+            });
+            
+            // Step 3: Test auth persistence
+            log('Step 3: Testing auth persistence');
+            try {
+                await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+                results.innerHTML += '<div class="status success">✓ Auth persistence set to LOCAL</div>';
+                log('Auth persistence configured', 'success');
+            } catch (error) {
+                results.innerHTML += '<div class="status error">✗ Failed to set auth persistence</div>';
+                log(`Auth persistence error: ${error.message}`, 'error');
+            }
+            
+            // Step 4: Check for redirect loops
+            log('Step 4: Checking for redirect loops');
+            const params = new URLSearchParams(window.location.search);
+            const redirectData = JSON.parse(sessionStorage.getItem('pyebwaRedirectData') || '{}');
+            
+            if (redirectData.count > 2) {
+                results.innerHTML += '<div class="status error">✗ Redirect loop detected!</div>';
+                log('Redirect loop detected', 'error');
+            } else {
+                results.innerHTML += '<div class="status success">✓ No redirect loops detected</div>';
+                log('No redirect loops', 'success');
+            }
+        }
+        
+        // Test cross-domain authentication
+        async function testCrossDomain() {
+            log('Testing cross-domain authentication');
+            const results = document.getElementById('testResults');
+            results.innerHTML = '<h3>Cross-Domain Test Results:</h3>';
+            
+            // Check current domain
+            results.innerHTML += `<div class="status info">Current domain: ${window.location.host}</div>`;
+            
+            // Check auth domain
+            results.innerHTML += `<div class="status info">Auth domain: ${auth.app.options.authDomain}</div>`;
+            
+            // Try to get ID token
+            if (auth.currentUser) {
+                try {
+                    const token = await auth.currentUser.getIdToken();
+                    results.innerHTML += '<div class="status success">✓ Successfully retrieved ID token</div>';
+                    results.innerHTML += `<div class="status info">Token length: ${token.length} characters</div>`;
+                    log('ID token retrieved successfully', 'success');
+                } catch (error) {
+                    results.innerHTML += '<div class="status error">✗ Failed to get ID token</div>';
+                    log(`ID token error: ${error.message}`, 'error');
+                }
+            } else {
+                results.innerHTML += '<div class="status warning">⚠ No user to test ID token</div>';
+            }
+        }
+        
+        // Simulate login success
+        function simulateLogin() {
+            log('Simulating login success redirect');
+            
+            // Add auth success parameters
+            const newUrl = window.location.pathname + '?auth=success&login=true';
+            window.history.replaceState({}, document.title, newUrl);
+            
+            // Reload to trigger auth check
+            window.location.reload();
+        }
+        
+        // Clear all data
+        function clearAllData() {
+            if (confirm('Clear all authentication data and storage?')) {
+                log('Clearing all data');
+                
+                // Sign out
+                auth.signOut();
+                
+                // Clear storage
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // Clear URL parameters
+                window.history.replaceState({}, document.title, window.location.pathname);
+                
+                log('All data cleared', 'success');
+                updateCurrentStatus();
+            }
+        }
+        
+        // Visualize auth flow
+        function visualizeFlow() {
+            const flowDiv = document.getElementById('flowVisualization');
+            flowDiv.innerHTML = `
+                <svg width="100%" height="400" viewBox="0 0 600 400">
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" 
+                         refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+                        </marker>
+                    </defs>
+                    
+                    <!-- Boxes -->
+                    <rect x="50" y="50" width="150" height="60" fill="#e3f2fd" stroke="#1976d2" stroke-width="2" rx="5"/>
+                    <text x="125" y="85" text-anchor="middle" font-size="14">rasin.pyebwa.com</text>
+                    
+                    <rect x="250" y="50" width="150" height="60" fill="#ffe3e3" stroke="#d41125" stroke-width="2" rx="5"/>
+                    <text x="325" y="85" text-anchor="middle" font-size="14">secure.pyebwa.com</text>
+                    
+                    <rect x="450" y="50" width="100" height="60" fill="#e8f5e9" stroke="#4caf50" stroke-width="2" rx="5"/>
+                    <text x="500" y="85" text-anchor="middle" font-size="14">Firebase</text>
+                    
+                    <!-- Arrows -->
+                    <line x1="200" y1="80" x2="250" y2="80" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+                    <text x="225" y="70" text-anchor="middle" font-size="12">No auth</text>
+                    
+                    <line x1="250" y1="100" x2="200" y2="100" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+                    <text x="225" y="120" text-anchor="middle" font-size="12">After login</text>
+                    
+                    <line x1="400" y1="80" x2="450" y2="80" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+                    <text x="425" y="70" text-anchor="middle" font-size="12">Auth check</text>
+                    
+                    <!-- Status indicators -->
+                    <circle cx="125" cy="150" r="20" fill="${auth.currentUser ? '#4caf50' : '#f44336'}"/>
+                    <text x="125" y="155" text-anchor="middle" font-size="12" fill="white">
+                        ${auth.currentUser ? '✓' : '✗'}
+                    </text>
+                    <text x="125" y="180" text-anchor="middle" font-size="12">
+                        ${auth.currentUser ? 'Authenticated' : 'Not Auth'}
+                    </text>
+                </svg>
+            `;
+        }
+        
+        // Auth state listener
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                log(`Auth state changed: User ${user.email} signed in`, 'success');
+            } else {
+                log('Auth state changed: No user signed in', 'warning');
+            }
+            updateCurrentStatus();
+            visualizeFlow();
+        });
+        
+        // Initialize on load
+        window.addEventListener('load', () => {
+            log('Page loaded', 'info');
+            updateCurrentStatus();
+            visualizeFlow();
+            
+            // Show any stored debug logs
+            const storedLogs = JSON.parse(localStorage.getItem('pyebwaDebugLogs') || '[]');
+            storedLogs.forEach(logEntry => {
+                log(`[Stored] ${logEntry}`, 'info');
+            });
+        });
+    </script>
+</body>
+</html>

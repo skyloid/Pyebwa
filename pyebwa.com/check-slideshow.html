@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slideshow Checker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-frame {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #333;
+            margin: 20px 0;
+        }
+        .console-output {
+            background: #f0f0f0;
+            padding: 20px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mission Page Slideshow Diagnostic</h1>
+    
+    <div id="diagnostics">
+        <h2>Quick Diagnostics</h2>
+        <div id="diagnostic-results"></div>
+    </div>
+    
+    <div>
+        <h2>Test Pages</h2>
+        <button onclick="loadPage('mission.html')">Load Original Mission Page</button>
+        <button onclick="loadPage('mission-fixed.html')">Load Fixed Mission Page</button>
+        <button onclick="loadPage('slideshow-test.html')">Load Test Page</button>
+    </div>
+    
+    <iframe id="testFrame" class="test-frame" src="mission.html"></iframe>
+    
+    <h2>Console Output</h2>
+    <div id="console" class="console-output">Loading...</div>
+    
+    <script>
+        const consoleDiv = document.getElementById('console');
+        const diagnosticDiv = document.getElementById('diagnostic-results');
+        const testFrame = document.getElementById('testFrame');
+        let logs = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            logs.push(logEntry);
+            consoleDiv.textContent = logs.join('\n');
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+        
+        function loadPage(page) {
+            logs = [];
+            log(`Loading ${page}...`);
+            testFrame.src = page;
+        }
+        
+        // Intercept console messages from iframe
+        testFrame.onload = function() {
+            log('Page loaded successfully');
+            
+            try {
+                const iframeWindow = testFrame.contentWindow;
+                const iframeDocument = testFrame.contentDocument;
+                
+                // Check for slideshow elements
+                const slideshow = iframeDocument.querySelector('.forest-slideshow');
+                const slides = iframeDocument.querySelectorAll('.forest-slide');
+                
+                diagnosticDiv.innerHTML = '';
+                
+                // Check slideshow container
+                if (slideshow) {
+                    addDiagnostic('Slideshow container found', 'success');
+                    const styles = iframeWindow.getComputedStyle(slideshow);
+                    log(`Slideshow styles: position=${styles.position}, width=${styles.width}, height=${styles.height}, z-index=${styles.zIndex}`);
+                } else {
+                    addDiagnostic('Slideshow container NOT found', 'error');
+                }
+                
+                // Check slides
+                if (slides.length > 0) {
+                    addDiagnostic(`Found ${slides.length} slides`, 'success');
+                    
+                    // Check each slide
+                    slides.forEach((slide, index) => {
+                        const styles = iframeWindow.getComputedStyle(slide);
+                        const bgImage = styles.backgroundImage;
+                        const isActive = slide.classList.contains('active');
+                        
+                        log(`Slide ${index + 1}: active=${isActive}, opacity=${styles.opacity}, bg-image=${bgImage ? 'set' : 'not set'}`);
+                        
+                        if (!bgImage || bgImage === 'none') {
+                            addDiagnostic(`Slide ${index + 1} has no background image`, 'warning');
+                        }
+                    });
+                    
+                    // Check for active slide
+                    const activeSlide = iframeDocument.querySelector('.forest-slide.active');
+                    if (activeSlide) {
+                        addDiagnostic('Active slide found', 'success');
+                    } else {
+                        addDiagnostic('No active slide found', 'error');
+                    }
+                } else {
+                    addDiagnostic('No slides found', 'error');
+                }
+                
+                // Check for slideshow script
+                const scripts = iframeDocument.querySelectorAll('script');
+                let slideshowScriptFound = false;
+                scripts.forEach(script => {
+                    if (script.textContent.includes('forest-slide')) {
+                        slideshowScriptFound = true;
+                    }
+                });
+                
+                if (slideshowScriptFound) {
+                    addDiagnostic('Slideshow script found', 'success');
+                } else {
+                    addDiagnostic('Slideshow script NOT found', 'warning');
+                }
+                
+                // Monitor for changes
+                let changeCount = 0;
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach(mutation => {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                            const element = mutation.target;
+                            if (element.classList.contains('forest-slide')) {
+                                changeCount++;
+                                log(`Slide class changed (change #${changeCount}): ${element.dataset.slide || 'unknown'} - active=${element.classList.contains('active')}`);
+                            }
+                        }
+                    });
+                });
+                
+                // Start observing
+                slides.forEach(slide => {
+                    observer.observe(slide, { attributes: true, attributeFilter: ['class'] });
+                });
+                
+                // Stop observing after 20 seconds
+                setTimeout(() => {
+                    observer.disconnect();
+                    if (changeCount === 0) {
+                        addDiagnostic('No slide transitions detected in 20 seconds', 'error');
+                    } else {
+                        addDiagnostic(`${changeCount} slide transitions detected`, 'success');
+                    }
+                }, 20000);
+                
+            } catch (error) {
+                log(`Error accessing iframe: ${error.message}`, 'error');
+                addDiagnostic('Cannot access iframe content (cross-origin?)', 'error');
+            }
+        };
+        
+        function addDiagnostic(message, type) {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = message;
+            diagnosticDiv.appendChild(div);
+        }
+        
+        // Initial load
+        consoleDiv.textContent = 'Ready to diagnose slideshow issues...';
+    </script>
+</body>
+</html>

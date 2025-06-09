@@ -1,0 +1,71 @@
+// Firebase Storage Security Rules for Pyebwa Application
+// These rules control access to files in Firebase Storage
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if upload is an image
+    function isImageFile() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    // Helper function to check file size (5MB limit)
+    function isValidFileSize() {
+      return request.resource.size <= 5 * 1024 * 1024;
+    }
+    
+    // Rules for family tree photos
+    match /familyTrees/{treeId}/photos/{photoId} {
+      // Anyone authenticated can read photos
+      allow read: if isAuthenticated();
+      
+      // Only authenticated users can upload photos
+      // Must be an image file under 5MB
+      allow write: if isAuthenticated() 
+        && isImageFile() 
+        && isValidFileSize();
+        
+      // Allow authenticated users to delete their own uploads
+      // Note: You may want to add additional checks here
+      allow delete: if isAuthenticated();
+    }
+    
+    // Rules for test uploads (for testing purposes)
+    match /test-uploads/{userId}/{allPaths=**} {
+      // Users can only access their own test uploads
+      allow read, write: if isAuthenticated() 
+        && request.auth.uid == userId
+        && isImageFile()
+        && isValidFileSize();
+        
+      allow delete: if isAuthenticated() 
+        && request.auth.uid == userId;
+    }
+    
+    // Rules for user profile photos
+    match /users/{userId}/profile/{filename} {
+      // Anyone authenticated can view profile photos
+      allow read: if isAuthenticated();
+      
+      // Users can only upload to their own profile
+      allow write: if isAuthenticated() 
+        && request.auth.uid == userId
+        && isImageFile()
+        && isValidFileSize();
+        
+      // Users can delete their own profile photos
+      allow delete: if isAuthenticated() 
+        && request.auth.uid == userId;
+    }
+    
+    // Default: Deny all other access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
