@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Mode Header Test</title>
+    <link rel="stylesheet" href="/app/css/app-modern.css?v=2">
+    <style>
+        .test-container {
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .color-box {
+            display: inline-block;
+            width: 100px;
+            height: 50px;
+            margin: 10px;
+            border: 2px solid #333;
+            vertical-align: middle;
+        }
+        .test-button {
+            padding: 10px 20px;
+            margin: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        #results {
+            font-family: monospace;
+            white-space: pre-wrap;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- App Header -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="header-left">
+                <div class="app-logo-container">
+                    <img src="/app/images/pyebwa-logo.png" alt="Pyebwa" class="app-logo-img">
+                </div>
+            </div>
+            <div class="header-right">
+                <span style="color: var(--gray-700);">Header Test</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="test-container">
+        <div class="test-section">
+            <h2>Dark Mode Header Color Test</h2>
+            
+            <p>This page tests the dark mode header background color.</p>
+            
+            <div>
+                <button class="test-button" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+                <button class="test-button" onclick="runTests()">Run Tests</button>
+                <button class="test-button" onclick="clearCache()">Clear CSS Cache</button>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <h3>Color References:</h3>
+                <div>
+                    <span>Pure Black (#000):</span>
+                    <div class="color-box" style="background: #000;"></div>
+                </div>
+                <div>
+                    <span>Old Dark Gray (rgba(24, 24, 27, 0.95)):</span>
+                    <div class="color-box" style="background: rgba(24, 24, 27, 0.95);"></div>
+                </div>
+                <div>
+                    <span>Current Header Background:</span>
+                    <div class="color-box" id="currentHeaderBg"></div>
+                </div>
+            </div>
+            
+            <div id="results"></div>
+        </div>
+    </div>
+
+    <script>
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            updateCurrentHeaderBg();
+            log('Dark mode toggled: ' + (document.body.classList.contains('dark-mode') ? 'ON' : 'OFF'));
+        }
+
+        function updateCurrentHeaderBg() {
+            const header = document.querySelector('.app-header');
+            const computedStyle = window.getComputedStyle(header);
+            const bgColor = computedStyle.backgroundColor;
+            const currentBgBox = document.getElementById('currentHeaderBg');
+            currentBgBox.style.background = bgColor;
+            
+            return bgColor;
+        }
+
+        function runTests() {
+            clearResults();
+            
+            // Test 1: Check if CSS is loaded
+            log('Test 1: Checking if CSS is loaded...');
+            const cssLoaded = document.querySelector('link[href*="app-modern.css"]');
+            log('CSS Link found: ' + (cssLoaded ? 'YES' : 'NO'));
+            if (cssLoaded) {
+                log('CSS href: ' + cssLoaded.href);
+            }
+            
+            // Test 2: Check dark mode class
+            log('\nTest 2: Checking dark mode state...');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            log('Dark mode active: ' + isDarkMode);
+            
+            // Test 3: Get computed styles
+            log('\nTest 3: Getting computed styles...');
+            const header = document.querySelector('.app-header');
+            const computedStyle = window.getComputedStyle(header);
+            log('Background color: ' + computedStyle.backgroundColor);
+            log('Background: ' + computedStyle.background);
+            
+            // Test 4: Check specific rule
+            log('\nTest 4: Checking CSS rules...');
+            checkCSSRules();
+            
+            // Test 5: Force style update
+            log('\nTest 5: Forcing style update...');
+            header.style.background = '';
+            const newBg = updateCurrentHeaderBg();
+            log('Background after force update: ' + newBg);
+            
+            // Test 6: RGB to Hex conversion
+            log('\nTest 6: Color analysis...');
+            const rgb = computedStyle.backgroundColor;
+            if (rgb.includes('rgb')) {
+                const matches = rgb.match(/\d+/g);
+                if (matches) {
+                    const hex = '#' + matches.slice(0, 3).map(x => {
+                        const hex = parseInt(x).toString(16);
+                        return hex.length === 1 ? '0' + hex : hex;
+                    }).join('');
+                    log('RGB: ' + rgb);
+                    log('HEX: ' + hex);
+                    log('Is pure black (#000000): ' + (hex === '#000000'));
+                }
+            }
+        }
+
+        function checkCSSRules() {
+            try {
+                const sheets = document.styleSheets;
+                for (let i = 0; i < sheets.length; i++) {
+                    try {
+                        const rules = sheets[i].cssRules || sheets[i].rules;
+                        if (rules) {
+                            for (let j = 0; j < rules.length; j++) {
+                                const rule = rules[j];
+                                if (rule.selectorText && rule.selectorText.includes('dark-mode') && rule.selectorText.includes('app-header')) {
+                                    log('Found rule: ' + rule.selectorText);
+                                    log('Background: ' + rule.style.background);
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        // Cross-origin or other access issues
+                    }
+                }
+            } catch (e) {
+                log('Could not access CSS rules: ' + e.message);
+            }
+        }
+
+        function clearCache() {
+            const link = document.querySelector('link[href*="app-modern.css"]');
+            if (link) {
+                const oldHref = link.href;
+                const timestamp = new Date().getTime();
+                const newHref = oldHref.split('?')[0] + '?v=' + timestamp;
+                link.href = newHref;
+                log('CSS cache cleared. New href: ' + newHref);
+                
+                setTimeout(() => {
+                    runTests();
+                }, 500);
+            }
+        }
+
+        function log(message) {
+            const results = document.getElementById('results');
+            results.textContent += message + '\n';
+        }
+
+        function clearResults() {
+            document.getElementById('results').textContent = '';
+        }
+
+        // Initialize
+        updateCurrentHeaderBg();
+        
+        // Auto-run tests on load
+        window.addEventListener('load', () => {
+            setTimeout(runTests, 100);
+        });
+    </script>
+</body>
+</html>

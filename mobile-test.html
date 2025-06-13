@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Pyebwa Mobile Test Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        
+        .test-header {
+            background: #00217D;
+            color: white;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .test-header h1 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .device-info {
+            font-size: 12px;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+        
+        .test-section {
+            background: white;
+            margin: 16px;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .test-section h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #333;
+        }
+        
+        .test-item {
+            margin: 12px 0;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 44px; /* iOS touch target */
+        }
+        
+        .test-button {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            width: 100%;
+            margin: 8px 0;
+        }
+        
+        .test-button:active {
+            background: #001551;
+            transform: scale(0.98);
+        }
+        
+        .test-button.success {
+            background: #4CAF50;
+        }
+        
+        .test-button.error {
+            background: #f44336;
+        }
+        
+        .status {
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status.pass {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status.fail {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .touch-area {
+            background: #e3f2fd;
+            border: 2px dashed #2196F3;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin: 16px 0;
+            touch-action: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .touch-indicator {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: rgba(33, 150, 243, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .touch-indicator.active {
+            opacity: 1;
+        }
+        
+        #touchLog {
+            background: #f8f9fa;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: 12px;
+        }
+        
+        .iframe-container {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 16px 0;
+        }
+        
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .navigation-test {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-test-btn {
+            flex: 1;
+            min-width: 100px;
+            padding: 8px 16px;
+            background: #e3f2fd;
+            border: 1px solid #2196F3;
+            border-radius: 6px;
+            font-size: 14px;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .nav-test-btn:active {
+            background: #bbdefb;
+        }
+        
+        /* Simulate mobile navigation */
+        .mobile-nav-demo {
+            position: relative;
+            height: 300px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .demo-header {
+            background: white;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .hamburger {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+        }
+        
+        .hamburger span {
+            display: block;
+            width: 100%;
+            height: 2px;
+            background: #333;
+            margin: 5px 0;
+            transition: 0.3s;
+        }
+        
+        @media (min-width: 769px) {
+            .desktop-warning {
+                display: block;
+                background: #fff3cd;
+                color: #856404;
+                padding: 16px;
+                margin: 16px;
+                border-radius: 8px;
+                text-align: center;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .desktop-warning {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1>Pyebwa Mobile Test Suite</h1>
+        <div class="device-info" id="deviceInfo">Loading device info...</div>
+    </div>
+    
+    <div class="desktop-warning">
+        ⚠️ This page is designed for mobile testing. Please use a mobile device or enable mobile emulation in your browser.
+    </div>
+    
+    <div class="test-section">
+        <h2>1. Touch Event Testing</h2>
+        <div class="touch-area" id="touchArea">
+            <p>Touch or swipe here to test</p>
+            <div class="touch-indicator" id="touchIndicator"></div>
+        </div>
+        <div id="touchLog"></div>
+        
+        <button class="test-button" onclick="testTouchEvents()">Test Touch Support</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Navigation Testing</h2>
+        <div class="test-item">
+            <span>Mobile Menu Visibility</span>
+            <span class="status pending" id="menuStatus">Pending</span>
+        </div>
+        <div class="test-item">
+            <span>Touch Events on Buttons</span>
+            <span class="status pending" id="touchStatus">Pending</span>
+        </div>
+        <div class="test-item">
+            <span>Swipe Gestures</span>
+            <span class="status pending" id="swipeStatus">Pending</span>
+        </div>
+        
+        <div class="navigation-test">
+            <div class="nav-test-btn" onclick="testNav('dashboard')">Dashboard</div>
+            <div class="nav-test-btn" onclick="testNav('tree')">Tree</div>
+            <div class="nav-test-btn" onclick="testNav('members')">Members</div>
+            <div class="nav-test-btn" onclick="testNav('stories')">Stories</div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Live App Test</h2>
+        <p style="margin-bottom: 12px; font-size: 14px; color: #666;">
+            Test the actual app in an iframe to check mobile navigation
+        </p>
+        <button class="test-button" onclick="loadApp()">Load Pyebwa App</button>
+        <div class="iframe-container" id="appContainer" style="display: none;">
+            <iframe id="appFrame"></iframe>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Browser & Device Tests</h2>
+        <div class="test-item">
+            <span>Viewport Size</span>
+            <span id="viewportSize">-</span>
+        </div>
+        <div class="test-item">
+            <span>Touch Support</span>
+            <span id="touchSupport">-</span>
+        </div>
+        <div class="test-item">
+            <span>Orientation</span>
+            <span id="orientation">-</span>
+        </div>
+        <div class="test-item">
+            <span>Pixel Ratio</span>
+            <span id="pixelRatio">-</span>
+        </div>
+        
+        <button class="test-button" onclick="runAllTests()">Run All Tests</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>5. Test Results</h2>
+        <div id="testResults" style="white-space: pre-wrap; font-family: monospace; font-size: 12px;">
+            No tests run yet.
+        </div>
+    </div>
+
+    <script>
+        // Device detection
+        function updateDeviceInfo() {
+            const ua = navigator.userAgent;
+            let device = 'Unknown';
+            
+            if (/iPhone/.test(ua)) device = 'iPhone';
+            else if (/iPad/.test(ua)) device = 'iPad';
+            else if (/Android/.test(ua)) device = 'Android';
+            else if (/Windows Phone/.test(ua)) device = 'Windows Phone';
+            
+            const info = `
+                Device: ${device}
+                Screen: ${window.screen.width} × ${window.screen.height}
+                Viewport: ${window.innerWidth} × ${window.innerHeight}
+                User Agent: ${ua.substring(0, 50)}...
+            `.trim();
+            
+            document.getElementById('deviceInfo').innerText = info;
+            document.getElementById('viewportSize').innerText = 
+                `${window.innerWidth} × ${window.innerHeight}`;
+            document.getElementById('touchSupport').innerText = 
+                'ontouchstart' in window ? 'Yes' : 'No';
+            document.getElementById('orientation').innerText = 
+                window.orientation !== undefined ? window.orientation + '°' : 'N/A';
+            document.getElementById('pixelRatio').innerText = 
+                window.devicePixelRatio || 1;
+        }
+        
+        // Touch event testing
+        const touchArea = document.getElementById('touchArea');
+        const touchIndicator = document.getElementById('touchIndicator');
+        const touchLog = document.getElementById('touchLog');
+        let touchStartTime = 0;
+        
+        function log(message) {
+            const time = new Date().toLocaleTimeString();
+            touchLog.innerHTML = `[${time}] ${message}<br>` + touchLog.innerHTML;
+            touchLog.scrollTop = 0;
+        }
+        
+        touchArea.addEventListener('touchstart', (e) => {
+            touchStartTime = Date.now();
+            const touch = e.touches[0];
+            touchIndicator.style.left = touch.clientX - touchArea.offsetLeft + 'px';
+            touchIndicator.style.top = touch.clientY - touchArea.offsetTop + 'px';
+            touchIndicator.classList.add('active');
+            log(`Touch start at ${Math.round(touch.clientX)}, ${Math.round(touch.clientY)}`);
+        }, { passive: true });
+        
+        touchArea.addEventListener('touchmove', (e) => {
+            const touch = e.touches[0];
+            touchIndicator.style.left = touch.clientX - touchArea.offsetLeft + 'px';
+            touchIndicator.style.top = touch.clientY - touchArea.offsetTop + 'px';
+        }, { passive: true });
+        
+        touchArea.addEventListener('touchend', (e) => {
+            const duration = Date.now() - touchStartTime;
+            touchIndicator.classList.remove('active');
+            log(`Touch end - duration: ${duration}ms`);
+            document.getElementById('touchStatus').className = 'status pass';
+            document.getElementById('touchStatus').innerText = 'Pass';
+        }, { passive: true });
+        
+        // Test functions
+        function testTouchEvents() {
+            const hasTouch = 'ontouchstart' in window;
+            const result = hasTouch ? 'Touch events supported' : 'Touch events NOT supported';
+            log(result);
+            
+            // Test iOS specific
+            if (navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform)) {
+                log('iOS device detected - testing webkit features');
+                const hasWebkit = 'WebKitPoint' in window || 'webkitRequestAnimationFrame' in window;
+                log(`WebKit features: ${hasWebkit ? 'Present' : 'Missing'}`);
+            }
+            
+            // Test Android specific
+            if (/Android/.test(navigator.userAgent)) {
+                log('Android device detected');
+                log(`Chrome version: ${navigator.userAgent.match(/Chrome\/(\d+)/)?.[1] || 'Unknown'}`);
+            }
+        }
+        
+        function testNav(view) {
+            log(`Navigation test: ${view}`);
+            // Simulate navigation
+            const btn = event.target;
+            btn.style.background = '#4CAF50';
+            setTimeout(() => {
+                btn.style.background = '#e3f2fd';
+            }, 200);
+        }
+        
+        function loadApp() {
+            const container = document.getElementById('appContainer');
+            const frame = document.getElementById('appFrame');
+            
+            container.style.display = 'block';
+            frame.src = 'https://rasin.pyebwa.com/app/';
+            
+            log('Loading Pyebwa app in iframe...');
+            
+            frame.onload = () => {
+                log('App loaded - test mobile menu functionality');
+                document.getElementById('menuStatus').className = 'status pass';
+                document.getElementById('menuStatus').innerText = 'Loaded';
+            };
+        }
+        
+        function runAllTests() {
+            log('Running all tests...');
+            
+            // Test 1: Touch support
+            testTouchEvents();
+            
+            // Test 2: Viewport
+            if (window.innerWidth <= 768) {
+                log('Mobile viewport detected ✓');
+            } else {
+                log('Desktop viewport - switch to mobile view');
+            }
+            
+            // Test 3: CSS media queries
+            const mq = window.matchMedia('(max-width: 768px)');
+            log(`Media query (max-width: 768px): ${mq.matches ? 'Active' : 'Inactive'}`);
+            
+            // Test 4: Local storage
+            try {
+                localStorage.setItem('pyebwa_mobile_test', 'true');
+                log('LocalStorage: Working ✓');
+            } catch (e) {
+                log('LocalStorage: Failed - ' + e.message);
+            }
+            
+            // Test 5: Orientation
+            if (window.DeviceOrientationEvent) {
+                log('Device orientation API: Supported ✓');
+            } else {
+                log('Device orientation API: Not supported');
+            }
+            
+            // Update test results
+            const results = {
+                touch: 'ontouchstart' in window,
+                viewport: window.innerWidth <= 768,
+                mediaQuery: mq.matches,
+                localStorage: typeof(Storage) !== 'undefined',
+                orientation: !!window.DeviceOrientationEvent
+            };
+            
+            document.getElementById('testResults').innerText = 
+                JSON.stringify(results, null, 2);
+        }
+        
+        // Initialize
+        updateDeviceInfo();
+        window.addEventListener('resize', updateDeviceInfo);
+        window.addEventListener('orientationchange', updateDeviceInfo);
+        
+        // Auto-run tests on mobile
+        if (window.innerWidth <= 768) {
+            setTimeout(runAllTests, 1000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slideshow Test</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .test-header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .slideshow-demo {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: #000;
+            overflow: hidden;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .slideshow-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
+        }
+        .slide.active {
+            opacity: 1;
+        }
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        .status.active {
+            background: #4CAF50;
+            color: white;
+        }
+        .status.inactive {
+            background: #f44336;
+            color: white;
+        }
+        #log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .slide-info {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .slide-indicator {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .slide-indicator.active {
+            border-color: #00217D;
+            transform: scale(1.1);
+        }
+        button {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #001551;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>Pyebwa Slideshow Test</h1>
+            <p>This page tests the slideshow functionality to ensure it's working correctly.</p>
+            <p>Status: <span id="status" class="status inactive">Not Started</span></p>
+        </div>
+
+        <div class="slideshow-demo">
+            <div class="slideshow-container">
+                <div class="slide active">
+                    <img src="https://pyebwa.com/images/SlideShow/20140508-094914.jpg" alt="Slide 1">
+                </div>
+                <div class="slide">
+                    <img src="https://pyebwa.com/images/SlideShow/5e0a0e49e91b8e0f8379e91e7dee11f9.jpg" alt="Slide 2">
+                </div>
+                <div class="slide">
+                    <img src="https://pyebwa.com/images/SlideShow/6e7c0d44bc280212592d6ede168dc4ca.jpg" alt="Slide 3">
+                </div>
+                <div class="slide">
+                    <img src="https://pyebwa.com/images/SlideShow/DSC00134.JPG" alt="Slide 4">
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <h3>Slideshow Controls</h3>
+            <div class="slide-info" id="slideIndicators"></div>
+            <p>Current Slide: <strong id="currentSlide">1</strong> of <strong id="totalSlides">4</strong></p>
+            <p>Time until next slide: <strong id="countdown">7</strong> seconds</p>
+            
+            <button onclick="pauseSlideshow()">Pause</button>
+            <button onclick="resumeSlideshow()">Resume</button>
+            <button onclick="nextSlide()">Next Slide</button>
+            <button onclick="prevSlide()">Previous Slide</button>
+            
+            <h4>Console Log:</h4>
+            <div id="log"></div>
+        </div>
+    </div>
+
+    <!-- Include the slideshow script -->
+    <script src="pyebwa.com/js/main-slideshow.js"></script>
+    
+    <!-- Test monitoring script -->
+    <script>
+        let isPaused = false;
+        let countdownInterval;
+        let slideInterval;
+        let currentIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        let timeRemaining = 7;
+
+        // Update UI
+        document.getElementById('totalSlides').textContent = totalSlides;
+
+        // Create slide indicators
+        const indicatorsContainer = document.getElementById('slideIndicators');
+        slides.forEach((slide, index) => {
+            const indicator = document.createElement('div');
+            indicator.className = 'slide-indicator' + (index === 0 ? ' active' : '');
+            indicator.style.backgroundImage = `url(${slide.querySelector('img').src})`;
+            indicator.style.backgroundSize = 'cover';
+            indicator.style.backgroundPosition = 'center';
+            indicator.onclick = () => goToSlide(index);
+            indicatorsContainer.appendChild(indicator);
+        });
+
+        // Override console.log to capture messages
+        const originalLog = console.log;
+        const logDiv = document.getElementById('log');
+        console.log = function() {
+            const message = Array.from(arguments).join(' ');
+            originalLog.apply(console, arguments);
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        };
+
+        // Monitor slide changes
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'class') {
+                    updateCurrentSlide();
+                }
+            });
+        });
+
+        slides.forEach(slide => {
+            observer.observe(slide, { attributes: true });
+        });
+
+        function updateCurrentSlide() {
+            slides.forEach((slide, index) => {
+                if (slide.classList.contains('active')) {
+                    currentIndex = index;
+                    document.getElementById('currentSlide').textContent = index + 1;
+                    document.getElementById('status').textContent = 'Running';
+                    document.getElementById('status').className = 'status active';
+                    
+                    // Update indicators
+                    document.querySelectorAll('.slide-indicator').forEach((ind, i) => {
+                        ind.classList.toggle('active', i === index);
+                    });
+                    
+                    // Reset countdown
+                    timeRemaining = 7;
+                }
+            });
+        }
+
+        // Countdown timer
+        countdownInterval = setInterval(() => {
+            if (!isPaused && timeRemaining > 0) {
+                timeRemaining--;
+                document.getElementById('countdown').textContent = timeRemaining;
+            }
+        }, 1000);
+
+        function pauseSlideshow() {
+            isPaused = true;
+            document.getElementById('status').textContent = 'Paused';
+            document.getElementById('status').className = 'status inactive';
+            console.log('Slideshow paused manually');
+        }
+
+        function resumeSlideshow() {
+            isPaused = false;
+            document.getElementById('status').textContent = 'Running';
+            document.getElementById('status').className = 'status active';
+            console.log('Slideshow resumed manually');
+        }
+
+        function nextSlide() {
+            const nextIndex = (currentIndex + 1) % totalSlides;
+            goToSlide(nextIndex);
+        }
+
+        function prevSlide() {
+            const prevIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+            goToSlide(prevIndex);
+        }
+
+        function goToSlide(index) {
+            slides[currentIndex].classList.remove('active');
+            slides[index].classList.add('active');
+            currentIndex = index;
+            updateCurrentSlide();
+            console.log(`Manually switched to slide ${index + 1}`);
+        }
+
+        // Initial update
+        updateCurrentSlide();
+        console.log('Test page loaded - monitoring slideshow');
+    </script>
+</body>
+</html>

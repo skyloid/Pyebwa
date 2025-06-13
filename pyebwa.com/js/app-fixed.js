@@ -110,7 +110,7 @@ function updateLanguage() {
 // Authentication functions - redirects to pyebwa.com/login/
 function redirectToLogin() {
     console.log('Redirecting to login page');
-    window.location.href = 'https://pyebwa.com/login/';
+    window.location.href = 'https://rasin.pyebwa.com/login.html';
 }
 
 // Event listeners - Redirect to pyebwa.com/login/ for auth

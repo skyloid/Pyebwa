@@ -7,11 +7,35 @@
     <link rel="icon" type="image/x-icon" href="/app/favicon.ico">
     
     <!-- CSS -->
-    <link rel="stylesheet" href="/app/css/app.css?v=3">
-    <link rel="stylesheet" href="/app/css/tree.css?v=3">
+    <link rel="stylesheet" href="/app/css/app-modern.css?v=3">
+    <link rel="stylesheet" href="/app/css/tree-modern.css?v=1">
+    <link rel="stylesheet" href="/app/css/tree-responsive.css?v=1">
+    <link rel="stylesheet" href="/app/css/animations.css?v=1">
+    <link rel="stylesheet" href="/app/css/mobile.css?v=1">
+    <link rel="stylesheet" href="/app/css/desktop.css?v=1">
+    <link rel="stylesheet" href="/app/css/mobile-fix.css?v=1">
     <link rel="stylesheet" href="/app/css/footer.css?v=3">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- Ensure mobile nav is hidden on desktop -->
+    <style>
+        @media (min-width: 769px) {
+            .mobile-nav,
+            .mobile-nav-content,
+            .mobile-menu-btn,
+            #mobileNav,
+            #mobileMenuBtn,
+            #mobileMenuClose {
+                display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+                position: absolute !important;
+                left: -9999px !important;
+            }
+        }
+    </style>
     
     <!-- Cross-domain auth scripts removed - using single-domain auth now -->
     <!-- All authentication handled on same domain at /login/ -->
@@ -30,10 +54,17 @@
             <div class="header-container">
                 <div class="header-left">
                     <div class="app-logo-container">
-                        <img src="https://pyebwa.com/images/Pyebwa.png" alt="Pyebwa" class="app-logo-img">
+                        <img src="/app/images/pyebwa-logo.png" alt="Pyebwa" class="app-logo-img">
                     </div>
+                    <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">
+                        <span class="material-icons">menu</span>
+                    </button>
                     <nav class="nav-menu">
-                        <button class="nav-item active" data-view="tree">
+                        <button class="nav-item active" data-view="dashboard">
+                            <span class="material-icons">dashboard</span>
+                            <span data-i18n="navDashboard">Dashboard</span>
+                        </button>
+                        <button class="nav-item" data-view="tree">
                             <span class="material-icons">account_tree</span>
                             <span data-i18n="navTree">Pyebwa Fanmi</span>
                         </button>
@@ -74,6 +105,43 @@
                 </div>
             </div>
         </header>
+        
+        <!-- Mobile Navigation -->
+        <div class="mobile-nav" id="mobileNav">
+            <div class="mobile-nav-content">
+                <div class="mobile-nav-header">
+                    <div class="app-logo-container">
+                        <img src="/app/images/pyebwa-logo.png" alt="Pyebwa" style="height: 32px;">
+                    </div>
+                    <button class="mobile-menu-btn" id="mobileMenuClose" aria-label="Close menu">
+                        <span class="material-icons">close</span>
+                    </button>
+                </div>
+                <div class="mobile-nav-items">
+                    <button class="mobile-nav-item active" data-view="dashboard">
+                        <span class="material-icons">dashboard</span>
+                        <span data-i18n="navDashboard">Dashboard</span>
+                    </button>
+                    <button class="mobile-nav-item" data-view="tree">
+                        <span class="material-icons">account_tree</span>
+                        <span data-i18n="navTree">Pyebwa Fanmi</span>
+                    </button>
+                    <button class="mobile-nav-item" data-view="members">
+                        <span class="material-icons">people</span>
+                        <span data-i18n="navMembers">Manm yo</span>
+                    </button>
+                    <button class="mobile-nav-item" data-view="stories">
+                        <span class="material-icons">auto_stories</span>
+                        <span data-i18n="navStories">Istwa</span>
+                    </button>
+                    <hr style="margin: 20px;">
+                    <button class="mobile-nav-item" id="mobileLogoutBtn">
+                        <span class="material-icons">logout</span>
+                        <span data-i18n="logout">Dekonekte</span>
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <!-- Main Content Area -->
         <main class="app-main">
@@ -85,14 +153,25 @@
                 </div>
             </div>
 
+            <!-- Dashboard View -->
+            <div id="dashboardView" class="view-container" style="display: none;">
+                <!-- Dashboard content will be dynamically loaded here -->
+            </div>
+
             <!-- Tree View -->
             <div id="treeView" class="view-container" style="display: none;">
                 <div class="view-header">
                     <h2 data-i18n="familyTree">Pyebwa Fanmi Mwen</h2>
-                    <button class="btn btn-primary" id="addMemberBtn">
-                        <span class="material-icons">person_add</span>
-                        <span data-i18n="addMember">Ajoute Manm</span>
-                    </button>
+                    <div style="display: flex; gap: 12px;">
+                        <button class="btn btn-primary" id="addMemberBtn">
+                            <span class="material-icons">person_add</span>
+                            <span data-i18n="addMember">Ajoute Manm</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="showExportOptions()">
+                            <span class="material-icons">download</span>
+                            <span data-i18n="export">Export</span>
+                        </button>
+                    </div>
                 </div>
                 
                 <div id="treeContainer" class="tree-container">
@@ -207,7 +286,7 @@
     <!-- Footer -->
     <footer class="app-footer">
         <div class="footer-container">
-            <p>&copy; 2025 Powered by <a href="https://humanlevel.ai" target="_blank" rel="noopener noreferrer">Technologies Humanitaires</a></p>
+            <p>&copy; 2025 <span data-i18n="poweredBy">Powered by</span> <a href="https://humanlevel.ai" target="_blank" rel="noopener noreferrer">Technologies Humanitaires</a></p>
         </div>
     </footer>
 
@@ -217,10 +296,16 @@
     <script src="/app/js/translations.js?v=4"></script>
     <script src="/app/js/app.js?v=20250109-single-domain"></script>
     <script src="/app/js/tree.js"></script>
+    <script src="/app/js/tree-responsive.js"></script>
     <script src="/app/js/members.js"></script>
     <script src="/app/js/stories.js"></script>
     <script src="/app/js/back-to-top.js"></script>
     <script src="/app/js/theme-toggle.js"></script>
+    <script src="/app/js/mobile-nav-enhanced.js"></script>
+    <script src="/app/js/dashboard.js"></script>
+    <script src="/app/js/onboarding.js"></script>
+    <script src="/app/js/pdf-export.js"></script>
+    <script src="/app/js/modal-fix.js"></script>
     <!-- Share modal removed - using pyebwa.com authentication flow -->
 </body>
 </html>

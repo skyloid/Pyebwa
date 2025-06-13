@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pyebwa Manual Test Checklist</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #00217D;
+            margin-bottom: 10px;
+        }
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 6px;
+            background: #f8f9fa;
+        }
+        .test-item input[type="checkbox"] {
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        .test-item label {
+            flex: 1;
+            cursor: pointer;
+        }
+        .test-link {
+            color: #00217D;
+            text-decoration: none;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+        .test-link:hover {
+            text-decoration: underline;
+        }
+        .instructions {
+            background: #e8f0fe;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            font-weight: 500;
+            text-align: center;
+        }
+        .status.incomplete {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .status.complete {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .note {
+            font-size: 13px;
+            color: #666;
+            margin-top: 5px;
+            margin-left: 30px;
+        }
+        button {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #001551;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pyebwa Manual Test Checklist</h1>
+    <p style="color: #666;">Test Date: <span id="testDate"></span></p>
+    
+    <div class="instructions">
+        <strong>Instructions:</strong> Open each link in a new tab and verify the expected behavior. Check the box when each test passes. Some tests require specific actions like toggling dark mode or clearing cache.
+    </div>
+
+    <div class="test-section">
+        <h2>🌓 Dark Mode Header Tests</h2>
+        <div class="test-item">
+            <input type="checkbox" id="test1" onclick="updateStatus()">
+            <label for="test1">Open app and toggle dark mode - header should be pure black (#000)</label>
+            <a href="https://rasin.pyebwa.com/app/" target="_blank" class="test-link">Open App →</a>
+        </div>
+        <div class="note">Toggle the theme button (sun/moon icon) and verify header turns black</div>
+        
+        <div class="test-item">
+            <input type="checkbox" id="test2" onclick="updateStatus()">
+            <label for="test2">CSS file loads with correct version (v=3)</label>
+            <a href="https://rasin.pyebwa.com/app/css/app-modern.css?v=3" target="_blank" class="test-link">View CSS →</a>
+        </div>
+        <div class="note">Search for "body.dark-mode .app-header" and verify "background: #000 !important"</div>
+        
+        <div class="test-item">
+            <input type="checkbox" id="test3" onclick="updateStatus()">
+            <label for="test3">Dark mode test page shows all tests passing</label>
+            <a href="https://rasin.pyebwa.com/test-dark-mode-complete.html" target="_blank" class="test-link">Test Page →</a>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔐 Login Redirect Tests</h2>
+        <div class="test-item">
+            <input type="checkbox" id="test4" onclick="updateStatus()">
+            <label for="test4">pyebwa.com/login/ redirects to rasin.pyebwa.com/login.html</label>
+            <a href="https://pyebwa.com/login/" target="_blank" class="test-link">Test Redirect →</a>
+        </div>
+        <div class="note">Should automatically redirect or show a redirect page</div>
+        
+        <div class="test-item">
+            <input type="checkbox" id="test5" onclick="updateStatus()">
+            <label for="test5">Login button on main site goes to correct login page</label>
+            <a href="https://pyebwa.com/" target="_blank" class="test-link">Main Site →</a>
+        </div>
+        <div class="note">Click "Konekte" button in header</div>
+        
+        <div class="test-item">
+            <input type="checkbox" id="test6" onclick="updateStatus()">
+            <label for="test6">No references to old login URL in JavaScript</label>
+            <a href="https://pyebwa.com/js/app.js" target="_blank" class="test-link">View JS →</a>
+        </div>
+        <div class="note">Search for "login" - all should point to rasin.pyebwa.com/login.html</div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎨 UI/UX Features</h2>
+        <div class="test-item">
+            <input type="checkbox" id="test7" onclick="updateStatus()">
+            <label for="test7">PNG logo displays correctly in app header</label>
+            <a href="https://rasin.pyebwa.com/app/" target="_blank" class="test-link">Check Logo →</a>
+        </div>
+        
+        <div class="test-item">
+            <input type="checkbox" id="test8" onclick="updateStatus()">
+            <label for="test8">Favicon shows in browser tab</label>
+            <a href="https://rasin.pyebwa.com/app/favicon.ico" target="_blank" class="test-link">View Favicon →</a>
+        </div>
+        
+        <div class="test-item">
+            <input type="checkbox" id="test9" onclick="updateStatus()">
+            <label for="test9">Language selector works and persists with cookies</label>
+            <a href="https://rasin.pyebwa.com/app/" target="_blank" class="test-link">Test Languages →</a>
+        </div>
+        <div class="note">Switch languages, refresh page, verify selection persists</div>
+        
+        <div class="test-item">
+            <input type="checkbox" id="test10" onclick="updateStatus()">
+            <label for="test10">Back to top button appears when scrolling</label>
+            <a href="https://rasin.pyebwa.com/app/" target="_blank" class="test-link">Test Scroll →</a>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>📱 Mobile Tests</h2>
+        <div class="test-item">
+            <input type="checkbox" id="test11" onclick="updateStatus()">
+            <label for="test11">Theme toggle works on mobile (touch events)</label>
+        </div>
+        <div class="note">Test on actual mobile device or browser mobile mode</div>
+        
+        <div class="test-item">
+            <input type="checkbox" id="test12" onclick="updateStatus()">
+            <label for="test12">Single mobile menu (no duplicates)</label>
+        </div>
+        <div class="note">Should see hamburger menu icon, not duplicate menus</div>
+        
+        <div class="test-item">
+            <input type="checkbox" id="test13" onclick="updateStatus()">
+            <label for="test13">Mobile navigation hidden on desktop</label>
+        </div>
+        <div class="note">Resize browser - mobile nav should only appear on small screens</div>
+    </div>
+
+    <div class="test-section">
+        <h2>🌍 Translation Tests</h2>
+        <div class="test-item">
+            <input type="checkbox" id="test14" onclick="updateStatus()">
+            <label for="test14">Footer translated in all languages (EN/FR/HT)</label>
+            <a href="https://rasin.pyebwa.com/app/" target="_blank" class="test-link">Check Footer →</a>
+        </div>
+        
+        <div class="test-item">
+            <input type="checkbox" id="test15" onclick="updateStatus()">
+            <label for="test15">Main navigation translated correctly</label>
+        </div>
+        <div class="note">Switch languages and verify nav items change</div>
+    </div>
+
+    <div id="status" class="status incomplete">
+        <span id="statusText">0 of 15 tests completed</span>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <button onclick="clearAll()">Clear All</button>
+        <button onclick="checkAll()">Check All (Testing Only)</button>
+        <button onclick="exportResults()">Export Results</button>
+    </div>
+
+    <script>
+        // Set current date
+        document.getElementById('testDate').textContent = new Date().toLocaleString();
+
+        // Load saved state
+        window.onload = function() {
+            for (let i = 1; i <= 15; i++) {
+                const saved = localStorage.getItem(`pyebwa-test-${i}`);
+                if (saved === 'true') {
+                    document.getElementById(`test${i}`).checked = true;
+                }
+            }
+            updateStatus();
+        };
+
+        function updateStatus() {
+            let completed = 0;
+            const total = 15;
+            
+            for (let i = 1; i <= total; i++) {
+                const checkbox = document.getElementById(`test${i}`);
+                if (checkbox.checked) {
+                    completed++;
+                    localStorage.setItem(`pyebwa-test-${i}`, 'true');
+                } else {
+                    localStorage.removeItem(`pyebwa-test-${i}`);
+                }
+            }
+            
+            const statusEl = document.getElementById('status');
+            const statusText = document.getElementById('statusText');
+            
+            statusText.textContent = `${completed} of ${total} tests completed`;
+            
+            if (completed === total) {
+                statusEl.className = 'status complete';
+                statusText.textContent = '✅ All tests passed! ' + statusText.textContent;
+            } else {
+                statusEl.className = 'status incomplete';
+            }
+        }
+
+        function clearAll() {
+            for (let i = 1; i <= 15; i++) {
+                document.getElementById(`test${i}`).checked = false;
+                localStorage.removeItem(`pyebwa-test-${i}`);
+            }
+            updateStatus();
+        }
+
+        function checkAll() {
+            if (confirm('This is for testing only. Have you actually verified all items?')) {
+                for (let i = 1; i <= 15; i++) {
+                    document.getElementById(`test${i}`).checked = true;
+                }
+                updateStatus();
+            }
+        }
+
+        function exportResults() {
+            const results = [];
+            results.push('Pyebwa Test Results');
+            results.push('Date: ' + new Date().toISOString());
+            results.push('-------------------');
+            
+            for (let i = 1; i <= 15; i++) {
+                const checkbox = document.getElementById(`test${i}`);
+                const label = checkbox.nextElementSibling.textContent;
+                const status = checkbox.checked ? '✓' : '✗';
+                results.push(`${status} ${label}`);
+            }
+            
+            const text = results.join('\n');
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `pyebwa-test-results-${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+        }
+    </script>
+</body>
+</html>

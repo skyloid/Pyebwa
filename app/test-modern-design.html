@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Design Test - Pyebwa</title>
+    <link rel="icon" type="image/x-icon" href="/app/favicon.ico">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/app/css/app-modern.css?v=1">
+    <link rel="stylesheet" href="/app/css/tree-modern.css?v=1">
+    <link rel="stylesheet" href="/app/css/animations.css?v=1">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <style>
+        .test-section {
+            margin: 40px 0;
+            padding: 40px;
+            background: white;
+            border-radius: var(--border-radius-xl);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .test-section h2 {
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-red) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-top: 32px;
+        }
+        
+        .preview-card {
+            padding: 24px;
+            border: 2px dashed var(--gray-200);
+            border-radius: var(--border-radius);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;">
+        <h1 style="text-align: center; margin-bottom: 40px;">Pyebwa Modern Design System</h1>
+        
+        <!-- Color Palette -->
+        <div class="test-section">
+            <h2>Color Palette</h2>
+            <div class="component-grid">
+                <div class="preview-card">
+                    <div style="width: 100px; height: 100px; background: var(--primary-red); border-radius: 12px; margin: 0 auto 12px;"></div>
+                    <strong>Primary Red</strong><br>#D41125
+                </div>
+                <div class="preview-card">
+                    <div style="width: 100px; height: 100px; background: var(--primary-blue); border-radius: 12px; margin: 0 auto 12px;"></div>
+                    <strong>Primary Blue</strong><br>#00217D
+                </div>
+                <div class="preview-card">
+                    <div style="width: 100px; height: 100px; background: var(--accent-yellow); border-radius: 12px; margin: 0 auto 12px;"></div>
+                    <strong>Accent Yellow</strong><br>#FFC72C
+                </div>
+                <div class="preview-card">
+                    <div style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-blue) 50%, var(--accent-yellow) 100%); border-radius: 12px; margin: 0 auto 12px;"></div>
+                    <strong>Gradient</strong><br>Brand Colors
+                </div>
+            </div>
+        </div>
+        
+        <!-- Buttons -->
+        <div class="test-section">
+            <h2>Buttons</h2>
+            <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                <button class="btn btn-primary">
+                    <span class="material-icons">add</span>
+                    Primary Button
+                </button>
+                <button class="btn btn-secondary">Secondary Button</button>
+                <button class="btn btn-danger">Danger Button</button>
+                <button class="btn btn-warning">Warning Button</button>
+            </div>
+        </div>
+        
+        <!-- Cards -->
+        <div class="test-section">
+            <h2>Cards</h2>
+            <div class="component-grid">
+                <div class="card animate-fadeInUp">
+                    <h3>Standard Card</h3>
+                    <p>This is a standard card with hover effects and modern shadow.</p>
+                </div>
+                <div class="member-card animate-fadeInUp" style="animation-delay: 0.1s;">
+                    <div class="member-card-content">
+                        <div class="member-photo">
+                            <span class="material-icons">person</span>
+                        </div>
+                        <div class="member-info">
+                            <div class="member-name">John Doe</div>
+                            <div class="member-relationship">Father</div>
+                            <div class="member-dates">1960 • 64 years old</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card card animate-fadeInUp" style="animation-delay: 0.2s;">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, var(--primary-blue) 0%, var(--blue-light) 100%);">
+                        <span class="material-icons">people</span>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">24</div>
+                        <div class="stat-label">Family Members</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Forms -->
+        <div class="test-section">
+            <h2>Form Elements</h2>
+            <div class="form-group">
+                <label>Text Input</label>
+                <input type="text" placeholder="Enter text here...">
+            </div>
+            <div class="form-group">
+                <label>Select Dropdown</label>
+                <select>
+                    <option>Option 1</option>
+                    <option>Option 2</option>
+                    <option>Option 3</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Textarea</label>
+                <textarea rows="3" placeholder="Enter description..."></textarea>
+            </div>
+        </div>
+        
+        <!-- Loading States -->
+        <div class="test-section">
+            <h2>Loading & Empty States</h2>
+            <div class="component-grid">
+                <div class="preview-card">
+                    <div class="spinner" style="margin: 0 auto;">
+                        <div></div>
+                        <div></div>
+                    </div>
+                    <p style="margin-top: 20px;">Modern Spinner</p>
+                </div>
+                <div class="preview-card">
+                    <div class="empty-icon animate-float">🌳</div>
+                    <p>Floating Animation</p>
+                </div>
+                <div class="preview-card">
+                    <div class="loading-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <p style="margin-top: 20px;">Loading Dots</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Animations -->
+        <div class="test-section">
+            <h2>Animations</h2>
+            <div class="component-grid stagger-animation">
+                <div class="card hover-lift">
+                    <h4>Hover Lift</h4>
+                    <p>Hover to see lift effect</p>
+                </div>
+                <div class="card hover-grow">
+                    <h4>Hover Grow</h4>
+                    <p>Hover to see grow effect</p>
+                </div>
+                <div class="card hover-shadow">
+                    <h4>Hover Shadow</h4>
+                    <p>Hover to see shadow effect</p>
+                </div>
+                <div class="card animate-pulse">
+                    <h4>Pulse Animation</h4>
+                    <p>Continuous pulse effect</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Toast Notifications -->
+        <div class="test-section">
+            <h2>Toast Notifications</h2>
+            <button class="btn btn-primary" onclick="showSuccessToast()">Show Success Toast</button>
+            <button class="btn btn-danger" onclick="showErrorToast()">Show Error Toast</button>
+        </div>
+        
+        <!-- Theme Toggle -->
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <span class="material-icons">dark_mode</span>
+        </button>
+    </div>
+    
+    <script>
+        function showSuccessToast() {
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification success animate-fadeInUp';
+            toast.innerHTML = 'Success! Your changes have been saved.';
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'fadeInUp 0.4s reverse';
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
+        
+        function showErrorToast() {
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification error animate-fadeInUp';
+            toast.innerHTML = 'Error! Something went wrong.';
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'fadeInUp 0.4s reverse';
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
+        
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const icon = document.querySelector('.theme-toggle .material-icons');
+            icon.textContent = document.body.classList.contains('dark-mode') ? 'light_mode' : 'dark_mode';
+        }
+    </script>
+</body>
+</html>

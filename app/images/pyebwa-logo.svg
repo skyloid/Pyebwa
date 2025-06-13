@@ -1,0 +1,17 @@
+<svg width="120" height="60" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
+  <!-- Pyebwa Logo SVG -->
+  <rect x="0" y="0" width="120" height="60" fill="white"/>
+  
+  <!-- Main text -->
+  <text x="60" y="38" 
+        font-family="Arial, sans-serif" 
+        font-size="28" 
+        font-weight="bold" 
+        text-anchor="middle" 
+        fill="#D41125">PYEBWA</text>
+  
+  <!-- Decorative elements representing Haitian flag colors -->
+  <rect x="10" y="45" width="30" height="3" fill="#00217D"/>
+  <rect x="45" y="45" width="30" height="3" fill="#FFC72C"/>
+  <rect x="80" y="45" width="30" height="3" fill="#D41125"/>
+</svg>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Navigation Test - Pyebwa</title>
+    <link rel="icon" type="image/x-icon" href="/app/favicon.ico">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/app/css/app-modern.css?v=1">
+    <link rel="stylesheet" href="/app/css/desktop.css?v=1">
+    <link rel="stylesheet" href="/app/css/mobile.css?v=1">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <style>
+        .test-info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 10000;
+        }
+        
+        .debug-panel {
+            margin: 80px 20px 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .debug-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        
+        .visible { color: green; }
+        .hidden { color: red; }
+    </style>
+</head>
+<body>
+    <!-- Test Info Display -->
+    <div class="test-info" id="testInfo">
+        Window Width: <span id="windowWidth">0</span>px<br>
+        Device: <span id="deviceType">Desktop</span>
+    </div>
+    
+    <!-- Header with Navigation -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="header-left">
+                <div class="app-logo-container">
+                    <img src="https://pyebwa.com/images/Pyebwa.png" alt="Pyebwa" class="app-logo-img">
+                </div>
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <span class="material-icons">menu</span>
+                </button>
+                <nav class="nav-menu">
+                    <button class="nav-item active" data-view="dashboard">
+                        <span class="material-icons">dashboard</span>
+                        <span>Dashboard</span>
+                    </button>
+                    <button class="nav-item" data-view="tree">
+                        <span class="material-icons">account_tree</span>
+                        <span>Family Tree</span>
+                    </button>
+                    <button class="nav-item" data-view="members">
+                        <span class="material-icons">people</span>
+                        <span>Members</span>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Mobile Navigation -->
+    <div class="mobile-nav" id="mobileNav">
+        <div class="mobile-nav-content">
+            <div class="mobile-nav-header">
+                <div class="app-logo-container">
+                    <img src="https://pyebwa.com/images/Pyebwa.png" alt="Pyebwa" style="height: 32px;">
+                </div>
+                <button class="mobile-menu-btn" id="mobileMenuClose">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="mobile-nav-items">
+                <button class="mobile-nav-item active">
+                    <span class="material-icons">dashboard</span>
+                    <span>Dashboard</span>
+                </button>
+                <button class="mobile-nav-item">
+                    <span class="material-icons">account_tree</span>
+                    <span>Family Tree</span>
+                </button>
+                <button class="mobile-nav-item">
+                    <span class="material-icons">people</span>
+                    <span>Members</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Debug Panel -->
+    <div class="debug-panel">
+        <h2>Navigation Debug Info</h2>
+        <div id="debugInfo"></div>
+        
+        <h3>Test Controls</h3>
+        <button onclick="simulateMobile()">Simulate Mobile (375px)</button>
+        <button onclick="simulateTablet()">Simulate Tablet (768px)</button>
+        <button onclick="simulateDesktop()">Simulate Desktop (1200px)</button>
+        <button onclick="resetView()">Reset to Actual Size</button>
+    </div>
+    
+    <script>
+        // Update window info
+        function updateInfo() {
+            const width = window.innerWidth;
+            document.getElementById('windowWidth').textContent = width;
+            document.getElementById('deviceType').textContent = width <= 768 ? 'Mobile' : 'Desktop';
+            
+            // Check visibility of elements
+            const debugInfo = document.getElementById('debugInfo');
+            const elements = [
+                { name: 'Desktop Nav (.nav-menu)', selector: '.nav-menu' },
+                { name: 'Mobile Menu Button', selector: '.mobile-menu-btn' },
+                { name: 'Mobile Nav', selector: '.mobile-nav' },
+                { name: 'Mobile Nav Content', selector: '.mobile-nav-content' }
+            ];
+            
+            debugInfo.innerHTML = elements.map(el => {
+                const elem = document.querySelector(el.selector);
+                if (!elem) return `<div class="debug-item">${el.name}: <span class="hidden">NOT FOUND</span></div>`;
+                
+                const computed = window.getComputedStyle(elem);
+                const isVisible = computed.display !== 'none' && computed.visibility !== 'hidden';
+                
+                return `
+                    <div class="debug-item">
+                        ${el.name}: 
+                        <span class="${isVisible ? 'visible' : 'hidden'}">
+                            ${isVisible ? 'VISIBLE' : 'HIDDEN'} 
+                            (display: ${computed.display}, visibility: ${computed.visibility})
+                        </span>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Mobile menu functionality
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenuClose = document.getElementById('mobileMenuClose');
+        const mobileNav = document.getElementById('mobileNav');
+        
+        if (mobileMenuBtn) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileNav.classList.add('active');
+                updateInfo();
+            });
+        }
+        
+        if (mobileMenuClose) {
+            mobileMenuClose.addEventListener('click', () => {
+                mobileNav.classList.remove('active');
+                updateInfo();
+            });
+        }
+        
+        // Simulation functions
+        function simulateMobile() {
+            document.body.style.maxWidth = '375px';
+            document.body.style.margin = '0 auto';
+            updateInfo();
+        }
+        
+        function simulateTablet() {
+            document.body.style.maxWidth = '768px';
+            document.body.style.margin = '0 auto';
+            updateInfo();
+        }
+        
+        function simulateDesktop() {
+            document.body.style.maxWidth = '1200px';
+            document.body.style.margin = '0 auto';
+            updateInfo();
+        }
+        
+        function resetView() {
+            document.body.style.maxWidth = '';
+            document.body.style.margin = '';
+            updateInfo();
+        }
+        
+        // Update on resize
+        window.addEventListener('resize', updateInfo);
+        
+        // Initial update
+        updateInfo();
+        
+        // Log CSS rules for debugging
+        console.log('Testing responsive navigation. Use the buttons to simulate different screen sizes.');
+    </script>
+</body>
+</html>

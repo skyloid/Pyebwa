@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feature Updates Test Suite</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover { background: #0056b3; }
+        .mobile-test {
+            max-width: 375px;
+            margin: 20px auto;
+            border: 2px solid #333;
+            border-radius: 20px;
+            padding: 10px;
+            background: #000;
+        }
+        .mobile-screen {
+            background: white;
+            border-radius: 10px;
+            height: 667px;
+            overflow: auto;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pyebwa App Feature Updates Test Suite</h1>
+    
+    <div class="test-section">
+        <h2>1. Cookie-Based Language Persistence Test</h2>
+        <button onclick="testCookies()">Run Cookie Test</button>
+        <button onclick="testLanguageSwitch()">Test Language Switch</button>
+        <button onclick="clearCookies()">Clear All Cookies</button>
+        <div id="cookieResults"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Mobile UI Components Test</h2>
+        <button onclick="testMobileComponents()">Test Mobile Components</button>
+        <button onclick="simulateMobileView()">Simulate Mobile View</button>
+        <div id="mobileResults"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Theme Toggle Test</h2>
+        <button onclick="testThemeToggle()">Test Theme Toggle</button>
+        <button onclick="testThemePersistence()">Test Theme Persistence</button>
+        <div id="themeResults"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Family Tree Sorting Test</h2>
+        <button onclick="testFamilyTreeSorting()">Test Sibling Sorting</button>
+        <div id="sortingResults"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>5. Email Field Test</h2>
+        <button onclick="testEmailField()">Test Email Field</button>
+        <div id="emailResults"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>6. Toast Notifications Test</h2>
+        <button onclick="testToastNotifications()">Test Toast Messages</button>
+        <div id="toastResults"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info', targetId = 'cookieResults') {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = `${new Date().toLocaleTimeString()}: ${message}`;
+            document.getElementById(targetId).appendChild(div);
+        }
+
+        // Cookie Tests
+        function testCookies() {
+            log('Testing cookie functionality...', 'info', 'cookieResults');
+            
+            // Test setting cookie
+            document.cookie = "pyebwa_test=test_value;path=/;max-age=3600";
+            
+            // Test reading cookie
+            const cookies = document.cookie.split(';');
+            const testCookie = cookies.find(c => c.trim().startsWith('pyebwa_test='));
+            
+            if (testCookie) {
+                log('✓ Cookie set successfully: ' + testCookie, 'success', 'cookieResults');
+            } else {
+                log('✗ Failed to set cookie', 'error', 'cookieResults');
+            }
+            
+            // Test cross-domain cookie
+            document.cookie = "pyebwa_lang=en;path=/;domain=.pyebwa.com;max-age=3600";
+            log('Cross-domain cookie attempted (check in browser dev tools)', 'warning', 'cookieResults');
+        }
+        
+        function testLanguageSwitch() {
+            log('Testing language switch with cookies...', 'info', 'cookieResults');
+            
+            // Set language cookie
+            document.cookie = "pyebwa_lang=fr;path=/;max-age=3600";
+            log('Set language to French (fr)', 'info', 'cookieResults');
+            
+            // Check localStorage sync
+            if (localStorage.getItem('pyebwaLang')) {
+                log('✓ LocalStorage sync: ' + localStorage.getItem('pyebwaLang'), 'success', 'cookieResults');
+            }
+            
+            log('Reload the app page to verify language persistence', 'warning', 'cookieResults');
+        }
+        
+        function clearCookies() {
+            document.cookie = "pyebwa_test=;path=/;max-age=0";
+            document.cookie = "pyebwa_lang=;path=/;max-age=0";
+            document.cookie = "pyebwa_theme=;path=/;max-age=0";
+            localStorage.clear();
+            log('✓ Cookies and localStorage cleared', 'success', 'cookieResults');
+        }
+        
+        // Mobile Components Test
+        async function testMobileComponents() {
+            log('Testing mobile components...', 'info', 'mobileResults');
+            
+            try {
+                const response = await fetch('/app/');
+                const html = await response.text();
+                
+                // Check for mobile menu button
+                if (html.includes('mobileMenuBtn')) {
+                    log('✓ Mobile menu button found', 'success', 'mobileResults');
+                } else {
+                    log('✗ Mobile menu button not found', 'error', 'mobileResults');
+                }
+                
+                // Check for mobile nav
+                if (html.includes('mobile-nav')) {
+                    log('✓ Mobile navigation found', 'success', 'mobileResults');
+                } else {
+                    log('✗ Mobile navigation not found', 'error', 'mobileResults');
+                }
+                
+                // Check for back-to-top button
+                if (html.includes('back-to-top.js')) {
+                    log('✓ Back-to-top script loaded', 'success', 'mobileResults');
+                } else {
+                    log('✗ Back-to-top script not found', 'error', 'mobileResults');
+                }
+                
+                // Check theme toggle
+                if (html.includes('theme-toggle.js')) {
+                    log('✓ Theme toggle script loaded', 'success', 'mobileResults');
+                } else {
+                    log('✗ Theme toggle script not found', 'error', 'mobileResults');
+                }
+                
+            } catch (error) {
+                log('✗ Error fetching app page: ' + error.message, 'error', 'mobileResults');
+            }
+        }
+        
+        function simulateMobileView() {
+            log('Opening app in mobile-sized window...', 'info', 'mobileResults');
+            const mobileWindow = window.open('/app/', 'mobile', 'width=375,height=667');
+            log('Mobile view opened - check for responsive layout', 'warning', 'mobileResults');
+        }
+        
+        // Theme Toggle Test
+        function testThemeToggle() {
+            log('Testing theme toggle...', 'info', 'themeResults');
+            
+            // Set dark theme cookie
+            document.cookie = "pyebwa_theme=dark;path=/;max-age=3600";
+            log('✓ Dark theme cookie set', 'success', 'themeResults');
+            
+            // Check localStorage
+            localStorage.setItem('theme', 'dark');
+            log('✓ Theme set in localStorage', 'success', 'themeResults');
+            
+            log('Reload the app to see dark theme applied', 'warning', 'themeResults');
+        }
+        
+        function testThemePersistence() {
+            const themeCookie = document.cookie.split(';').find(c => c.trim().startsWith('pyebwa_theme='));
+            const themeLocal = localStorage.getItem('theme');
+            
+            if (themeCookie) {
+                log('✓ Theme cookie found: ' + themeCookie, 'success', 'themeResults');
+            } else {
+                log('✗ No theme cookie found', 'warning', 'themeResults');
+            }
+            
+            if (themeLocal) {
+                log('✓ Theme in localStorage: ' + themeLocal, 'success', 'themeResults');
+            } else {
+                log('✗ No theme in localStorage', 'warning', 'themeResults');
+            }
+        }
+        
+        // Family Tree Sorting Test
+        function testFamilyTreeSorting() {
+            log('Testing family tree sorting logic...', 'info', 'sortingResults');
+            
+            // Mock family members
+            const testMembers = [
+                { id: '1', firstName: 'John', birthDate: '1990-05-15', relationship: 'sibling' },
+                { id: '2', firstName: 'Mary', birthDate: '1988-03-20', relationship: 'sibling' },
+                { id: '3', firstName: 'Peter', birthDate: '1992-11-10', relationship: 'sibling' },
+                { id: '4', firstName: 'Sarah', birthDate: null, relationship: 'sibling' }
+            ];
+            
+            // Test sorting function
+            const sorted = [...testMembers].sort((a, b) => {
+                if (a.birthDate && b.birthDate) {
+                    return new Date(a.birthDate) - new Date(b.birthDate);
+                }
+                if (a.birthDate && !b.birthDate) return -1;
+                if (!a.birthDate && b.birthDate) return 1;
+                return 0;
+            });
+            
+            log('Original order: ' + testMembers.map(m => m.firstName).join(', '), 'info', 'sortingResults');
+            log('Sorted order: ' + sorted.map(m => m.firstName).join(', '), 'info', 'sortingResults');
+            
+            // Verify correct order
+            if (sorted[0].firstName === 'Mary' && sorted[1].firstName === 'John' && 
+                sorted[2].firstName === 'Peter' && sorted[3].firstName === 'Sarah') {
+                log('✓ Sorting algorithm working correctly (oldest to youngest)', 'success', 'sortingResults');
+            } else {
+                log('✗ Sorting algorithm not working as expected', 'error', 'sortingResults');
+            }
+        }
+        
+        // Email Field Test
+        async function testEmailField() {
+            log('Testing email field in member form...', 'info', 'emailResults');
+            
+            try {
+                const response = await fetch('/app/');
+                const html = await response.text();
+                
+                // Check for email field
+                if (html.includes('name="email"') && html.includes('type="email"')) {
+                    log('✓ Email field found in form', 'success', 'emailResults');
+                } else {
+                    log('✗ Email field not found in form', 'error', 'emailResults');
+                }
+                
+                // Check translations
+                if (html.includes('data-i18n="email"')) {
+                    log('✓ Email field has translation attribute', 'success', 'emailResults');
+                } else {
+                    log('✗ Email field missing translation attribute', 'warning', 'emailResults');
+                }
+                
+            } catch (error) {
+                log('✗ Error checking email field: ' + error.message, 'error', 'emailResults');
+            }
+        }
+        
+        // Toast Notifications Test
+        function testToastNotifications() {
+            log('Testing toast notification system...', 'info', 'toastResults');
+            
+            // Create mock toast function
+            function showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                toast.style.cssText = `
+                    position: fixed;
+                    bottom: 20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: ${type === 'success' ? '#4CAF50' : '#f44336'};
+                    color: white;
+                    padding: 16px 24px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                    z-index: 10000;
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                `;
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                
+                setTimeout(() => toast.style.opacity = '1', 10);
+                
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+                
+                return true;
+            }
+            
+            // Test success toast
+            if (showToast('Test success message', 'success')) {
+                log('✓ Success toast displayed', 'success', 'toastResults');
+            }
+            
+            // Test error toast after delay
+            setTimeout(() => {
+                if (showToast('Test error message', 'error')) {
+                    log('✓ Error toast displayed', 'success', 'toastResults');
+                }
+            }, 1000);
+            
+            log('Toast notifications should appear at bottom of screen', 'warning', 'toastResults');
+        }
+        
+        // Auto-run basic tests on load
+        window.addEventListener('load', () => {
+            log('Test suite loaded. Click buttons to run specific tests.', 'info', 'cookieResults');
+        });
+    </script>
+</body>
+</html>

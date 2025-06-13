@@ -19,7 +19,7 @@ function renderFamilyTree() {
     
     // Create tree structure
     const treeData = buildTreeStructure();
-    container.innerHTML = '<div class="tree-wrapper"><div class="tree"></div></div>';
+    container.innerHTML = '<div class="tree-wrapper tree-scale-auto"><div class="tree"></div></div>';
     const treeElement = container.querySelector('.tree');
     
     // Render tree nodes
@@ -64,6 +64,19 @@ function buildTreeStructure() {
         }
         
         return false;
+    });
+    
+    // Sort roots by birthDate (oldest first)
+    roots.sort((a, b) => {
+        // If both have birthdates, compare them
+        if (a.birthDate && b.birthDate) {
+            return new Date(a.birthDate) - new Date(b.birthDate);
+        }
+        // If only one has birthdate, put the one with birthdate first
+        if (a.birthDate && !b.birthDate) return -1;
+        if (!a.birthDate && b.birthDate) return 1;
+        // If neither has birthdate, maintain original order
+        return 0;
     });
     
     console.log('Root members:', roots);
@@ -112,6 +125,19 @@ function buildMemberTree(member, processed = new Set()) {
     const children = familyMembers.filter(m => {
         if (m.relationship !== 'child') return false;
         return m.relatedTo === member.id || (spouse && m.relatedTo === spouse.id);
+    });
+    
+    // Sort children by birthDate (oldest first)
+    children.sort((a, b) => {
+        // If both have birthdates, compare them
+        if (a.birthDate && b.birthDate) {
+            return new Date(a.birthDate) - new Date(b.birthDate);
+        }
+        // If only one has birthdate, put the one with birthdate first
+        if (a.birthDate && !b.birthDate) return -1;
+        if (!a.birthDate && b.birthDate) return 1;
+        // If neither has birthdate, maintain original order
+        return 0;
     });
     
     console.log(`Children of ${member.firstName}:`, children);
@@ -210,6 +236,9 @@ function createMemberCard(member) {
     
     return card;
 }
+
+// Export functions for use in other modules
+window.buildTreeStructure = buildTreeStructure;
 
 // Show member details
 function showMemberDetails(member) {

@@ -1,0 +1,417 @@
+/* Mobile-specific styles for Pyebwa App */
+
+/* Mobile-specific styles - Hidden by default */
+.mobile-nav,
+.mobile-nav-content,
+.mobile-menu-btn {
+    display: none !important;
+}
+
+/* Only show mobile navigation on mobile devices */
+@media (max-width: 768px) {
+    .mobile-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none !important; /* Still hidden by default */
+        z-index: var(--z-modal);
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .mobile-nav-content {
+        display: block !important; /* Allow it to be shown */
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 280px;
+        max-width: 85vw;
+        height: 100%;
+        background: white;
+        box-shadow: 2px 0 16px rgba(0, 0, 0, 0.15);
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Only apply mobile styles on mobile devices */
+@media (max-width: 768px) {
+    /* Show mobile navigation */
+    .mobile-nav.active {
+        display: block;
+    }
+    
+    .mobile-nav.active .mobile-nav-content {
+        transform: translateX(0);
+    }
+    
+    /* Hide desktop navigation */
+    .nav-menu {
+        display: none !important;
+    }
+    
+    /* Show mobile menu button */
+    .mobile-menu-btn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: var(--gray-700);
+        font-size: 24px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Mobile header adjustments */
+    .app-header {
+        height: 64px;
+    }
+    
+    .header-container {
+        padding: 0 16px;
+    }
+    
+    .header-left {
+        gap: 16px;
+    }
+    
+    .app-logo-img {
+        height: 36px;
+    }
+    
+    /* Mobile navigation header */
+    .mobile-nav-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px;
+        border-bottom: 1px solid var(--gray-200);
+        background: var(--gray-50);
+    }
+    
+    /* Mobile navigation items */
+    .mobile-nav-items {
+        padding: 8px 0;
+    }
+    
+    .mobile-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 20px;
+        width: 100%;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--gray-700);
+        text-align: left;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+    
+    .mobile-nav-item::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--primary-blue);
+        transform: scaleX(0);
+        transition: transform 0.2s ease;
+    }
+    
+    .mobile-nav-item:active {
+        background: var(--gray-100);
+    }
+    
+    .mobile-nav-item.active {
+        background: rgba(0, 33, 125, 0.08);
+        color: var(--primary-blue);
+    }
+    
+    .mobile-nav-item.active::after {
+        transform: scaleX(1);
+    }
+    
+    .mobile-nav-item .material-icons {
+        font-size: 24px;
+    }
+    
+    /* Mobile-optimized content */
+    .app-main {
+        padding: 20px 16px;
+    }
+    
+    .view-header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+    }
+    
+    .view-header h2 {
+        font-size: 24px;
+    }
+    
+    /* Mobile cards */
+    .members-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .member-card {
+        border-radius: 12px;
+    }
+    
+    .stat-card {
+        padding: 20px;
+    }
+    
+    .stat-value {
+        font-size: 28px;
+    }
+    
+    /* Mobile dashboard */
+    .dashboard-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    .action-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    .action-card {
+        padding: 20px 16px;
+        font-size: 13px;
+    }
+    
+    .action-card .material-icons {
+        font-size: 28px;
+    }
+    
+    /* Mobile forms */
+    .modal-content {
+        margin: 20px;
+        max-height: calc(100vh - 40px);
+        max-width: calc(100vw - 40px);
+    }
+    
+    .modal-header {
+        padding: 24px;
+    }
+    
+    .modal-header h3 {
+        font-size: 20px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Mobile buttons */
+    .btn {
+        padding: 12px 20px;
+        font-size: 14px;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .form-actions .btn {
+        width: 100%;
+    }
+    
+    /* Mobile tree view */
+    .tree-container {
+        padding: 20px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .tree-wrapper {
+        padding: 20px 10px;
+        min-width: fit-content;
+    }
+    
+    .tree-node .member-card {
+        width: 120px;
+        padding: 12px;
+    }
+    
+    .tree-node .member-photo {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .tree-node .member-name {
+        font-size: 12px;
+    }
+    
+    .tree-children {
+        gap: 20px;
+        margin-top: 60px;
+    }
+    
+    /* Mobile-specific controls */
+    .tree-controls {
+        position: fixed;
+        bottom: 80px;
+        right: 16px;
+        top: auto;
+        flex-direction: column;
+    }
+    
+    #backToTop,
+    .theme-toggle {
+        width: 48px;
+        height: 48px;
+        right: 16px;
+    }
+    
+    #backToTop {
+        bottom: 20px;
+    }
+    
+    .theme-toggle {
+        top: 80px;
+    }
+    
+    /* Mobile search */
+    .search-box {
+        width: 100%;
+    }
+    
+    /* Mobile language selector */
+    .language-selector {
+        padding: 3px;
+    }
+    
+    .lang-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+    /* Mobile user menu */
+    .user-menu-btn .user-email {
+        display: none;
+    }
+    
+    .user-dropdown {
+        right: -16px;
+        left: auto;
+        min-width: 200px;
+    }
+    
+    /* Touch-friendly spacing */
+    a, button, .clickable {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Reduce animations on mobile for performance */
+    * {
+        animation-duration: 0.2s !important;
+    }
+    
+    /* Mobile toast position */
+    .toast-notification {
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+        transform: none;
+        max-width: none;
+    }
+    
+    /* Mobile empty states */
+    .empty-state {
+        padding: 40px 20px;
+    }
+    
+    .empty-icon {
+        font-size: 60px;
+    }
+    
+    .empty-state h3 {
+        font-size: 20px;
+    }
+    
+    /* Mobile loading */
+    .loading-spinner {
+        padding: 40px 20px;
+    }
+    
+    .spinner {
+        width: 48px;
+        height: 48px;
+    }
+}
+
+/* Dark mode support for mobile nav */
+body.dark-mode .mobile-nav-content {
+    background: var(--gray-100);
+}
+
+body.dark-mode .mobile-nav-header {
+    background: var(--gray-200);
+    border-bottom-color: var(--gray-300);
+}
+
+body.dark-mode .mobile-nav-item {
+    color: var(--gray-700);
+}
+
+body.dark-mode .mobile-nav-item.active {
+    background: rgba(0, 33, 125, 0.15);
+    color: var(--accent-yellow);
+}
+
+/* Ensure mobile nav is hidden on desktop even with dark mode */
+@media (min-width: 769px) {
+    .mobile-nav,
+    .mobile-nav-content,
+    .mobile-menu-btn {
+        display: none !important;
+    }
+}
+
+/* iOS-specific fixes */
+@supports (-webkit-touch-callout: none) {
+    .mobile-nav-content {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    .app-footer {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+
+/* Landscape mobile adjustments */
+@media (max-width: 768px) and (orientation: landscape) {
+    .app-header {
+        height: 56px;
+    }
+    
+    .modal-content {
+        max-height: calc(100vh - 20px);
+    }
+    
+    .tree-container {
+        max-height: calc(100vh - 100px);
+    }
+}

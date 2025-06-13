@@ -113,7 +113,7 @@ function redirectToLogin() {
     window.location.href = 'https://rasin.pyebwa.com/login.html';
 }
 
-// Event listeners - Redirect to pyebwa.com/login/ for auth
+// Event listeners - Redirect to rasin.pyebwa.com/login.html for auth
 if (loginBtn) {
     loginBtn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -225,4 +225,4 @@ navLinks.forEach(link => {
 updateLanguage();
 
 // Debug: Log initialization complete
-console.log('App initialization complete - Authentication redirects to pyebwa.com/login/');
+console.log('App initialization complete - Authentication redirects to rasin.pyebwa.com/login.html');

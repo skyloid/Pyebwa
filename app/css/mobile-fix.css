@@ -1,0 +1,152 @@
+/* Mobile Navigation Fixes - Prevents Duplicate Menus */
+
+/* Critical: Hide all mobile navigation by default on ALL screen sizes */
+.mobile-nav,
+.mobile-nav-content,
+.mobile-menu-btn,
+#mobileNav,
+#mobileMenuBtn {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+/* Only show on actual mobile devices */
+@media only screen and (max-width: 768px) {
+    /* Show mobile menu button */
+    .mobile-menu-btn,
+    #mobileMenuBtn {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    /* Mobile nav container - hidden until active */
+    .mobile-nav,
+    #mobileNav {
+        display: none !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    /* When active, show the mobile nav */
+    .mobile-nav.active,
+    #mobileNav.active {
+        display: block !important;
+    }
+    
+    /* Mobile nav content */
+    .mobile-nav-content {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    /* Ensure desktop nav is hidden */
+    .nav-menu {
+        display: none !important;
+        visibility: hidden !important;
+    }
+}
+
+/* Android-specific fixes */
+@media only screen and (max-width: 768px) and (min-resolution: 2dppx) {
+    /* Prevent duplicate rendering on high-DPI Android devices */
+    .mobile-nav:not(:first-of-type) {
+        display: none !important;
+        position: absolute !important;
+        left: -9999px !important;
+    }
+}
+
+/* Fix for specific Android browsers */
+@supports (-webkit-appearance: none) and (not (-ms-ime-align: auto)) {
+    @media only screen and (max-width: 768px) {
+        /* Ensure single instance of mobile nav */
+        body > .mobile-nav ~ .mobile-nav {
+            display: none !important;
+        }
+    }
+}
+
+/* Samsung Internet Browser fixes */
+@media only screen and (max-width: 768px) {
+    /* Force hardware acceleration */
+    .mobile-nav,
+    .mobile-nav-content {
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+    }
+}
+
+/* Ensure no mobile elements show on desktop */
+@media only screen and (min-width: 769px) {
+    .mobile-nav,
+    .mobile-nav-content,
+    .mobile-menu-btn,
+    #mobileNav,
+    #mobileMenuBtn,
+    #mobileMenuClose,
+    .mobile-nav-header,
+    .mobile-nav-items,
+    .mobile-nav-item {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        position: absolute !important;
+        left: -99999px !important;
+        top: -99999px !important;
+        width: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+    
+    /* Ensure desktop nav is visible */
+    .nav-menu {
+        display: flex !important;
+        visibility: visible !important;
+    }
+}
+
+/* iOS Safari fixes */
+@supports (-webkit-touch-callout: none) {
+    /* Prevent iOS elastic scrolling on nav */
+    .mobile-nav-content {
+        position: fixed;
+        overflow-y: scroll;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Fix iOS tap delay */
+    .mobile-nav-item,
+    .mobile-menu-btn {
+        touch-action: manipulation;
+    }
+}
+
+/* Prevent FOUC (Flash of Unstyled Content) */
+.mobile-nav:not(.initialized) {
+    display: none !important;
+}
+
+/* Z-index management to prevent overlaps */
+@media only screen and (max-width: 768px) {
+    .app-header {
+        z-index: 100;
+    }
+    
+    .mobile-nav {
+        z-index: 9999;
+    }
+    
+    .mobile-nav-content {
+        z-index: 10000;
+    }
+    
+    .mobile-menu-btn {
+        z-index: 101;
+    }
+}

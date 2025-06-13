@@ -3,6 +3,10 @@ let currentUser = null;
 let userFamilyTreeId = null;
 let familyMembers = [];
 
+// Make data globally accessible for PDF export and other modules
+window.familyMembers = familyMembers;
+window.currentUser = currentUser;
+
 // Redirect cooldown configuration
 const REDIRECT_COOLDOWN = 30000; // 30 seconds cooldown between redirects
 
@@ -162,6 +166,7 @@ function initializeAuth() {
     if (immediateUser) {
         log('User already authenticated - initializing immediately');
         currentUser = immediateUser;
+        window.currentUser = currentUser;
         const userEmailEl = document.querySelector('.user-email');
         if (userEmailEl) {
             userEmailEl.textContent = immediateUser.email;
@@ -194,6 +199,7 @@ function initializeAuth() {
                 // User is authenticated
                 log('User authenticated successfully');
                 currentUser = user;
+                window.currentUser = currentUser;
                 const userEmailEl = document.querySelector('.user-email');
                 if (userEmailEl) {
                     userEmailEl.textContent = user.email;
@@ -211,7 +217,14 @@ function initializeAuth() {
                     
                     // Hide loading and show main view
                     hideLoadingState();
-                    showView('tree');
+                    
+                    // Check if onboarding is needed
+                    if (window.shouldShowOnboarding && window.shouldShowOnboarding()) {
+                        window.showOnboarding();
+                    }
+                    
+                    // Show dashboard by default
+                    showView('dashboard');
                     
                     log('App initialized successfully');
                 } catch (error) {
@@ -361,6 +374,7 @@ async function loadFamilyMembers() {
             .get();
         
         familyMembers = [];
+        window.familyMembers = familyMembers;
         const memberIds = new Set(); // Track unique IDs to prevent duplicates
         
         snapshot.forEach(doc => {
@@ -376,9 +390,12 @@ async function loadFamilyMembers() {
         console.log('Loaded members:', familyMembers.length);
         console.log('Members:', familyMembers);
         
-        // Update views
-        renderFamilyTree();
-        renderMembersList();
+        // Make familyMembers globally accessible for PDF export
+        window.familyMembers = familyMembers;
+        
+        // Update current view
+        const activeView = document.querySelector('.nav-item.active')?.getAttribute('data-view') || 'dashboard';
+        showView(activeView);
         
     } catch (error) {
         console.error('Error loading family members:', error);
@@ -440,8 +457,19 @@ function initializeEventListeners() {
     
     // Modal close buttons
     document.querySelectorAll('.modal-close').forEach(btn => {
-        btn.addEventListener('click', () => {
-            btn.closest('.modal').classList.remove('active');
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const modal = btn.closest('.modal');
+            if (modal) {
+                modal.classList.remove('active');
+                // Reset form if it's the add member modal
+                if (modal.id === 'addMemberModal') {
+                    const form = modal.querySelector('form');
+                    if (form) form.reset();
+                    editingMemberId = null;
+                }
+            }
         });
     });
     
@@ -485,6 +513,13 @@ function initializeEventListeners() {
             }
         });
     }
+    
+    // Close modal on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeAllModals();
+        }
+    });
 }
 
 // Show view
@@ -507,6 +542,9 @@ function showView(viewName) {
     
     // Load view-specific data
     switch (viewName) {
+        case 'dashboard':
+            renderDashboard();
+            break;
         case 'tree':
             renderFamilyTree();
             break;
@@ -641,7 +679,12 @@ async function handleAddMember(e) {
         }
         
         // Close modal and reload members
-        document.getElementById('addMemberModal').classList.remove('active');
+        const modal = document.getElementById('addMemberModal');
+        if (modal) {
+            modal.classList.remove('active');
+            // Reset form
+            form.reset();
+        }
         editingMemberId = null;
         await loadFamilyMembers();
         
@@ -744,3 +787,40 @@ function showError(message) {
         setTimeout(() => toast.remove(), 300);
     }, 5000);
 }
+
+// Render dashboard view
+function renderDashboard() {
+    const container = document.getElementById('dashboardView');
+    if (!container) return;
+    
+    // Clear existing content
+    container.innerHTML = '';
+    
+    // Create dashboard using the dashboard component
+    if (window.createDashboard) {
+        const dashboard = window.createDashboard();
+        container.appendChild(dashboard);
+    } else {
+        // Fallback if dashboard.js hasn't loaded yet
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">📊</div>
+                <h3>Loading Dashboard...</h3>
+            </div>
+        `;
+    }
+}
+
+// Helper function to close all modals
+function closeAllModals() {
+    document.querySelectorAll('.modal.active').forEach(modal => {
+        modal.classList.remove('active');
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+    });
+    editingMemberId = null;
+}
+
+// Make functions globally accessible
+window.showView = showView;
+window.closeAllModals = closeAllModals;

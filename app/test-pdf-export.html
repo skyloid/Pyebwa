@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Export Test - Pyebwa</title>
+    <link rel="icon" type="image/x-icon" href="/app/favicon.ico">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/app/css/app-modern.css?v=1">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        .test-section {
+            background: white;
+            padding: 30px;
+            margin: 20px 0;
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .sample-data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .sample-member {
+            padding: 16px;
+            background: var(--gray-50);
+            border-radius: 8px;
+            border: 2px solid var(--gray-200);
+        }
+        
+        .sample-member.male {
+            border-color: var(--primary-blue);
+        }
+        
+        .sample-member.female {
+            border-color: var(--primary-red);
+        }
+        
+        .export-preview {
+            background: var(--gray-50);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .chart-preview {
+            max-width: 400px;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>PDF Export Test</h1>
+        
+        <div class="test-section">
+            <h2>Test Controls</h2>
+            <button class="btn btn-primary" onclick="loadSampleData()">
+                <span class="material-icons">upload</span>
+                Load Sample Family Data
+            </button>
+            <button class="btn btn-warning" onclick="showExportModal()">
+                <span class="material-icons">download</span>
+                Show Export Options
+            </button>
+            <button class="btn btn-secondary" onclick="testPDFDirect()">
+                <span class="material-icons">picture_as_pdf</span>
+                Test PDF Export Directly
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h2>Current Family Members</h2>
+            <div id="membersList" class="sample-data-grid">
+                <p>No family members loaded. Click "Load Sample Data" to add test members.</p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Export Preview</h2>
+            <div class="export-preview">
+                <h3>What the PDF will include:</h3>
+                <ul>
+                    <li>Visual family tree diagram</li>
+                    <li>Member demographics and statistics</li>
+                    <li>Gender distribution pie chart</li>
+                    <li>Age distribution bar chart</li>
+                    <li>Generation breakdown</li>
+                    <li>Export date and user information</li>
+                </ul>
+            </div>
+            
+            <div class="chart-preview">
+                <canvas id="sampleChart" width="300" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mock global variables and functions -->
+    <script>
+        // Mock user
+        window.currentUser = {
+            email: 'test@example.com',
+            displayName: 'Test User'
+        };
+        
+        // Mock family members
+        window.familyMembers = [];
+        
+        // Mock translation function
+        window.t = function(key) {
+            const translations = {
+                'familyTreeReport': 'Family Tree Report',
+                'familyStatistics': 'Family Statistics',
+                'totalMembers': 'Total Members',
+                'males': 'Males',
+                'females': 'Females',
+                'generations': 'Generations',
+                'averageAge': 'Average Age',
+                'years': 'years',
+                'genderDistribution': 'Gender Distribution',
+                'ageDistribution': 'Age Distribution',
+                'generationBreakdown': 'Generation Breakdown',
+                'currentGeneration': 'Current Generation',
+                'parentsGeneration': 'Parents Generation',
+                'exportFamilyTree': 'Export Family Tree',
+                'exportAsPDF': 'Export as PDF',
+                'exportAsJSON': 'Export as JSON',
+                'pdfDescription': 'Visual family tree with charts and demographic statistics',
+                'jsonDescription': 'Raw data format for backup or data analysis',
+                'recommended': 'Recommended'
+            };
+            return translations[key] || key;
+        };
+        
+        // Mock show success/error
+        window.showSuccess = function(message) {
+            alert('Success: ' + message);
+        };
+        
+        window.showError = function(message) {
+            alert('Error: ' + message);
+        };
+        
+        // Load sample data
+        function loadSampleData() {
+            window.familyMembers = [
+                {
+                    id: '1',
+                    firstName: 'Jean',
+                    lastName: 'Baptiste',
+                    gender: 'male',
+                    birthDate: '1950-05-15',
+                    relationship: 'parent'
+                },
+                {
+                    id: '2',
+                    firstName: 'Marie',
+                    lastName: 'Baptiste',
+                    gender: 'female',
+                    birthDate: '1955-08-20',
+                    relationship: 'parent'
+                },
+                {
+                    id: '3',
+                    firstName: 'Pierre',
+                    lastName: 'Baptiste',
+                    gender: 'male',
+                    birthDate: '1978-03-10',
+                    relationship: 'child',
+                    relatedTo: '1'
+                },
+                {
+                    id: '4',
+                    firstName: 'Sophie',
+                    lastName: 'Baptiste',
+                    gender: 'female',
+                    birthDate: '1980-11-25',
+                    relationship: 'child',
+                    relatedTo: '1'
+                },
+                {
+                    id: '5',
+                    firstName: 'Michel',
+                    lastName: 'Baptiste',
+                    gender: 'male',
+                    birthDate: '1982-07-08',
+                    relationship: 'child',
+                    relatedTo: '1'
+                },
+                {
+                    id: '6',
+                    firstName: 'Lucas',
+                    lastName: 'Baptiste',
+                    gender: 'male',
+                    birthDate: '2005-04-15',
+                    relationship: 'child',
+                    relatedTo: '3'
+                },
+                {
+                    id: '7',
+                    firstName: 'Emma',
+                    lastName: 'Baptiste',
+                    gender: 'female',
+                    birthDate: '2008-09-22',
+                    relationship: 'child',
+                    relatedTo: '3'
+                }
+            ];
+            
+            displayMembers();
+            showSampleChart();
+        }
+        
+        // Display members
+        function displayMembers() {
+            const container = document.getElementById('membersList');
+            container.innerHTML = window.familyMembers.map(member => {
+                const age = member.birthDate ? 
+                    new Date().getFullYear() - new Date(member.birthDate).getFullYear() : 
+                    'Unknown';
+                
+                return `
+                    <div class="sample-member ${member.gender}">
+                        <strong>${member.firstName} ${member.lastName}</strong><br>
+                        Gender: ${member.gender}<br>
+                        Age: ${age}<br>
+                        Relationship: ${member.relationship}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Show sample chart
+        function showSampleChart() {
+            const canvas = document.getElementById('sampleChart');
+            const ctx = canvas.getContext('2d');
+            
+            // Simple pie chart
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 70;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw pie slices
+            const males = window.familyMembers.filter(m => m.gender === 'male').length;
+            const females = window.familyMembers.filter(m => m.gender === 'female').length;
+            const total = males + females;
+            
+            if (total > 0) {
+                // Male slice
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, 0, (males / total) * 2 * Math.PI);
+                ctx.fillStyle = '#00217D';
+                ctx.fill();
+                
+                // Female slice
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, (males / total) * 2 * Math.PI, 2 * Math.PI);
+                ctx.fillStyle = '#D41125';
+                ctx.fill();
+                
+                // Labels
+                ctx.fillStyle = '#333';
+                ctx.font = '14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Gender Distribution', centerX, 20);
+                ctx.fillText(`Males: ${males}, Females: ${females}`, centerX, canvas.height - 10);
+            }
+        }
+        
+        // Show export modal
+        function showExportModal() {
+            if (window.showExportOptions) {
+                window.showExportOptions();
+            } else {
+                alert('Export options function not loaded');
+            }
+        }
+        
+        // Test PDF directly
+        function testPDFDirect() {
+            if (window.familyMembers.length === 0) {
+                alert('Please load sample data first');
+                return;
+            }
+            
+            if (window.exportFamilyTreePDF) {
+                window.exportFamilyTreePDF();
+            } else {
+                alert('PDF export function not loaded');
+            }
+        }
+    </script>
+    
+    <!-- Load required scripts -->
+    <script src="/app/js/dashboard.js"></script>
+    <script src="/app/js/pdf-export.js"></script>
+    <script src="/app/js/tree.js"></script>
+    
+    <!-- Load Chart.js for the preview -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</body>
+</html>

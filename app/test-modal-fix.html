@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modal Fix Test</title>
+    <style>
+        body {
+            padding: 40px;
+            font-family: Arial, sans-serif;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #f0f0f0;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+        }
+        
+        .modal-close:hover {
+            background: #e0e0e0;
+        }
+        
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Modal Test</h1>
+    
+    <button onclick="openModal()">Open Modal</button>
+    <button onclick="checkModalState()">Check Modal State</button>
+    <button onclick="forceCloseModal()">Force Close Modal</button>
+    
+    <div class="status" id="status">Modal status will appear here</div>
+    
+    <!-- Test Modal -->
+    <div class="modal" id="testModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <h2>Test Modal</h2>
+            <p>This is a test modal. Try closing it with:</p>
+            <ul>
+                <li>The X button</li>
+                <li>Clicking outside</li>
+                <li>Pressing Escape</li>
+            </ul>
+            <button onclick="closeModal()">Close Modal</button>
+        </div>
+    </div>
+    
+    <script>
+        // Get modal element
+        const modal = document.getElementById('testModal');
+        const status = document.getElementById('status');
+        
+        // Open modal
+        function openModal() {
+            modal.classList.add('active');
+            updateStatus('Modal opened');
+        }
+        
+        // Close modal
+        function closeModal() {
+            modal.classList.remove('active');
+            updateStatus('Modal closed');
+        }
+        
+        // Force close modal
+        function forceCloseModal() {
+            modal.classList.remove('active');
+            modal.style.display = 'none';
+            setTimeout(() => {
+                modal.style.display = '';
+            }, 100);
+            updateStatus('Modal force closed');
+        }
+        
+        // Check modal state
+        function checkModalState() {
+            const isActive = modal.classList.contains('active');
+            const display = window.getComputedStyle(modal).display;
+            const visibility = window.getComputedStyle(modal).visibility;
+            
+            updateStatus(`
+                Active class: ${isActive}<br>
+                Display: ${display}<br>
+                Visibility: ${visibility}<br>
+                Classes: ${modal.className}
+            `);
+        }
+        
+        // Update status
+        function updateStatus(message) {
+            status.innerHTML = `${new Date().toLocaleTimeString()}: ${message}`;
+        }
+        
+        // Close on outside click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+        
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeModal();
+            }
+        });
+        
+        // Initial status
+        checkModalState();
+    </script>
+</body>
+</html>

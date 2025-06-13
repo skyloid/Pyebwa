@@ -26,6 +26,8 @@
             transition: all 0.3s ease;
             z-index: 100;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
         
         .theme-toggle-btn:hover {
@@ -159,6 +161,12 @@
     
     // Add click event
     themeToggle.addEventListener('click', toggleDarkMode);
+    
+    // Add touch event for mobile
+    themeToggle.addEventListener('touchend', function(e) {
+        e.preventDefault(); // Prevent ghost clicks
+        toggleDarkMode();
+    });
     
     // Make function globally accessible
     window.toggleDarkMode = toggleDarkMode;

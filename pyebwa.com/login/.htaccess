@@ -1,0 +1,3 @@
+RewriteEngine On
+# Redirect all requests to this directory to rasin.pyebwa.com/login.html
+RewriteRule ^.*$ https://rasin.pyebwa.com/login.html [R=301,L]

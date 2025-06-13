@@ -25,85 +25,56 @@ function renderMembersList() {
 // Create member card for list view
 function createMemberListCard(member) {
     const card = document.createElement('div');
-    card.className = 'member-list-card';
+    card.className = 'member-card';
+    card.onclick = () => showMemberDetails(member);
     
-    // Photo section
-    const photoSection = document.createElement('div');
-    photoSection.className = 'member-list-photo';
+    // Card content wrapper
+    const cardContent = document.createElement('div');
+    cardContent.className = 'member-card-content';
+    
+    // Photo
+    const photo = document.createElement('div');
+    photo.className = 'member-photo';
     if (member.photoUrl) {
-        const img = document.createElement('img');
-        img.src = member.photoUrl;
-        img.alt = `${member.firstName} ${member.lastName}`;
-        photoSection.appendChild(img);
+        photo.style.backgroundImage = `url(${member.photoUrl})`;
     } else {
         const icon = document.createElement('span');
         icon.className = 'material-icons';
         icon.textContent = member.gender === 'female' ? 'face_3' : 'face';
-        photoSection.appendChild(icon);
+        photo.appendChild(icon);
     }
-    card.appendChild(photoSection);
+    cardContent.appendChild(photo);
     
     // Info section
-    const infoSection = document.createElement('div');
-    infoSection.className = 'member-list-info';
+    const info = document.createElement('div');
+    info.className = 'member-info';
     
     // Name
-    const name = document.createElement('h4');
+    const name = document.createElement('div');
+    name.className = 'member-name';
     name.textContent = `${member.firstName} ${member.lastName}`;
-    infoSection.appendChild(name);
+    info.appendChild(name);
     
-    // Details
-    const details = document.createElement('div');
-    details.className = 'member-list-details';
+    // Relationship
+    if (member.relationship) {
+        const relationship = document.createElement('div');
+        relationship.className = 'member-relationship';
+        relationship.textContent = t(member.relationship);
+        info.appendChild(relationship);
+    }
     
+    // Dates
     if (member.birthDate) {
         const birthYear = new Date(member.birthDate).getFullYear();
         const age = new Date().getFullYear() - birthYear;
-        details.innerHTML += `<span><span class="material-icons">cake</span> ${birthYear} (${age} ${t('yearsOld') || 'years'})</span>`;
+        const dates = document.createElement('div');
+        dates.className = 'member-dates';
+        dates.textContent = `${birthYear} • ${age} ${t('yearsOld') || 'years old'}`;
+        info.appendChild(dates);
     }
     
-    if (member.relationship) {
-        details.innerHTML += `<span><span class="material-icons">family_restroom</span> ${t(member.relationship)}</span>`;
-    }
-    
-    infoSection.appendChild(details);
-    
-    // Biography preview
-    if (member.biography) {
-        const bio = document.createElement('p');
-        bio.className = 'member-list-bio';
-        bio.textContent = member.biography.substring(0, 100) + (member.biography.length > 100 ? '...' : '');
-        infoSection.appendChild(bio);
-    }
-    
-    card.appendChild(infoSection);
-    
-    // Actions section
-    const actionsSection = document.createElement('div');
-    actionsSection.className = 'member-list-actions';
-    
-    const viewBtn = document.createElement('button');
-    viewBtn.className = 'btn-icon';
-    viewBtn.innerHTML = '<span class="material-icons">visibility</span>';
-    viewBtn.title = t('view');
-    viewBtn.onclick = () => showMemberDetails(member);
-    actionsSection.appendChild(viewBtn);
-    
-    const editBtn = document.createElement('button');
-    editBtn.className = 'btn-icon';
-    editBtn.innerHTML = '<span class="material-icons">edit</span>';
-    editBtn.title = t('edit');
-    editBtn.onclick = () => showAddMemberModal(member);
-    actionsSection.appendChild(editBtn);
-    
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'btn-icon btn-danger';
-    deleteBtn.innerHTML = '<span class="material-icons">delete</span>';
-    deleteBtn.title = t('delete');
-    deleteBtn.onclick = () => deleteMember(member);
-    actionsSection.appendChild(deleteBtn);
-    
-    card.appendChild(actionsSection);
+    cardContent.appendChild(info);
+    card.appendChild(cardContent);
     
     return card;
 }

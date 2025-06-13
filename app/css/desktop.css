@@ -1,0 +1,192 @@
+/* Desktop-specific styles for Pyebwa App */
+
+/* Force hide mobile elements on desktop - no media query needed */
+.mobile-nav,
+.mobile-nav-content {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* Only apply these styles on desktop (screens wider than 768px) */
+@media (min-width: 769px) {
+    /* Ensure mobile elements stay hidden */
+    .mobile-menu-btn {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
+    .mobile-nav,
+    .mobile-nav-content {
+        display: none !important;
+        visibility: hidden !important;
+        width: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+    
+    /* Enhanced desktop navigation */
+    .nav-menu {
+        display: flex;
+        gap: 8px;
+    }
+    
+    /* Larger click targets on desktop */
+    .nav-item {
+        padding: 12px 24px;
+    }
+    
+    /* Enhanced hover effects for desktop */
+    .card:hover {
+        transform: translateY(-6px) scale(1.01);
+    }
+    
+    .member-card:hover {
+        transform: translateY(-8px) scale(1.02);
+    }
+    
+    /* Wider content on desktop */
+    .app-main {
+        padding: 40px 32px;
+    }
+    
+    /* Desktop grid layouts */
+    .members-grid {
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 32px;
+    }
+    
+    .dashboard-stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .action-cards {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    /* Desktop modal size */
+    .modal-content {
+        max-width: 700px;
+    }
+    
+    /* Desktop tree view */
+    .tree-container {
+        padding: 60px;
+    }
+    
+    .tree-node .member-card {
+        width: 180px;
+        padding: 20px;
+    }
+    
+    .tree-node .member-photo {
+        width: 90px;
+        height: 90px;
+    }
+    
+    /* Desktop tooltips on hover */
+    [title] {
+        position: relative;
+    }
+    
+    [title]:hover::after {
+        content: attr(title);
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 8px 12px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        font-size: 12px;
+        white-space: nowrap;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        z-index: var(--z-tooltip);
+        pointer-events: none;
+        animation: fadeInUp 0.3s ease;
+    }
+    
+    /* Sticky sidebar on desktop */
+    .dashboard-activity,
+    .dashboard-insights {
+        position: sticky;
+        top: calc(var(--header-height) + 20px);
+    }
+    
+    /* Multi-column layouts on desktop */
+    .form-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    /* Desktop-only animations */
+    .desktop-parallax {
+        transform: translateY(0);
+        transition: transform 0.5s ease-out;
+    }
+    
+    .desktop-parallax:hover {
+        transform: translateY(-10px);
+    }
+    
+    /* Advanced hover states */
+    .btn:not(:disabled):hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Desktop keyboard navigation indicators */
+    *:focus-visible {
+        outline: 3px solid var(--primary-blue);
+        outline-offset: 4px;
+    }
+    
+    /* Larger fonts on desktop */
+    .view-header h2 {
+        font-size: 36px;
+    }
+    
+    .stat-value {
+        font-size: 36px;
+    }
+    
+    /* Desktop-specific loading states */
+    .skeleton-desktop {
+        height: 200px;
+    }
+}
+
+/* Extra large desktop screens */
+@media (min-width: 1200px) {
+    .header-container,
+    .app-main,
+    .footer-container {
+        max-width: 1400px;
+    }
+    
+    .members-grid {
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    }
+    
+    .dashboard-container {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 32px;
+    }
+}
+
+/* Ultra-wide monitors */
+@media (min-width: 1920px) {
+    .app-main {
+        max-width: 1600px;
+        padding: 60px 40px;
+    }
+    
+    .view-header h2 {
+        font-size: 42px;
+    }
+    
+    .members-grid {
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    }
+}

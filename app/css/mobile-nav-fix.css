@@ -1,0 +1,118 @@
+/* Mobile Navigation Fix */
+@media (max-width: 768px) {
+    /* Hide desktop nav menu */
+    .nav-menu {
+        display: none !important;
+    }
+    
+    /* Mobile menu button */
+    .mobile-menu-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: var(--gray-700);
+        font-size: 24px;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+    
+    /* Mobile navigation overlay */
+    .mobile-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        z-index: 1000;
+    }
+    
+    .mobile-nav.active {
+        display: block;
+    }
+    
+    .mobile-nav-content {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 280px;
+        height: 100%;
+        background: var(--white);
+        box-shadow: 2px 0 12px rgba(0, 0, 0, 0.1);
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .mobile-nav.active .mobile-nav-content {
+        transform: translateX(0);
+    }
+    
+    .mobile-nav-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px;
+        border-bottom: 1px solid var(--gray-200);
+    }
+    
+    .mobile-nav-items {
+        padding: 20px 0;
+    }
+    
+    .mobile-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 15px 20px;
+        width: 100%;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-size: 16px;
+        color: var(--gray-700);
+        text-align: left;
+        transition: background 0.2s ease;
+    }
+    
+    .mobile-nav-item:hover,
+    .mobile-nav-item.active {
+        background: var(--gray-100);
+        color: var(--primary-blue);
+    }
+    
+    /* Dark mode support for mobile nav */
+    body.dark-mode .mobile-nav-content {
+        background: var(--gray-100);
+    }
+    
+    body.dark-mode .mobile-nav-header {
+        border-bottom-color: var(--gray-300);
+    }
+    
+    body.dark-mode .mobile-nav-item {
+        color: var(--gray-700);
+    }
+    
+    body.dark-mode .mobile-nav-item:hover,
+    body.dark-mode .mobile-nav-item.active {
+        background: var(--gray-200);
+        color: var(--primary-blue);
+    }
+}
+
+/* Show mobile menu button only on mobile */
+.mobile-menu-btn {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .mobile-menu-btn {
+        display: flex;
+    }
+}
