@@ -1,0 +1,605 @@
+{
+  "summary": {
+    "timestamp": "2025-06-13T17:31:03.071Z",
+    "totalFiles": 43,
+    "totalSize": "363.52 KB",
+    "totalGzipped": "88.41 KB",
+    "compression": "75.7%"
+  },
+  "byType": [
+    {
+      "extension": ".css",
+      "count": 13,
+      "totalSize": "97.13 KB",
+      "totalGzipped": "22.08 KB",
+      "averageSize": "7.47 KB"
+    },
+    {
+      "extension": ".js",
+      "count": 30,
+      "totalSize": "266.39 KB",
+      "totalGzipped": "66.33 KB",
+      "averageSize": "8.88 KB"
+    }
+  ],
+  "largestFiles": [
+    {
+      "path": "js/app.js",
+      "size": "28.51 KB",
+      "gzipped": "6.6 KB",
+      "compression": "76.8%"
+    },
+    {
+      "path": "js/pdf-export.js",
+      "size": "28.19 KB",
+      "gzipped": "6.57 KB",
+      "compression": "76.7%"
+    },
+    {
+      "path": "css/app-modern.css",
+      "size": "26.6 KB",
+      "gzipped": "5.41 KB",
+      "compression": "79.7%"
+    },
+    {
+      "path": "js/dashboard.js",
+      "size": "17.58 KB",
+      "gzipped": "3.82 KB",
+      "compression": "78.3%"
+    },
+    {
+      "path": "js/app-fixed.js",
+      "size": "16.27 KB",
+      "gzipped": "4.06 KB",
+      "compression": "75.0%"
+    },
+    {
+      "path": "js/firebase-optimized.js",
+      "size": "14.2 KB",
+      "gzipped": "2.83 KB",
+      "compression": "80.0%"
+    },
+    {
+      "path": "js/performance-monitor.js",
+      "size": "14.17 KB",
+      "gzipped": "3.18 KB",
+      "compression": "77.5%"
+    },
+    {
+      "path": "js/sw-register.js",
+      "size": "12.37 KB",
+      "gzipped": "2.76 KB",
+      "compression": "77.7%"
+    },
+    {
+      "path": "js/auth-enhanced.js",
+      "size": "12.32 KB",
+      "gzipped": "2.72 KB",
+      "compression": "77.9%"
+    },
+    {
+      "path": "css/app.css",
+      "size": "12.3 KB",
+      "gzipped": "2.62 KB",
+      "compression": "78.7%"
+    }
+  ],
+  "recommendations": [
+    {
+      "type": "info",
+      "message": "13 CSS files found. Consider consolidating."
+    },
+    {
+      "type": "info",
+      "message": "43 files have optimization opportunities."
+    }
+  ],
+  "detailedAnalysis": [
+    {
+      "path": "js/app.js",
+      "size": 29191,
+      "gzipped": 6758,
+      "sizeFormatted": "28.51 KB",
+      "gzippedFormatted": "6.6 KB",
+      "compression": "76.8%",
+      "recommendations": [
+        "Contains console.log statements",
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "js/pdf-export.js",
+      "size": 28868,
+      "gzipped": 6729,
+      "sizeFormatted": "28.19 KB",
+      "gzippedFormatted": "6.57 KB",
+      "compression": "76.7%",
+      "recommendations": [
+        "Contains console.log statements",
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "css/app-modern.css",
+      "size": 27235,
+      "gzipped": 5536,
+      "sizeFormatted": "26.6 KB",
+      "gzippedFormatted": "5.41 KB",
+      "compression": "79.7%",
+      "recommendations": [
+        "CSS appears unminified",
+        "Contains vendor prefixes - use autoprefixer",
+        "Contains 3 duplicate selectors"
+      ]
+    },
+    {
+      "path": "js/dashboard.js",
+      "size": 18007,
+      "gzipped": 3914,
+      "sizeFormatted": "17.58 KB",
+      "gzippedFormatted": "3.82 KB",
+      "compression": "78.3%",
+      "recommendations": [
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "js/app-fixed.js",
+      "size": 16665,
+      "gzipped": 4159,
+      "sizeFormatted": "16.27 KB",
+      "gzippedFormatted": "4.06 KB",
+      "compression": "75.0%",
+      "recommendations": [
+        "Contains console.log statements",
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "js/firebase-optimized.js",
+      "size": 14540,
+      "gzipped": 2901,
+      "sizeFormatted": "14.2 KB",
+      "gzippedFormatted": "2.83 KB",
+      "compression": "80.0%",
+      "recommendations": [
+        "Contains console.log statements",
+        "Code appears unminified",
+        "High Firebase usage (17 references)"
+      ]
+    },
+    {
+      "path": "js/performance-monitor.js",
+      "size": 14506,
+      "gzipped": 3258,
+      "sizeFormatted": "14.17 KB",
+      "gzippedFormatted": "3.18 KB",
+      "compression": "77.5%",
+      "recommendations": [
+        "Contains console.log statements",
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "js/sw-register.js",
+      "size": 12664,
+      "gzipped": 2829,
+      "sizeFormatted": "12.37 KB",
+      "gzippedFormatted": "2.76 KB",
+      "compression": "77.7%",
+      "recommendations": [
+        "Contains console.log statements",
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "js/auth-enhanced.js",
+      "size": 12617,
+      "gzipped": 2789,
+      "sizeFormatted": "12.32 KB",
+      "gzippedFormatted": "2.72 KB",
+      "compression": "77.9%",
+      "recommendations": [
+        "Contains console.log statements",
+        "Code appears unminified",
+        "High Firebase usage (15 references)"
+      ]
+    },
+    {
+      "path": "css/app.css",
+      "size": 12595,
+      "gzipped": 2684,
+      "sizeFormatted": "12.3 KB",
+      "gzippedFormatted": "2.62 KB",
+      "compression": "78.7%",
+      "recommendations": [
+        "CSS appears unminified"
+      ]
+    },
+    {
+      "path": "js/translations.js",
+      "size": 12261,
+      "gzipped": 3439,
+      "sizeFormatted": "11.97 KB",
+      "gzippedFormatted": "3.36 KB",
+      "compression": "72.0%",
+      "recommendations": [
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "css/tree-modern.css",
+      "size": 10712,
+      "gzipped": 2498,
+      "sizeFormatted": "10.46 KB",
+      "gzippedFormatted": "2.44 KB",
+      "compression": "76.7%",
+      "recommendations": [
+        "CSS appears unminified",
+        "Contains vendor prefixes - use autoprefixer",
+        "Contains 1 duplicate selectors"
+      ]
+    },
+    {
+      "path": "js/lazy-load.js",
+      "size": 10647,
+      "gzipped": 2586,
+      "sizeFormatted": "10.4 KB",
+      "gzippedFormatted": "2.53 KB",
+      "compression": "75.7%",
+      "recommendations": [
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "js/mobile-nav-enhanced.js",
+      "size": 10399,
+      "gzipped": 2184,
+      "sizeFormatted": "10.16 KB",
+      "gzippedFormatted": "2.13 KB",
+      "compression": "79.0%",
+      "recommendations": [
+        "Contains console.log statements",
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "js/onboarding.js",
+      "size": 8618,
+      "gzipped": 2309,
+      "sizeFormatted": "8.42 KB",
+      "gzippedFormatted": "2.25 KB",
+      "compression": "73.2%",
+      "recommendations": [
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "css/tree-responsive.css",
+      "size": 8567,
+      "gzipped": 1996,
+      "sizeFormatted": "8.37 KB",
+      "gzippedFormatted": "1.95 KB",
+      "compression": "76.7%",
+      "recommendations": [
+        "CSS appears unminified",
+        "Contains vendor prefixes - use autoprefixer",
+        "Contains 2 duplicate selectors"
+      ]
+    },
+    {
+      "path": "css/mobile.css",
+      "size": 8327,
+      "gzipped": 2007,
+      "sizeFormatted": "8.13 KB",
+      "gzippedFormatted": "1.96 KB",
+      "compression": "75.9%",
+      "recommendations": [
+        "CSS appears unminified",
+        "Contains vendor prefixes - use autoprefixer"
+      ]
+    },
+    {
+      "path": "js/auth-token-bridge.js",
+      "size": 8176,
+      "gzipped": 1902,
+      "sizeFormatted": "7.98 KB",
+      "gzippedFormatted": "1.86 KB",
+      "compression": "76.7%",
+      "recommendations": [
+        "Contains console.log statements",
+        "Code appears unminified",
+        "High Firebase usage (14 references)"
+      ]
+    },
+    {
+      "path": "css/animations.css",
+      "size": 8158,
+      "gzipped": 1662,
+      "sizeFormatted": "7.97 KB",
+      "gzippedFormatted": "1.62 KB",
+      "compression": "79.6%",
+      "recommendations": [
+        "CSS appears unminified",
+        "Contains 19 duplicate selectors"
+      ]
+    },
+    {
+      "path": "css/dark-mode-complete.css",
+      "size": 8144,
+      "gzipped": 1462,
+      "sizeFormatted": "7.95 KB",
+      "gzippedFormatted": "1.43 KB",
+      "compression": "82.0%",
+      "recommendations": [
+        "CSS appears unminified",
+        "Contains vendor prefixes - use autoprefixer"
+      ]
+    },
+    {
+      "path": "js/upload-enhanced.js",
+      "size": 7965,
+      "gzipped": 2137,
+      "sizeFormatted": "7.78 KB",
+      "gzippedFormatted": "2.09 KB",
+      "compression": "73.2%",
+      "recommendations": [
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "js/tree.js",
+      "size": 7957,
+      "gzipped": 2156,
+      "sizeFormatted": "7.77 KB",
+      "gzippedFormatted": "2.11 KB",
+      "compression": "72.9%",
+      "recommendations": [
+        "Contains console.log statements",
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "js/auth-emergency-fix.js",
+      "size": 7689,
+      "gzipped": 2449,
+      "sizeFormatted": "7.51 KB",
+      "gzippedFormatted": "2.39 KB",
+      "compression": "68.1%",
+      "recommendations": [
+        "Contains console.log statements",
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "js/tree-responsive.js",
+      "size": 6694,
+      "gzipped": 1702,
+      "sizeFormatted": "6.54 KB",
+      "gzippedFormatted": "1.66 KB",
+      "compression": "74.6%",
+      "recommendations": [
+        "Contains console.log statements",
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "js/auth-persistence-fix.js",
+      "size": 6444,
+      "gzipped": 1654,
+      "sizeFormatted": "6.29 KB",
+      "gzippedFormatted": "1.62 KB",
+      "compression": "74.3%",
+      "recommendations": [
+        "Contains console.log statements",
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "js/app-login-fallback.js",
+      "size": 5919,
+      "gzipped": 1805,
+      "sizeFormatted": "5.78 KB",
+      "gzippedFormatted": "1.76 KB",
+      "compression": "69.5%",
+      "recommendations": [
+        "Contains console.log statements",
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "js/theme-toggle.js",
+      "size": 5380,
+      "gzipped": 1367,
+      "sizeFormatted": "5.25 KB",
+      "gzippedFormatted": "1.33 KB",
+      "compression": "74.6%",
+      "recommendations": [
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "js/modal-fix.js",
+      "size": 4577,
+      "gzipped": 1140,
+      "sizeFormatted": "4.47 KB",
+      "gzippedFormatted": "1.11 KB",
+      "compression": "75.1%",
+      "recommendations": [
+        "Contains console.log statements",
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "js/auth-sync.js",
+      "size": 4573,
+      "gzipped": 1488,
+      "sizeFormatted": "4.47 KB",
+      "gzippedFormatted": "1.45 KB",
+      "compression": "67.5%",
+      "recommendations": [
+        "Contains console.log statements",
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "js/app-loop-fix.js",
+      "size": 4362,
+      "gzipped": 1287,
+      "sizeFormatted": "4.26 KB",
+      "gzippedFormatted": "1.26 KB",
+      "compression": "70.5%",
+      "recommendations": [
+        "Contains console.log statements",
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "css/desktop.css",
+      "size": 4207,
+      "gzipped": 1276,
+      "sizeFormatted": "4.11 KB",
+      "gzippedFormatted": "1.25 KB",
+      "compression": "69.7%",
+      "recommendations": [
+        "CSS appears unminified"
+      ]
+    },
+    {
+      "path": "css/tree.css",
+      "size": 4001,
+      "gzipped": 1157,
+      "sizeFormatted": "3.91 KB",
+      "gzippedFormatted": "1.13 KB",
+      "compression": "71.1%",
+      "recommendations": [
+        "CSS appears unminified"
+      ]
+    },
+    {
+      "path": "js/members.js",
+      "size": 3859,
+      "gzipped": 1252,
+      "sizeFormatted": "3.77 KB",
+      "gzippedFormatted": "1.22 KB",
+      "compression": "67.6%",
+      "recommendations": [
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "css/mobile-fix.css",
+      "size": 3758,
+      "gzipped": 1030,
+      "sizeFormatted": "3.67 KB",
+      "gzippedFormatted": "1.01 KB",
+      "compression": "72.6%",
+      "recommendations": [
+        "CSS appears unminified",
+        "Contains vendor prefixes - use autoprefixer"
+      ]
+    },
+    {
+      "path": "js/mobile-nav.js",
+      "size": 3387,
+      "gzipped": 803,
+      "sizeFormatted": "3.31 KB",
+      "gzippedFormatted": "803 Bytes",
+      "compression": "76.3%",
+      "recommendations": [
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "css/mobile-nav-fix.css",
+      "size": 2680,
+      "gzipped": 746,
+      "sizeFormatted": "2.62 KB",
+      "gzippedFormatted": "746 Bytes",
+      "compression": "72.2%",
+      "recommendations": [
+        "CSS appears unminified",
+        "Contains vendor prefixes - use autoprefixer"
+      ]
+    },
+    {
+      "path": "js/back-to-top.js",
+      "size": 2168,
+      "gzipped": 816,
+      "sizeFormatted": "2.12 KB",
+      "gzippedFormatted": "816 Bytes",
+      "compression": "62.4%",
+      "recommendations": [
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "js/cookies.js",
+      "size": 2078,
+      "gzipped": 773,
+      "sizeFormatted": "2.03 KB",
+      "gzippedFormatted": "773 Bytes",
+      "compression": "62.8%",
+      "recommendations": [
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "js/firebase-config.js",
+      "size": 1077,
+      "gzipped": 571,
+      "sizeFormatted": "1.05 KB",
+      "gzippedFormatted": "571 Bytes",
+      "compression": "47.0%",
+      "recommendations": [
+        "Contains console.log statements",
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "js/stories.js",
+      "size": 757,
+      "gzipped": 414,
+      "sizeFormatted": "757 Bytes",
+      "gzippedFormatted": "414 Bytes",
+      "compression": "45.3%",
+      "recommendations": [
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "js/share-modal.js",
+      "size": 738,
+      "gzipped": 348,
+      "sizeFormatted": "738 Bytes",
+      "gzippedFormatted": "348 Bytes",
+      "compression": "52.8%",
+      "recommendations": [
+        "Contains console.log statements",
+        "Code appears unminified"
+      ]
+    },
+    {
+      "path": "css/logo.css",
+      "size": 580,
+      "gzipped": 304,
+      "sizeFormatted": "580 Bytes",
+      "gzippedFormatted": "304 Bytes",
+      "compression": "47.6%",
+      "recommendations": [
+        "CSS appears unminified"
+      ]
+    },
+    {
+      "path": "css/footer.css",
+      "size": 493,
+      "gzipped": 257,
+      "sizeFormatted": "493 Bytes",
+      "gzippedFormatted": "257 Bytes",
+      "compression": "47.9%",
+      "recommendations": [
+        "CSS appears unminified"
+      ]
+    }
+  ]
+}

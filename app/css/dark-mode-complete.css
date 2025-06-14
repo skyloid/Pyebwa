@@ -1,0 +1,354 @@
+/* Complete Dark Mode Styles for Pyebwa App */
+/* This file contains all missing dark mode styles identified in the audit */
+
+/* Dark Mode Variables */
+body.dark-mode {
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #1a1a1a;
+    --bg-tertiary: #2a2a2a;
+    --bg-card: #1f1f1f;
+    --border-color: #3a3a3a;
+    --border-hover: #4a4a4a;
+    --text-primary: #f0f0f0;
+    --text-secondary: #a0a0a0;
+    --text-muted: #707070;
+    --shadow-color: rgba(0, 0, 0, 0.5);
+    --shadow-hover: rgba(0, 0, 0, 0.7);
+    --input-bg: #2a2a2a;
+    --input-border: #3a3a3a;
+    --input-focus: #4a4a4a;
+}
+
+/* Priority 1: Critical UI Elements */
+
+/* App Header */
+body.dark-mode .app-header {
+    background-color: #000 !important;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 2px 10px var(--shadow-color);
+}
+
+body.dark-mode .app-title {
+    color: var(--text-primary);
+}
+
+body.dark-mode .nav-item {
+    color: var(--text-secondary);
+}
+
+body.dark-mode .nav-item:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-tertiary);
+}
+
+body.dark-mode .user-dropdown {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+body.dark-mode .user-dropdown a {
+    color: var(--text-primary);
+}
+
+body.dark-mode .user-dropdown a:hover {
+    background-color: var(--bg-tertiary);
+}
+
+/* View Container */
+body.dark-mode .view-container {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+/* Modal Content */
+body.dark-mode .modal-content {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+body.dark-mode .modal-header {
+    border-bottom: 1px solid var(--border-color);
+}
+
+body.dark-mode .modal-header h2 {
+    color: var(--text-primary);
+}
+
+body.dark-mode .close-btn {
+    color: var(--text-secondary);
+}
+
+body.dark-mode .close-btn:hover {
+    color: var(--text-primary);
+}
+
+/* Form Elements */
+body.dark-mode .form-group label {
+    color: var(--text-primary);
+}
+
+body.dark-mode .form-group input,
+body.dark-mode .form-group select,
+body.dark-mode .form-group textarea {
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--text-primary);
+}
+
+body.dark-mode .form-group input:focus,
+body.dark-mode .form-group select:focus,
+body.dark-mode .form-group textarea:focus {
+    border-color: var(--input-focus);
+    background-color: var(--bg-tertiary);
+    box-shadow: 0 0 0 3px rgba(0, 33, 125, 0.25);
+}
+
+body.dark-mode .form-group input::placeholder {
+    color: var(--text-muted);
+}
+
+/* Cards */
+body.dark-mode .member-list-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+body.dark-mode .member-list-card:hover {
+    border-color: var(--border-hover);
+    box-shadow: 0 4px 12px var(--shadow-hover);
+}
+
+body.dark-mode .story-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+body.dark-mode .story-meta {
+    color: var(--text-secondary);
+}
+
+body.dark-mode .feature-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+}
+
+body.dark-mode .feature-card h3 {
+    color: var(--text-primary);
+}
+
+/* Buttons */
+body.dark-mode .btn-secondary {
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+body.dark-mode .btn-secondary:hover {
+    background-color: var(--border-color);
+    border-color: var(--border-hover);
+}
+
+body.dark-mode .lang-btn {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+body.dark-mode .lang-btn:hover {
+    background-color: var(--border-color);
+}
+
+/* Search Box */
+body.dark-mode .search-box {
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+}
+
+body.dark-mode .search-box input {
+    background-color: transparent;
+    color: var(--text-primary);
+}
+
+/* Priority 2: Authentication Pages */
+body.dark-mode .auth-box {
+    background-color: var(--bg-secondary);
+    box-shadow: 0 4px 20px var(--shadow-color);
+}
+
+body.dark-mode .auth-box h2 {
+    color: var(--text-primary);
+}
+
+body.dark-mode .social-divider {
+    color: var(--text-secondary);
+}
+
+body.dark-mode .social-divider::before,
+body.dark-mode .social-divider::after {
+    background-color: var(--border-color);
+}
+
+body.dark-mode .btn-social {
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+body.dark-mode .btn-social:hover {
+    background-color: var(--border-color);
+}
+
+/* Priority 3: Tree Visualization */
+body.dark-mode .member-card {
+    background-color: var(--bg-card);
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+body.dark-mode .member-card:hover {
+    border-color: var(--border-hover);
+    box-shadow: 0 4px 12px var(--shadow-hover);
+}
+
+body.dark-mode .member-name {
+    color: var(--text-primary);
+}
+
+body.dark-mode .member-dates {
+    color: var(--text-secondary);
+}
+
+body.dark-mode .member-photo {
+    border-color: var(--border-color);
+}
+
+/* Tree connection lines */
+body.dark-mode .tree-members::after,
+body.dark-mode .tree-children::before,
+body.dark-mode .tree-child::before,
+body.dark-mode .tree-child::after {
+    background-color: var(--border-color);
+}
+
+body.dark-mode .empty-state {
+    color: var(--text-secondary);
+}
+
+body.dark-mode .empty-state-icon {
+    color: var(--text-muted);
+}
+
+/* Priority 4: Mobile Navigation */
+body.dark-mode .mobile-nav-content {
+    background-color: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
+}
+
+body.dark-mode .mobile-nav-content .nav-link {
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+body.dark-mode .mobile-nav-content .nav-link:hover {
+    background-color: var(--bg-tertiary);
+}
+
+body.dark-mode .hamburger-menu span {
+    background-color: var(--text-primary);
+}
+
+/* Priority 5: Secondary Elements */
+body.dark-mode .app-footer {
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+body.dark-mode .footer-link {
+    color: var(--text-secondary);
+}
+
+body.dark-mode .footer-link:hover {
+    color: var(--text-primary);
+}
+
+/* Loading States */
+body.dark-mode .loading-spinner {
+    border-color: var(--border-color);
+    border-top-color: var(--primary);
+}
+
+body.dark-mode .skeleton {
+    background: linear-gradient(90deg, 
+        var(--bg-tertiary) 25%, 
+        var(--border-color) 50%, 
+        var(--bg-tertiary) 75%);
+}
+
+/* Scrollbars */
+body.dark-mode ::-webkit-scrollbar {
+    background-color: var(--bg-secondary);
+}
+
+body.dark-mode ::-webkit-scrollbar-track {
+    background-color: var(--bg-secondary);
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 4px;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--border-hover);
+}
+
+/* Selection */
+body.dark-mode ::selection {
+    background-color: rgba(0, 33, 125, 0.3);
+    color: var(--text-primary);
+}
+
+/* Tooltips */
+body.dark-mode .tooltip {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+/* Alerts and Messages */
+body.dark-mode .alert {
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+body.dark-mode .alert-success {
+    background-color: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+body.dark-mode .alert-error {
+    background-color: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* Focus States */
+body.dark-mode *:focus {
+    outline-color: var(--primary);
+}
+
+body.dark-mode .focus-visible:focus {
+    box-shadow: 0 0 0 3px rgba(0, 33, 125, 0.25);
+}
+
+/* Transitions */
+body.dark-mode * {
+    transition: background-color 0.3s ease, 
+                border-color 0.3s ease, 
+                color 0.3s ease;
+}

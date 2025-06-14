@@ -1,0 +1,173 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isValidEmail(email) {
+      return email.matches('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$');
+    }
+    
+    function isValidString(text, minLen, maxLen) {
+      return text is string && 
+             text.size() >= minLen && 
+             text.size() <= maxLen;
+    }
+    
+    function hasRequiredFields(fields, requiredFields) {
+      return requiredFields.toSet().hasAll(fields.keys());
+    }
+    
+    function isValidDate(date) {
+      return date is timestamp || 
+             (date is string && date.matches('^\\d{4}-\\d{2}-\\d{2}$'));
+    }
+    
+    // Validate family tree data
+    function isValidFamilyTree(data) {
+      return hasRequiredFields(data, ['name', 'createdBy', 'createdAt']) &&
+             isValidString(data.name, 1, 100) &&
+             data.createdBy == request.auth.uid &&
+             data.createdAt is timestamp;
+    }
+    
+    // Validate person data
+    function isValidPerson(data) {
+      return hasRequiredFields(data, ['firstName', 'lastName', 'gender']) &&
+             isValidString(data.firstName, 1, 100) &&
+             isValidString(data.lastName, 1, 100) &&
+             data.gender in ['male', 'female', 'other'] &&
+             (!('email' in data) || data.email == '' || isValidEmail(data.email)) &&
+             (!('birthDate' in data) || isValidDate(data.birthDate)) &&
+             (!('deathDate' in data) || isValidDate(data.deathDate)) &&
+             (!('biography' in data) || isValidString(data.biography, 0, 5000));
+    }
+    
+    // Check if user is family tree member
+    function isFamilyMember(treeId) {
+      let tree = get(/databases/$(database)/documents/familyTrees/$(treeId));
+      return isAuthenticated() && 
+             tree != null &&
+             (tree.data.createdBy == request.auth.uid ||
+              request.auth.uid in tree.data.members ||
+              request.auth.uid in tree.data.viewers);
+    }
+    
+    // Rate limiting helper (simplified - in production use Firebase Extensions)
+    function isRateLimited() {
+      // This is a placeholder - implement proper rate limiting
+      return false;
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      
+      allow create: if isOwner(userId) &&
+                      hasRequiredFields(request.resource.data, ['email', 'createdAt']) &&
+                      isValidEmail(request.resource.data.email) &&
+                      request.resource.data.createdAt == request.time;
+      
+      allow update: if isOwner(userId) &&
+                      (!request.resource.data.diff(resource.data).hasAny(['email', 'createdAt'])) &&
+                      (!('displayName' in request.resource.data) || 
+                       isValidString(request.resource.data.displayName, 1, 100));
+      
+      allow delete: if false; // Users cannot delete their accounts via client
+    }
+    
+    // Family Trees collection
+    match /familyTrees/{treeId} {
+      allow read: if isFamilyMember(treeId);
+      
+      allow create: if isAuthenticated() &&
+                      isValidFamilyTree(request.resource.data) &&
+                      !isRateLimited();
+      
+      allow update: if isFamilyMember(treeId) &&
+                      resource.data.createdBy == request.auth.uid &&
+                      (!request.resource.data.diff(resource.data).hasAny(['createdBy', 'createdAt'])) &&
+                      (!('name' in request.resource.data) || 
+                       isValidString(request.resource.data.name, 1, 100));
+      
+      allow delete: if resource.data.createdBy == request.auth.uid;
+      
+      // Members subcollection
+      match /members/{memberId} {
+        allow read: if isFamilyMember(treeId);
+        
+        allow create: if isFamilyMember(treeId) &&
+                        isValidPerson(request.resource.data) &&
+                        request.resource.data.createdBy == request.auth.uid &&
+                        request.resource.data.createdAt == request.time;
+        
+        allow update: if isFamilyMember(treeId) &&
+                        isValidPerson(request.resource.data) &&
+                        (!request.resource.data.diff(resource.data).hasAny(['createdBy', 'createdAt']));
+        
+        allow delete: if isFamilyMember(treeId) &&
+                        (resource.data.createdBy == request.auth.uid ||
+                         get(/databases/$(database)/documents/familyTrees/$(treeId)).data.createdBy == request.auth.uid);
+      }
+      
+      // Stories subcollection
+      match /stories/{storyId} {
+        allow read: if isFamilyMember(treeId);
+        
+        allow create: if isFamilyMember(treeId) &&
+                        hasRequiredFields(request.resource.data, ['title', 'content', 'authorId']) &&
+                        isValidString(request.resource.data.title, 1, 200) &&
+                        isValidString(request.resource.data.content, 1, 10000) &&
+                        request.resource.data.authorId == request.auth.uid &&
+                        request.resource.data.createdAt == request.time;
+        
+        allow update: if isFamilyMember(treeId) &&
+                        resource.data.authorId == request.auth.uid &&
+                        (!request.resource.data.diff(resource.data).hasAny(['authorId', 'createdAt']));
+        
+        allow delete: if resource.data.authorId == request.auth.uid ||
+                        get(/databases/$(database)/documents/familyTrees/$(treeId)).data.createdBy == request.auth.uid;
+      }
+    }
+    
+    // Invitations collection
+    match /invitations/{inviteId} {
+      allow read: if isAuthenticated() &&
+                    (resource.data.invitedBy == request.auth.uid ||
+                     resource.data.email == request.auth.token.email);
+      
+      allow create: if isAuthenticated() &&
+                      hasRequiredFields(request.resource.data, ['email', 'treeId', 'role', 'invitedBy']) &&
+                      isValidEmail(request.resource.data.email) &&
+                      request.resource.data.role in ['viewer', 'editor'] &&
+                      request.resource.data.invitedBy == request.auth.uid &&
+                      isFamilyMember(request.resource.data.treeId);
+      
+      allow update: if isAuthenticated() &&
+                      resource.data.email == request.auth.token.email &&
+                      request.resource.data.status == 'accepted' &&
+                      resource.data.status == 'pending';
+      
+      allow delete: if resource.data.invitedBy == request.auth.uid;
+    }
+    
+    // Activity logs (read-only for users)
+    match /activityLogs/{logId} {
+      allow read: if isAuthenticated() &&
+                    isFamilyMember(resource.data.treeId);
+      allow write: if false; // Only server can write logs
+    }
+    
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

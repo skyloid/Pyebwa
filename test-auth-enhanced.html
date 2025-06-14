@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Auth Test - Pyebwa</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        h1 {
+            color: #00217D;
+        }
+        
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        button {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background: #001551;
+        }
+        
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .log-container {
+            background: #f8f9fa;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        
+        .log-entry {
+            margin: 4px 0;
+            padding: 4px;
+        }
+        
+        .log-entry.error {
+            color: #dc2626;
+            background: #fee2e2;
+        }
+        
+        .log-entry.success {
+            color: #059669;
+            background: #d1fae5;
+        }
+        
+        .log-entry.info {
+            color: #2563eb;
+            background: #dbeafe;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .test-item {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 6px;
+        }
+        
+        .test-item h4 {
+            margin: 0 0 10px 0;
+            color: #374151;
+        }
+        
+        .test-value {
+            font-family: monospace;
+            font-size: 14px;
+            color: #111827;
+            word-break: break-all;
+        }
+        
+        #authForm {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        #authForm input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+        }
+        
+        .storage-info {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .storage-item {
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .storage-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #dc2626;
+        }
+        
+        .storage-indicator.present {
+            background: #10b981;
+        }
+    </style>
+</head>
+<body>
+    <h1>Enhanced Authentication Test Suite</h1>
+    
+    <div class="test-section">
+        <h2>Authentication Status</h2>
+        <p>Current Status: <span id="authStatus" class="status pending">Checking...</span></p>
+        <p>User: <span id="currentUser">None</span></p>
+        <p>Session Duration: <span id="sessionDuration">N/A</span></p>
+        
+        <div class="test-grid">
+            <div class="test-item">
+                <h4>Auth State</h4>
+                <div class="test-value" id="authState">Loading...</div>
+            </div>
+            <div class="test-item">
+                <h4>Token Status</h4>
+                <div class="test-value" id="tokenStatus">Loading...</div>
+            </div>
+            <div class="test-item">
+                <h4>Persistence</h4>
+                <div class="test-value" id="persistenceStatus">Loading...</div>
+            </div>
+            <div class="test-item">
+                <h4>Last Auth</h4>
+                <div class="test-value" id="lastAuth">Loading...</div>
+            </div>
+        </div>
+        
+        <div id="authForm">
+            <input type="email" id="emailInput" placeholder="Email address">
+            <input type="password" id="passwordInput" placeholder="Password">
+            <button onclick="signIn()">Sign In</button>
+            <button onclick="signOut()">Sign Out</button>
+        </div>
+        
+        <button onclick="refreshToken()">Refresh Token</button>
+        <button onclick="checkPersistence()">Check Persistence</button>
+        <button onclick="clearAuth()">Clear Auth Data</button>
+        <button onclick="simulateNetworkError()">Simulate Network Error</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Storage Status</h2>
+        <div class="storage-info">
+            <div class="storage-item">
+                <div class="storage-indicator" id="localStorageIndicator"></div>
+                <span>LocalStorage: <span id="localStorageStatus">Checking...</span></span>
+            </div>
+            <div class="storage-item">
+                <div class="storage-indicator" id="sessionStorageIndicator"></div>
+                <span>SessionStorage: <span id="sessionStorageStatus">Checking...</span></span>
+            </div>
+            <div class="storage-item">
+                <div class="storage-indicator" id="memoryIndicator"></div>
+                <span>Memory: <span id="memoryStatus">Checking...</span></span>
+            </div>
+            <div class="storage-item">
+                <div class="storage-indicator" id="cookieIndicator"></div>
+                <span>Cookies: <span id="cookieStatus">Checking...</span></span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Authentication Tests</h2>
+        <button onclick="runAllTests()">Run All Tests</button>
+        
+        <div class="test-grid">
+            <button onclick="testSignIn()">Test Sign In</button>
+            <button onclick="testSignOut()">Test Sign Out</button>
+            <button onclick="testTokenRefresh()">Test Token Refresh</button>
+            <button onclick="testPersistence()">Test Persistence</button>
+            <button onclick="testCrossDomain()">Test Cross-Domain</button>
+            <button onclick="testReconnect()">Test Reconnect</button>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Event Log</h2>
+        <button onclick="clearLog()">Clear Log</button>
+        <div class="log-container" id="logContainer"></div>
+    </div>
+
+    <!-- Firebase Config -->
+    <script src="/app/js/firebase-config.js"></script>
+    <script src="/app/js/auth-enhanced.js"></script>
+    
+    <script>
+        let updateInterval;
+        
+        // Logging
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logContainer = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${timestamp}] ${message}`;
+            logContainer.insertBefore(entry, logContainer.firstChild);
+            
+            // Keep only last 100 entries
+            while (logContainer.children.length > 100) {
+                logContainer.removeChild(logContainer.lastChild);
+            }
+        }
+        
+        function clearLog() {
+            document.getElementById('logContainer').innerHTML = '';
+            log('Log cleared');
+        }
+        
+        // Update UI
+        function updateAuthStatus() {
+            const user = firebase.auth().currentUser;
+            const authState = window.pyebwaAuth ? window.pyebwaAuth.getAuthState() : null;
+            
+            // Update status
+            const statusEl = document.getElementById('authStatus');
+            const userEl = document.getElementById('currentUser');
+            
+            if (user) {
+                statusEl.className = 'status success';
+                statusEl.textContent = 'Authenticated';
+                userEl.textContent = user.email;
+            } else {
+                statusEl.className = 'status error';
+                statusEl.textContent = 'Not Authenticated';
+                userEl.textContent = 'None';
+            }
+            
+            // Update auth state info
+            document.getElementById('authState').textContent = 
+                authState ? JSON.stringify(authState, null, 2) : 'Not initialized';
+            
+            // Update token status
+            if (user) {
+                user.getIdTokenResult().then(result => {
+                    const expirationTime = new Date(result.expirationTime);
+                    const now = new Date();
+                    const timeLeft = Math.round((expirationTime - now) / 1000 / 60);
+                    document.getElementById('tokenStatus').textContent = 
+                        `Valid (${timeLeft} min left)`;
+                }).catch(err => {
+                    document.getElementById('tokenStatus').textContent = 'Error: ' + err.message;
+                });
+            } else {
+                document.getElementById('tokenStatus').textContent = 'No token';
+            }
+            
+            // Update persistence
+            document.getElementById('persistenceStatus').textContent = 
+                firebase.auth().currentUser ? 'Active' : 'Inactive';
+            
+            // Update last auth
+            const storedAuth = getStoredAuthData();
+            if (storedAuth && storedAuth.lastAuth) {
+                const lastAuthDate = new Date(storedAuth.lastAuth);
+                document.getElementById('lastAuth').textContent = lastAuthDate.toLocaleString();
+            } else {
+                document.getElementById('lastAuth').textContent = 'Never';
+            }
+            
+            // Update session duration
+            if (authState && authState.lastAuthTime) {
+                const duration = Math.round((Date.now() - authState.lastAuthTime) / 1000 / 60);
+                document.getElementById('sessionDuration').textContent = `${duration} minutes`;
+            } else {
+                document.getElementById('sessionDuration').textContent = 'N/A';
+            }
+            
+            // Update storage status
+            updateStorageStatus();
+        }
+        
+        function updateStorageStatus() {
+            // LocalStorage
+            try {
+                const localData = localStorage.getItem('pyebwaAuthState');
+                if (localData) {
+                    document.getElementById('localStorageIndicator').classList.add('present');
+                    document.getElementById('localStorageStatus').textContent = 'Present';
+                } else {
+                    document.getElementById('localStorageIndicator').classList.remove('present');
+                    document.getElementById('localStorageStatus').textContent = 'Empty';
+                }
+            } catch (e) {
+                document.getElementById('localStorageStatus').textContent = 'Unavailable';
+            }
+            
+            // SessionStorage
+            try {
+                const sessionData = sessionStorage.getItem('pyebwaAuthState');
+                if (sessionData) {
+                    document.getElementById('sessionStorageIndicator').classList.add('present');
+                    document.getElementById('sessionStorageStatus').textContent = 'Present';
+                } else {
+                    document.getElementById('sessionStorageIndicator').classList.remove('present');
+                    document.getElementById('sessionStorageStatus').textContent = 'Empty';
+                }
+            } catch (e) {
+                document.getElementById('sessionStorageStatus').textContent = 'Unavailable';
+            }
+            
+            // Memory
+            if (window.pyebwaAuthData) {
+                document.getElementById('memoryIndicator').classList.add('present');
+                document.getElementById('memoryStatus').textContent = 'Present';
+            } else {
+                document.getElementById('memoryIndicator').classList.remove('present');
+                document.getElementById('memoryStatus').textContent = 'Empty';
+            }
+            
+            // Cookies
+            if (document.cookie.includes('pyebwa')) {
+                document.getElementById('cookieIndicator').classList.add('present');
+                document.getElementById('cookieStatus').textContent = 'Present';
+            } else {
+                document.getElementById('cookieIndicator').classList.remove('present');
+                document.getElementById('cookieStatus').textContent = 'Empty';
+            }
+        }
+        
+        function getStoredAuthData() {
+            try {
+                const localData = localStorage.getItem('pyebwaAuthState');
+                if (localData) return JSON.parse(localData);
+                
+                const sessionData = sessionStorage.getItem('pyebwaAuthState');
+                if (sessionData) return JSON.parse(sessionData);
+            } catch (e) {}
+            
+            return window.pyebwaAuthData || null;
+        }
+        
+        // Auth operations
+        async function signIn() {
+            const email = document.getElementById('emailInput').value;
+            const password = document.getElementById('passwordInput').value;
+            
+            if (!email || !password) {
+                log('Please enter email and password', 'error');
+                return;
+            }
+            
+            try {
+                log('Signing in...');
+                const result = await firebase.auth().signInWithEmailAndPassword(email, password);
+                log(`Signed in successfully: ${result.user.email}`, 'success');
+            } catch (error) {
+                log(`Sign in error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function signOut() {
+            try {
+                log('Signing out...');
+                await window.pyebwaAuth.signOut();
+                log('Signed out successfully', 'success');
+            } catch (error) {
+                log(`Sign out error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function refreshToken() {
+            try {
+                log('Refreshing token...');
+                const token = await window.pyebwaAuth.refreshToken();
+                if (token) {
+                    log('Token refreshed successfully', 'success');
+                } else {
+                    log('No user to refresh token for', 'error');
+                }
+            } catch (error) {
+                log(`Token refresh error: ${error.message}`, 'error');
+            }
+        }
+        
+        function checkPersistence() {
+            log('Checking persistence...');
+            const authData = getStoredAuthData();
+            if (authData) {
+                log(`Found auth data: ${JSON.stringify(authData)}`, 'success');
+            } else {
+                log('No persisted auth data found', 'error');
+            }
+        }
+        
+        function clearAuth() {
+            log('Clearing auth data...');
+            try {
+                localStorage.removeItem('pyebwaAuthState');
+                sessionStorage.removeItem('pyebwaAuthState');
+                delete window.pyebwaAuthData;
+                log('Auth data cleared', 'success');
+                updateAuthStatus();
+            } catch (error) {
+                log(`Clear error: ${error.message}`, 'error');
+            }
+        }
+        
+        function simulateNetworkError() {
+            log('Simulating network error...');
+            // This would need to be implemented with service worker or proxy
+            log('Network error simulation not implemented', 'error');
+        }
+        
+        // Test functions
+        async function runAllTests() {
+            log('Running all tests...');
+            await testSignIn();
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            await testTokenRefresh();
+            await testPersistence();
+            await testSignOut();
+            log('All tests completed', 'success');
+        }
+        
+        async function testSignIn() {
+            log('Testing sign in...');
+            // Use test credentials if available
+            document.getElementById('emailInput').value = 'test@pyebwa.com';
+            document.getElementById('passwordInput').value = 'testpassword';
+            await signIn();
+        }
+        
+        async function testSignOut() {
+            log('Testing sign out...');
+            await signOut();
+        }
+        
+        async function testTokenRefresh() {
+            log('Testing token refresh...');
+            await refreshToken();
+        }
+        
+        function testPersistence() {
+            log('Testing persistence...');
+            checkPersistence();
+        }
+        
+        function testCrossDomain() {
+            log('Testing cross-domain...');
+            // Open app in new window
+            window.open('https://rasin.pyebwa.com/app/', '_blank');
+            log('Opened app in new window - check if authenticated', 'info');
+        }
+        
+        function testReconnect() {
+            log('Testing reconnect...');
+            // Simulate going offline and back online
+            window.dispatchEvent(new Event('offline'));
+            log('Simulated offline');
+            setTimeout(() => {
+                window.dispatchEvent(new Event('online'));
+                log('Simulated online');
+            }, 3000);
+        }
+        
+        // Event listeners
+        window.addEventListener('pyebwaAuthStateChange', (event) => {
+            log(`Auth state change: ${event.detail.isAuthenticated ? 'Authenticated' : 'Not authenticated'}`, 'info');
+            updateAuthStatus();
+        });
+        
+        window.addEventListener('pyebwaAuthError', (event) => {
+            log(`Auth error: ${event.detail.message}`, 'error');
+        });
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            log('Page loaded - initializing auth test');
+            
+            // Set up auth state listener
+            firebase.auth().onAuthStateChanged((user) => {
+                log(`Firebase auth state: ${user ? user.email : 'No user'}`);
+                updateAuthStatus();
+            });
+            
+            // Update status every second
+            updateInterval = setInterval(updateAuthStatus, 1000);
+            
+            // Initial update
+            updateAuthStatus();
+        });
+        
+        // Cleanup on unload
+        window.addEventListener('beforeunload', () => {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+        });
+    </script>
+</body>
+</html>

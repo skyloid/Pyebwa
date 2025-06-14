@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Persistence Test - Pyebwa</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+            transition: background-color 0.3s ease;
+        }
+        
+        body.dark-mode {
+            background: #1a1a1a;
+            color: #fff;
+        }
+        
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        body.dark-mode .test-section {
+            background: #2a2a2a;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .status.success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .status.error {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .status.info {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        button {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #001551;
+        }
+        
+        .test-results {
+            background: #f8f9fa;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        body.dark-mode .test-results {
+            background: #333;
+            border-color: #555;
+        }
+        
+        .storage-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .storage-item {
+            background: #eff6ff;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        body.dark-mode .storage-item {
+            background: #1e3a8a;
+        }
+    </style>
+</head>
+<body>
+    <h1>Theme Persistence Test</h1>
+    
+    <div class="test-section">
+        <h2>Current Theme Status</h2>
+        <div class="storage-info">
+            <div class="storage-item">
+                <h4>Current Theme</h4>
+                <div id="currentTheme">Checking...</div>
+            </div>
+            <div class="storage-item">
+                <h4>LocalStorage</h4>
+                <div id="localStorageTheme">Checking...</div>
+            </div>
+            <div class="storage-item">
+                <h4>Cookie</h4>
+                <div id="cookieTheme">Checking...</div>
+            </div>
+        </div>
+        
+        <button onclick="toggleTheme()">Toggle Theme</button>
+        <button onclick="clearAllStorage()">Clear All Storage</button>
+        <button onclick="checkPersistence()">Check Persistence</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Steps</h2>
+        <ol>
+            <li>Toggle the theme using the button above</li>
+            <li>Note the current theme state</li>
+            <li>Refresh the page (F5 or Cmd+R)</li>
+            <li>Verify the theme persisted</li>
+            <li>Open this page in a new tab</li>
+            <li>Verify the theme is consistent</li>
+            <li>Clear storage and verify reset</li>
+        </ol>
+        
+        <div class="test-results" id="results">
+            Test results will appear here...
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Cross-Domain Test</h2>
+        <p>Test if theme preference is shared across domains:</p>
+        <button onclick="window.open('https://rasin.pyebwa.com/app/', '_blank')">Open App</button>
+        <button onclick="window.open('https://pyebwa.com', '_blank')">Open Main Site</button>
+        
+        <div class="status info" style="margin-top: 20px;">
+            <strong>Note:</strong> Theme preferences should persist across page reloads and be consistent within the same domain. Cross-domain sharing depends on cookie configuration.
+        </div>
+    </div>
+
+    <script>
+        // Cookie utilities
+        function setCookie(name, value, days = 30) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            const expires = "expires=" + date.toUTCString();
+            const domain = window.location.hostname.includes('pyebwa.com') ? 'domain=.pyebwa.com' : '';
+            document.cookie = `${name}=${value};${expires};path=/;${domain};SameSite=Lax`;
+        }
+        
+        function getCookie(name) {
+            const value = "; " + document.cookie;
+            const parts = value.split("; " + name + "=");
+            if (parts.length === 2) return parts.pop().split(";").shift();
+            return null;
+        }
+        
+        // Theme management
+        function getCurrentTheme() {
+            return document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+        }
+        
+        function setTheme(theme) {
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+            
+            // Store in multiple locations
+            localStorage.setItem('pyebwaTheme', theme);
+            setCookie('pyebwa_theme', theme);
+            
+            updateStatus();
+            log(`Theme set to: ${theme}`);
+        }
+        
+        function toggleTheme() {
+            const currentTheme = getCurrentTheme();
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+        }
+        
+        function loadTheme() {
+            // Check multiple sources
+            const localTheme = localStorage.getItem('pyebwaTheme');
+            const cookieTheme = getCookie('pyebwa_theme');
+            
+            const theme = localTheme || cookieTheme || 'light';
+            
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+            
+            log(`Theme loaded: ${theme} (localStorage: ${localTheme}, cookie: ${cookieTheme})`);
+            updateStatus();
+        }
+        
+        function updateStatus() {
+            document.getElementById('currentTheme').textContent = getCurrentTheme();
+            document.getElementById('localStorageTheme').textContent = 
+                localStorage.getItem('pyebwaTheme') || 'Not set';
+            document.getElementById('cookieTheme').textContent = 
+                getCookie('pyebwa_theme') || 'Not set';
+        }
+        
+        function clearAllStorage() {
+            localStorage.removeItem('pyebwaTheme');
+            setCookie('pyebwa_theme', '', -1);
+            document.body.classList.remove('dark-mode');
+            updateStatus();
+            log('All theme storage cleared');
+        }
+        
+        function checkPersistence() {
+            log('=== Persistence Check ===');
+            
+            const currentTheme = getCurrentTheme();
+            const localTheme = localStorage.getItem('pyebwaTheme');
+            const cookieTheme = getCookie('pyebwa_theme');
+            
+            log(`Current theme: ${currentTheme}`);
+            log(`LocalStorage: ${localTheme || 'Not set'}`);
+            log(`Cookie: ${cookieTheme || 'Not set'}`);
+            
+            if (currentTheme === localTheme && currentTheme === cookieTheme) {
+                log('✅ Theme is properly persisted in all storage locations');
+            } else {
+                log('⚠️ Theme persistence mismatch detected');
+            }
+            
+            // Test persistence simulation
+            log('\nSimulating page reload...');
+            const savedTheme = localTheme || cookieTheme || 'light';
+            log(`Theme should be: ${savedTheme} after reload`);
+        }
+        
+        function log(message) {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            results.textContent += `[${timestamp}] ${message}\n`;
+            results.scrollTop = results.scrollHeight;
+        }
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            loadTheme();
+            log('Theme persistence test ready');
+            
+            // Monitor storage changes
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'pyebwaTheme') {
+                    log(`Storage event detected: ${e.oldValue} → ${e.newValue}`);
+                    loadTheme();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

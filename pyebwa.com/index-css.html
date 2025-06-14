@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pyebwa - Your Family Tree | Pyebwa Fanmi w</title>
+    <meta name="description" content="Create and preserve your family history with Pyebwa. Build your family tree, share stories, and connect generations.">
+    <link rel="stylesheet" href="css/styles.css?v=2345567">
+    <link rel="stylesheet" href="css/mobile.css?v=3" media="(max-width: 768px)">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <link rel="stylesheet" href="css/slideshow-animation.css">
+</head>
+<body>
+    <!-- Theme Toggle Button -->
+    <button id="themeToggle" onclick="window.toggleDarkMode()">
+        <span class="material-icons">brightness_4</span>
+    </button>
+    
+    <script>
+        // Make function globally accessible
+        window.toggleDarkMode = function() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        };
+        
+        // Apply saved theme on load
+        window.addEventListener('DOMContentLoaded', function() {
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+        });
+        
+        // Event listeners removed - using onclick attribute instead for better mobile support
+    </script>
+    
+    <!-- Language Selector -->
+    <div class="language-selector">
+        <button class="lang-btn" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="fr">FR</button>
+        <button class="lang-btn active" data-lang="ht">HT</button>
+    </div>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-brand">
+                    <img src="https://pyebwa.com/images/Pyebwa.png" alt="Pyebwa" class="logo-header">
+                    <span class="tagline" data-i18n="tagline">Rasin Fanmi w</span>
+                </div>
+                <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Menu">
+                    <span class="material-icons">menu</span>
+                    <span class="menu-icon-fallback" aria-hidden="true">☰</span>
+                </button>
+                <div class="nav-menu" id="navMenu">
+                    <a href="index.html" class="nav-link" data-i18n="home">Akèy</a>
+                    <a href="about.html" class="nav-link" data-i18n="about">Konsènan</a>
+                    <a href="mission.html" class="nav-link" data-i18n="ourMission">Misyon Nou</a>
+                    <a href="contact.html" class="nav-link" data-i18n="contact">Kontak</a>
+                    <div class="nav-buttons">
+                        <button class="btn btn-ghost" id="loginBtn" data-i18n="login">Konekte</button>
+                        <button class="btn btn-primary" id="signupBtn" data-i18n="signup">Enskri</button>
+                    </div>
+                </div>
+            </div>
+        </nav>        <!-- Haiti Slideshow -->
+        <div class="slide slide-1show-container">
+            <div class="slide slide-2active">
+                <img src="https://pyebwa.com/images/SlideShow/20140508-094914.jpg" alt="20140508 094914">
+            </div>
+            <div class="slide slide-3">
+                <img src="https://pyebwa.com/images/SlideShow/5e0a0e49e91b8e0f8379e91e7dee11f9.jpg" alt="5E0A0E49E91B8E0F8379E91E7Dee11F9">
+            </div>
+            <div class="slide slide-4">
+                <img src="https://pyebwa.com/images/SlideShow/6e7c0d44bc280212592d6ede168dc4ca.jpg" alt="6E7C0D44Bc280212592D6Ede168Dc4Ca">
+            </div>
+            <div class="slide slide-5">
+                <img src="https://pyebwa.com/images/SlideShow/HD-wallpaper-haitian-flag-silk-wavy-flags-north-american-countries-national-symbols-flag-of-haiti-fabric-flags-haiti-flag-3d-art-haiti-north-america-haiti-3d-flag.jpg" alt="Hd Wallpaper Haitian Flag Silk Wavy Flags North American Countries National Symbols Flag Of Haiti Fabric Flags Haiti Flag 3D Art Haiti North America Haiti 3D Flag">
+            </div>
+            <div class="slide slide-6">
+                <img src="https://pyebwa.com/images/SlideShow/LaCitadelle.jpg" alt="Lacitadelle">
+            </div>
+            <div class="slide slide-7">
+                <img src="https://pyebwa.com/images/SlideShow/TB-landscape-scaled-e1612506085272.jpg" alt="Tb Landscape Scaled E1612506085272">
+            </div>
+            <div class="slide slide-8">
+                <img src="https://pyebwa.com/images/SlideShow/citadelle-laferriere-and-cannon-balls-47ko900hbv2okyxp.jpg" alt="Citadelle Laferriere And Cannon Balls 47Ko900Hbv2Okyxp">
+            </div>
+            <div class="slide slide-9">
+                <img src="https://pyebwa.com/images/SlideShow/concert-philharmonique.jpg" alt="Concert Philharmonique">
+            </div>
+            <div class="slide slide-10">
+                <img src="https://pyebwa.com/images/SlideShow/expedia_group-793013-161452384-777434.jpg" alt="Expedia Group 793013 161452384 777434">
+            </div>
+            <div class="slide slide-11">
+                <img src="https://pyebwa.com/images/SlideShow/haiti-flag-art-wbkozdm492j96815.jpg" alt="Haiti Flag Art Wbkozdm492J96815">
+            </div>
+            <div class="slide slide-12">
+                <img src="https://pyebwa.com/images/SlideShow/istockphoto-637815386-612x612.jpg" alt="Istockphoto 637815386 612X612">
+            </div>
+            <div class="slide slide-13">
+                <img src="https://pyebwa.com/images/SlideShow/sun-rise-on-cormier.jpg" alt="Sun Rise On Cormier">
+            </div>
+            <div class="slide slide-14">
+                <img src="https://pyebwa.com/images/SlideShow/tumblr_nsbo1mpejL1qjcl7eo4_1280.jpg" alt="Tumblr Nsbo1Mpejl1Qjcl7Eo4 1280">
+            </div>
+            <div class="slide slide-15">
+                <img src="https://pyebwa.com/images/SlideShow/us-occupation-of-haiti-16323314377941.jpg" alt="Us Occupation Of Haiti 16323314377941">
+            </div>
+            <div class="slide slide-16">
+                <img src="https://pyebwa.com/images/SlideShow/wp2203260.webp" alt="Wp2203260">
+            </div>
+        </div>
+        
+        <!-- Overlay -->
+        <div class="slide slide-17show-overlay"></div>
+        
+        <div class="hero-content">
+            <div class="container">
+                <!-- Logo Display -->
+                <div class="logo-display">
+                    <img src="https://pyebwa.com/images/Logo.png?v=2" alt="Pyebwa Logo" class="logo-image">
+                </div>
+                <h2 class="hero-title" data-i18n="heroTitle">Kenbe Istwa Fanmi w Vivan</h2>
+                <p class="hero-subtitle" data-i18n="heroSubtitle">
+                    Kreye pyebwa fanmi w, pataje istwa, epi konekte jenerasyon yo
+                </p>
+                <button class="btn btn-cta" id="ctaBtn" data-i18n="getStarted">Kòmanse Kounye a</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h3 class="section-title" data-i18n="featuresTitle">Poukisa Pyebwa?</h3>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><span class="material-icons">park</span></div>
+                    <h4 data-i18n="feature1Title">Bati Pyebwa w</h4>
+                    <p data-i18n="feature1Desc">Ajoute manm fanmi, foto, ak dat enpòtan yo fasil</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><span class="material-icons">menu_book</span></div>
+                    <h4 data-i18n="feature2Title">Pataje Istwa</h4>
+                    <p data-i18n="feature2Desc">Prezève memwa ak istwa fanmi pou jenerasyon k ap vini yo</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><span class="material-icons">link</span></div>
+                    <h4 data-i18n="feature3Title">Konekte Fanmi</h4>
+                    <p data-i18n="feature3Desc">Jwenn ak konekte ak fanmi ou toupatou</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal Overlay (kept for future use, modals removed) -->
+    <div class="modal-overlay" id="modalOverlay">
+        <!-- Login and signup modals have been removed - authentication handled at rasin.pyebwa.com/login.html -->
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 <span data-i18n="poweredBy">Powered by</span> <a href="https://humanlevel.ai" target="_blank" rel="noopener noreferrer">Technologies Humanitaires</a></p>
+        </div>
+    </footer>
+    
+    <!-- Return to Top Button -->
+    <button id="returnToTop" class="return-to-top" title="Return to top">
+        <span class="material-icons">arrow_upward</span>
+    </button>
+
+    <!-- Firebase and auth scripts removed - authentication handled at rasin.pyebwa.com/login.html -->
+    <script src="js/clean-url.js"></script>
+    <script src="js/app.js?v=6"></script>
+    
+    <!-- Back to Top Button -->
+    <script src="js/back-to-top.js"></script>
+    
+    <!-- Main Page Slideshow -->
+    <script src="js/slideshow.js"></script>
+</body>
+</html>

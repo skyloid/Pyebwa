@@ -716,7 +716,14 @@ async function uploadPhoto(file) {
     const storageRef = storage.ref();
     const photoRef = storageRef.child(`familyTrees/${userFamilyTreeId}/photos/${Date.now()}_${file.name}`);
     
-    const snapshot = await photoRef.put(file);
+    // Add metadata required by security rules
+    const metadata = {
+        customMetadata: {
+            uploadedBy: auth.currentUser.uid
+        }
+    };
+    
+    const snapshot = await photoRef.put(file, metadata);
     const downloadUrl = await snapshot.ref.getDownloadURL();
     
     return downloadUrl;
