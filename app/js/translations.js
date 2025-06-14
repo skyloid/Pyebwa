@@ -226,6 +226,34 @@ const translations = {
         selectPerson: "Sélectionner une personne",
         updatedSuccessfully: "Mis à jour avec succès!",
         
+        // Dashboard
+        familyTreeSummary: "Votre arbre généalogique compte",
+        members: "membres",
+        acrossGenerations: "sur",
+        generations: "générations",
+        totalMembers: "Total des Membres",
+        males: "Hommes",
+        females: "Femmes",
+        quickActions: "Actions Rapides",
+        viewTree: "Voir l'Arbre",
+        browsemembers: "Parcourir les Membres",
+        exportTree: "Exporter l'Arbre",
+        recentActivity: "Activité Récente",
+        familyInsights: "Aperçus Familiaux",
+        averageAge: "Âge Moyen",
+        years: "ans",
+        youngestMember: "Membre le Plus Jeune",
+        oldestMember: "Membre le Plus Âgé",
+        photosUploaded: "Photos Téléchargées",
+        memberAdded: "Nouveau membre ajouté",
+        photoUploaded: "Photo téléchargée",
+        profileUpdated: "Profil mis à jour",
+        today: "Aujourd'hui",
+        yesterday: "Hier",
+        daysAgo: "Il y a {{days}} jours",
+        treeExported: "Arbre généalogique exporté avec succès!",
+        yearsOld: "ans",
+        
         // Footer
         poweredBy: "Propulsé par",
     },
@@ -305,6 +333,34 @@ const translations = {
         selectPerson: "Chwazi yon moun",
         updatedSuccessfully: "Mete ajou avèk siksè!",
         
+        // Dashboard
+        familyTreeSummary: "Pyebwa fanmi w gen",
+        members: "manm",
+        acrossGenerations: "sou",
+        generations: "jenerasyon",
+        totalMembers: "Total Manm",
+        males: "Gason",
+        females: "Fi",
+        quickActions: "Aksyon Rapid",
+        viewTree: "Gade Pyebwa",
+        browsemembers: "Gade Manm yo",
+        exportTree: "Ekspòte Pyebwa",
+        recentActivity: "Aktivite Resan",
+        familyInsights: "Enfòmasyon Fanmi",
+        averageAge: "Laj Mwayèn",
+        years: "an",
+        youngestMember: "Manm Pi Jèn",
+        oldestMember: "Manm Pi Gran",
+        photosUploaded: "Foto Voye",
+        memberAdded: "Nouvo manm ajoute",
+        photoUploaded: "Foto voye",
+        profileUpdated: "Pwofil mete ajou",
+        today: "Jodi a",
+        yesterday: "Yè",
+        daysAgo: "{{days}} jou de sa",
+        treeExported: "Pyebwa fanmi ekspòte avèk siksè!",
+        yearsOld: "an",
+        
         // Footer
         poweredBy: "Powered by",
     }
@@ -355,4 +411,10 @@ window.setLanguage = function(lang) {
     document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
     });
+    
+    // Re-render dynamic content
+    const currentView = document.querySelector('.view-container[style*="block"]');
+    if (currentView && currentView.id === 'dashboardView' && window.renderDashboard) {
+        window.renderDashboard();
+    }
 }
