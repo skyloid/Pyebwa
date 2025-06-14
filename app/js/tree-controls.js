@@ -300,19 +300,27 @@
         filterTreeByMode() {
             // Store current zoom and position
             const currentZoom = this.state.zoom;
-            const scrollLeft = this.elements.treeContainer.scrollLeft;
-            const scrollTop = this.elements.treeContainer.scrollTop;
+            const scrollLeft = this.elements.treeContainer?.scrollLeft || 0;
+            const scrollTop = this.elements.treeContainer?.scrollTop || 0;
             
             // Re-render tree with filtered data
             if (window.renderFamilyTree) {
                 window.renderFamilyTree(this.state.viewMode);
                 
-                // Restore zoom and position
+                // Re-initialize controls after tree re-render
                 setTimeout(() => {
+                    // Re-get elements after re-render
+                    this.elements.treeContainer = document.querySelector('.tree-container');
+                    this.elements.treeWrapper = document.querySelector('.tree-wrapper');
+                    this.elements.tree = document.querySelector('.tree');
+                    
+                    // Restore zoom and position
                     this.state.zoom = currentZoom;
                     this.applyZoom();
-                    this.elements.treeContainer.scrollLeft = scrollLeft;
-                    this.elements.treeContainer.scrollTop = scrollTop;
+                    if (this.elements.treeContainer) {
+                        this.elements.treeContainer.scrollLeft = scrollLeft;
+                        this.elements.treeContainer.scrollTop = scrollTop;
+                    }
                 }, 100);
             }
         },
@@ -537,9 +545,13 @@
     
     // Initialize when DOM is ready
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => TreeControls.init());
+        document.addEventListener('DOMContentLoaded', () => {
+            // Wait for tree view to be created
+            setTimeout(() => TreeControls.init(), 500);
+        });
     } else {
-        TreeControls.init();
+        // Wait for tree view to be created
+        setTimeout(() => TreeControls.init(), 500);
     }
     
     // Export for use

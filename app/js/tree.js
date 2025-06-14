@@ -30,7 +30,7 @@ function renderFamilyTree(viewMode = 'full') {
     }
     
     // Create tree structure
-    const treeData = buildTreeStructure();
+    const treeData = buildTreeStructure(viewMode);
     container.innerHTML = '<div class="tree-wrapper tree-scale-auto"><div class="tree"></div></div>';
     const treeElement = container.querySelector('.tree');
     
@@ -46,12 +46,26 @@ function renderFamilyTree(viewMode = 'full') {
 }
 
 // Build tree structure from flat member list
-function buildTreeStructure() {
-    console.log('Building tree structure from members:', familyMembers);
+function buildTreeStructure(viewMode = 'full') {
+    console.log('Building tree structure from members:', familyMembers, 'Mode:', viewMode);
     
     // Create a map for quick lookup
     const memberMap = new Map();
     familyMembers.forEach(m => memberMap.set(m.id, m));
+    
+    // For ancestor/descendant views, we need a different approach
+    if (viewMode !== 'full' && window.pyebwaTreeViews) {
+        const focusPerson = window.pyebwaTreeViews.findFocusPerson();
+        if (focusPerson) {
+            if (viewMode === 'ancestors') {
+                return buildAncestorTree(focusPerson, memberMap);
+            } else if (viewMode === 'descendants') {
+                return buildDescendantTree(focusPerson, memberMap);
+            } else if (viewMode === 'hourglass') {
+                return buildHourglassTree(focusPerson, memberMap);
+            }
+        }
+    }
     
     // Find root members (those who are not children of anyone else)
     const roots = familyMembers.filter(member => {
@@ -191,12 +205,27 @@ function renderTreeNode(container, node) {
     const nodeElement = document.createElement('div');
     nodeElement.className = 'tree-node';
     
+    // Add parents (for ancestor/hourglass views)
+    if (node.parents && node.parents.length > 0) {
+        const parentsContainer = document.createElement('div');
+        parentsContainer.className = 'tree-parents';
+        
+        node.parents.forEach(parent => {
+            const parentWrapper = document.createElement('div');
+            parentWrapper.className = 'tree-parent';
+            renderTreeNode(parentWrapper, parent);
+            parentsContainer.appendChild(parentWrapper);
+        });
+        
+        nodeElement.appendChild(parentsContainer);
+    }
+    
     // Create member card(s)
     const membersContainer = document.createElement('div');
     membersContainer.className = 'tree-members';
     
     // Add main member
-    membersContainer.appendChild(createMemberCard(node));
+    membersContainer.appendChild(createMemberCard(node.member || node));
     
     // Add spouse if exists
     if (node.spouse) {
@@ -206,7 +235,7 @@ function renderTreeNode(container, node) {
     nodeElement.appendChild(membersContainer);
     
     // Add children
-    if (node.children.length > 0) {
+    if (node.children && node.children.length > 0) {
         const childrenContainer = document.createElement('div');
         childrenContainer.className = 'tree-children';
         
@@ -224,7 +253,10 @@ function renderTreeNode(container, node) {
 }
 
 // Create member card for tree
-function createMemberCard(member) {
+function createMemberCard(node) {
+    // Handle both node objects and direct member objects
+    const member = node.member || node;
+    
     const card = document.createElement('div');
     card.className = `member-card ${member.gender || 'unknown'}`;
     card.onclick = () => showMemberDetails(member);
@@ -263,4 +295,99 @@ window.buildTreeStructure = buildTreeStructure;
 function showMemberDetails(member) {
     // Open the add/edit modal with this member's data
     showAddMemberModal(member);
+}
+
+// Build ancestor tree (showing only ancestors of focus person)
+function buildAncestorTree(focusPerson, memberMap) {
+    const tree = {
+        member: focusPerson,
+        children: [] // In ancestor view, we build upwards
+    };
+    
+    // Find parents
+    const parents = [];
+    familyMembers.forEach(member => {
+        if (member.relationship === 'parent' && member.relatedTo === focusPerson.id) {
+            parents.push(member);
+        }
+    });
+    
+    // Also check if focus person is marked as child of someone
+    if (focusPerson.relationship === 'child' && focusPerson.relatedTo) {
+        const parent = memberMap.get(focusPerson.relatedTo);
+        if (parent && !parents.find(p => p.id === parent.id)) {
+            parents.push(parent);
+        }
+    }
+    
+    // Build parent nodes recursively
+    if (parents.length > 0) {
+        const parentNodes = parents.map(parent => buildAncestorTree(parent, memberMap));
+        
+        // Create a virtual parent node to hold both parents
+        if (parentNodes.length === 2) {
+            return {
+                member: focusPerson,
+                parents: parentNodes
+            };
+        } else {
+            // Single parent
+            return {
+                member: focusPerson,
+                parents: parentNodes
+            };
+        }
+    }
+    
+    return tree;
+}
+
+// Build descendant tree (showing only descendants of focus person)
+function buildDescendantTree(focusPerson, memberMap) {
+    const tree = {
+        member: focusPerson,
+        children: []
+    };
+    
+    // Find spouse
+    const spouse = familyMembers.find(m => 
+        m.relationship === 'spouse' && m.relatedTo === focusPerson.id
+    );
+    
+    if (spouse) {
+        tree.spouse = spouse;
+    }
+    
+    // Find children
+    const children = familyMembers.filter(member => 
+        (member.relationship === 'child' && member.relatedTo === focusPerson.id) ||
+        (focusPerson.relationship === 'parent' && focusPerson.relatedTo === member.id)
+    );
+    
+    // Sort children by birth date
+    children.sort((a, b) => {
+        if (a.birthDate && b.birthDate) {
+            return new Date(a.birthDate) - new Date(b.birthDate);
+        }
+        return 0;
+    });
+    
+    // Build child nodes recursively
+    tree.children = children.map(child => buildDescendantTree(child, memberMap));
+    
+    return tree;
+}
+
+// Build hourglass tree (ancestors above, descendants below)
+function buildHourglassTree(focusPerson, memberMap) {
+    // Start with descendant tree structure
+    const tree = buildDescendantTree(focusPerson, memberMap);
+    
+    // Add ancestors
+    const ancestors = buildAncestorTree(focusPerson, memberMap);
+    if (ancestors.parents) {
+        tree.parents = ancestors.parents;
+    }
+    
+    return tree;
 }

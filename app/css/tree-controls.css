@@ -331,6 +331,62 @@ body.dark-mode .close-export-modal {
     color: #f0f0f0;
 }
 
+/* Tree parent styles for ancestor view */
+.tree-parents {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 40px;
+    position: relative;
+}
+
+.tree-parents::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    width: 2px;
+    height: 20px;
+    background: #ddd;
+    transform: translateX(-50%);
+}
+
+.tree-parent {
+    position: relative;
+}
+
+.tree-parent::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    width: 2px;
+    height: 20px;
+    background: #ddd;
+    transform: translateX(-50%);
+}
+
+/* When there are two parents, connect them */
+.tree-parents .tree-parent:first-child:not(:only-child)::before {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    right: -20px;
+    height: 2px;
+    background: #ddd;
+}
+
+.tree-parents .tree-parent:last-child:not(:only-child)::before {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    right: 50%;
+    left: -20px;
+    height: 2px;
+    background: #ddd;
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
     .tree-controls {
