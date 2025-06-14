@@ -94,6 +94,20 @@ async function deleteMember(member) {
             .doc(member.id)
             .delete();
         
+        // Remove from search index
+        if (window.pyebwaSearch && userFamilyTreeId) {
+            try {
+                await db.collection('familyTrees')
+                    .doc(userFamilyTreeId)
+                    .collection('searchIndex')
+                    .doc(member.id)
+                    .delete();
+                console.log('Removed from search index:', member.firstName, member.lastName);
+            } catch (searchError) {
+                console.error('Failed to remove from search index:', searchError);
+            }
+        }
+        
         // Reload members
         await loadFamilyMembers();
         showSuccess(t('deletedSuccessfully') || 'Deleted successfully!');

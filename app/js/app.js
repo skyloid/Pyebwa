@@ -659,8 +659,10 @@ async function handleAddMember(e) {
         }
         
         // Add or update in Firestore
+        let memberId;
         if (editingMemberId) {
             // Update existing member
+            memberId = editingMemberId;
             await db.collection('familyTrees')
                 .doc(userFamilyTreeId)
                 .collection('members')
@@ -670,12 +672,25 @@ async function handleAddMember(e) {
             showSuccess(t('updatedSuccessfully') || 'Updated successfully!');
         } else {
             // Add new member
-            await db.collection('familyTrees')
+            const docRef = await db.collection('familyTrees')
                 .doc(userFamilyTreeId)
                 .collection('members')
                 .add(memberData);
+            memberId = docRef.id;
             
             showSuccess(t('savedSuccessfully'));
+        }
+        
+        // Update search index
+        if (window.pyebwaSearch && memberId) {
+            try {
+                const memberWithId = { ...memberData, id: memberId };
+                await window.pyebwaSearch.updateSearchIndex(memberWithId, userFamilyTreeId);
+                console.log('Search index updated for member:', memberWithId.firstName, memberWithId.lastName);
+            } catch (searchError) {
+                console.error('Failed to update search index:', searchError);
+                // Don't fail the operation if search indexing fails
+            }
         }
         
         // Close modal and reload members
