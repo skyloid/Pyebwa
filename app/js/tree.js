@@ -1,6 +1,18 @@
 // Family tree visualization
-function renderFamilyTree() {
+function renderFamilyTree(viewMode = 'full') {
     const container = document.getElementById('treeContainer');
+    
+    // Store original members if not already stored
+    if (!window.allFamilyMembers) {
+        window.allFamilyMembers = [...familyMembers];
+    }
+    
+    // Apply view filter
+    if (viewMode !== 'full' && window.pyebwaTreeViews) {
+        familyMembers = window.pyebwaTreeViews.getFilteredMembers(viewMode);
+    } else {
+        familyMembers = [...window.allFamilyMembers];
+    }
     
     if (familyMembers.length === 0) {
         container.innerHTML = `
@@ -24,6 +36,13 @@ function renderFamilyTree() {
     
     // Render tree nodes
     renderTreeNode(treeElement, treeData);
+    
+    // Initialize tree controls if available
+    if (window.pyebwaTreeControls) {
+        setTimeout(() => {
+            window.pyebwaTreeControls.centerTree();
+        }, 100);
+    }
 }
 
 // Build tree structure from flat member list
