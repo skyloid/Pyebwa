@@ -429,6 +429,10 @@
             const member = this.currentMember;
             const photos = member.photos || [];
             
+            console.log('Loading gallery for member:', member.id);
+            console.log('Member photos count:', photos.length);
+            console.log('Has profile photo:', !!member.photoUrl);
+            
             if (photos.length === 0 && !member.photoUrl) {
                 container.innerHTML = `
                     <div class="empty-state">
@@ -446,14 +450,25 @@
             // Include main photo in gallery
             const allPhotos = member.photoUrl ? [{url: member.photoUrl, caption: 'Profile Photo', isMain: true}, ...photos] : photos;
             
+            console.log('All photos for display:', allPhotos.length);
+            console.log('Photos array:', allPhotos);
+            
             container.innerHTML = `
                 <div class="gallery-container">
                     <div class="gallery-header">
                         <h3>${t('photoGallery') || 'Photo Gallery'}</h3>
-                        <button class="btn btn-primary" onclick="pyebwaMemberProfile.addPhoto()">
-                            <i class="material-icons">add_a_photo</i>
-                            ${t('addPhoto') || 'Add Photo'}
-                        </button>
+                        <div class="gallery-actions">
+                            ${allPhotos.length > 0 ? `
+                                <button class="btn btn-secondary" onclick="pyebwaMemberProfile.startSlideshow()">
+                                    <i class="material-icons">play_arrow</i>
+                                    ${t('slideshow') || 'Slideshow'}
+                                </button>
+                            ` : ''}
+                            <button class="btn btn-primary" onclick="pyebwaMemberProfile.addPhoto()">
+                                <i class="material-icons">add_a_photo</i>
+                                ${t('addPhoto') || 'Add Photo'}
+                            </button>
+                        </div>
                     </div>
                     <div class="photo-gallery">
                         ${allPhotos.map((photo, index) => `
@@ -797,10 +812,17 @@
             }
         },
         
+        // Start slideshow
+        startSlideshow() {
+            if (window.pyebwaPhotoGallery) {
+                window.pyebwaPhotoGallery.startSlideshow();
+            }
+        },
+        
         // View photo in lightbox
         viewPhoto(index) {
-            if (window.showSuccess) {
-                window.showSuccess('Photo viewer coming soon!');
+            if (window.pyebwaPhotoGallery) {
+                window.pyebwaPhotoGallery.viewPhotoInLightbox(index);
             }
         },
         

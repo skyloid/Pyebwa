@@ -4,7 +4,7 @@
     "indexes": "firestore.indexes.json"
   },
   "storage": {
-    "rules": "storage-secure.rules",
+    "rules": "storage-fixed.rules",
     "bucket": "pyebwa-f5960.firebasestorage.app"
   },
   "hosting": {

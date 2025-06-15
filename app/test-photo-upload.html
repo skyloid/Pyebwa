@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Upload Test - Pyebwa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button {
+            padding: 10px 20px;
+            background: #00217D;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover { background: #001656; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        #uploadResult img {
+            max-width: 300px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>Photo Upload Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Authentication Status</h2>
+        <div id="authStatus" class="status info">Checking...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Firebase Storage Status</h2>
+        <div id="storageStatus" class="status info">Checking...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Family Tree Status</h2>
+        <div id="treeStatus" class="status info">Checking...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Upload Test</h2>
+        <input type="file" id="testFile" accept="image/*">
+        <button id="uploadBtn" onclick="testUpload()" disabled>Test Upload</button>
+        <div id="uploadStatus"></div>
+        <div id="uploadResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Console Output</h2>
+        <pre id="console" style="background: #f5f5f5; padding: 10px; max-height: 300px; overflow-y: auto;"></pre>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+    
+    <!-- Firebase config -->
+    <script src="/app/js/firebase-config.js"></script>
+    
+    <script>
+        const logToConsole = (msg, type = 'info') => {
+            const consoleEl = document.getElementById('console');
+            const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+            const color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
+            consoleEl.innerHTML += `<span style="color: ${color}">[${timestamp}] ${msg}</span>\n`;
+            console.log(msg);
+        };
+        
+        // Check authentication
+        firebase.auth().onAuthStateChanged(user => {
+            const statusEl = document.getElementById('authStatus');
+            if (user) {
+                statusEl.className = 'status success';
+                statusEl.textContent = `✓ Authenticated as: ${user.email}`;
+                window.currentUser = user;
+                logToConsole(`Authenticated: ${user.email}`, 'success');
+                checkStorage();
+                checkFamilyTree();
+                document.getElementById('uploadBtn').disabled = false;
+            } else {
+                statusEl.className = 'status error';
+                statusEl.textContent = '✗ Not authenticated';
+                logToConsole('Not authenticated - redirecting to login...', 'error');
+                setTimeout(() => {
+                    window.location.href = '/login.html';
+                }, 2000);
+            }
+        });
+        
+        // Check storage
+        function checkStorage() {
+            const statusEl = document.getElementById('storageStatus');
+            try {
+                const storage = firebase.storage();
+                const bucket = storage.ref().bucket;
+                statusEl.className = 'status success';
+                statusEl.textContent = `✓ Storage initialized. Bucket: ${bucket}`;
+                logToConsole(`Storage bucket: ${bucket}`, 'success');
+            } catch (error) {
+                statusEl.className = 'status error';
+                statusEl.textContent = `✗ Storage error: ${error.message}`;
+                logToConsole(`Storage error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Check family tree
+        async function checkFamilyTree() {
+            const statusEl = document.getElementById('treeStatus');
+            try {
+                const userDoc = await firebase.firestore()
+                    .collection('users')
+                    .doc(window.currentUser.uid)
+                    .get();
+                
+                if (userDoc.exists && userDoc.data().familyTreeId) {
+                    window.userFamilyTreeId = userDoc.data().familyTreeId;
+                    statusEl.className = 'status success';
+                    statusEl.textContent = `✓ Family tree ID: ${window.userFamilyTreeId}`;
+                    logToConsole(`Family tree ID: ${window.userFamilyTreeId}`, 'success');
+                } else {
+                    statusEl.className = 'status error';
+                    statusEl.textContent = '✗ No family tree found';
+                    logToConsole('No family tree found', 'error');
+                }
+            } catch (error) {
+                statusEl.className = 'status error';
+                statusEl.textContent = `✗ Error: ${error.message}`;
+                logToConsole(`Family tree error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test upload
+        async function testUpload() {
+            const fileInput = document.getElementById('testFile');
+            const statusEl = document.getElementById('uploadStatus');
+            const resultEl = document.getElementById('uploadResult');
+            const uploadBtn = document.getElementById('uploadBtn');
+            
+            if (!fileInput.files[0]) {
+                statusEl.innerHTML = '<div class="status error">Please select a file</div>';
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            logToConsole(`Starting upload: ${file.name} (${file.size} bytes)`);
+            
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Uploading...';
+            statusEl.innerHTML = '<div class="status info">Uploading...</div>';
+            
+            try {
+                // Test path that matches storage rules
+                const timestamp = Date.now();
+                const testPath = `familyTrees/${window.userFamilyTreeId}/photos/test_${timestamp}_${file.name}`;
+                logToConsole(`Upload path: ${testPath}`);
+                
+                const storageRef = firebase.storage().ref(testPath);
+                
+                // Upload with metadata
+                const metadata = {
+                    contentType: file.type,
+                    customMetadata: {
+                        uploadedBy: window.currentUser.uid,
+                        uploadedAt: new Date().toISOString(),
+                        testUpload: 'true'
+                    }
+                };
+                
+                logToConsole('Starting upload...');
+                const snapshot = await storageRef.put(file, metadata);
+                logToConsole('Upload complete, getting download URL...');
+                
+                const downloadURL = await snapshot.ref.getDownloadURL();
+                logToConsole(`Download URL: ${downloadURL}`, 'success');
+                
+                statusEl.innerHTML = '<div class="status success">✓ Upload successful!</div>';
+                resultEl.innerHTML = `
+                    <p><strong>Download URL:</strong></p>
+                    <input type="text" value="${downloadURL}" style="width: 100%; padding: 5px;" readonly>
+                    <img src="${downloadURL}" alt="Uploaded image">
+                `;
+                
+            } catch (error) {
+                logToConsole(`Upload error: ${error.message}`, 'error');
+                logToConsole(`Error code: ${error.code}`, 'error');
+                if (error.serverResponse) {
+                    logToConsole(`Server response: ${error.serverResponse}`, 'error');
+                }
+                
+                statusEl.innerHTML = `<div class="status error">✗ Upload failed: ${error.message}</div>`;
+                
+                // Provide helpful error messages
+                if (error.code === 'storage/unauthorized') {
+                    statusEl.innerHTML += '<div class="status info">This usually means the storage rules are not properly configured or you\'re not authenticated.</div>';
+                } else if (error.code === 'storage/unauthenticated') {
+                    statusEl.innerHTML += '<div class="status info">You need to be logged in to upload files.</div>';
+                }
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Test Upload';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -40,7 +40,8 @@
       "Bash(timeout:*)",
       "Bash(bash:*)",
       "Bash(git commit:*)",
-      "Bash(tar:*)"
+      "Bash(tar:*)",
+      "Bash(firebase deploy:*)"
     ],
     "deny": []
   }

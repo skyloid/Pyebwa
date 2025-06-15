@@ -1,0 +1,118 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Check if user is family tree member
+    function isFamilyMember(treeId) {
+      return isAuthenticated() && 
+             firestore.exists(/databases/(default)/documents/familyTrees/$(treeId)) &&
+             (firestore.get(/databases/(default)/documents/familyTrees/$(treeId)).data.ownerId == request.auth.uid ||
+              request.auth.uid in firestore.get(/databases/(default)/documents/familyTrees/$(treeId)).data.memberIds);
+    }
+    
+    // Validate file metadata
+    function isValidImageUpload() {
+      return request.resource.size < 5 * 1024 * 1024 && // 5MB limit
+             request.resource.contentType.matches('image/(jpeg|jpg|png|gif|webp)') &&
+             // Prevent script injection via content type
+             !request.resource.contentType.matches('.*[<>].*') &&
+             // Ensure metadata is safe
+             (!('customMetadata' in request.resource.metadata) ||
+              request.resource.metadata.customMetadata.keys().size() <= 5);
+    }
+    
+    function isValidDocumentUpload() {
+      return request.resource.size < 10 * 1024 * 1024 && // 10MB limit
+             request.resource.contentType.matches('application/(pdf|msword|vnd.openxmlformats-officedocument.wordprocessingml.document)');
+    }
+    
+    // Profile photos
+    match /users/{userId}/profile/{fileName} {
+      allow read: if isAuthenticated();
+      
+      allow write: if isOwner(userId) &&
+                     isValidImageUpload() &&
+                     fileName.matches('^profile\\.(jpg|jpeg|png|gif|webp)$');
+      
+      allow delete: if isOwner(userId);
+    }
+    
+    // Family tree photos
+    match /familyTrees/{treeId}/photos/{photoId} {
+      allow read: if isFamilyMember(treeId);
+      
+      allow create: if isFamilyMember(treeId) &&
+                      isValidImageUpload() &&
+                      photoId.matches('^[a-zA-Z0-9_-]+\\.(jpg|jpeg|png|gif|webp)$') &&
+                      request.resource.metadata.uploadedBy == request.auth.uid;
+      
+      allow update: if false; // Photos cannot be updated, only replaced
+      
+      allow delete: if isFamilyMember(treeId) &&
+                      (resource.metadata.uploadedBy == request.auth.uid ||
+                       firestore.get(/databases/(default)/documents/familyTrees/$(treeId)).data.ownerId == request.auth.uid);
+    }
+    
+    // Member photos
+    match /familyTrees/{treeId}/members/{memberId}/photos/{fileName} {
+      allow read: if isFamilyMember(treeId);
+      
+      allow write: if isFamilyMember(treeId) &&
+                     isValidImageUpload() &&
+                     fileName.matches('^(profile|photo_[0-9]+)\\.(jpg|jpeg|png|gif|webp)$');
+      
+      allow delete: if isFamilyMember(treeId);
+    }
+    
+    // Documents (birth certificates, etc.)
+    match /familyTrees/{treeId}/documents/{docId} {
+      allow read: if isFamilyMember(treeId);
+      
+      allow create: if isFamilyMember(treeId) &&
+                      isValidDocumentUpload() &&
+                      request.resource.metadata.uploadedBy == request.auth.uid &&
+                      // Ensure document type is specified
+                      'documentType' in request.resource.metadata &&
+                      request.resource.metadata.documentType in ['birth_certificate', 'death_certificate', 'marriage_certificate', 'other'];
+      
+      allow update: if false;
+      
+      allow delete: if isFamilyMember(treeId) &&
+                      (resource.metadata.uploadedBy == request.auth.uid ||
+                       firestore.get(/databases/(default)/documents/familyTrees/$(treeId)).data.ownerId == request.auth.uid);
+    }
+    
+    // Temporary uploads (for processing)
+    match /temp/{userId}/{fileName} {
+      allow read: if isOwner(userId);
+      
+      allow create: if isOwner(userId) &&
+                      request.resource.size < 20 * 1024 * 1024 && // 20MB temp limit
+                      request.time < resource.timeCreated + duration.value(1, 'h'); // 1 hour expiry
+      
+      allow update: if false;
+      
+      allow delete: if isOwner(userId);
+    }
+    
+    // Public assets (logos, etc.) - if needed
+    match /public/{fileName} {
+      allow read: if true;
+      allow write: if false; // Only admin via console
+    }
+    
+    // Default deny all
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

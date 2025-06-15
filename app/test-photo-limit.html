@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Limit Investigation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #00217D;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #00217D;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #001860;
+        }
+        .log-output {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .test-photo {
+            width: 100%;
+            aspect-ratio: 1;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .status.info {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Photo Limit Investigation</h1>
+        
+        <div class="test-section">
+            <h2>Test Firebase Array Operations</h2>
+            <p>This test will help identify if there's a Firebase limitation on array sizes.</p>
+            
+            <button onclick="testArraySizes()">Run Array Size Test</button>
+            <button onclick="testBatchOperations()">Test Batch Operations</button>
+            <button onclick="testDirectFirestore()">Test Direct Firestore</button>
+            <button onclick="clearLog()">Clear Log</button>
+            
+            <div id="status" class="status info" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Generate Test Photos</h2>
+            <p>Generate test photo data to check array limits.</p>
+            
+            <button onclick="generateTestPhotos(5)">Generate 5</button>
+            <button onclick="generateTestPhotos(10)">Generate 10</button>
+            <button onclick="generateTestPhotos(15)">Generate 15</button>
+            <button onclick="generateTestPhotos(20)">Generate 20</button>
+            <button onclick="generateTestPhotos(50)">Generate 50</button>
+            
+            <div id="photoGrid" class="test-grid"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test Log</h2>
+            <div id="log" class="log-output">Ready for testing...</div>
+        </div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    
+    <script>
+        let testPhotos = [];
+        
+        function log(message, type = 'info') {
+            const logEl = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : '📝';
+            logEl.textContent += `\n[${timestamp}] ${prefix} ${message}`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        function setStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.style.display = 'block';
+        }
+        
+        function clearLog() {
+            document.getElementById('log').textContent = 'Log cleared. Ready for testing...';
+            document.getElementById('status').style.display = 'none';
+        }
+        
+        function generateTestPhotos(count) {
+            testPhotos = [];
+            const grid = document.getElementById('photoGrid');
+            grid.innerHTML = '';
+            
+            log(`Generating ${count} test photos...`);
+            
+            for (let i = 0; i < count; i++) {
+                const photo = {
+                    url: `https://via.placeholder.com/200x200?text=Photo+${i + 1}`,
+                    caption: `Test Photo ${i + 1}`,
+                    uploadedAt: new Date(),
+                    uploadedBy: 'test-user'
+                };
+                testPhotos.push(photo);
+                
+                // Display in grid
+                const div = document.createElement('div');
+                div.className = 'test-photo';
+                div.style.background = `hsl(${(i * 360 / count) % 360}, 70%, 80%)`;
+                div.textContent = i + 1;
+                grid.appendChild(div);
+            }
+            
+            log(`Generated ${count} test photos`, 'success');
+            setStatus(`${count} test photos ready`, 'success');
+        }
+        
+        async function testArraySizes() {
+            log('Starting array size test...');
+            setStatus('Testing array sizes...', 'info');
+            
+            try {
+                // Test different array sizes
+                const sizes = [5, 10, 15, 20, 30, 50, 100];
+                const results = [];
+                
+                for (const size of sizes) {
+                    log(`Testing array with ${size} items...`);
+                    
+                    const testArray = [];
+                    for (let i = 0; i < size; i++) {
+                        testArray.push({
+                            index: i,
+                            value: `Item ${i}`,
+                            timestamp: new Date().toISOString()
+                        });
+                    }
+                    
+                    // Test JSON serialization
+                    try {
+                        const jsonStr = JSON.stringify(testArray);
+                        const parsed = JSON.parse(jsonStr);
+                        
+                        if (parsed.length === size) {
+                            log(`✅ Array size ${size}: JSON serialization OK`, 'success');
+                            results.push({ size, status: 'success' });
+                        } else {
+                            log(`❌ Array size ${size}: JSON parsed length mismatch`, 'error');
+                            results.push({ size, status: 'failed' });
+                        }
+                    } catch (e) {
+                        log(`❌ Array size ${size}: JSON error - ${e.message}`, 'error');
+                        results.push({ size, status: 'error', error: e.message });
+                    }
+                }
+                
+                // Summary
+                const successful = results.filter(r => r.status === 'success').length;
+                log(`\nTest complete: ${successful}/${sizes.length} sizes passed`);
+                setStatus(`Array size test complete: ${successful}/${sizes.length} passed`, 
+                          successful === sizes.length ? 'success' : 'error');
+                
+            } catch (error) {
+                log(`Test error: ${error.message}`, 'error');
+                setStatus('Array size test failed', 'error');
+            }
+        }
+        
+        async function testBatchOperations() {
+            if (testPhotos.length === 0) {
+                setStatus('Please generate test photos first', 'error');
+                return;
+            }
+            
+            log(`Starting batch operation test with ${testPhotos.length} photos...`);
+            setStatus('Testing batch operations...', 'info');
+            
+            try {
+                // Simulate batch processing
+                const batchSize = 5;
+                const batches = [];
+                
+                for (let i = 0; i < testPhotos.length; i += batchSize) {
+                    const batch = testPhotos.slice(i, i + batchSize);
+                    batches.push(batch);
+                    log(`Created batch ${batches.length} with ${batch.length} items`);
+                }
+                
+                // Process batches
+                let processedCount = 0;
+                for (let i = 0; i < batches.length; i++) {
+                    const batch = batches[i];
+                    
+                    // Simulate async processing
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    processedCount += batch.length;
+                    log(`Processed batch ${i + 1}/${batches.length} (${processedCount}/${testPhotos.length} total)`);
+                }
+                
+                if (processedCount === testPhotos.length) {
+                    log(`✅ All ${testPhotos.length} photos processed successfully`, 'success');
+                    setStatus(`Batch operation successful: ${testPhotos.length} photos`, 'success');
+                } else {
+                    log(`❌ Processing mismatch: ${processedCount}/${testPhotos.length}`, 'error');
+                    setStatus('Batch operation failed', 'error');
+                }
+                
+            } catch (error) {
+                log(`Batch operation error: ${error.message}`, 'error');
+                setStatus('Batch operation test failed', 'error');
+            }
+        }
+        
+        async function testDirectFirestore() {
+            if (!window.firebase || !window.firebase.firestore) {
+                setStatus('Firebase not initialized', 'error');
+                return;
+            }
+            
+            if (!window.currentUser) {
+                setStatus('Please log in first', 'error');
+                return;
+            }
+            
+            if (testPhotos.length === 0) {
+                setStatus('Please generate test photos first', 'error');
+                return;
+            }
+            
+            log(`Testing direct Firestore write with ${testPhotos.length} photos...`);
+            setStatus('Testing Firestore...', 'info');
+            
+            try {
+                // Create a test document
+                const testDocRef = firebase.firestore()
+                    .collection('test')
+                    .doc(`photo-limit-test-${Date.now()}`);
+                
+                // Write the array
+                await testDocRef.set({
+                    photos: testPhotos,
+                    count: testPhotos.length,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                log(`Wrote ${testPhotos.length} photos to Firestore`);
+                
+                // Read it back
+                const doc = await testDocRef.get();
+                const data = doc.data();
+                
+                if (data && data.photos) {
+                    log(`Read back ${data.photos.length} photos from Firestore`);
+                    
+                    if (data.photos.length === testPhotos.length) {
+                        log(`✅ Firestore test passed: ${testPhotos.length} photos saved and retrieved`, 'success');
+                        setStatus(`Firestore test successful: ${testPhotos.length} photos`, 'success');
+                    } else {
+                        log(`❌ Firestore mismatch: wrote ${testPhotos.length}, read ${data.photos.length}`, 'error');
+                        setStatus('Firestore test failed: count mismatch', 'error');
+                    }
+                } else {
+                    log('❌ No data retrieved from Firestore', 'error');
+                    setStatus('Firestore test failed: no data', 'error');
+                }
+                
+                // Clean up
+                await testDocRef.delete();
+                log('Test document cleaned up');
+                
+            } catch (error) {
+                log(`Firestore error: ${error.message}`, 'error');
+                setStatus('Firestore test failed', 'error');
+            }
+        }
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            log('Photo limit investigation tool ready');
+            log('Firebase initialized: ' + (!!window.firebase));
+            log('User authenticated: ' + (!!window.currentUser));
+        });
+    </script>
+</body>
+</html>

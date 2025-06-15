@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Array Test - Pyebwa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button {
+            padding: 10px 20px;
+            background: #00217D;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:disabled { background: #ccc; }
+        #photoList {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .photo-item {
+            padding: 5px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 4px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <h1>Photo Array Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Configuration</h2>
+        <div id="config" class="status info">Loading...</div>
+        <div>
+            <label>Member ID: <input type="text" id="memberId" placeholder="Enter member ID"></label>
+            <button onclick="loadMember()">Load Member</button>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Current Photos</h2>
+        <div id="photoCount" class="status info">No member loaded</div>
+        <div id="photoList"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Operations</h2>
+        <button onclick="addTestPhoto()">Add Test Photo</button>
+        <button onclick="add5Photos()">Add 5 Photos</button>
+        <button onclick="clearPhotos()">Clear All Photos</button>
+        <button onclick="loadMember()">Refresh</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Console Output</h2>
+        <pre id="console" style="background: #f5f5f5; padding: 10px; max-height: 300px; overflow-y: auto;"></pre>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="/app/js/firebase-config.js"></script>
+    
+    <script>
+        let currentMemberId = null;
+        let currentMember = null;
+        
+        const log = (msg, type = 'info') => {
+            const consoleEl = document.getElementById('console');
+            const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+            const color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
+            consoleEl.innerHTML += `<span style="color: ${color}">[${timestamp}] ${msg}</span>\n`;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+            console.log(msg);
+        };
+        
+        // Check authentication
+        firebase.auth().onAuthStateChanged(async (user) => {
+            const configEl = document.getElementById('config');
+            if (user) {
+                window.currentUser = user;
+                log(`Authenticated as: ${user.email}`, 'success');
+                
+                // Get family tree ID
+                const userDoc = await firebase.firestore()
+                    .collection('users')
+                    .doc(user.uid)
+                    .get();
+                
+                if (userDoc.exists && userDoc.data().familyTreeId) {
+                    window.userFamilyTreeId = userDoc.data().familyTreeId;
+                    configEl.className = 'status success';
+                    configEl.textContent = `✓ User: ${user.email} | Tree: ${window.userFamilyTreeId}`;
+                    log(`Family tree ID: ${window.userFamilyTreeId}`, 'success');
+                } else {
+                    configEl.className = 'status error';
+                    configEl.textContent = '✗ No family tree found';
+                    log('No family tree found', 'error');
+                }
+            } else {
+                configEl.className = 'status error';
+                configEl.textContent = '✗ Not authenticated';
+                log('Not authenticated - redirecting...', 'error');
+                setTimeout(() => {
+                    window.location.href = '/login.html';
+                }, 2000);
+            }
+        });
+        
+        async function loadMember() {
+            const memberId = document.getElementById('memberId').value;
+            if (!memberId) {
+                alert('Please enter a member ID');
+                return;
+            }
+            
+            currentMemberId = memberId;
+            log(`Loading member: ${memberId}`);
+            
+            try {
+                const memberDoc = await firebase.firestore()
+                    .collection('familyTrees')
+                    .doc(window.userFamilyTreeId)
+                    .collection('members')
+                    .doc(memberId)
+                    .get();
+                
+                if (memberDoc.exists) {
+                    currentMember = memberDoc.data();
+                    log(`Member loaded: ${currentMember.firstName} ${currentMember.lastName}`, 'success');
+                    displayPhotos();
+                } else {
+                    log('Member not found', 'error');
+                    document.getElementById('photoCount').textContent = 'Member not found';
+                }
+            } catch (error) {
+                log(`Error loading member: ${error.message}`, 'error');
+            }
+        }
+        
+        function displayPhotos() {
+            if (!currentMember) return;
+            
+            const photos = currentMember.photos || [];
+            const countEl = document.getElementById('photoCount');
+            const listEl = document.getElementById('photoList');
+            
+            countEl.className = 'status info';
+            countEl.textContent = `Total photos: ${photos.length}`;
+            
+            listEl.innerHTML = photos.map((photo, index) => `
+                <div class="photo-item">
+                    <strong>Photo ${index + 1}:</strong><br>
+                    URL: ${photo.url}<br>
+                    Caption: ${photo.caption || '(no caption)'}<br>
+                    Uploaded: ${photo.uploadedAt?.toDate ? photo.uploadedAt.toDate().toLocaleString() : 'N/A'}
+                </div>
+            `).join('');
+            
+            log(`Displayed ${photos.length} photos`);
+        }
+        
+        async function addTestPhoto() {
+            if (!currentMemberId) {
+                alert('Please load a member first');
+                return;
+            }
+            
+            const timestamp = Date.now();
+            const testPhoto = {
+                url: `https://via.placeholder.com/150?text=Photo${timestamp}`,
+                caption: `Test photo added at ${new Date().toLocaleString()}`,
+                uploadedAt: firebase.firestore.Timestamp.now(),
+                uploadedBy: window.currentUser.uid
+            };
+            
+            log('Adding test photo...');
+            
+            try {
+                const memberRef = firebase.firestore()
+                    .collection('familyTrees')
+                    .doc(window.userFamilyTreeId)
+                    .collection('members')
+                    .doc(currentMemberId);
+                
+                // Get current photos
+                const doc = await memberRef.get();
+                const currentPhotos = doc.data()?.photos || [];
+                log(`Current photos: ${currentPhotos.length}`);
+                
+                // Add new photo
+                currentPhotos.push(testPhoto);
+                log(`After adding: ${currentPhotos.length}`);
+                
+                // Update document
+                await memberRef.update({
+                    photos: currentPhotos
+                });
+                
+                log('Photo added successfully!', 'success');
+                
+                // Reload to verify
+                await loadMember();
+            } catch (error) {
+                log(`Error adding photo: ${error.message}`, 'error');
+            }
+        }
+        
+        async function add5Photos() {
+            for (let i = 0; i < 5; i++) {
+                await addTestPhoto();
+                await new Promise(resolve => setTimeout(resolve, 500)); // Small delay
+            }
+        }
+        
+        async function clearPhotos() {
+            if (!currentMemberId) {
+                alert('Please load a member first');
+                return;
+            }
+            
+            if (!confirm('Clear all photos?')) return;
+            
+            try {
+                await firebase.firestore()
+                    .collection('familyTrees')
+                    .doc(window.userFamilyTreeId)
+                    .collection('members')
+                    .doc(currentMemberId)
+                    .update({
+                        photos: []
+                    });
+                
+                log('Photos cleared', 'success');
+                await loadMember();
+            } catch (error) {
+                log(`Error clearing photos: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

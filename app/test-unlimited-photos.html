@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unlimited Photos Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #00217D;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        #photoGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .photo-item {
+            width: 100px;
+            height: 100px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        #console {
+            background: #f5f5f5;
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Unlimited Photos Test</h1>
+    
+    <div class="test-section">
+        <h2>Generate Test Files</h2>
+        <button onclick="generateFiles(10)">Generate 10 Files</button>
+        <button onclick="generateFiles(20)">Generate 20 Files</button>
+        <button onclick="generateFiles(50)">Generate 50 Files</button>
+        <button onclick="generateFiles(100)">Generate 100 Files</button>
+        <button onclick="clearFiles()">Clear</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test File Input</h2>
+        <input type="file" id="fileInput" accept="image/*" multiple>
+        <div id="fileCount"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Generated Files</h2>
+        <div id="photoGrid"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Console</h2>
+        <div id="console"></div>
+    </div>
+
+    <script>
+        const files = [];
+        
+        function log(msg) {
+            const console = document.getElementById('console');
+            const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+            console.innerHTML += `[${timestamp}] ${msg}\n`;
+            console.scrollTop = console.scrollHeight;
+        }
+        
+        function generateFiles(count) {
+            log(`Generating ${count} test files...`);
+            files.length = 0;
+            
+            const grid = document.getElementById('photoGrid');
+            grid.innerHTML = '';
+            
+            for (let i = 0; i < count; i++) {
+                // Create a small canvas for each "photo"
+                const canvas = document.createElement('canvas');
+                canvas.width = 100;
+                canvas.height = 100;
+                const ctx = canvas.getContext('2d');
+                
+                // Draw a colored rectangle with number
+                ctx.fillStyle = `hsl(${(i * 360 / count) % 360}, 70%, 70%)`;
+                ctx.fillRect(0, 0, 100, 100);
+                ctx.fillStyle = 'black';
+                ctx.font = '20px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(i + 1, 50, 50);
+                
+                // Convert to blob
+                canvas.toBlob((blob) => {
+                    const file = new File([blob], `test_photo_${i + 1}.png`, { type: 'image/png' });
+                    files.push(file);
+                    
+                    // Show in grid
+                    const item = document.createElement('div');
+                    item.className = 'photo-item';
+                    item.textContent = `Photo ${i + 1}`;
+                    item.style.background = `hsl(${(i * 360 / count) % 360}, 70%, 70%)`;
+                    grid.appendChild(item);
+                    
+                    if (files.length === count) {
+                        log(`Generated ${count} files successfully`);
+                        
+                        // Create a FileList-like object
+                        const dt = new DataTransfer();
+                        files.forEach(f => dt.items.add(f));
+                        
+                        // Set to file input
+                        const fileInput = document.getElementById('fileInput');
+                        fileInput.files = dt.files;
+                        
+                        // Trigger change event
+                        fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                }, 'image/png');
+            }
+        }
+        
+        function clearFiles() {
+            files.length = 0;
+            document.getElementById('photoGrid').innerHTML = '';
+            document.getElementById('fileInput').value = '';
+            document.getElementById('fileCount').textContent = '';
+            log('Cleared all files');
+        }
+        
+        // Monitor file input changes
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const count = e.target.files.length;
+            document.getElementById('fileCount').textContent = `Files selected: ${count}`;
+            log(`File input changed: ${count} files selected`);
+            
+            // List first 10 and last file
+            if (count > 0) {
+                const files = Array.from(e.target.files);
+                files.slice(0, 10).forEach((f, i) => {
+                    log(`  ${i + 1}. ${f.name}`);
+                });
+                if (count > 10) {
+                    log(`  ... and ${count - 10} more files`);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

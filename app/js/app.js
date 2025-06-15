@@ -6,6 +6,7 @@ let familyMembers = [];
 // Make data globally accessible for PDF export and other modules
 window.familyMembers = familyMembers;
 window.currentUser = currentUser;
+window.userFamilyTreeId = null;
 
 // Redirect cooldown configuration
 const REDIRECT_COOLDOWN = 30000; // 30 seconds cooldown between redirects
@@ -211,6 +212,15 @@ function initializeAuth() {
                 localStorage.removeItem('pyebwaVisitCount'); // Clear visit count
                 log('Cleared redirect data and cooldown after successful auth');
                 
+                // Check Firebase Storage configuration
+                if (window.firebase && window.firebase.storage) {
+                    console.log('Firebase Storage is initialized');
+                    const storage = firebase.storage();
+                    console.log('Storage bucket:', storage.ref().bucket);
+                } else {
+                    console.error('Firebase Storage is not initialized');
+                }
+                
                 try {
                     // Get or create user's family tree
                     await initializeUserFamilyTree();
@@ -307,6 +317,7 @@ async function initializeUserFamilyTree() {
         
         if (userDoc.exists && userDoc.data().familyTreeId) {
             userFamilyTreeId = userDoc.data().familyTreeId;
+            window.userFamilyTreeId = userFamilyTreeId;
             console.log('Found existing family tree:', userFamilyTreeId);
         } else {
             console.log('No family tree found, creating new one...');
@@ -335,6 +346,7 @@ async function initializeUserFamilyTree() {
             console.log('Creating family tree with data:', treeData);
             const treeRef = await db.collection('familyTrees').add(treeData);
             userFamilyTreeId = treeRef.id;
+            window.userFamilyTreeId = userFamilyTreeId;
             console.log('Created family tree with ID:', userFamilyTreeId);
             
             // Update user document with family tree ID
@@ -359,6 +371,7 @@ async function initializeUserFamilyTree() {
         // Don't show error to user during initialization
         // Just log it and continue
         userFamilyTreeId = null;
+        window.userFamilyTreeId = null;
     }
 }
 
