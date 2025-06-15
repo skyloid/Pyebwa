@@ -13,12 +13,9 @@
             this.setupEventListeners();
         },
         
-        // Create profile modal structure
-        createProfileModal() {
-            const modal = document.createElement('div');
-            modal.id = 'memberProfileModal';
-            modal.className = 'profile-modal';
-            modal.innerHTML = `
+        // Get modal content HTML
+        getModalContent() {
+            return `
                 <div class="profile-modal-content">
                     <button class="profile-close" aria-label="Close">
                         <i class="material-icons">close</i>
@@ -30,7 +27,7 @@
                             <div class="profile-cover"></div>
                             <div class="profile-header-content">
                                 <div class="profile-photo-container">
-                                    <img class="profile-photo" src="/app/assets/images/default-avatar.png" alt="">
+                                    <img class="profile-photo" src="/app/images/default-avatar.svg" alt="">
                                     <button class="photo-edit-btn" title="Change photo">
                                         <i class="material-icons">camera_alt</i>
                                     </button>
@@ -94,6 +91,14 @@
                     </div>
                 </div>
             `;
+        },
+        
+        // Create profile modal structure
+        createProfileModal() {
+            const modal = document.createElement('div');
+            modal.id = 'memberProfileModal';
+            modal.className = 'profile-modal';
+            modal.innerHTML = this.getModalContent();
             
             document.body.appendChild(modal);
         },
@@ -139,9 +144,6 @@
             
             this.currentMemberId = memberId;
             
-            // Show loading state
-            this.showProfileLoading();
-            
             try {
                 // Get member data
                 const member = window.familyMembers.find(m => m.id === memberId);
@@ -151,14 +153,23 @@
                 
                 this.currentMember = member;
                 
+                // Show modal first
+                const modal = document.getElementById('memberProfileModal');
+                modal.classList.add('active');
+                
+                // Reset modal content if it was replaced by loading state
+                if (!modal.querySelector('.profile-container')) {
+                    // Recreate the modal content
+                    modal.innerHTML = this.getModalContent();
+                    // Re-setup event listeners
+                    this.setupEventListeners();
+                }
+                
                 // Populate profile data
                 this.populateProfile(member);
                 
                 // Load default tab
                 this.switchTab('overview');
-                
-                // Show modal
-                document.getElementById('memberProfileModal').classList.add('active');
                 
             } catch (error) {
                 console.error('Error loading profile:', error);
@@ -189,7 +200,7 @@
             modal.querySelector('.profile-dates').textContent = dates.join(' • ');
             
             // Photo
-            const photoUrl = member.photoUrl || '/app/assets/images/default-avatar.png';
+            const photoUrl = member.photoUrl || '/app/images/default-avatar.svg';
             modal.querySelector('.profile-photo').src = photoUrl;
             
             // Relationship
@@ -658,7 +669,7 @@
         // Render family member card
         renderFamilyMember(member) {
             const age = this.calculateAge(member);
-            const photoUrl = member.photoUrl || '/app/assets/images/default-avatar.png';
+            const photoUrl = member.photoUrl || '/app/images/default-avatar.svg';
             
             return `
                 <div class="family-member-card" onclick="pyebwaMemberProfile.viewProfile('${member.id}')">
@@ -711,12 +722,15 @@
         showProfileLoading() {
             const modal = document.getElementById('memberProfileModal');
             modal.classList.add('active');
-            modal.querySelector('.profile-container').innerHTML = `
-                <div class="profile-loading">
-                    <div class="spinner"></div>
-                    <p>${t('loadingProfile') || 'Loading profile...'}</p>
-                </div>
-            `;
+            const container = modal.querySelector('.profile-container');
+            if (container) {
+                container.innerHTML = `
+                    <div class="profile-loading">
+                        <div class="spinner"></div>
+                        <p>${t('loadingProfile') || 'Loading profile...'}</p>
+                    </div>
+                `;
+            }
         },
         
         // Close profile

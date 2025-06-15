@@ -694,7 +694,7 @@
             
             const html = suggestions.map(person => `
                 <div class="suggestion-item" data-id="${person.id}">
-                    <img src="${person.photoUrl || '/app/assets/images/default-avatar.png'}" 
+                    <img src="${person.photoUrl || '/app/images/default-avatar.svg'}" 
                          alt="${person.firstName} ${person.lastName}">
                     <div class="suggestion-info">
                         <div class="suggestion-name">
@@ -848,7 +848,7 @@
             const html = searchResults.results.map(person => `
                 <div class="search-result-item" data-id="${person.id}">
                     <img class="result-photo" 
-                         src="${person.photoUrl || '/app/assets/images/default-avatar.png'}" 
+                         src="${person.photoUrl || '/app/images/default-avatar.svg'}" 
                          alt="${person.firstName} ${person.lastName}">
                     <div class="result-info">
                         <div class="result-name">

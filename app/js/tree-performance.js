@@ -167,7 +167,7 @@
             if (!member) return;
             
             // Create full node content
-            const photoUrl = member.photoUrl || '/app/assets/images/default-avatar.png';
+            const photoUrl = member.photoUrl || '/app/images/default-avatar.svg';
             const age = member.birthDate ? 
                 new Date().getFullYear() - new Date(member.birthDate).getFullYear() : '';
             

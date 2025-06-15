@@ -343,7 +343,7 @@
                     
                     <div class="photo-edit-body">
                         <div class="current-photo">
-                            <img src="${window.pyebwaMemberProfile?.currentMember?.photoUrl || '/app/assets/images/default-avatar.png'}" 
+                            <img src="${window.pyebwaMemberProfile?.currentMember?.photoUrl || '/app/images/default-avatar.svg'}" 
                                  alt="Current photo">
                         </div>
                         
