@@ -180,7 +180,7 @@
             `;
             
             nodeElement.classList.remove('simplified');
-            nodeElement.onclick = () => window.viewMemberProfile?.(member);
+            nodeElement.onclick = () => window.viewMemberProfile?.(member.id);
         },
         
         // Simplify node when not visible

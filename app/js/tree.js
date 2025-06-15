@@ -293,8 +293,13 @@ window.buildTreeStructure = buildTreeStructure;
 
 // Show member details
 function showMemberDetails(member) {
-    // Open the add/edit modal with this member's data
-    showAddMemberModal(member);
+    // Show the enhanced member profile
+    if (window.viewMemberProfile) {
+        window.viewMemberProfile(member.id);
+    } else {
+        // Fallback to edit modal if profile viewer not available
+        showAddMemberModal(member);
+    }
 }
 
 // Build ancestor tree (showing only ancestors of focus person)

@@ -846,3 +846,14 @@ function closeAllModals() {
 // Make functions globally accessible
 window.showView = showView;
 window.closeAllModals = closeAllModals;
+
+// Global function to show member details
+window.showMemberDetails = function(member) {
+    // Show the enhanced member profile
+    if (window.viewMemberProfile && member.id) {
+        window.viewMemberProfile(member.id);
+    } else {
+        // Fallback to edit modal if profile viewer not available
+        showAddMemberModal(member);
+    }
+};
