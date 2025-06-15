@@ -549,6 +549,13 @@
     color: #666;
 }
 
+.document-info .document-notes {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #777;
+    font-style: italic;
+}
+
 .document-actions {
     display: flex;
     gap: 8px;

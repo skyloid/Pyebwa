@@ -521,7 +521,7 @@
         // Render document item
         renderDocument(doc) {
             const icon = this.getDocumentIcon(doc.type);
-            const size = this.formatFileSize(doc.size);
+            const size = this.formatFileSize(doc.fileSize);
             
             return `
                 <div class="document-item">
@@ -529,8 +529,9 @@
                         <i class="material-icons">${icon}</i>
                     </div>
                     <div class="document-info">
-                        <h4>${doc.name}</h4>
-                        <p>${doc.type} • ${size} • ${this.formatDate(doc.uploadDate)}</p>
+                        <h4>${doc.title}</h4>
+                        <p>${this.getDocumentTypeName(doc.type)} • ${size} • ${this.formatDate(doc.uploadedAt)}</p>
+                        ${doc.notes ? `<p class="document-notes">${doc.notes}</p>` : ''}
                     </div>
                     <div class="document-actions">
                         <button class="btn-icon" onclick="pyebwaMemberProfile.viewDocument('${doc.id}')" title="View">
@@ -724,13 +725,34 @@
         
         getDocumentIcon(type) {
             const icons = {
-                'pdf': 'picture_as_pdf',
-                'image': 'image',
-                'document': 'description',
-                'certificate': 'verified',
-                'default': 'insert_drive_file'
+                'birth_certificate': 'child_care',
+                'death_certificate': 'sentiment_very_dissatisfied',
+                'marriage_certificate': 'favorite',
+                'passport': 'flight_takeoff',
+                'diploma': 'school',
+                'letter': 'mail',
+                'newspaper': 'newspaper',
+                'legal': 'gavel',
+                'medical': 'local_hospital',
+                'other': 'description'
             };
-            return icons[type] || icons.default;
+            return icons[type] || 'insert_drive_file';
+        },
+        
+        getDocumentTypeName(type) {
+            const names = {
+                'birth_certificate': 'Birth Certificate',
+                'death_certificate': 'Death Certificate',
+                'marriage_certificate': 'Marriage Certificate',
+                'passport': 'Passport',
+                'diploma': 'Diploma/Degree',
+                'letter': 'Letter',
+                'newspaper': 'Newspaper Clipping',
+                'legal': 'Legal Document',
+                'medical': 'Medical Record',
+                'other': 'Other Document'
+            };
+            return t(type) || names[type] || 'Document';
         },
         
         // Show loading state
