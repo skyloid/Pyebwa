@@ -1,7 +1,7 @@
-// Firebase configuration - Same as www.pyebwa.com
+// Firebase configuration - Updated for rasin.pyebwa.com
 const firebaseConfig = {
     apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
-    authDomain: "pyebwa-f5960.firebaseapp.com",
+    authDomain: "rasin.pyebwa.com",
     projectId: "pyebwa-f5960",
     storageBucket: "pyebwa-f5960.firebasestorage.app",
     messagingSenderId: "1042887343749",

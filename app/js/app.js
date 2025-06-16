@@ -76,6 +76,94 @@ window.clearDebugLogs = () => {
     console.log('Debug logs cleared');
 };
 
+// Debug Firestore to find missing members
+window.debugFirestore = async () => {
+    console.log('=== DEBUG FIRESTORE - FINDING YOUR 16 MEMBERS ===');
+    
+    if (!auth.currentUser) {
+        console.error('Not authenticated');
+        return;
+    }
+    
+    try {
+        // Get user document
+        const userDoc = await db.collection('users').doc(auth.currentUser.uid).get();
+        console.log('User document:', userDoc.exists ? userDoc.data() : 'Not found');
+        
+        const treeId = userDoc.data()?.familyTreeId;
+        if (!treeId) {
+            console.error('No family tree ID in user document');
+            return;
+        }
+        
+        console.log('Family Tree ID:', treeId);
+        
+        // Check family tree document
+        const treeDoc = await db.collection('familyTrees').doc(treeId).get();
+        console.log('Family tree exists:', treeDoc.exists);
+        if (treeDoc.exists) {
+            console.log('Tree data:', treeDoc.data());
+        }
+        
+        // Try multiple query approaches
+        console.log('\n=== Attempting different queries ===');
+        
+        // Query 1: Simple get all
+        console.log('\n1. Simple query (no ordering):');
+        try {
+            const simple = await db.collection('familyTrees').doc(treeId).collection('members').get();
+            console.log(`   Found ${simple.size} members`);
+            if (simple.size > 0) {
+                console.log('   First few members:');
+                let count = 0;
+                simple.forEach(doc => {
+                    if (count < 3) {
+                        console.log(`   - ${doc.id}:`, doc.data().firstName, doc.data().lastName);
+                        count++;
+                    }
+                });
+            }
+        } catch (e) {
+            console.error('   Failed:', e.message);
+        }
+        
+        // Query 2: With limit
+        console.log('\n2. Limited query (limit 5):');
+        try {
+            const limited = await db.collection('familyTrees').doc(treeId).collection('members').limit(5).get();
+            console.log(`   Found ${limited.size} members (limited to 5)`);
+        } catch (e) {
+            console.error('   Failed:', e.message);
+        }
+        
+        // Query 3: Direct subcollection path
+        console.log('\n3. Direct path query:');
+        try {
+            const direct = await db.collection(`familyTrees/${treeId}/members`).get();
+            console.log(`   Found ${direct.size} members`);
+        } catch (e) {
+            console.error('   Failed:', e.message);
+        }
+        
+        // Check for other family trees
+        console.log('\n=== Checking for other family trees ===');
+        const myTrees = await db.collection('familyTrees')
+            .where('ownerId', '==', auth.currentUser.uid)
+            .get();
+        console.log(`Found ${myTrees.size} trees where you are owner`);
+        
+        myTrees.forEach(async (treeDoc) => {
+            console.log(`\nTree ID: ${treeDoc.id}`);
+            console.log('Tree name:', treeDoc.data().name);
+            const membersSnap = await treeDoc.ref.collection('members').get();
+            console.log(`Members in this tree: ${membersSnap.size}`);
+        });
+        
+    } catch (error) {
+        console.error('Debug error:', error);
+    }
+};
+
 // Test Firestore access
 window.testFirestore = async () => {
     console.log('Testing Firestore access...');
@@ -120,20 +208,244 @@ window.testFirestore = async () => {
     }
 };
 
-// Initialize authentication
-function initializeAuth() {
-    // Debug logging to localStorage (persists across redirects)
-    const log = (msg) => {
-        console.log(msg);
-        const logs = JSON.parse(localStorage.getItem('pyebwaDebugLogs') || '[]');
-        logs.push(`${new Date().toISOString()}: ${msg}`);
-        localStorage.setItem('pyebwaDebugLogs', JSON.stringify(logs.slice(-20))); // Keep last 20 logs
+// Start authentication retry logic
+function startAuthRetry() {
+    // Prevent duplicate retry processes
+    if (window.authRetryInProgress) {
+        log('Auth retry already in progress, skipping duplicate call');
+        return;
+    }
+    
+    window.authRetryInProgress = true;
+    log('Starting enhanced auth retry process');
+    
+    // Show a message to the user
+    showLoadingState('Syncing authentication, please wait...');
+    const loadingEl = document.querySelector('#loadingView p');
+    if (!loadingEl) {
+        log('Warning: Loading message element not found');
+    }
+    
+    // Implement enhanced retry logic
+    let retryCount = 0;
+    const maxRetries = 15;
+    let authFound = false;
+    
+    const retryAuth = async () => {
+        retryCount++;
+        log(`Enhanced auth retry attempt ${retryCount}/${maxRetries}`);
+        
+        // Update loading message
+        const msgEl = document.querySelector('#loadingView p');
+        if (msgEl) {
+            msgEl.textContent = `Syncing authentication (${retryCount}/${maxRetries})...`;
+        }
+        
+        // Method 1: Direct check
+        let user = auth.currentUser;
+        if (user) {
+            log(`Method 1 success: Found user ${user.email}`);
+            authFound = true;
+            onAuthSuccess(user);
+            return;
+        }
+        
+        // Method 2: Force reload
+        try {
+            await auth.currentUser?.reload();
+            user = auth.currentUser;
+            if (user) {
+                log(`Method 2 success: Found user after reload ${user.email}`);
+                authFound = true;
+                onAuthSuccess(user);
+                return;
+            }
+        } catch (e) {
+            log(`Reload attempt ${retryCount} failed: ${e.message}`);
+        }
+        
+        // Method 3: Force persistence check
+        try {
+            await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+            user = auth.currentUser;
+            if (user) {
+                log(`Method 3 success: Found user after persistence ${user.email}`);
+                authFound = true;
+                onAuthSuccess(user);
+                return;
+            }
+        } catch (e) {
+            log(`Persistence check failed: ${e.message}`);
+        }
+        
+        // Method 4: Wait for next auth state change
+        const waitForAuth = new Promise((resolve) => {
+            const timeout = setTimeout(() => resolve(null), 2000);
+            const unsubscribe = auth.onAuthStateChanged((user) => {
+                if (user) {
+                    clearTimeout(timeout);
+                    unsubscribe();
+                    resolve(user);
+                }
+            });
+        });
+        
+        user = await waitForAuth;
+        if (user) {
+            log(`Method 4 success: Found user from state change ${user.email}`);
+            authFound = true;
+            onAuthSuccess(user);
+            return;
+        }
+        
+        // Continue retrying if not at max
+        if (retryCount < maxRetries && !authFound) {
+            // Use exponential backoff with jitter
+            const baseDelay = Math.min(1000 * Math.pow(1.5, retryCount), 5000);
+            const jitter = Math.random() * 500;
+            const delay = baseDelay + jitter;
+            log(`Waiting ${Math.round(delay)}ms before retry ${retryCount + 1}`);
+            setTimeout(retryAuth, delay);
+        } else if (!authFound) {
+            log('Auth failed after all retries');
+            window.authRetryInProgress = false;
+            sessionStorage.removeItem('recentLogin');
+            hideLoadingState();
+            showError('Authentication sync timeout. Please try logging in again.');
+            
+            // Offer debug options
+            const errorEl = document.querySelector('.error-message');
+            if (errorEl) {
+                errorEl.innerHTML += '<br><br><a href="/auth-debugger.html" style="color: white; text-decoration: underline;">Debug Authentication</a> | <a href="/auth-help.html" style="color: white; text-decoration: underline;">Get Help</a>';
+            }
+            
+            setTimeout(() => {
+                window.location.href = '/login.html';
+            }, 5000);
+        }
     };
+    
+    // Helper function for successful auth
+    const onAuthSuccess = (user) => {
+        log(`Authentication successful for ${user.email}`);
+        window.authRetryInProgress = false;
+        sessionStorage.removeItem('recentLogin');
+        currentUser = user;
+        window.currentUser = currentUser;
+        const userEmailEl = document.querySelector('.user-email');
+        if (userEmailEl) {
+            userEmailEl.textContent = user.email;
+        }
+        
+        initializeUserFamilyTree().then(() => {
+            hideLoadingState();
+            showView('dashboard');
+            log('App initialized successfully after retry');
+        }).catch(error => {
+            console.error('Error initializing:', error);
+            hideLoadingState();
+            showError('Error loading family tree. Please refresh.');
+        });
+    };
+    
+    // Start retry process immediately
+    retryAuth();
+}
+
+// Global debug logging function
+const log = (msg) => {
+    console.log(msg);
+    const logs = JSON.parse(localStorage.getItem('pyebwaDebugLogs') || '[]');
+    logs.push(`${new Date().toISOString()}: ${msg}`);
+    localStorage.setItem('pyebwaDebugLogs', JSON.stringify(logs.slice(-20))); // Keep last 20 logs
+};
+
+// Initialize authentication
+async function initializeAuth() {
     
     log('=== App initialization started ===');
     
     // Show loading state
     showLoadingState();
+    
+    // Log Firebase auth status
+    log(`Firebase auth initialized: ${auth ? 'Yes' : 'No'}`);
+    log(`Firebase app: ${firebase.app().name}`);
+    
+    // Check if Firebase Auth is ready
+    auth.onAuthStateChanged((user) => {
+        log(`[InitCheck] Auth state received: ${user ? user.email : 'null'}`);
+    });
+    
+    // Check if this is a magic link sign-in
+    if (auth.isSignInWithEmailLink(window.location.href)) {
+        log('Magic link detected in URL');
+        let email = window.localStorage.getItem('emailForSignIn');
+        if (!email) {
+            email = window.prompt('Please provide your email for confirmation');
+        }
+        
+        if (email) {
+            log(`Attempting magic link sign-in for: ${email}`);
+            auth.signInWithEmailLink(email, window.location.href)
+                .then(async (result) => {
+                    window.localStorage.removeItem('emailForSignIn');
+                    log('Magic link sign-in successful');
+                    
+                    // Check if this is a new user signup
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const isNewUser = urlParams.get('newUser') === 'true';
+                    
+                    if (isNewUser) {
+                        log('New user signup detected');
+                        const pendingUserData = JSON.parse(window.localStorage.getItem('pendingUserData') || '{}');
+                        
+                        if (pendingUserData.email === email) {
+                            try {
+                                // Create user profile in Firestore
+                                await db.collection('users').doc(result.user.uid).set({
+                                    uid: result.user.uid,
+                                    email: result.user.email,
+                                    fullName: pendingUserData.fullName || '',
+                                    displayName: pendingUserData.fullName || '',
+                                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                    language: 'en'
+                                });
+                                
+                                // Update user display name
+                                if (pendingUserData.fullName) {
+                                    await result.user.updateProfile({
+                                        displayName: pendingUserData.fullName
+                                    });
+                                }
+                                
+                                log('User profile created successfully');
+                                window.localStorage.removeItem('pendingUserData');
+                                
+                                // Show welcome message
+                                showSuccess(`Welcome ${pendingUserData.fullName || email}! Your account has been created.`);
+                            } catch (error) {
+                                log(`Error creating user profile: ${error.message}`);
+                                console.error('Profile creation error:', error);
+                            }
+                        }
+                    }
+                    
+                    // Clean up URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                })
+                .catch((error) => {
+                    log(`Magic link sign-in error: ${error.message}`);
+                    console.error('Magic link error:', error);
+                    hideLoadingState();
+                    showError('Invalid or expired sign-in link. Please request a new one.');
+                    setTimeout(() => {
+                        window.location.href = '/login.html';
+                    }, 3000);
+                });
+        }
+    }
     
     // Single-domain auth - no URL parameters needed
     log('Using single-domain authentication');
@@ -159,25 +471,50 @@ function initializeAuth() {
         return;
     }
     
-    // First, check current auth state immediately
-    const immediateUser = auth.currentUser;
-    log(`Immediate auth user: ${immediateUser ? immediateUser.email : 'null'}`);
+    // Check for recent login and auth wait success
+    const recentLogin = sessionStorage.getItem('recentLogin') === 'true';
+    const authWaitSuccess = sessionStorage.getItem('authWaitSuccess') === 'true';
+    const loginTime = parseInt(sessionStorage.getItem('loginTime') || '0');
+    const timeSinceLogin = Date.now() - loginTime;
     
-    // If user is already authenticated, skip the auth state listener wait
-    if (immediateUser) {
-        log('User already authenticated - initializing immediately');
-        currentUser = immediateUser;
+    log(`Recent login: ${recentLogin}, Auth wait success: ${authWaitSuccess}, Time since login: ${timeSinceLogin}ms`);
+    
+    // CRITICAL FIX: Wait for auth state to be determined before checking currentUser
+    // Firebase needs time to check its persistence and restore the session
+    log('Waiting for auth state to be determined...');
+    
+    // Create a promise that resolves when we know the auth state
+    const authStatePromise = new Promise((resolve) => {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
+            log(`Initial auth state determined: ${user ? user.email : 'No user'}`);
+            unsubscribe(); // Unsubscribe after first check
+            resolve(user);
+        });
+    });
+    
+    // Wait for auth state to be determined
+    const determinedUser = await authStatePromise;
+    
+    // Now check the user after auth state is ready
+    if (determinedUser) {
+        log('User authenticated after auth state check - initializing immediately');
+        currentUser = determinedUser;
         window.currentUser = currentUser;
         const userEmailEl = document.querySelector('.user-email');
         if (userEmailEl) {
-            userEmailEl.textContent = immediateUser.email;
+            userEmailEl.textContent = determinedUser.email;
         }
+        
+        // Clear auth wait flags
+        sessionStorage.removeItem('authWaitSuccess');
+        sessionStorage.removeItem('recentLogin');
+        sessionStorage.removeItem('loginTime');
         
         // Initialize family tree asynchronously
         initializeUserFamilyTree().then(() => {
             hideLoadingState();
-            showView('tree');
-            log('App initialized successfully with immediate auth');
+            showView('dashboard');
+            log('App initialized successfully with determined auth');
         }).catch(error => {
             log(`Error initializing app: ${error.message}`);
             console.error('Error initializing app:', error);
@@ -187,13 +524,81 @@ function initializeAuth() {
         return; // Important: exit early to avoid setting up duplicate auth listeners
     }
     
+    // If no user but we came from auth-wait with success, wait a bit more
+    if (!determinedUser && authWaitSuccess) {
+        log('Auth wait succeeded but no user found yet - waiting for propagation');
+        sessionStorage.removeItem('authWaitSuccess');
+        
+        // Wait up to 3 seconds for auth to propagate
+        let authFound = false;
+        for (let i = 0; i < 6; i++) {
+            await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms
+            const checkUser = auth.currentUser;
+            if (checkUser) {
+                log(`Found user after ${(i + 1) * 500}ms of waiting`);
+                authFound = true;
+                window.location.reload(); // Reload to properly initialize with the user
+                return;
+            }
+        }
+        
+        if (!authFound) {
+            log('Still no user after extended wait - redirecting to login');
+            window.location.href = '/login.html';
+        }
+        return;
+    }
+    
+    // Check if we need to start retry logic immediately
+    if (!determinedUser && recentLogin && timeSinceLogin < 60000) { // Within 1 minute of login
+        log('Recent login detected but no user - may need to wait for propagation');
+        // Clear the flags since they didn't help
+        sessionStorage.removeItem('recentLogin');
+        sessionStorage.removeItem('loginTime');
+    }
+    
     // Set auth state listener only once
     if (!authListenerSet) {
         authListenerSet = true;
         log('Setting up auth state listener');
         
+        // Add timeout to prevent infinite loading
+        const authTimeout = setTimeout(() => {
+            const loadingView = document.getElementById('loadingView');
+            // Check if we're still loading and no user is authenticated
+            if (!currentUser && !window.authRetryInProgress && loadingView && loadingView.style.display !== 'none') {
+                log('Auth timeout - no user authenticated after 10 seconds');
+                log('Loading view display:', loadingView.style.display);
+                log('Recent login flag:', sessionStorage.getItem('recentLogin'));
+                
+                // Don't redirect if we just came from a login
+                const recentLogin = sessionStorage.getItem('recentLogin') === 'true';
+                const loginTime = parseInt(sessionStorage.getItem('loginTime') || '0');
+                const timeSinceLogin = Date.now() - loginTime;
+                
+                if (recentLogin && timeSinceLogin < 30000) { // Within 30 seconds of login
+                    log('Recent login detected, extending timeout');
+                    // Give it more time for auth to propagate
+                    setTimeout(() => {
+                        if (!currentUser) {
+                            hideLoadingState();
+                            window.location.href = '/login.html';
+                        }
+                    }, 5000); // Additional 5 seconds
+                } else {
+                    hideLoadingState();
+                    // Small delay before redirect to ensure loading state is hidden
+                    setTimeout(() => {
+                        window.location.href = '/login.html';
+                    }, 100);
+                }
+            }
+        }, 10000); // 10 second initial timeout
+        
         // Set auth state listener with proper error handling
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
+            // Clear the timeout since auth state has resolved
+            clearTimeout(authTimeout);
             log(`Auth state changed: ${user ? user.email : 'No user'}`);
             
             if (user) {
@@ -244,10 +649,37 @@ function initializeAuth() {
                     showError('Error loading your family tree. Please try again.');
                 }
             } else {
-                // No user authenticated - redirect to login
-                log('No user authenticated - redirecting to login');
-                // Use the login page on the same domain
-                window.location.href = '/login.html';
+                // No user authenticated in state change
+                log('Auth state changed to: No user');
+                
+                // Check if retry is already running
+                if (window.authRetryInProgress) {
+                    log('Auth retry already in progress, skipping duplicate');
+                    return;
+                }
+                
+                // Check if we just came from auth.html or login (magic link)
+                const referrer = document.referrer;
+                const fromAuth = referrer.includes('/auth.html');
+                const fromLogin = referrer.includes('/login.html');
+                const hasAuthParams = window.location.href.includes('apiKey=') || 
+                                    window.location.href.includes('oobCode=') ||
+                                    window.location.href.includes('mode=');
+                
+                // Check for recent login in session
+                const recentLogin = sessionStorage.getItem('recentLogin') === 'true';
+                const loginTime = parseInt(sessionStorage.getItem('loginTime') || '0');
+                const timeSinceLogin = Date.now() - loginTime;
+                
+                if ((fromAuth || hasAuthParams || fromLogin || recentLogin) && timeSinceLogin < 60000) {
+                    log('Recent auth detected in state listener - starting retry');
+                    startAuthRetry();
+                } else {
+                    // Normal case - no recent auth attempt
+                    log('No recent auth - redirecting to login');
+                    hideLoadingState();
+                    window.location.href = '/login.html';
+                }
                 return;
             }
         }, (error) => {
@@ -378,19 +810,53 @@ async function initializeUserFamilyTree() {
 // Load family members
 async function loadFamilyMembers() {
     try {
-        console.log('Loading family members for tree:', userFamilyTreeId);
+        console.log('=== STARTING LOAD FAMILY MEMBERS ===');
+        console.log('User ID:', currentUser?.uid);
+        console.log('Family Tree ID:', userFamilyTreeId);
         
-        const snapshot = await db.collection('familyTrees')
-            .doc(userFamilyTreeId)
-            .collection('members')
-            .orderBy('createdAt', 'desc')
-            .get();
+        if (!userFamilyTreeId) {
+            console.error('No family tree ID available');
+            return;
+        }
+        
+        // First, verify the family tree document exists
+        const treeDoc = await db.collection('familyTrees').doc(userFamilyTreeId).get();
+        console.log('Family tree document exists:', treeDoc.exists);
+        if (treeDoc.exists) {
+            console.log('Family tree data:', treeDoc.data());
+        }
+        
+        // Try to load members
+        console.log('Attempting to load members from path:', `familyTrees/${userFamilyTreeId}/members`);
+        
+        // Try to get members - first attempt without orderBy in case createdAt field is missing
+        let snapshot;
+        try {
+            snapshot = await db.collection('familyTrees')
+                .doc(userFamilyTreeId)
+                .collection('members')
+                .orderBy('createdAt', 'desc')
+                .get();
+        } catch (orderError) {
+            console.warn('OrderBy createdAt failed, trying without ordering:', orderError);
+            // Fallback to query without ordering
+            snapshot = await db.collection('familyTrees')
+                .doc(userFamilyTreeId)
+                .collection('members')
+                .get();
+        }
+        
+        console.log('Query completed. Snapshot empty:', snapshot.empty);
+        console.log('Number of documents returned:', snapshot.size);
         
         familyMembers = [];
         window.familyMembers = familyMembers;
         const memberIds = new Set(); // Track unique IDs to prevent duplicates
         
         snapshot.forEach(doc => {
+            console.log('Processing member document:', doc.id);
+            console.log('Member data:', doc.data());
+            
             if (!memberIds.has(doc.id)) {
                 memberIds.add(doc.id);
                 familyMembers.push({
@@ -400,8 +866,9 @@ async function loadFamilyMembers() {
             }
         });
         
-        console.log('Loaded members:', familyMembers.length);
-        console.log('Members:', familyMembers);
+        console.log('=== LOAD COMPLETE ===');
+        console.log('Total members loaded:', familyMembers.length);
+        console.log('Members array:', familyMembers);
         
         // Make familyMembers globally accessible for PDF export
         window.familyMembers = familyMembers;
@@ -410,13 +877,26 @@ async function loadFamilyMembers() {
         const activeView = document.querySelector('.nav-item.active')?.getAttribute('data-view') || 'dashboard';
         showView(activeView);
         
+        // If members were loaded and we're on the tree view, ensure it renders
+        if (familyMembers.length > 0 && activeView === 'tree') {
+            console.log('Members loaded, rendering tree view');
+            renderFamilyTree();
+        }
+        
     } catch (error) {
-        console.error('Error loading family members:', error);
+        console.error('=== ERROR LOADING FAMILY MEMBERS ===');
+        console.error('Error type:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Error code:', error.code);
+        console.error('Full error object:', error);
+        console.error('Stack trace:', error.stack);
     }
 }
 
 // Initialize event listeners
 function initializeEventListeners() {
+    console.log('Initializing event listeners...');
+    
     // Navigation
     document.querySelectorAll('.nav-item').forEach(item => {
         item.addEventListener('click', (e) => {
@@ -454,10 +934,33 @@ function initializeEventListeners() {
     // Logout
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', (e) => {
+        logoutBtn.addEventListener('click', async (e) => {
             e.preventDefault();
-            auth.signOut();
+            
+            try {
+                // Show loading state
+                showLoadingState('Signing out...');
+                
+                // Sign out from Firebase
+                await auth.signOut();
+                
+                // Clear any local storage
+                localStorage.removeItem('emailForSignIn');
+                localStorage.removeItem('pendingUserData');
+                sessionStorage.clear();
+                
+                console.log('Logout successful');
+                
+                // Redirect to login page
+                window.location.href = '/login.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+                hideLoadingState();
+                showError('Error signing out. Please try again.');
+            }
         });
+    } else {
+        console.error('Logout button not found');
     }
     
     // Add member button
@@ -583,6 +1086,8 @@ function showAddMemberModal(member = null) {
     // Reset form
     form.reset();
     
+    // Privacy controls removed - privacy is handled at document level only
+    
     // If editing, populate form
     if (member) {
         editingMemberId = member.id;
@@ -593,6 +1098,7 @@ function showAddMemberModal(member = null) {
         form.lastName.value = member.lastName || '';
         form.gender.value = member.gender || '';
         form.birthDate.value = member.birthDate || '';
+        form.deathDate.value = member.deathDate || '';
         form.email.value = member.email || '';
         form.biography.value = member.biography || '';
         form.relationship.value = member.relationship || '';
@@ -602,10 +1108,14 @@ function showAddMemberModal(member = null) {
             populateRelatedToOptions();
             form.relatedTo.value = member.relatedTo;
         }
+        
+        // Privacy settings removed - handled at document level only
     } else {
         editingMemberId = null;
         modalTitle.textContent = t('addFamilyMember') || 'Add Family Member';
         submitBtn.textContent = t('save') || 'Save';
+        
+        // Privacy defaults removed - handled at document level only
     }
     
     modal.classList.add('active');
@@ -645,11 +1155,13 @@ async function handleAddMember(e) {
             lastName: form.lastName.value,
             gender: form.gender.value,
             birthDate: form.birthDate.value || null,
+            deathDate: form.deathDate.value || null,
             email: form.email.value || null,
             biography: form.biography.value || '',
             relationship: form.relationship.value,
             relatedTo: form.relatedTo?.value || null,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            // Privacy removed from add form - only documents have privacy settings
         };
         
         // Only add these fields for new members
@@ -856,9 +1368,162 @@ function closeAllModals() {
     editingMemberId = null;
 }
 
+// Update family member in Firestore
+async function updateFamilyMember(memberId, updateData) {
+    if (!userFamilyTreeId || !memberId) {
+        throw new Error('Missing family tree ID or member ID');
+    }
+    
+    // Add timestamp
+    updateData.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+    
+    // Update in Firestore
+    await db.collection('familyTrees')
+        .doc(userFamilyTreeId)
+        .collection('members')
+        .doc(memberId)
+        .update(updateData);
+    
+    // Update local data
+    const memberIndex = familyMembers.findIndex(m => m.id === memberId);
+    if (memberIndex !== -1) {
+        familyMembers[memberIndex] = { ...familyMembers[memberIndex], ...updateData };
+        window.familyMembers = familyMembers;
+    }
+    
+    // Update search index if available
+    if (window.pyebwaSearch && familyMembers[memberIndex]) {
+        try {
+            await window.pyebwaSearch.updateSearchIndex(familyMembers[memberIndex], userFamilyTreeId);
+        } catch (searchError) {
+            console.error('Failed to update search index:', searchError);
+        }
+    }
+}
+
+// Privacy control functions - REMOVED
+// Privacy settings are now only available for documents in the member profile
+/*
+function ensurePrivacyControls(form) {
+    // Function removed - privacy controls no longer in add member form
+}
+
+function createPrivacyField(fieldName, label, defaultValue) {
+    // Function removed - privacy fields no longer needed in add member form
+}
+*/
+
+/*
+function setDefaultPrivacyValues(form) {
+    // Function removed - privacy defaults no longer needed in add member form
+}
+*/
+
+// Check if user has permission to view field
+window.canViewField = function(member, fieldName, viewerId = null) {
+    // If no privacy settings, default to showing
+    if (!member.privacy || !member.privacy[fieldName]) {
+        return true;
+    }
+    
+    const privacy = member.privacy[fieldName];
+    const currentUserId = currentUser?.uid;
+    
+    // Owner can always see their own data
+    if (member.addedBy === currentUserId) {
+        return true;
+    }
+    
+    // Check privacy level
+    switch (privacy) {
+        case 'public':
+            return true;
+        case 'family':
+            // Check if viewer is in the same family tree
+            return viewerId ? isFamilyMember(viewerId) : (currentUserId && isFamilyMember(currentUserId));
+        case 'private':
+            return false;
+        default:
+            return true;
+    }
+};
+
+// Check if user is a family member
+function isFamilyMember(userId) {
+    // For now, anyone with access to the family tree is considered family
+    // This could be enhanced to check specific relationships
+    return currentUser && currentUser.uid === userId;
+}
+
+// Update family member
+async function updateFamilyMember(memberId, updateData) {
+    if (!userFamilyTreeId) {
+        throw new Error('No family tree ID available');
+    }
+    
+    try {
+        // Add timestamp
+        updateData.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+        
+        // Update in Firestore
+        await db.collection('familyTrees')
+            .doc(userFamilyTreeId)
+            .collection('members')
+            .doc(memberId)
+            .update(updateData);
+        
+        // Update local cache
+        const memberIndex = familyMembers.findIndex(m => m.id === memberId);
+        if (memberIndex !== -1) {
+            familyMembers[memberIndex] = {
+                ...familyMembers[memberIndex],
+                ...updateData
+            };
+            window.familyMembers = familyMembers; // Update global reference
+        }
+        
+        console.log('Member updated successfully:', memberId);
+        return familyMembers[memberIndex];
+    } catch (error) {
+        console.error('Error updating member:', error);
+        throw error;
+    }
+}
+
+// Logout function
+async function logout() {
+    try {
+        console.log('Logout function called');
+        showLoadingState('Signing out...');
+        
+        await auth.signOut();
+        
+        // Clear any local storage
+        localStorage.removeItem('emailForSignIn');
+        localStorage.removeItem('pendingUserData');
+        sessionStorage.clear();
+        
+        console.log('Logout successful, redirecting...');
+        
+        // Redirect to login page
+        window.location.href = '/login.html';
+    } catch (error) {
+        console.error('Logout error:', error);
+        hideLoadingState();
+        showError('Error signing out. Please try again.');
+    }
+}
+
 // Make functions globally accessible
 window.showView = showView;
 window.closeAllModals = closeAllModals;
+window.showAddMemberModal = showAddMemberModal;
+window.showSuccess = showSuccess;
+window.showError = showError;
+window.updateFamilyMember = updateFamilyMember;
+// Privacy controls removed - no longer needed
+// window.ensurePrivacyControls = ensurePrivacyControls;
+window.logout = logout;
 
 // Global function to show member details
 window.showMemberDetails = function(member) {
@@ -869,4 +1534,70 @@ window.showMemberDetails = function(member) {
         // Fallback to edit modal if profile viewer not available
         showAddMemberModal(member);
     }
+};
+
+// Debug function to inspect Firestore data
+window.debugFirestore = async function() {
+    console.log('=== FIRESTORE DEBUG ===');
+    console.log('Current User:', currentUser);
+    console.log('User Family Tree ID:', userFamilyTreeId);
+    
+    if (!userFamilyTreeId) {
+        console.error('No family tree ID available');
+        return;
+    }
+    
+    try {
+        // Check family tree document
+        const treeDoc = await db.collection('familyTrees').doc(userFamilyTreeId).get();
+        console.log('Family Tree Document Exists:', treeDoc.exists);
+        if (treeDoc.exists) {
+            console.log('Family Tree Data:', JSON.stringify(treeDoc.data(), null, 2));
+        }
+        
+        // Try different query approaches
+        console.log('\n--- Attempting basic members query ---');
+        const basicQuery = await db.collection('familyTrees')
+            .doc(userFamilyTreeId)
+            .collection('members')
+            .get();
+        console.log('Basic query - Document count:', basicQuery.size);
+        
+        console.log('\n--- Attempting members query without orderBy ---');
+        const noOrderQuery = await db.collection('familyTrees')
+            .doc(userFamilyTreeId)
+            .collection('members')
+            .limit(5)
+            .get();
+        console.log('No orderBy query - Document count:', noOrderQuery.size);
+        
+        if (noOrderQuery.size > 0) {
+            console.log('Sample member documents:');
+            noOrderQuery.forEach(doc => {
+                console.log('Document ID:', doc.id);
+                console.log('Document data:', JSON.stringify(doc.data(), null, 2));
+            });
+        }
+        
+        // Check permissions by trying to read a specific path
+        console.log('\n--- Testing permissions ---');
+        try {
+            const testPath = `familyTrees/${userFamilyTreeId}/members`;
+            console.log('Testing read access to:', testPath);
+            const testQuery = await db.collection(testPath).limit(1).get();
+            console.log('Permission test successful');
+        } catch (permError) {
+            console.error('Permission test failed:', permError);
+        }
+        
+    } catch (error) {
+        console.error('Debug error:', error);
+        console.error('Error details:', {
+            code: error.code,
+            message: error.message,
+            details: error.details
+        });
+    }
+    
+    console.log('=== END FIRESTORE DEBUG ===');
 };

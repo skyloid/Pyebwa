@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Pyebwa Family Tree</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         :root {
             --primary-blue: #00217D;
@@ -77,7 +79,15 @@
             text-align: center;
             font-size: 24px;
             font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: var(--gray-700);
+            text-align: center;
+            font-size: 16px;
             margin-bottom: 30px;
+            line-height: 1.5;
         }
         
         .form-group {
@@ -119,6 +129,10 @@
             cursor: pointer;
             transition: all 0.3s ease;
             margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
         
         .btn-primary {
@@ -156,6 +170,10 @@
             text-align: center;
             font-size: 14px;
             font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
         
         .error {
@@ -184,8 +202,6 @@
             border-top: 3px solid var(--primary-blue);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-right: 10px;
-            vertical-align: middle;
         }
         
         @keyframes spin {
@@ -209,53 +225,143 @@
             text-decoration: underline;
         }
         
-        .forgot-password {
-            text-align: right;
-            margin-top: -10px;
-            margin-bottom: 20px;
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 25px 0;
         }
         
-        .forgot-password a {
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--gray-200);
+        }
+        
+        .divider span {
+            padding: 0 15px;
+            color: var(--gray-700);
+            font-size: 14px;
+        }
+        
+        .magic-link-section {
+            text-align: center;
+            padding: 30px;
+            background: var(--gray-50);
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+        
+        .magic-link-icon {
+            font-size: 48px;
+            color: var(--primary-blue);
+            margin-bottom: 15px;
+        }
+        
+        .magic-link-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 10px;
+        }
+        
+        .magic-link-text {
+            color: var(--gray-700);
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        
+        .email-sent {
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .verification-note {
+            background: #FEF3C7;
+            border: 1px solid #FCD34D;
+            color: #92400E;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 20px;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .forgot-password-link {
+            display: inline-block;
+            margin-top: 8px;
             color: var(--primary-blue);
             text-decoration: none;
             font-size: 14px;
             font-weight: 500;
+            float: right;
         }
         
-        .forgot-password a:hover {
+        .forgot-password-link:hover {
             text-decoration: underline;
         }
         
         /* Modal styles */
-        .modal {
+        .modal-overlay {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            right: 0;
+            bottom: 0;
             background: rgba(0, 0, 0, 0.5);
-            align-items: center;
-            justify-content: center;
             z-index: 1000;
-            padding: 20px;
+            animation: fadeIn 0.3s ease;
         }
         
-        .modal.active {
+        .modal-overlay.show {
             display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .modal-content {
             background: var(--white);
             border-radius: 16px;
-            padding: 40px;
-            width: 100%;
+            padding: 32px;
             max-width: 420px;
+            width: 90%;
             position: relative;
-            box-shadow: var(--shadow-xl);
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
         
         .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
         }
         
@@ -265,28 +371,52 @@
             font-weight: 600;
         }
         
-        .modal-header p {
-            color: var(--gray-700);
-            font-size: 14px;
-            margin-top: 8px;
-        }
-        
-        .close-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
+        .modal-close {
             background: none;
             border: none;
             font-size: 24px;
             color: var(--gray-700);
             cursor: pointer;
-            width: auto;
             padding: 0;
-            margin: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.2s ease;
         }
         
-        .close-btn:hover {
+        .modal-close:hover {
+            background: var(--gray-50);
             color: var(--gray-900);
+        }
+        
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        
+        .modal-body p {
+            color: var(--gray-700);
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
     </style>
 </head>
@@ -297,66 +427,70 @@
             <p>Your Family Tree</p>
         </div>
         
-        <h2>Welcome Back</h2>
-        
-        <div id="message" class="message info" style="display: none;"></div>
-        
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" required placeholder="your@email.com" autocomplete="email">
-            </div>
+        <div id="loginView">
+            <h2>Sign In</h2>
+            <p class="subtitle">Enter your email and password to sign in.</p>
             
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" required placeholder="Enter your password" autocomplete="current-password">
-            </div>
+            <div id="message" class="message" style="display: none;"></div>
             
-            <div class="forgot-password">
-                <a href="#" id="forgotPasswordLink">Forgot password?</a>
-            </div>
-            
-            <button type="submit" class="btn-primary" id="loginBtn">Sign In</button>
-        </form>
-        
-        <button onclick="window.location.href='/app/'" class="btn-secondary">Go to App</button>
-        
-        <div class="links">
-            <a href="https://pyebwa.com">← Back to Homepage</a>
-        </div>
-    </div>
-    
-    <!-- Password Reset Modal -->
-    <div id="resetModal" class="modal">
-        <div class="modal-content">
-            <button class="close-btn" onclick="closeResetModal()">&times;</button>
-            <div class="modal-header">
-                <h3>Reset Password</h3>
-                <p>Enter your email address and we'll send you a link to reset your password.</p>
-            </div>
-            
-            <div id="resetMessage" class="message" style="display: none;"></div>
-            
-            <form id="resetForm">
+            <form id="passwordForm">
                 <div class="form-group">
-                    <label for="resetEmail">Email Address</label>
-                    <input type="email" id="resetEmail" required placeholder="your@email.com" autocomplete="email">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" required placeholder="your@email.com" autocomplete="email">
                 </div>
                 
-                <button type="submit" class="btn-primary" id="resetBtn">Send Reset Link</button>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required placeholder="Enter your password" autocomplete="current-password">
+                    <a href="#" class="forgot-password-link" onclick="showForgotPassword(); return false;">Forgot password?</a>
+                </div>
+                
+                <button type="submit" class="btn-primary" id="passwordLoginBtn">
+                    <i class="material-icons">login</i>
+                    Sign In
+                </button>
             </form>
             
             <div class="links">
-                <a href="#" onclick="closeResetModal()">Back to Login</a>
+                Don't have an account? <a href="/signup.html">Sign Up</a><br>
+                <a href="https://pyebwa.com">← Back to Homepage</a>
+            </div>
+        </div>
+        
+    </div>
+    
+    <!-- Forgot Password Modal -->
+    <div class="modal-overlay" id="forgotPasswordModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Reset Password</h3>
+                <button class="modal-close" onclick="hideForgotPassword()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Enter your email address and we'll send you a link to reset your password.</p>
+                
+                <div id="resetMessage" class="message" style="display: none;"></div>
+                
+                <form id="resetPasswordForm">
+                    <div class="form-group">
+                        <label for="resetEmail">Email Address</label>
+                        <input type="email" id="resetEmail" required placeholder="your@email.com" autocomplete="email">
+                    </div>
+                    
+                    <button type="submit" class="btn-primary" id="resetPasswordBtn">
+                        <i class="material-icons">mail</i>
+                        Send Reset Link
+                    </button>
+                </form>
             </div>
         </div>
     </div>
     
     <script>
-        // Firebase configuration - Same as app
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
-            authDomain: "pyebwa-f5960.firebaseapp.com",
+            authDomain: "rasin.pyebwa.com",
             projectId: "pyebwa-f5960",
             storageBucket: "pyebwa-f5960.firebasestorage.app",
             messagingSenderId: "1042887343749",
@@ -366,61 +500,64 @@
         
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-        
         const auth = firebase.auth();
         
-        // Set auth persistence to LOCAL (persists across browser sessions)
-        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-            .then(() => {
-                console.log('Auth persistence set to LOCAL');
-            })
-            .catch((error) => {
-                console.error('Error setting auth persistence:', error);
-            });
+        // Clear any stale authentication data that might cause loops
+        if (window.location.search.includes('clearAuth=true')) {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = '/login.html';
+        }
         
+        // Set auth persistence
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        
+        // DOM elements
+        const loginView = document.getElementById('loginView');
         const messageDiv = document.getElementById('message');
-        const loginForm = document.getElementById('loginForm');
-        const loginBtn = document.getElementById('loginBtn');
+        const passwordForm = document.getElementById('passwordForm');
+        const passwordLoginBtn = document.getElementById('passwordLoginBtn');
         
-        function showMessage(text, type = 'info') {
-            messageDiv.textContent = text;
-            messageDiv.className = 'message ' + type;
-            messageDiv.style.display = 'block';
+        // Show message helper
+        function showMessage(element, text, type = 'info') {
+            element.innerHTML = `<i class="material-icons">${type === 'error' ? 'error' : type === 'success' ? 'check_circle' : 'info'}</i> ${text}`;
+            element.className = 'message ' + type;
+            element.style.display = 'flex';
         }
         
         // Check if already logged in
         auth.onAuthStateChanged((user) => {
             if (user) {
-                showMessage(`Already logged in as ${user.email}. Redirecting...`, 'success');
+                showMessage(messageDiv, `Already logged in as ${user.email}. Redirecting...`, 'success');
                 setTimeout(() => {
+                    // Set a flag to indicate recent login
+                    sessionStorage.setItem('recentLogin', 'true');
+                    sessionStorage.setItem('loginTime', Date.now().toString());
                     window.location.href = '/app/';
                 }, 1500);
             }
         });
         
-        loginForm.addEventListener('submit', async (e) => {
+        
+        // Handle password form submission
+        passwordForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             
-            loginBtn.disabled = true;
-            loginBtn.innerHTML = '<span class="loading"></span> Signing in...';
+            passwordLoginBtn.disabled = true;
+            passwordLoginBtn.innerHTML = '<span class="loading"></span> Signing in...';
             
             try {
-                // Sign in with fresh token
                 const result = await auth.signInWithEmailAndPassword(email, password);
                 
-                // Force token refresh after password reset
-                if (result.user) {
-                    await result.user.reload();
-                    await result.user.getIdToken(true);
-                }
+                showMessage(messageDiv, `Success! Welcome back, ${result.user.email}`, 'success');
                 
-                showMessage(`Success! Welcome back, ${result.user.email}`, 'success');
-                
-                // Redirect to app after 1.5 seconds
                 setTimeout(() => {
+                    // Set a flag to indicate recent login
+                    sessionStorage.setItem('recentLogin', 'true');
+                    sessionStorage.setItem('loginTime', Date.now().toString());
                     window.location.href = '/app/';
                 }, 1500);
                 
@@ -433,9 +570,7 @@
                         errorMessage = 'No account found with this email.';
                         break;
                     case 'auth/wrong-password':
-                        errorMessage = 'Incorrect password. If you just reset your password, try clearing your browser cache or use incognito mode.';
-                        // Try to clear cached auth
-                        auth.signOut();
+                        errorMessage = 'Incorrect password.';
                         break;
                     case 'auth/invalid-email':
                         errorMessage = 'Invalid email address.';
@@ -443,106 +578,118 @@
                     case 'auth/too-many-requests':
                         errorMessage = 'Too many failed attempts. Try again later.';
                         break;
-                    case 'auth/network-request-failed':
-                        errorMessage = 'Network error. Check your connection.';
-                        break;
                 }
                 
-                showMessage(errorMessage, 'error');
-                loginBtn.disabled = false;
-                loginBtn.textContent = 'Sign In';
+                showMessage(messageDiv, errorMessage, 'error');
+            } finally {
+                passwordLoginBtn.disabled = false;
+                passwordLoginBtn.innerHTML = '<i class="material-icons">login</i> Sign In';
             }
         });
         
-        // Password Reset Functionality
-        const forgotPasswordLink = document.getElementById('forgotPasswordLink');
-        const resetModal = document.getElementById('resetModal');
-        const resetForm = document.getElementById('resetForm');
-        const resetBtn = document.getElementById('resetBtn');
+        // Forgot Password functionality
+        const forgotPasswordModal = document.getElementById('forgotPasswordModal');
+        const resetPasswordForm = document.getElementById('resetPasswordForm');
+        const resetPasswordBtn = document.getElementById('resetPasswordBtn');
         const resetMessage = document.getElementById('resetMessage');
         
-        // Show reset modal
-        forgotPasswordLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            resetModal.classList.add('active');
-            document.getElementById('resetEmail').value = document.getElementById('email').value;
-            resetMessage.style.display = 'none';
-        });
-        
-        // Close reset modal
-        function closeResetModal() {
-            resetModal.classList.remove('active');
-            resetMessage.style.display = 'none';
-            resetForm.reset();
+        // Show forgot password modal
+        function showForgotPassword() {
+            forgotPasswordModal.classList.add('show');
+            
+            // Pre-fill email if already entered
+            const loginEmail = document.getElementById('email').value;
+            if (loginEmail) {
+                document.getElementById('resetEmail').value = loginEmail;
+            }
+            
+            // Focus on email input
+            setTimeout(() => {
+                document.getElementById('resetEmail').focus();
+            }, 100);
         }
         
-        // Close modal on background click
-        resetModal.addEventListener('click', (e) => {
-            if (e.target === resetModal) {
-                closeResetModal();
+        // Hide forgot password modal
+        function hideForgotPassword() {
+            forgotPasswordModal.classList.remove('show');
+            resetPasswordForm.reset();
+            resetMessage.style.display = 'none';
+        }
+        
+        // Click outside to close modal
+        forgotPasswordModal.addEventListener('click', (e) => {
+            if (e.target === forgotPasswordModal) {
+                hideForgotPassword();
             }
         });
         
-        // Handle escape key
+        // Escape key to close modal
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && resetModal.classList.contains('active')) {
-                closeResetModal();
+            if (e.key === 'Escape' && forgotPasswordModal.classList.contains('show')) {
+                hideForgotPassword();
             }
         });
         
-        // Show reset message
-        function showResetMessage(message, type) {
-            resetMessage.textContent = message;
-            resetMessage.className = 'message ' + type;
-            resetMessage.style.display = 'block';
-        }
-        
-        // Handle password reset
-        resetForm.addEventListener('submit', async (e) => {
+        // Handle password reset form submission
+        resetPasswordForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const email = document.getElementById('resetEmail').value.trim();
             
-            if (!email) {
-                showResetMessage('Please enter your email address.', 'error');
-                return;
-            }
-            
-            resetBtn.disabled = true;
-            resetBtn.textContent = 'Sending...';
+            resetPasswordBtn.disabled = true;
+            resetPasswordBtn.innerHTML = '<span class="loading"></span> Sending...';
             
             try {
-                await firebase.auth().sendPasswordResetEmail(email);
+                await auth.sendPasswordResetEmail(email);
                 
-                showResetMessage('Password reset link sent! Check your email inbox.', 'success');
-                resetBtn.textContent = 'Email Sent!';
+                // Show success message
+                showMessage(resetMessage, 'Password reset link sent! Check your email inbox.', 'success');
                 
-                // Reset form after 3 seconds
+                // Clear the form
+                resetPasswordForm.reset();
+                
+                // Auto-close modal after 3 seconds
                 setTimeout(() => {
-                    closeResetModal();
-                    resetBtn.disabled = false;
-                    resetBtn.textContent = 'Send Reset Link';
+                    hideForgotPassword();
                 }, 3000);
                 
             } catch (error) {
                 console.error('Password reset error:', error);
+                
                 let errorMessage = 'Failed to send reset email. Please try again.';
                 
+                // Handle specific error codes
                 switch (error.code) {
                     case 'auth/user-not-found':
-                        errorMessage = 'No account found with this email address.';
-                        break;
+                        // Don't reveal that the user doesn't exist for security
+                        errorMessage = 'If an account exists with this email, you will receive a password reset link.';
+                        showMessage(resetMessage, errorMessage, 'info');
+                        
+                        // Still clear form and close modal to maintain consistent behavior
+                        resetPasswordForm.reset();
+                        setTimeout(() => {
+                            hideForgotPassword();
+                        }, 3000);
+                        return;
+                        
                     case 'auth/invalid-email':
-                        errorMessage = 'Invalid email address format.';
+                        errorMessage = 'Please enter a valid email address.';
                         break;
+                        
                     case 'auth/too-many-requests':
                         errorMessage = 'Too many requests. Please try again later.';
                         break;
+                        
+                    case 'auth/network-request-failed':
+                        errorMessage = 'Network error. Please check your connection and try again.';
+                        break;
                 }
                 
-                showResetMessage(errorMessage, 'error');
-                resetBtn.disabled = false;
-                resetBtn.textContent = 'Send Reset Link';
+                showMessage(resetMessage, errorMessage, 'error');
+                
+            } finally {
+                resetPasswordBtn.disabled = false;
+                resetPasswordBtn.innerHTML = '<i class="material-icons">mail</i> Send Reset Link';
             }
         });
     </script>
