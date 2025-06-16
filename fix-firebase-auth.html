@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Firebase Auth - Pyebwa</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #00217D;
+            margin-bottom: 30px;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+        }
+        .step.active {
+            border-color: #00217D;
+            background: #e3f2fd;
+        }
+        .step.success {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        .step.error {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+        .step h3 {
+            margin-top: 0;
+        }
+        .status {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        button {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover:not(:disabled) {
+            background: #001654;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .log {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+            display: none;
+        }
+        .manual-login {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Firebase Auth Recovery Tool</h1>
+        
+        <div class="step" id="step1">
+            <h3>Step 1: Check Current Auth State</h3>
+            <p>Checking Firebase authentication state...</p>
+            <div class="status" id="status1">Checking...</div>
+        </div>
+        
+        <div class="step" id="step2">
+            <h3>Step 2: Check Auth Persistence</h3>
+            <p>Verifying auth persistence settings...</p>
+            <div class="status" id="status2">Waiting...</div>
+        </div>
+        
+        <div class="step" id="step3">
+            <h3>Step 3: Check IndexedDB</h3>
+            <p>Looking for auth data in IndexedDB...</p>
+            <div class="status" id="status3">Waiting...</div>
+        </div>
+        
+        <div class="step" id="step4">
+            <h3>Step 4: Force Auth Refresh</h3>
+            <p>Attempting to refresh authentication...</p>
+            <div class="status" id="status4">Waiting...</div>
+        </div>
+        
+        <div class="success-message" id="successMessage">
+            <h2>✓ Authentication Fixed!</h2>
+            <p>You are now logged in. Redirecting to your family tree...</p>
+        </div>
+        
+        <div class="manual-login">
+            <h3>Manual Options:</h3>
+            <button onclick="startFix()">Run Auth Fix</button>
+            <button onclick="clearAndRestart()">Clear All & Restart</button>
+            <button onclick="manualLogin()">Manual Login</button>
+            
+            <div id="manualLoginForm" style="display: none; margin-top: 20px;">
+                <input type="email" id="email" placeholder="Enter your email">
+                <button onclick="sendMagicLink()">Send Magic Link</button>
+            </div>
+        </div>
+        
+        <div class="log" id="logOutput"></div>
+    </div>
+    
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
+            authDomain: "pyebwa-f5960.firebaseapp.com",
+            projectId: "pyebwa-f5960",
+            storageBucket: "pyebwa-f5960.firebasestorage.app",
+            messagingSenderId: "1042887343749",
+            appId: "1:1042887343749:web:c276bf69b6c0895111f3ec",
+            measurementId: "G-ZX92K1TMM3"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+        let logs = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toISOString().substr(11, 8);
+            const color = type === 'error' ? '#ff6b6b' : type === 'success' ? '#51cf66' : '#4dabf7';
+            logs.push(`<span style="color: ${color}">[${timestamp}] ${message}</span>`);
+            document.getElementById('logOutput').innerHTML = logs.join('<br>');
+            document.getElementById('logOutput').scrollTop = document.getElementById('logOutput').scrollHeight;
+        }
+        
+        function updateStep(stepNum, status, message, type = 'active') {
+            const step = document.getElementById(`step${stepNum}`);
+            const statusEl = document.getElementById(`status${stepNum}`);
+            
+            step.className = `step ${type}`;
+            statusEl.textContent = message;
+            statusEl.style.color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#00217D';
+        }
+        
+        async function startFix() {
+            log('Starting Firebase Auth recovery process...');
+            
+            // Step 1: Check current auth
+            updateStep(1, 'active', 'Checking...', 'active');
+            const currentUser = auth.currentUser;
+            
+            if (currentUser) {
+                updateStep(1, 'success', `Found user: ${currentUser.email}`, 'success');
+                log(`User already authenticated: ${currentUser.email}`, 'success');
+                showSuccess();
+                return;
+            } else {
+                updateStep(1, 'error', 'No authenticated user found', 'error');
+                log('No authenticated user in current state', 'error');
+            }
+            
+            // Step 2: Check persistence
+            updateStep(2, 'active', 'Checking persistence...', 'active');
+            try {
+                await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+                updateStep(2, 'success', 'Persistence set to LOCAL', 'success');
+                log('Auth persistence verified', 'success');
+            } catch (error) {
+                updateStep(2, 'error', `Persistence error: ${error.message}`, 'error');
+                log(`Persistence error: ${error.message}`, 'error');
+            }
+            
+            // Step 3: Check IndexedDB
+            updateStep(3, 'active', 'Checking IndexedDB...', 'active');
+            let hasAuthData = false;
+            
+            try {
+                if ('indexedDB' in window) {
+                    const databases = await indexedDB.databases();
+                    const firebaseDBs = databases.filter(db => db.name.includes('firebase'));
+                    
+                    if (firebaseDBs.length > 0) {
+                        log(`Found ${firebaseDBs.length} Firebase databases`, 'success');
+                        hasAuthData = true;
+                        
+                        // Try to open and check for auth data
+                        for (const dbInfo of firebaseDBs) {
+                            try {
+                                const db = await openDB(dbInfo.name);
+                                log(`Opened database: ${dbInfo.name}`);
+                                db.close();
+                            } catch (e) {
+                                log(`Could not open ${dbInfo.name}: ${e.message}`, 'error');
+                            }
+                        }
+                        
+                        updateStep(3, 'success', 'Found Firebase data in IndexedDB', 'success');
+                    } else {
+                        updateStep(3, 'error', 'No Firebase data in IndexedDB', 'error');
+                    }
+                }
+            } catch (error) {
+                updateStep(3, 'error', `IndexedDB error: ${error.message}`, 'error');
+                log(`IndexedDB error: ${error.message}`, 'error');
+            }
+            
+            // Step 4: Force auth refresh
+            updateStep(4, 'active', 'Forcing auth refresh...', 'active');
+            
+            // Set up auth state listener with timeout
+            let authResolved = false;
+            const authPromise = new Promise((resolve) => {
+                const unsubscribe = auth.onAuthStateChanged((user) => {
+                    if (user && !authResolved) {
+                        authResolved = true;
+                        unsubscribe();
+                        resolve(user);
+                    }
+                });
+                
+                // Timeout after 5 seconds
+                setTimeout(() => {
+                    if (!authResolved) {
+                        authResolved = true;
+                        unsubscribe();
+                        resolve(null);
+                    }
+                }, 5000);
+            });
+            
+            // Wait for auth state
+            const user = await authPromise;
+            
+            if (user) {
+                updateStep(4, 'success', `Authentication recovered: ${user.email}`, 'success');
+                log(`Successfully recovered auth for: ${user.email}`, 'success');
+                showSuccess();
+            } else {
+                updateStep(4, 'error', 'Could not recover authentication', 'error');
+                log('Auth recovery failed - manual login required', 'error');
+                document.getElementById('manualLoginForm').style.display = 'block';
+            }
+        }
+        
+        function openDB(name) {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(name);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+        
+        function showSuccess() {
+            document.getElementById('successMessage').style.display = 'block';
+            sessionStorage.setItem('recentLogin', 'true');
+            sessionStorage.setItem('authRecovered', 'true');
+            
+            setTimeout(() => {
+                window.location.href = '/app/';
+            }, 2000);
+        }
+        
+        async function clearAndRestart() {
+            if (!confirm('This will clear all authentication data and require you to log in again. Continue?')) {
+                return;
+            }
+            
+            log('Clearing all auth data...', 'info');
+            
+            try {
+                await auth.signOut();
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // Clear IndexedDB
+                if ('indexedDB' in window) {
+                    const databases = await indexedDB.databases();
+                    for (const db of databases) {
+                        if (db.name.includes('firebase')) {
+                            await indexedDB.deleteDatabase(db.name);
+                            log(`Deleted database: ${db.name}`);
+                        }
+                    }
+                }
+                
+                log('All data cleared. Redirecting to login...', 'success');
+                setTimeout(() => {
+                    window.location.href = '/login.html';
+                }, 2000);
+            } catch (error) {
+                log(`Error clearing data: ${error.message}`, 'error');
+            }
+        }
+        
+        function manualLogin() {
+            document.getElementById('manualLoginForm').style.display = 'block';
+        }
+        
+        async function sendMagicLink() {
+            const email = document.getElementById('email').value;
+            if (!email) {
+                alert('Please enter your email');
+                return;
+            }
+            
+            try {
+                const actionCodeSettings = {
+                    url: window.location.origin + '/auth.html',
+                    handleCodeInApp: true
+                };
+                
+                await auth.sendSignInLinkToEmail(email, actionCodeSettings);
+                localStorage.setItem('emailForSignIn', email);
+                
+                log(`Magic link sent to ${email}`, 'success');
+                alert('Check your email for the login link!');
+            } catch (error) {
+                log(`Error sending magic link: ${error.message}`, 'error');
+                alert(`Error: ${error.message}`);
+            }
+        }
+        
+        // Auto-start the fix process
+        window.addEventListener('load', () => {
+            setTimeout(startFix, 1000);
+        });
+        
+        // Also listen for auth state changes
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                log(`Auth state changed: User ${user.email} detected!`, 'success');
+                updateStep(1, 'success', `Found user: ${user.email}`, 'success');
+                showSuccess();
+            }
+        });
+    </script>
+</body>
+</html>

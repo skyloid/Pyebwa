@@ -1,0 +1,128 @@
+/* Photo Delete Button Debug Styles */
+/* This file helps debug visibility issues with the photo delete button */
+
+/* Force photo delete button to be semi-visible for debugging */
+.debug-mode .photo-delete-btn {
+    opacity: 0.3 !important;
+    background: rgba(255, 0, 0, 0.5) !important;
+    border: 2px solid red !important;
+}
+
+.debug-mode .gallery-item:hover .photo-delete-btn {
+    opacity: 1 !important;
+}
+
+/* Highlight gallery items for debugging */
+.debug-mode .gallery-item {
+    border: 2px dashed blue;
+    position: relative;
+}
+
+/* Show button bounds */
+.debug-mode .photo-delete-btn::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border: 1px dotted red;
+    pointer-events: none;
+}
+
+/* Additional fixes for common issues */
+
+/* Ensure gallery item doesn't clip the button */
+.gallery-item {
+    overflow: visible !important;
+}
+
+/* Make sure button is clickable */
+.photo-delete-btn {
+    pointer-events: all !important;
+}
+
+/* Fix for potential parent z-index issues */
+.photo-gallery {
+    position: relative;
+    z-index: 1;
+}
+
+.gallery-item {
+    z-index: 2;
+}
+
+.photo-delete-btn {
+    z-index: 20 !important;
+}
+
+/* Alternative positioning if right side doesn't work */
+.alt-position .photo-delete-btn {
+    top: auto;
+    bottom: 10px;
+    right: 10px;
+}
+
+/* Mobile-specific fixes */
+@media (max-width: 768px) {
+    .photo-delete-btn {
+        width: 40px;
+        height: 40px;
+        opacity: 0.8; /* More visible on mobile */
+    }
+    
+    .gallery-item:active .photo-delete-btn {
+        opacity: 1;
+    }
+}
+
+/* High contrast mode for accessibility */
+@media (prefers-contrast: high) {
+    .photo-delete-btn {
+        background: white !important;
+        border: 3px solid black !important;
+    }
+    
+    .photo-delete-btn .material-icons {
+        color: black !important;
+    }
+    
+    .photo-delete-btn:hover {
+        background: black !important;
+    }
+    
+    .photo-delete-btn:hover .material-icons {
+        color: white !important;
+    }
+}
+
+/* Debug info overlay */
+.debug-info {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    font-family: monospace;
+    font-size: 12px;
+    z-index: 9999;
+    max-width: 300px;
+}
+
+.debug-info h4 {
+    margin: 0 0 10px;
+    color: #ffeb3b;
+}
+
+.debug-info p {
+    margin: 5px 0;
+}
+
+/* Temporary fix to make buttons always visible */
+.force-visible .photo-delete-btn {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: flex !important;
+}

@@ -41,7 +41,8 @@
       "Bash(bash:*)",
       "Bash(git commit:*)",
       "Bash(tar:*)",
-      "Bash(firebase deploy:*)"
+      "Bash(firebase deploy:*)",
+      "Bash(git reset:*)"
     ],
     "deny": []
   }

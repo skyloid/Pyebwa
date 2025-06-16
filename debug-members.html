@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Family Members - Pyebwa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #666;
+        }
+        pre {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #45a049;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        #output {
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Debug Family Members</h1>
+        
+        <div class="section">
+            <h2>Authentication Status</h2>
+            <div id="authStatus">Checking...</div>
+            <button class="button" onclick="location.href='app/index.html'">Go to App</button>
+        </div>
+        
+        <div class="section">
+            <h2>Debug Actions</h2>
+            <button class="button" onclick="checkFirestore()">Check Firestore Connection</button>
+            <button class="button" onclick="debugMembers()">Debug Members Query</button>
+            <button class="button" onclick="listAllCollections()">List All Collections</button>
+            <button class="button" onclick="checkRules()">Check Security Rules</button>
+            <button class="button" onclick="clearOutput()">Clear Output</button>
+        </div>
+        
+        <div class="section">
+            <h2>Output</h2>
+            <pre id="output"></pre>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <script>
+        // Initialize Firebase - Use correct configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
+            authDomain: "pyebwa-f5960.firebaseapp.com",
+            projectId: "pyebwa-f5960",
+            storageBucket: "pyebwa-f5960.firebasestorage.app",
+            messagingSenderId: "1042887343749",
+            appId: "1:1042887343749:web:c276bf69b6c0895111f3ec",
+            measurementId: "G-ZX92K1TMM3"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+        let currentUser = null;
+        let userFamilyTreeId = null;
+        
+        const output = document.getElementById('output');
+        const authStatus = document.getElementById('authStatus');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+            output.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            console.log(message);
+        }
+        
+        function clearOutput() {
+            output.textContent = '';
+        }
+        
+        // Monitor auth state
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                authStatus.innerHTML = `<span class="success">Authenticated as: ${user.email}</span>`;
+                log(`Authenticated as: ${user.email}`, 'success');
+                
+                // Get family tree ID
+                try {
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    if (userDoc.exists && userDoc.data().familyTreeId) {
+                        userFamilyTreeId = userDoc.data().familyTreeId;
+                        log(`Family Tree ID: ${userFamilyTreeId}`, 'success');
+                    } else {
+                        log('No family tree ID found for user', 'error');
+                    }
+                } catch (error) {
+                    log(`Error getting user document: ${error.message}`, 'error');
+                }
+            } else {
+                currentUser = null;
+                userFamilyTreeId = null;
+                authStatus.innerHTML = '<span class="error">Not authenticated</span>';
+                log('Not authenticated', 'error');
+            }
+        });
+        
+        async function checkFirestore() {
+            log('=== Checking Firestore Connection ===');
+            
+            try {
+                // Test basic Firestore access
+                const testQuery = await db.collection('users').limit(1).get();
+                log('Firestore connection successful', 'success');
+                log(`Can access users collection: ${!testQuery.empty}`);
+            } catch (error) {
+                log(`Firestore connection error: ${error.message}`, 'error');
+                log(`Error code: ${error.code}`);
+            }
+        }
+        
+        async function debugMembers() {
+            log('=== Debugging Members Query ===');
+            
+            if (!currentUser) {
+                log('Not authenticated', 'error');
+                return;
+            }
+            
+            if (!userFamilyTreeId) {
+                log('No family tree ID available', 'error');
+                return;
+            }
+            
+            try {
+                // Check family tree document
+                log(`Checking family tree document: ${userFamilyTreeId}`);
+                const treeDoc = await db.collection('familyTrees').doc(userFamilyTreeId).get();
+                
+                if (!treeDoc.exists) {
+                    log('Family tree document does not exist!', 'error');
+                    return;
+                }
+                
+                log('Family tree document exists', 'success');
+                log(`Family tree data: ${JSON.stringify(treeDoc.data(), null, 2)}`);
+                
+                // Try to query members
+                log('\nQuerying members collection...');
+                const membersPath = `familyTrees/${userFamilyTreeId}/members`;
+                log(`Path: ${membersPath}`);
+                
+                // Try without orderBy first
+                const membersSnapshot = await db.collection('familyTrees')
+                    .doc(userFamilyTreeId)
+                    .collection('members')
+                    .get();
+                
+                log(`Members found: ${membersSnapshot.size}`, membersSnapshot.size > 0 ? 'success' : 'error');
+                
+                if (membersSnapshot.size > 0) {
+                    log('\nMember documents:');
+                    membersSnapshot.forEach((doc, index) => {
+                        log(`\nMember ${index + 1} (ID: ${doc.id}):`);
+                        log(JSON.stringify(doc.data(), null, 2));
+                    });
+                }
+                
+                // Try with orderBy
+                log('\nTrying query with orderBy...');
+                try {
+                    const orderedSnapshot = await db.collection('familyTrees')
+                        .doc(userFamilyTreeId)
+                        .collection('members')
+                        .orderBy('createdAt', 'desc')
+                        .get();
+                    
+                    log(`Ordered query successful, found ${orderedSnapshot.size} members`, 'success');
+                } catch (orderError) {
+                    log(`OrderBy query failed: ${orderError.message}`, 'error');
+                    log('This might indicate missing indexes or field issues');
+                }
+                
+            } catch (error) {
+                log(`Debug error: ${error.message}`, 'error');
+                log(`Error code: ${error.code}`);
+                log(`Full error: ${JSON.stringify(error, null, 2)}`);
+            }
+        }
+        
+        async function listAllCollections() {
+            log('=== Listing Collections ===');
+            
+            if (!currentUser) {
+                log('Not authenticated', 'error');
+                return;
+            }
+            
+            try {
+                // Check user's document
+                log('Checking user document...');
+                const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                if (userDoc.exists) {
+                    log(`User document: ${JSON.stringify(userDoc.data(), null, 2)}`);
+                }
+                
+                // List family trees where user is owner
+                log('\nChecking family trees...');
+                const treesQuery = await db.collection('familyTrees')
+                    .where('ownerId', '==', currentUser.uid)
+                    .get();
+                
+                log(`Found ${treesQuery.size} family trees where user is owner`);
+                
+                treesQuery.forEach((doc, index) => {
+                    log(`\nTree ${index + 1} (ID: ${doc.id}):`);
+                    log(JSON.stringify(doc.data(), null, 2));
+                });
+                
+            } catch (error) {
+                log(`List collections error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkRules() {
+            log('=== Checking Security Rules ===');
+            
+            if (!currentUser || !userFamilyTreeId) {
+                log('Not authenticated or no family tree', 'error');
+                return;
+            }
+            
+            try {
+                // Test read permissions
+                log('Testing read permissions...');
+                
+                const tests = [
+                    { path: 'users/' + currentUser.uid, desc: 'User document' },
+                    { path: 'familyTrees/' + userFamilyTreeId, desc: 'Family tree document' },
+                    { path: `familyTrees/${userFamilyTreeId}/members`, desc: 'Members collection' }
+                ];
+                
+                for (const test of tests) {
+                    try {
+                        if (test.path.includes('/members')) {
+                            await db.collection(test.path).limit(1).get();
+                        } else {
+                            await db.doc(test.path).get();
+                        }
+                        log(`✅ Can read: ${test.desc}`, 'success');
+                    } catch (error) {
+                        log(`❌ Cannot read: ${test.desc} - ${error.message}`, 'error');
+                    }
+                }
+                
+                // Test write permissions
+                log('\nTesting write permissions...');
+                const testMember = {
+                    firstName: 'Test',
+                    lastName: 'Member',
+                    gender: 'other',
+                    addedBy: currentUser.uid,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                try {
+                    const docRef = await db.collection('familyTrees')
+                        .doc(userFamilyTreeId)
+                        .collection('members')
+                        .add(testMember);
+                    
+                    log('✅ Can create members', 'success');
+                    
+                    // Clean up test member
+                    await docRef.delete();
+                    log('✅ Can delete members', 'success');
+                } catch (error) {
+                    log(`❌ Cannot write members: ${error.message}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`Rules check error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

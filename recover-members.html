@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recover Family Members - Pyebwa</title>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f2f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #00217D;
+            margin-bottom: 30px;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #00217D;
+            font-size: 20px;
+        }
+        .status {
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .status.warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        .status.info {
+            background: #cce5ff;
+            border: 1px solid #b8daff;
+            color: #004085;
+        }
+        .btn {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #001654;
+        }
+        .btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        .btn.danger {
+            background: #dc3545;
+        }
+        .btn.danger:hover {
+            background: #c82333;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 13px;
+            border: 1px solid #e9ecef;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .member-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .member-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+        .member-card.recovered {
+            border-color: #28a745;
+            background: #f1f8f4;
+        }
+        .member-name {
+            font-weight: bold;
+            color: #00217D;
+            margin-bottom: 5px;
+        }
+        .member-info {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #00217D;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .tree-list {
+            margin: 10px 0;
+        }
+        .tree-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tree-item:hover {
+            background: #e9ecef;
+            border-color: #00217D;
+        }
+        .tree-item.selected {
+            background: #cce5ff;
+            border-color: #00217D;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Recover Your Family Members</h1>
+        
+        <div class="section">
+            <h2>Authentication Status</h2>
+            <div id="authStatus" class="status info">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Checking authentication...
+                </div>
+            </div>
+        </div>
+        
+        <div class="section" id="treeSection" style="display: none;">
+            <h2>Your Family Trees</h2>
+            <div id="treeList" class="tree-list"></div>
+        </div>
+        
+        <div class="section" id="recoverySection" style="display: none;">
+            <h2>Recovery Actions</h2>
+            <button class="btn" onclick="scanAllTrees()">Scan All My Trees</button>
+            <button class="btn" onclick="deepScan()">Deep Scan (All Collections)</button>
+            <button class="btn" onclick="exportData()">Export Found Members</button>
+            <button class="btn danger" onclick="clearAndReload()">Clear Cache & Reload</button>
+        </div>
+        
+        <div class="section" id="resultsSection" style="display: none;">
+            <h2>Found Members</h2>
+            <div id="memberCount" class="status info">No scan performed yet</div>
+            <div id="memberGrid" class="member-grid"></div>
+        </div>
+        
+        <div class="section" id="logSection">
+            <h2>Debug Log</h2>
+            <pre id="debugLog">Initializing...</pre>
+        </div>
+    </div>
+    
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
+            authDomain: "pyebwa-f5960.firebaseapp.com",
+            projectId: "pyebwa-f5960",
+            storageBucket: "pyebwa-f5960.firebasestorage.app",
+            messagingSenderId: "1042887343749",
+            appId: "1:1042887343749:web:c276bf69b6c0895111f3ec",
+            measurementId: "G-ZX92K1TMM3"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+        let currentUser = null;
+        let allFoundMembers = [];
+        let selectedTreeId = null;
+        const debugLog = [];
+        
+        function log(message, data = null) {
+            const timestamp = new Date().toISOString();
+            const logEntry = `[${timestamp}] ${message}`;
+            debugLog.push(logEntry);
+            if (data !== null) {
+                debugLog.push(JSON.stringify(data, null, 2));
+            }
+            updateDebugLog();
+            console.log(message, data || '');
+        }
+        
+        function updateDebugLog() {
+            const logEl = document.getElementById('debugLog');
+            logEl.textContent = debugLog.join('\n');
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        // Monitor auth state
+        auth.onAuthStateChanged(async (user) => {
+            const authStatus = document.getElementById('authStatus');
+            
+            if (user) {
+                currentUser = user;
+                authStatus.className = 'status success';
+                authStatus.innerHTML = `✅ Authenticated as: ${user.email}<br>UID: ${user.uid}`;
+                log('User authenticated', { email: user.email, uid: user.uid });
+                
+                document.getElementById('treeSection').style.display = 'block';
+                document.getElementById('recoverySection').style.display = 'block';
+                document.getElementById('resultsSection').style.display = 'block';
+                
+                await loadUserTrees();
+            } else {
+                authStatus.className = 'status error';
+                authStatus.innerHTML = '❌ Not authenticated - <a href="/app/" style="color: white;">Go to App</a>';
+                log('No user authenticated');
+            }
+        });
+        
+        async function loadUserTrees() {
+            log('Loading user trees...');
+            const treeList = document.getElementById('treeList');
+            treeList.innerHTML = '<div class="loading">Loading your family trees...</div>';
+            
+            try {
+                // Get user document
+                const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                const primaryTreeId = userDoc.exists ? userDoc.data().familyTreeId : null;
+                
+                // Find all trees where user is owner
+                const ownedTrees = await db.collection('familyTrees')
+                    .where('ownerId', '==', currentUser.uid)
+                    .get();
+                
+                // Find trees by createdBy
+                const createdTrees = await db.collection('familyTrees')
+                    .where('createdBy', '==', currentUser.uid)
+                    .get();
+                
+                // Combine and deduplicate
+                const allTrees = new Map();
+                
+                if (primaryTreeId) {
+                    const primaryTree = await db.collection('familyTrees').doc(primaryTreeId).get();
+                    if (primaryTree.exists) {
+                        allTrees.set(primaryTreeId, {
+                            id: primaryTreeId,
+                            ...primaryTree.data(),
+                            isPrimary: true
+                        });
+                    }
+                }
+                
+                ownedTrees.forEach(doc => {
+                    allTrees.set(doc.id, {
+                        id: doc.id,
+                        ...doc.data(),
+                        isPrimary: doc.id === primaryTreeId
+                    });
+                });
+                
+                createdTrees.forEach(doc => {
+                    if (!allTrees.has(doc.id)) {
+                        allTrees.set(doc.id, {
+                            id: doc.id,
+                            ...doc.data(),
+                            isPrimary: doc.id === primaryTreeId
+                        });
+                    }
+                });
+                
+                log(`Found ${allTrees.size} family trees`);
+                
+                if (allTrees.size === 0) {
+                    treeList.innerHTML = '<div class="status warning">No family trees found</div>';
+                    return;
+                }
+                
+                // Display trees
+                treeList.innerHTML = '';
+                for (const [treeId, treeData] of allTrees) {
+                    const treeItem = document.createElement('div');
+                    treeItem.className = 'tree-item';
+                    if (treeData.isPrimary) {
+                        treeItem.className += ' selected';
+                        selectedTreeId = treeId;
+                    }
+                    
+                    // Count members
+                    const membersSnap = await db.collection('familyTrees').doc(treeId).collection('members').get();
+                    
+                    treeItem.innerHTML = `
+                        <div><strong>${treeData.name || 'Unnamed Tree'}</strong> ${treeData.isPrimary ? '(Primary)' : ''}</div>
+                        <div class="member-info">
+                            ID: ${treeId}<br>
+                            Members: ${membersSnap.size}<br>
+                            Created: ${treeData.createdAt ? new Date(treeData.createdAt.toDate()).toLocaleDateString() : 'Unknown'}
+                        </div>
+                    `;
+                    
+                    treeItem.onclick = () => selectTree(treeId);
+                    treeList.appendChild(treeItem);
+                }
+                
+                // Auto-scan primary tree
+                if (selectedTreeId) {
+                    await scanTree(selectedTreeId);
+                }
+                
+            } catch (error) {
+                log('Error loading trees:', error);
+                treeList.innerHTML = '<div class="status error">Error loading trees: ' + error.message + '</div>';
+            }
+        }
+        
+        function selectTree(treeId) {
+            selectedTreeId = treeId;
+            document.querySelectorAll('.tree-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+            scanTree(treeId);
+        }
+        
+        async function scanTree(treeId) {
+            log(`Scanning tree: ${treeId}`);
+            const memberCount = document.getElementById('memberCount');
+            const memberGrid = document.getElementById('memberGrid');
+            
+            memberCount.className = 'status info';
+            memberCount.textContent = 'Scanning...';
+            memberGrid.innerHTML = '<div class="loading"><div class="spinner"></div>Scanning for members...</div>';
+            
+            try {
+                // Multiple query attempts
+                const members = [];
+                const memberIds = new Set();
+                
+                // Query 1: Simple get all
+                log('Attempting simple query...');
+                const simple = await db.collection('familyTrees').doc(treeId).collection('members').get();
+                simple.forEach(doc => {
+                    if (!memberIds.has(doc.id)) {
+                        memberIds.add(doc.id);
+                        members.push({
+                            id: doc.id,
+                            ...doc.data(),
+                            source: 'simple query'
+                        });
+                    }
+                });
+                log(`Simple query found ${simple.size} members`);
+                
+                // Query 2: Direct path
+                log('Attempting direct path query...');
+                try {
+                    const direct = await db.collection(`familyTrees/${treeId}/members`).get();
+                    direct.forEach(doc => {
+                        if (!memberIds.has(doc.id)) {
+                            memberIds.add(doc.id);
+                            members.push({
+                                id: doc.id,
+                                ...doc.data(),
+                                source: 'direct path'
+                            });
+                        }
+                    });
+                    log(`Direct path found ${direct.size} members`);
+                } catch (e) {
+                    log('Direct path query failed:', e.message);
+                }
+                
+                allFoundMembers = members;
+                
+                // Update display
+                if (members.length > 0) {
+                    memberCount.className = 'status success';
+                    memberCount.innerHTML = `✅ Found ${members.length} family members!`;
+                    
+                    memberGrid.innerHTML = '';
+                    members.forEach(member => {
+                        const card = document.createElement('div');
+                        card.className = 'member-card recovered';
+                        card.innerHTML = `
+                            <div class="member-name">${member.firstName || '?'} ${member.lastName || '?'}</div>
+                            <div class="member-info">
+                                ID: ${member.id}<br>
+                                Gender: ${member.gender || 'Not specified'}<br>
+                                Birth: ${member.birthDate || 'Not specified'}<br>
+                                Relationship: ${member.relationship || 'Not specified'}<br>
+                                Source: ${member.source}<br>
+                                ${member.createdAt ? `Added: ${new Date(member.createdAt.toDate()).toLocaleDateString()}` : ''}
+                            </div>
+                        `;
+                        memberGrid.appendChild(card);
+                    });
+                } else {
+                    memberCount.className = 'status warning';
+                    memberCount.textContent = 'No members found in this tree';
+                    memberGrid.innerHTML = '<div class="status warning">No members found. Try the Deep Scan option.</div>';
+                }
+                
+            } catch (error) {
+                log('Scan error:', error);
+                memberCount.className = 'status error';
+                memberCount.textContent = 'Error: ' + error.message;
+                memberGrid.innerHTML = '';
+            }
+        }
+        
+        async function scanAllTrees() {
+            log('Scanning all trees...');
+            await loadUserTrees();
+        }
+        
+        async function deepScan() {
+            log('Starting deep scan...');
+            const memberCount = document.getElementById('memberCount');
+            memberCount.className = 'status info';
+            memberCount.textContent = 'Performing deep scan...';
+            
+            try {
+                // Check all possible tree references
+                const allTrees = new Set();
+                
+                // From user document
+                const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                if (userDoc.exists && userDoc.data().familyTreeId) {
+                    allTrees.add(userDoc.data().familyTreeId);
+                }
+                
+                // Where user is owner
+                const owned = await db.collection('familyTrees').where('ownerId', '==', currentUser.uid).get();
+                owned.forEach(doc => allTrees.add(doc.id));
+                
+                // Where user created
+                const created = await db.collection('familyTrees').where('createdBy', '==', currentUser.uid).get();
+                created.forEach(doc => allTrees.add(doc.id));
+                
+                // Where user is in memberIds
+                const memberOf = await db.collection('familyTrees').where('memberIds', 'array-contains', currentUser.uid).get();
+                memberOf.forEach(doc => allTrees.add(doc.id));
+                
+                log(`Deep scan found ${allTrees.size} trees to check`);
+                
+                // Scan each tree
+                for (const treeId of allTrees) {
+                    await scanTree(treeId);
+                }
+                
+            } catch (error) {
+                log('Deep scan error:', error);
+                memberCount.className = 'status error';
+                memberCount.textContent = 'Deep scan error: ' + error.message;
+            }
+        }
+        
+        function exportData() {
+            if (allFoundMembers.length === 0) {
+                alert('No members to export. Run a scan first.');
+                return;
+            }
+            
+            const exportData = {
+                exportDate: new Date().toISOString(),
+                userId: currentUser.uid,
+                userEmail: currentUser.email,
+                selectedTreeId: selectedTreeId,
+                memberCount: allFoundMembers.length,
+                members: allFoundMembers
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `pyebwa-members-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            log('Exported data for ' + allFoundMembers.length + ' members');
+        }
+        
+        function clearAndReload() {
+            if (confirm('This will clear all local storage and reload. Continue?')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>

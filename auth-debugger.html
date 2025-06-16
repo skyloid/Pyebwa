@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Auth Debugger - Pyebwa</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #00217D;
+            margin-bottom: 30px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .panel {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+        }
+        .panel h3 {
+            margin-top: 0;
+            color: #00217D;
+        }
+        .status {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background: #cce5ff;
+            color: #004085;
+            border: 1px solid #b8daff;
+        }
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        button {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover:not(:disabled) {
+            background: #001654;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .log {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .actions {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #00217D;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .highlight {
+            background: #ffeb3b;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Firebase Auth Debugger</h1>
+        
+        <div class="grid">
+            <!-- Auth State Panel -->
+            <div class="panel">
+                <h3>🔐 Authentication State</h3>
+                <div id="authState">Checking...</div>
+            </div>
+            
+            <!-- Storage Panel -->
+            <div class="panel">
+                <h3>💾 Storage Analysis</h3>
+                <div id="storageState">Analyzing...</div>
+            </div>
+            
+            <!-- Network Panel -->
+            <div class="panel">
+                <h3>🌐 Network & Environment</h3>
+                <div id="networkState">Checking...</div>
+            </div>
+            
+            <!-- Firebase Panel -->
+            <div class="panel">
+                <h3>🔥 Firebase Configuration</h3>
+                <div id="firebaseState">Loading...</div>
+            </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="actions">
+            <h3>🛠️ Debug Actions</h3>
+            <button onclick="runFullDiagnostic()">Run Full Diagnostic</button>
+            <button onclick="attemptAuthRecovery()">Attempt Auth Recovery</button>
+            <button onclick="checkIndexedDB()">Deep IndexedDB Scan</button>
+            <button onclick="forceAuthRefresh()">Force Auth Refresh</button>
+            <button onclick="clearAllAuth()">Clear All Auth Data</button>
+            <button onclick="exportDebugData()">Export Debug Data</button>
+        </div>
+        
+        <!-- Live Log -->
+        <h3>📊 Live Debug Log</h3>
+        <div class="log" id="debugLog"></div>
+    </div>
+    
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
+            authDomain: "rasin.pyebwa.com",
+            projectId: "pyebwa-f5960",
+            storageBucket: "pyebwa-f5960.firebasestorage.app",
+            messagingSenderId: "1042887343749",
+            appId: "1:1042887343749:web:c276bf69b6c0895111f3ec",
+            measurementId: "G-ZX92K1TMM3"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+        let logs = [];
+        let authStateChanges = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toISOString().substr(11, 8);
+            const color = {
+                error: '#ff6b6b',
+                success: '#51cf66',
+                warning: '#ffd93d',
+                info: '#4dabf7'
+            }[type] || '#4dabf7';
+            
+            logs.push({timestamp, message, type});
+            const logHtml = logs.map(l => 
+                `<span style="color: ${color}">[${l.timestamp}] ${l.message}</span>`
+            ).join('<br>');
+            
+            document.getElementById('debugLog').innerHTML = logHtml;
+            document.getElementById('debugLog').scrollTop = document.getElementById('debugLog').scrollHeight;
+        }
+        
+        function createStatus(message, type = 'info') {
+            return `<div class="status ${type}">${message}</div>`;
+        }
+        
+        // Monitor auth state changes
+        auth.onAuthStateChanged((user) => {
+            const change = {
+                timestamp: new Date().toISOString(),
+                user: user ? {
+                    uid: user.uid,
+                    email: user.email,
+                    emailVerified: user.emailVerified,
+                    provider: user.providerData[0]?.providerId
+                } : null
+            };
+            authStateChanges.push(change);
+            
+            log(`Auth state changed: ${user ? user.email : 'null'}`, user ? 'success' : 'warning');
+            updateAuthStatePanel();
+        });
+        
+        async function updateAuthStatePanel() {
+            const panel = document.getElementById('authState');
+            const user = auth.currentUser;
+            
+            let html = '';
+            if (user) {
+                html += createStatus(`Logged in as: ${user.email}`, 'success');
+                html += createStatus(`UID: ${user.uid}`, 'info');
+                html += createStatus(`Provider: ${user.providerData[0]?.providerId}`, 'info');
+                html += createStatus(`Email Verified: ${user.emailVerified}`, user.emailVerified ? 'success' : 'warning');
+                
+                // Check token
+                try {
+                    const token = await user.getIdToken();
+                    html += createStatus('ID Token: Valid', 'success');
+                    
+                    const tokenResult = await user.getIdTokenResult();
+                    const expirationTime = new Date(tokenResult.expirationTime);
+                    const now = new Date();
+                    const minutesUntilExpiry = Math.round((expirationTime - now) / 60000);
+                    
+                    html += createStatus(`Token expires in: ${minutesUntilExpiry} minutes`, 
+                        minutesUntilExpiry > 30 ? 'success' : 'warning');
+                } catch (e) {
+                    html += createStatus(`Token Error: ${e.message}`, 'error');
+                }
+            } else {
+                html += createStatus('Not authenticated', 'error');
+                html += createStatus(`Auth state changes: ${authStateChanges.length}`, 'info');
+                
+                // Show recent auth changes
+                if (authStateChanges.length > 0) {
+                    const recent = authStateChanges.slice(-3);
+                    html += '<br><strong>Recent Changes:</strong>';
+                    recent.forEach(change => {
+                        const time = new Date(change.timestamp).toLocaleTimeString();
+                        html += createStatus(`${time}: ${change.user ? change.user.email : 'null'}`, 'info');
+                    });
+                }
+            }
+            
+            panel.innerHTML = html;
+        }
+        
+        async function updateStoragePanel() {
+            const panel = document.getElementById('storageState');
+            let html = '';
+            
+            // LocalStorage
+            const localKeys = Object.keys(localStorage);
+            const authKeys = localKeys.filter(k => k.includes('firebase') || k.includes('auth') || k.includes('email'));
+            
+            html += createStatus(`LocalStorage keys: ${localKeys.length}`, 'info');
+            if (authKeys.length > 0) {
+                html += '<strong>Auth-related keys:</strong>';
+                authKeys.forEach(key => {
+                    const value = localStorage[key];
+                    const preview = value.length > 50 ? value.substring(0, 50) + '...' : value;
+                    html += createStatus(`${key}: ${preview}`, 'info');
+                });
+            }
+            
+            // SessionStorage
+            const sessionKeys = Object.keys(sessionStorage);
+            html += createStatus(`SessionStorage keys: ${sessionKeys.length}`, 'info');
+            if (sessionStorage.getItem('recentLogin')) {
+                html += createStatus('Recent login flag: SET', 'success');
+            }
+            
+            // IndexedDB
+            try {
+                const dbs = await indexedDB.databases();
+                const firebaseDbs = dbs.filter(db => db.name.includes('firebase'));
+                html += createStatus(`Firebase IndexedDB: ${firebaseDbs.length} databases`, 
+                    firebaseDbs.length > 0 ? 'success' : 'warning');
+                
+                firebaseDbs.forEach(db => {
+                    html += createStatus(`DB: ${db.name} (v${db.version})`, 'info');
+                });
+            } catch (e) {
+                html += createStatus('IndexedDB: Cannot enumerate', 'warning');
+            }
+            
+            panel.innerHTML = html;
+        }
+        
+        async function updateNetworkPanel() {
+            const panel = document.getElementById('networkState');
+            let html = '';
+            
+            // Network status
+            html += createStatus(`Network: ${navigator.onLine ? 'Online' : 'Offline'}`, 
+                navigator.onLine ? 'success' : 'error');
+            
+            // Browser info
+            html += createStatus(`Browser: ${navigator.userAgent.split(' ').slice(-2).join(' ')}`, 'info');
+            
+            // Service Worker
+            if ('serviceWorker' in navigator) {
+                const reg = await navigator.serviceWorker.getRegistration();
+                html += createStatus(`Service Worker: ${reg ? 'Registered' : 'Not registered'}`, 
+                    reg ? 'success' : 'info');
+            }
+            
+            // Cookies enabled
+            html += createStatus(`Cookies: ${navigator.cookieEnabled ? 'Enabled' : 'Disabled'}`, 
+                navigator.cookieEnabled ? 'success' : 'error');
+            
+            // Third-party cookies (Firebase auth requirement)
+            try {
+                document.cookie = 'test=1; SameSite=None; Secure';
+                const cookieEnabled = document.cookie.includes('test=1');
+                document.cookie = 'test=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                html += createStatus(`Third-party cookies: ${cookieEnabled ? 'Enabled' : 'Disabled'}`, 
+                    cookieEnabled ? 'success' : 'warning');
+            } catch (e) {
+                html += createStatus('Third-party cookies: Check failed', 'warning');
+            }
+            
+            panel.innerHTML = html;
+        }
+        
+        async function updateFirebasePanel() {
+            const panel = document.getElementById('firebaseState');
+            let html = '';
+            
+            // Firebase app
+            const app = firebase.app();
+            html += createStatus(`App name: ${app.name}`, 'info');
+            html += createStatus(`Project ID: ${app.options.projectId}`, 'info');
+            
+            // Auth persistence
+            try {
+                const persistence = auth.persistence || 'Not accessible';
+                html += createStatus(`Persistence: ${persistence}`, 'info');
+            } catch (e) {
+                html += createStatus('Persistence: Cannot read', 'warning');
+            }
+            
+            // Auth settings
+            html += createStatus(`Auth domain: ${app.options.authDomain}`, 'info');
+            
+            // Check auth methods
+            try {
+                const testEmail = localStorage.getItem('emailForSignIn') || 'test@example.com';
+                const methods = await auth.fetchSignInMethodsForEmail(testEmail);
+                html += createStatus(`Sign-in methods: ${methods.join(', ') || 'None'}`, 'info');
+            } catch (e) {
+                html += createStatus('Sign-in methods: Cannot fetch', 'info');
+            }
+            
+            panel.innerHTML = html;
+        }
+        
+        async function runFullDiagnostic() {
+            log('Starting full diagnostic...', 'info');
+            
+            // Update all panels
+            await updateAuthStatePanel();
+            await updateStoragePanel();
+            await updateNetworkPanel();
+            await updateFirebasePanel();
+            
+            // Additional checks
+            log('Checking auth persistence...', 'info');
+            try {
+                await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+                log('Auth persistence set to LOCAL', 'success');
+            } catch (e) {
+                log(`Persistence error: ${e.message}`, 'error');
+            }
+            
+            // Check for auth in different states
+            log('Checking various auth states...', 'info');
+            
+            // Direct check
+            const currentUser = auth.currentUser;
+            log(`Direct auth.currentUser: ${currentUser ? currentUser.email : 'null'}`, 
+                currentUser ? 'success' : 'warning');
+            
+            // Wait for auth state
+            const waitUser = await new Promise((resolve) => {
+                const unsubscribe = auth.onAuthStateChanged((user) => {
+                    unsubscribe();
+                    resolve(user);
+                });
+                setTimeout(() => resolve(null), 3000);
+            });
+            log(`Waited auth state: ${waitUser ? waitUser.email : 'null'}`, 
+                waitUser ? 'success' : 'warning');
+            
+            log('Full diagnostic complete', 'success');
+        }
+        
+        async function attemptAuthRecovery() {
+            log('Attempting auth recovery...', 'info');
+            
+            const methods = [
+                {
+                    name: 'Current User Check',
+                    fn: () => auth.currentUser
+                },
+                {
+                    name: 'Force Reload',
+                    fn: async () => {
+                        await auth.currentUser?.reload();
+                        return auth.currentUser;
+                    }
+                },
+                {
+                    name: 'Wait for State Change',
+                    fn: () => new Promise((resolve) => {
+                        const unsubscribe = auth.onAuthStateChanged((user) => {
+                            unsubscribe();
+                            resolve(user);
+                        });
+                        setTimeout(() => {
+                            unsubscribe();
+                            resolve(null);
+                        }, 5000);
+                    })
+                }
+            ];
+            
+            for (const method of methods) {
+                log(`Trying: ${method.name}...`, 'info');
+                try {
+                    const user = await method.fn();
+                    if (user) {
+                        log(`Success! Found user: ${user.email}`, 'success');
+                        return;
+                    } else {
+                        log(`${method.name}: No user found`, 'warning');
+                    }
+                } catch (e) {
+                    log(`${method.name} error: ${e.message}`, 'error');
+                }
+            }
+            
+            log('All recovery attempts failed', 'error');
+        }
+        
+        async function checkIndexedDB() {
+            log('Starting deep IndexedDB scan...', 'info');
+            
+            try {
+                const databases = await indexedDB.databases();
+                log(`Found ${databases.length} databases`, 'info');
+                
+                for (const dbInfo of databases) {
+                    if (dbInfo.name.includes('firebase')) {
+                        log(`Scanning ${dbInfo.name}...`, 'info');
+                        
+                        try {
+                            const db = await openDB(dbInfo.name);
+                            const stores = Array.from(db.objectStoreNames);
+                            log(`  Object stores: ${stores.join(', ')}`, 'info');
+                            
+                            // Try to read auth data
+                            if (stores.includes('auth')) {
+                                const tx = db.transaction(['auth'], 'readonly');
+                                const store = tx.objectStore('auth');
+                                const data = await store.getAll();
+                                log(`  Auth records: ${data.length}`, data.length > 0 ? 'success' : 'warning');
+                            }
+                            
+                            db.close();
+                        } catch (e) {
+                            log(`  Error reading ${dbInfo.name}: ${e.message}`, 'error');
+                        }
+                    }
+                }
+            } catch (e) {
+                log(`IndexedDB scan error: ${e.message}`, 'error');
+            }
+        }
+        
+        function openDB(name) {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(name);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+        
+        async function forceAuthRefresh() {
+            log('Forcing auth refresh...', 'info');
+            
+            try {
+                // Try multiple refresh methods
+                if (auth.currentUser) {
+                    await auth.currentUser.reload();
+                    const token = await auth.currentUser.getIdToken(true);
+                    log('Forced token refresh successful', 'success');
+                } else {
+                    log('No current user to refresh', 'warning');
+                }
+                
+                // Update panels
+                await updateAuthStatePanel();
+            } catch (e) {
+                log(`Refresh error: ${e.message}`, 'error');
+            }
+        }
+        
+        async function clearAllAuth() {
+            if (!confirm('This will clear ALL authentication data. Continue?')) {
+                return;
+            }
+            
+            log('Clearing all auth data...', 'warning');
+            
+            try {
+                await auth.signOut();
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // Clear IndexedDB
+                const databases = await indexedDB.databases();
+                for (const db of databases) {
+                    if (db.name.includes('firebase')) {
+                        await indexedDB.deleteDatabase(db.name);
+                        log(`Deleted database: ${db.name}`, 'info');
+                    }
+                }
+                
+                log('All auth data cleared', 'success');
+                setTimeout(() => {
+                    window.location.href = '/login.html';
+                }, 2000);
+            } catch (e) {
+                log(`Clear error: ${e.message}`, 'error');
+            }
+        }
+        
+        function exportDebugData() {
+            const debugData = {
+                timestamp: new Date().toISOString(),
+                authState: auth.currentUser ? {
+                    uid: auth.currentUser.uid,
+                    email: auth.currentUser.email,
+                    provider: auth.currentUser.providerData[0]?.providerId
+                } : null,
+                authStateChanges: authStateChanges,
+                localStorage: Object.keys(localStorage).reduce((acc, key) => {
+                    if (key.includes('firebase') || key.includes('auth')) {
+                        acc[key] = localStorage[key];
+                    }
+                    return acc;
+                }, {}),
+                sessionStorage: Object.keys(sessionStorage).reduce((acc, key) => {
+                    acc[key] = sessionStorage[key];
+                    return acc;
+                }, {}),
+                logs: logs,
+                browser: {
+                    userAgent: navigator.userAgent,
+                    online: navigator.onLine,
+                    cookieEnabled: navigator.cookieEnabled
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(debugData, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `pyebwa-auth-debug-${Date.now()}.json`;
+            a.click();
+            
+            log('Debug data exported', 'success');
+        }
+        
+        // Initialize on load
+        window.addEventListener('load', () => {
+            log('Auth debugger initialized', 'success');
+            runFullDiagnostic();
+        });
+        
+        // Monitor online/offline
+        window.addEventListener('online', () => {
+            log('Network: Back online', 'success');
+            updateNetworkPanel();
+        });
+        
+        window.addEventListener('offline', () => {
+            log('Network: Went offline', 'error');
+            updateNetworkPanel();
+        });
+    </script>
+</body>
+</html>

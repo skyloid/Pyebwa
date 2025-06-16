@@ -1,103 +1,198 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Authentication Flow Test</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Auth Flow - Pyebwa</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
-        .test { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
-        .pass { background-color: #d4edda; border-color: #c3e6cb; }
-        .fail { background-color: #f8d7da; border-color: #f5c6cb; }
-        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
-        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        button {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #001654;
+        }
+        .log {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #cce5ff; color: #004085; }
     </style>
 </head>
 <body>
-    <h1>Pyebwa Authentication System Test</h1>
+    <h1>Test Authentication Flow</h1>
     
-    <div class="test">
-        <h2>Test 1: Redirect Chain</h2>
-        <button onclick="testRedirects()">Test Redirects</button>
-        <div id="redirect-results"></div>
+    <div class="test-section">
+        <h2>Step 1: Set Recent Login Flag</h2>
+        <p>This simulates what happens when you log in successfully.</p>
+        <button onclick="setRecentLogin()">Set Recent Login Flag</button>
+        <button onclick="clearFlags()">Clear All Flags</button>
     </div>
     
-    <div class="test">
-        <h2>Test 2: Authentication Server</h2>
-        <button onclick="testAuthServer()">Test Auth Server</button>
-        <div id="auth-results"></div>
+    <div class="test-section">
+        <h2>Step 2: Check Auth State</h2>
+        <p>This shows the current authentication state.</p>
+        <button onclick="checkAuth()">Check Current Auth</button>
+        <div id="authStatus" class="status info" style="display: none;"></div>
     </div>
     
-    <div class="test">
-        <h2>Test 3: Login Flow</h2>
-        <button onclick="testLoginFlow()">Test Login Flow</button>
-        <div id="login-results"></div>
+    <div class="test-section">
+        <h2>Step 3: Test App Load</h2>
+        <p>This simulates what the app does when it loads.</p>
+        <button onclick="simulateAppLoad()">Simulate App Load</button>
+        <button onclick="goToApp()">Go to Real App</button>
     </div>
-
+    
+    <div class="log" id="log"></div>
+    
     <script>
-        async function testRedirects() {
-            const results = document.getElementById('redirect-results');
-            results.innerHTML = '<p>Testing...</p>';
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
+            authDomain: "pyebwa-f5960.firebaseapp.com",
+            projectId: "pyebwa-f5960",
+            storageBucket: "pyebwa-f5960.firebasestorage.app",
+            messagingSenderId: "1042887343749",
+            appId: "1:1042887343749:web:c276bf69b6c0895111f3ec",
+            measurementId: "G-ZX92K1TMM3"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        
+        let logs = [];
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logs.push(`[${timestamp}] ${message}`);
+            document.getElementById('log').innerHTML = logs.join('<br>');
+            document.getElementById('log').scrollTop = document.getElementById('log').scrollHeight;
+        }
+        
+        function setRecentLogin() {
+            sessionStorage.setItem('recentLogin', 'true');
+            sessionStorage.setItem('loginTime', Date.now().toString());
+            log('Set recent login flag and login time');
+            showStatus('Recent login flag set', 'success');
+        }
+        
+        function clearFlags() {
+            sessionStorage.clear();
+            localStorage.removeItem('emailForSignIn');
+            log('Cleared all session and relevant local storage');
+            showStatus('All flags cleared', 'info');
+        }
+        
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('authStatus');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.style.display = 'block';
+        }
+        
+        async function checkAuth() {
+            log('Checking authentication state...');
             
-            try {
-                // Test www to non-www redirect
-                const response = await fetch('https://www.pyebwa.com', { 
-                    method: 'HEAD',
-                    redirect: 'manual'
-                });
-                
-                let html = '<h3>Results:</h3><ul>';
-                html += `<li>www.pyebwa.com status: ${response.status} ${response.status === 301 ? '✅' : '❌'}</li>`;
-                html += `<li>Redirects to: ${response.headers.get('location') || 'N/A'}</li>`;
-                html += '</ul>';
-                
-                results.innerHTML = html;
-                results.parentElement.classList.add(response.status === 301 ? 'pass' : 'fail');
-            } catch (error) {
-                results.innerHTML = `<p>Error: ${error.message}</p>`;
-                results.parentElement.classList.add('fail');
+            const user = auth.currentUser;
+            if (user) {
+                showStatus(`Authenticated as: ${user.email}`, 'success');
+                log(`Current user: ${user.email}`);
+            } else {
+                showStatus('Not authenticated', 'error');
+                log('No current user');
+            }
+            
+            // Check session flags
+            const recentLogin = sessionStorage.getItem('recentLogin');
+            const loginTime = sessionStorage.getItem('loginTime');
+            if (recentLogin) {
+                const elapsed = loginTime ? Date.now() - parseInt(loginTime) : 'unknown';
+                log(`Recent login flag: ${recentLogin}, Time since login: ${elapsed}ms`);
             }
         }
         
-        async function testAuthServer() {
-            const results = document.getElementById('auth-results');
-            results.innerHTML = '<p>Testing...</p>';
+        async function simulateAppLoad() {
+            log('=== Simulating App Load ===');
             
-            try {
-                // Test secure.pyebwa.com
-                const response = await fetch('https://secure.pyebwa.com/health');
-                const data = await response.json();
-                
-                let html = '<h3>Results:</h3><ul>';
-                html += `<li>Health check: ${response.ok ? '✅' : '❌'}</li>`;
-                html += `<li>Response: <pre>${JSON.stringify(data, null, 2)}</pre></li>`;
-                html += '</ul>';
-                
-                results.innerHTML = html;
-                results.parentElement.classList.add(response.ok ? 'pass' : 'fail');
-            } catch (error) {
-                results.innerHTML = `<p>Error: ${error.message}</p>`;
-                results.parentElement.classList.add('fail');
+            // Check flags
+            const recentLogin = sessionStorage.getItem('recentLogin') === 'true';
+            const loginTime = parseInt(sessionStorage.getItem('loginTime') || '0');
+            const timeSinceLogin = Date.now() - loginTime;
+            
+            log(`Recent login: ${recentLogin}, Time since login: ${timeSinceLogin}ms`);
+            
+            // Check immediate user
+            const immediateUser = auth.currentUser;
+            log(`Immediate auth user: ${immediateUser ? immediateUser.email : 'null'}`);
+            
+            if (!immediateUser && recentLogin && timeSinceLogin < 60000) {
+                log('Would trigger retry logic now!');
+                showStatus('App would start retry logic', 'info');
+            } else if (immediateUser) {
+                log('User already authenticated - would initialize app');
+                showStatus('App would initialize normally', 'success');
+            } else {
+                log('No recent login - would redirect to login');
+                showStatus('App would redirect to login', 'error');
             }
-        }
-        
-        function testLoginFlow() {
-            const results = document.getElementById('login-results');
-            results.innerHTML = '<h3>Login Flow Steps:</h3>';
             
-            const steps = [
-                { name: 'Visit pyebwa.com', url: 'https://pyebwa.com' },
-                { name: 'Click login → redirects to secure.pyebwa.com', url: 'https://secure.pyebwa.com/?redirect=https://pyebwa.com' },
-                { name: 'After login → redirects to rasin.pyebwa.com/app/', url: 'https://rasin.pyebwa.com/app/?auth=success' }
-            ];
-            
-            let html = '<ol>';
-            steps.forEach(step => {
-                html += `<li>${step.name}<br><a href="${step.url}" target="_blank">${step.url}</a></li>`;
+            // Set up auth listener
+            log('Setting up auth state listener...');
+            const unsubscribe = auth.onAuthStateChanged((user) => {
+                log(`Auth state changed: ${user ? user.email : 'null'}`);
+                setTimeout(() => unsubscribe(), 5000); // Cleanup after 5 seconds
             });
-            html += '</ol>';
-            
-            results.innerHTML += html;
-            results.parentElement.classList.add('pass');
         }
+        
+        function goToApp() {
+            log('Redirecting to app...');
+            window.location.href = '/app/';
+        }
+        
+        // Monitor auth state
+        auth.onAuthStateChanged((user) => {
+            log(`Global auth state: ${user ? user.email : 'null'}`);
+        });
+        
+        // Initial check
+        window.addEventListener('load', () => {
+            log('Page loaded');
+            checkAuth();
+        });
     </script>
 </body>
 </html>

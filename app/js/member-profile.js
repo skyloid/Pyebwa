@@ -2,6 +2,13 @@
 (function() {
     'use strict';
     
+    // Load social media scripts if not already loaded
+    if (!window.socialConnect) {
+        const socialConnectScript = document.createElement('script');
+        socialConnectScript.src = '/app/js/social-connect.js';
+        document.head.appendChild(socialConnectScript);
+    }
+    
     const MemberProfile = {
         // Current member being viewed
         currentMember: null,
@@ -293,7 +300,7 @@
         },
         
         // Load overview tab
-        loadOverview(container) {
+        async loadOverview(container) {
             const member = this.currentMember;
             
             container.innerHTML = `
@@ -382,7 +389,26 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Social Media Profiles Section -->
+                <div class="content-section" id="social-profiles-section">
+                    <!-- Will be populated by social-connect.js -->
+                </div>
             `;
+            
+            // Load social media profiles if available
+            if (window.socialConnect) {
+                try {
+                    const socialProfiles = await window.socialConnect.getMemberSocialProfiles(member.id);
+                    const socialSection = document.getElementById('social-profiles-section');
+                    if (socialSection) {
+                        const socialUI = window.socialConnect.createSocialProfileUI(member.id, socialProfiles);
+                        socialSection.appendChild(socialUI);
+                    }
+                } catch (error) {
+                    console.error('Error loading social profiles:', error);
+                }
+            }
         },
         
         // Load timeline tab
@@ -1231,14 +1257,18 @@
         
         // Share profile
         shareProfile() {
-            if (window.navigator.share && this.currentMember) {
+            // Use the new share card feature
+            if (window.ShareCard && this.currentMember) {
+                window.ShareCard.openShareModal(this.currentMember);
+            } else if (window.navigator.share && this.currentMember) {
+                // Fallback to native share
                 window.navigator.share({
                     title: `${this.currentMember.firstName} ${this.currentMember.lastName}`,
                     text: `View ${this.currentMember.firstName}'s family profile`,
                     url: window.location.href
                 });
             } else {
-                // Fallback - copy link
+                // Final fallback - copy link
                 navigator.clipboard.writeText(window.location.href);
                 if (window.showSuccess) {
                     window.showSuccess('Profile link copied to clipboard!');

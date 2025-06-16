@@ -396,3 +396,7 @@ function buildHourglassTree(focusPerson, memberMap) {
     
     return tree;
 }
+
+// Export functions for global use
+window.renderFamilyTree = renderFamilyTree;
+window.renderTreeNode = renderTreeNode;

@@ -1,0 +1,611 @@
+/* Social Media Integration Styles for Pyebwa */
+
+/* Social Login Buttons */
+.social-login-container {
+    margin: 20px 0;
+}
+
+.social-login-divider {
+    display: flex;
+    align-items: center;
+    margin: 25px 0;
+}
+
+.social-login-divider::before,
+.social-login-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--gray-200);
+}
+
+.social-login-divider span {
+    padding: 0 15px;
+    color: var(--gray-700);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.social-login-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.social-login-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 20px;
+    border: 2px solid var(--gray-200);
+    border-radius: 8px;
+    background: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.social-login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.social-login-btn.google {
+    color: #4285F4;
+    border-color: #4285F4;
+}
+
+.social-login-btn.google:hover {
+    background: #4285F4;
+    color: white;
+}
+
+.social-login-btn.facebook {
+    color: #1877F2;
+    border-color: #1877F2;
+}
+
+.social-login-btn.facebook:hover {
+    background: #1877F2;
+    color: white;
+}
+
+.social-login-btn .social-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.social-login-btn.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.social-login-btn .loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Social Profile Connections */
+.social-profiles-container {
+    background: var(--gray-50);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px 0;
+}
+
+.social-profiles-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--gray-900);
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.social-profiles-header i {
+    color: var(--primary-blue);
+}
+
+.social-profiles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.social-profile-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: white;
+    border: 2px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.3s ease;
+}
+
+.social-profile-item:hover {
+    border-color: var(--primary-blue);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.social-profile-item.connected {
+    border-color: var(--gray-300);
+}
+
+.social-profile-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.social-profile-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.social-profile-name {
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 4px;
+}
+
+.social-profile-link {
+    color: var(--primary-blue);
+    text-decoration: none;
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+}
+
+.social-profile-link:hover {
+    text-decoration: underline;
+}
+
+.social-connect-btn {
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.social-connect-btn:hover {
+    background: #001654;
+    transform: translateY(-1px);
+}
+
+.social-profile-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.social-visibility-btn,
+.social-disconnect-btn {
+    background: none;
+    border: none;
+    color: var(--gray-600);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.social-visibility-btn:hover,
+.social-disconnect-btn:hover {
+    background: var(--gray-100);
+    color: var(--gray-900);
+}
+
+.social-disconnect-btn:hover {
+    color: var(--primary-red);
+}
+
+/* Social Connect Dialog */
+.social-connect-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+.social-connect-content {
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+    max-width: 420px;
+    width: 90%;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    animation: slideUp 0.3s ease;
+}
+
+.social-connect-content h3 {
+    color: var(--gray-900);
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.social-connect-content p {
+    color: var(--gray-700);
+    margin-bottom: 20px;
+}
+
+.social-username-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--gray-200);
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    margin-bottom: 24px;
+}
+
+.social-username-input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(0, 33, 125, 0.1);
+}
+
+.social-connect-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+/* Import Progress UI */
+.social-import-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.social-import-content {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.social-import-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.social-import-header h3 {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--gray-900);
+}
+
+.social-import-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--gray-600);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.social-import-close:hover {
+    background: var(--gray-100);
+    color: var(--gray-900);
+}
+
+/* Album Selection */
+.album-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.album-item {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 3px solid transparent;
+}
+
+.album-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.album-item.selected {
+    border-color: var(--primary-blue);
+}
+
+.album-cover {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    background: var(--gray-100);
+}
+
+.album-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    color: white;
+    padding: 12px;
+}
+
+.album-name {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.album-count {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.album-checkbox {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    background: white;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Import Progress */
+.import-progress-container {
+    margin: 24px 0;
+}
+
+.import-progress-bar {
+    height: 8px;
+    background: var(--gray-200);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.import-progress-fill {
+    height: 100%;
+    background: var(--primary-blue);
+    transition: width 0.3s ease;
+    border-radius: 4px;
+}
+
+.import-progress-text {
+    text-align: center;
+    color: var(--gray-700);
+    font-size: 14px;
+}
+
+.import-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-top: 16px;
+}
+
+.import-status.success {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.import-status.error {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+.import-status.info {
+    background: #DBEAFE;
+    color: #1E40AF;
+}
+
+/* Social Settings */
+.social-settings-section {
+    background: var(--gray-50);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px 0;
+}
+
+.social-settings-header {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 20px;
+}
+
+.social-privacy-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.privacy-control-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--gray-200);
+}
+
+.privacy-control-label {
+    font-weight: 500;
+    color: var(--gray-900);
+}
+
+.privacy-control-description {
+    font-size: 14px;
+    color: var(--gray-600);
+    margin-top: 4px;
+}
+
+.privacy-toggle {
+    position: relative;
+    width: 48px;
+    height: 24px;
+    background: var(--gray-300);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.privacy-toggle.active {
+    background: var(--primary-blue);
+}
+
+.privacy-toggle-handle {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.privacy-toggle.active .privacy-toggle-handle {
+    transform: translateX(24px);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .social-profiles-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .album-selection-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+    
+    .social-connect-content,
+    .social-import-content {
+        padding: 24px;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .social-profiles-container,
+    .social-settings-section {
+        background: #1F2937;
+    }
+    
+    .social-profile-item {
+        background: #111827;
+        border-color: #374151;
+    }
+    
+    .social-profile-item:hover {
+        border-color: var(--primary-blue);
+    }
+    
+    .social-connect-content,
+    .social-import-content {
+        background: #1F2937;
+        color: white;
+    }
+    
+    .social-username-input {
+        background: #111827;
+        border-color: #374151;
+        color: white;
+    }
+    
+    .privacy-control-item {
+        background: #111827;
+        border-color: #374151;
+    }
+}

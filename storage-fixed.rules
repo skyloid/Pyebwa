@@ -35,6 +35,16 @@ service firebase.storage {
              request.resource.contentType.matches('application/(pdf|msword|vnd.openxmlformats-officedocument.wordprocessingml.document)');
     }
     
+    function isValidAudioUpload() {
+      return request.resource.size < 50 * 1024 * 1024 && // 50MB limit for audio
+             request.resource.contentType.matches('audio/(webm|mp3|wav|ogg|mpeg)');
+    }
+    
+    function isValidVideoUpload() {
+      return request.resource.size < 100 * 1024 * 1024 && // 100MB limit for video
+             request.resource.contentType.matches('video/(webm|mp4|ogg)');
+    }
+    
     // Profile photos
     match /users/{userId}/profile/{fileName} {
       allow read: if isAuthenticated();
@@ -108,6 +118,36 @@ service firebase.storage {
     match /public/{fileName} {
       allow read: if true;
       allow write: if false; // Only admin via console
+    }
+    
+    // Audio stories
+    match /audio_stories/{treeId}/{memberId}/{fileName} {
+      allow read: if isFamilyMember(treeId);
+      
+      allow write: if isFamilyMember(treeId) &&
+                     isValidAudioUpload();
+      
+      allow delete: if isFamilyMember(treeId);
+    }
+    
+    // Video messages
+    match /video_messages/{treeId}/{memberId}/{fileName} {
+      allow read: if isFamilyMember(treeId);
+      
+      allow write: if isFamilyMember(treeId) &&
+                     isValidVideoUpload();
+      
+      allow delete: if isFamilyMember(treeId);
+    }
+    
+    // Family photos (for gallery)
+    match /family_photos/{treeId}/{memberId}/{fileName} {
+      allow read: if isFamilyMember(treeId);
+      
+      allow write: if isFamilyMember(treeId) &&
+                     isValidImageUpload();
+      
+      allow delete: if isFamilyMember(treeId);
     }
     
     // Default deny all

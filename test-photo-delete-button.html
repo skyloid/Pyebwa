@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Delete Button Test</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .issue-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        
+        .issue-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #D41125;
+            margin-bottom: 10px;
+        }
+        
+        .solution {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        
+        .code-fix {
+            background: #263238;
+            color: #aed581;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        
+        /* Test Gallery Styles */
+        .test-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .test-gallery-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            aspect-ratio: 1;
+            background: #f0f0f0;
+            transition: transform 0.2s;
+        }
+        
+        .test-gallery-item:hover {
+            transform: scale(1.05);
+        }
+        
+        .test-gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Current CSS (problematic) */
+        .photo-delete-btn-current {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s, background 0.2s, transform 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .test-gallery-item:hover .photo-delete-btn-current {
+            opacity: 1;
+        }
+        
+        /* Fixed CSS */
+        .photo-delete-btn-fixed {
+            position: absolute;
+            top: 10px;
+            right: 10px; /* Changed from left to right */
+            width: 36px; /* Slightly larger */
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.95); /* More opaque */
+            border: 2px solid rgba(0, 0, 0, 0.1); /* Added border */
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.3s ease; /* Smoother transition */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 10; /* Ensure it's above other elements */
+        }
+        
+        .test-gallery-item:hover .photo-delete-btn-fixed {
+            opacity: 1;
+            transform: scale(1.1); /* Slight scale on hover */
+        }
+        
+        .photo-delete-btn-fixed:hover {
+            background: #ff4444;
+            border-color: #ff4444;
+            box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
+        }
+        
+        .photo-delete-btn-fixed:hover .material-icons {
+            color: white;
+        }
+        
+        .photo-delete-btn-fixed .material-icons {
+            font-size: 20px;
+            color: #666;
+            transition: color 0.2s;
+        }
+        
+        /* Always visible version for testing */
+        .photo-delete-btn-visible {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+        
+        .test-results {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        
+        .test-results h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        
+        .test-results ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .test-results li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Photo Delete Button Visibility Test</h1>
+        
+        <div class="issue-section">
+            <div class="issue-title">Issue: Photo Delete Button Not Visible</div>
+            <p>The photo delete button in the member profile gallery is not showing on hover as expected.</p>
+            
+            <h3>Test Gallery - Current Implementation</h3>
+            <div class="test-gallery">
+                <div class="test-gallery-item">
+                    <img src="https://via.placeholder.com/300/00217D/FFFFFF?text=Photo+1" alt="Test Photo 1">
+                    <button class="photo-delete-btn-current">
+                        <i class="material-icons">delete</i>
+                    </button>
+                </div>
+                <div class="test-gallery-item">
+                    <img src="https://via.placeholder.com/300/D41125/FFFFFF?text=Photo+2" alt="Test Photo 2">
+                    <button class="photo-delete-btn-current">
+                        <i class="material-icons">delete</i>
+                    </button>
+                </div>
+            </div>
+            
+            <h3>Test Gallery - Fixed Implementation</h3>
+            <div class="test-gallery">
+                <div class="test-gallery-item">
+                    <img src="https://via.placeholder.com/300/00217D/FFFFFF?text=Photo+1" alt="Test Photo 1">
+                    <button class="photo-delete-btn-fixed">
+                        <i class="material-icons">delete</i>
+                    </button>
+                </div>
+                <div class="test-gallery-item">
+                    <img src="https://via.placeholder.com/300/D41125/FFFFFF?text=Photo+2" alt="Test Photo 2">
+                    <button class="photo-delete-btn-fixed">
+                        <i class="material-icons">delete</i>
+                    </button>
+                </div>
+            </div>
+            
+            <h3>Test Gallery - Always Visible (for debugging)</h3>
+            <div class="test-gallery">
+                <div class="test-gallery-item">
+                    <img src="https://via.placeholder.com/300/00217D/FFFFFF?text=Photo+1" alt="Test Photo 1">
+                    <button class="photo-delete-btn-visible">
+                        <i class="material-icons">delete</i>
+                    </button>
+                </div>
+                <div class="test-gallery-item">
+                    <img src="https://via.placeholder.com/300/D41125/FFFFFF?text=Photo+2" alt="Test Photo 2">
+                    <button class="photo-delete-btn-visible">
+                        <i class="material-icons">delete</i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-results">
+            <h3>Potential Issues Found:</h3>
+            <ul>
+                <li><strong>Position Conflict:</strong> The button is positioned on the left (left: 10px) which might overlap with other elements</li>
+                <li><strong>Z-index:</strong> No z-index is set on the button, which could cause it to be hidden behind other elements</li>
+                <li><strong>Opacity Transition:</strong> The transition might not be triggering properly</li>
+                <li><strong>Parent Container:</strong> The gallery-item might have overflow issues</li>
+                <li><strong>Event Propagation:</strong> The onclick event on the parent might interfere</li>
+            </ul>
+        </div>
+        
+        <div class="solution">
+            <h3>Recommended Fixes:</h3>
+            
+            <div class="code-fix">
+/* Fix 1: Update member-profile.css */
+
+.photo-delete-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px; /* Move to right to avoid conflicts */
+    width: 36px; /* Slightly larger for better UX */
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 10; /* Ensure it's above other elements */
+}
+
+.gallery-item:hover .photo-delete-btn {
+    opacity: 1;
+    transform: scale(1.05); /* Subtle scale effect */
+}
+
+.photo-delete-btn:hover {
+    background: #ff4444;
+    border-color: #ff4444;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
+}
+
+.photo-delete-btn:hover .material-icons {
+    color: white;
+}
+
+.photo-delete-btn .material-icons {
+    font-size: 20px;
+    color: #666;
+    transition: color 0.2s;
+}
+
+/* Ensure gallery item doesn't clip the button */
+.gallery-item {
+    position: relative;
+    border-radius: 8px;
+    overflow: visible; /* Changed from hidden if needed */
+    cursor: pointer;
+    aspect-ratio: 1;
+    background: #f0f0f0;
+    transition: transform 0.2s;
+}
+
+.gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px; /* Add border radius to image instead */
+}
+            </div>
+            
+            <div class="code-fix">
+/* Fix 2: Add debugging CSS to test visibility */
+
+/* Temporarily make button always visible for testing */
+.photo-delete-btn {
+    opacity: 0.5 !important; /* Semi-visible always */
+}
+
+.gallery-item:hover .photo-delete-btn {
+    opacity: 1 !important; /* Fully visible on hover */
+}
+            </div>
+            
+            <div class="code-fix">
+// Fix 3: Check JavaScript console for errors
+// Add this to member-profile.js for debugging:
+
+console.log('Gallery items found:', document.querySelectorAll('.gallery-item').length);
+console.log('Delete buttons found:', document.querySelectorAll('.photo-delete-btn').length);
+
+// Ensure the buttons are being created
+document.querySelectorAll('.gallery-item').forEach((item, index) => {
+    const btn = item.querySelector('.photo-delete-btn');
+    if (btn) {
+        console.log(`Button ${index} found:`, btn);
+    } else {
+        console.error(`Button ${index} NOT found in gallery item`);
+    }
+});
+            </div>
+        </div>
+        
+        <div class="test-results" style="background: #d4edda; border-color: #c3e6cb;">
+            <h3 style="color: #155724;">Quick Test Steps:</h3>
+            <ol>
+                <li>Open browser developer tools (F12)</li>
+                <li>Navigate to a member profile with photos</li>
+                <li>Open the Gallery tab</li>
+                <li>In the Console, run: <code>document.querySelectorAll('.photo-delete-btn')</code></li>
+                <li>Check if buttons exist in the DOM</li>
+                <li>Inspect a gallery item and check if the button HTML is present</li>
+                <li>Check for any CSS rules that might be overriding the opacity</li>
+            </ol>
+        </div>
+    </div>
+    
+    <script>
+        // Test hover functionality
+        document.querySelectorAll('.test-gallery-item').forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                console.log('Mouse entered gallery item');
+            });
+            
+            item.addEventListener('mouseleave', function() {
+                console.log('Mouse left gallery item');
+            });
+        });
+        
+        // Test button visibility
+        document.querySelectorAll('.photo-delete-btn-current, .photo-delete-btn-fixed').forEach(btn => {
+            const opacity = window.getComputedStyle(btn).opacity;
+            console.log('Button opacity:', opacity, btn.className);
+        });
+    </script>
+</body>
+</html>

@@ -23,7 +23,8 @@
                 "data:",
                 "blob:",
                 "https://*.googleusercontent.com",
-                "https://firebasestorage.googleapis.com"
+                "https://firebasestorage.googleapis.com",
+                "https://picsum.photos" // For dashboard background images
             ],
             'font-src': [
                 "'self'",
@@ -38,6 +39,10 @@
                 "https://firestore.googleapis.com",
                 "https://firebasestorage.googleapis.com",
                 "wss://*.firebaseio.com"
+            ],
+            'media-src': [
+                "'self'",
+                "https://firebasestorage.googleapis.com" // For audio/video playback
             ],
             'frame-src': ["'none'"],
             'object-src': ["'none'"],

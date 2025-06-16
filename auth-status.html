@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Status - Pyebwa</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #00217D;
+            margin-bottom: 10px;
+        }
+        .status {
+            font-size: 18px;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .status.authenticated {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.not-authenticated {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.loading {
+            background: #cce5ff;
+            color: #004085;
+            border: 1px solid #b8daff;
+        }
+        .user-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .user-info p {
+            margin: 5px 0;
+        }
+        .action-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #00217D;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            margin: 10px 5px;
+            cursor: pointer;
+            border: none;
+        }
+        .action-button:hover {
+            background: #001654;
+        }
+        .action-button.secondary {
+            background: #6c757d;
+        }
+        .action-button.secondary:hover {
+            background: #5a6268;
+        }
+        .instructions {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 5px;
+            border-left: 4px solid #1976d2;
+            margin: 20px 0;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        .instructions ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin: 8px 0;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #00217D;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Pyebwa Authentication Status</h1>
+        
+        <div id="status" class="status loading">
+            <div class="spinner"></div>
+            Checking authentication status...
+        </div>
+        
+        <div id="userInfo" style="display: none;" class="user-info"></div>
+        
+        <div id="actions" style="display: none; text-align: center;"></div>
+    </div>
+    
+    <div id="notAuthInstructions" class="card instructions" style="display: none;">
+        <h3>You're Not Logged In</h3>
+        <p>To access your family tree, you need to log in first:</p>
+        <ol>
+            <li>Click the "Go to Login" button above</li>
+            <li>Enter your email address</li>
+            <li>Click "Send Magic Link"</li>
+            <li>Check your email for the login link</li>
+            <li>Click the link in your email to log in</li>
+        </ol>
+        <p><strong>Note:</strong> If you haven't created an account yet, click "Sign Up" on the login page.</p>
+    </div>
+    
+    <div id="authInstructions" class="card instructions" style="display: none;">
+        <h3>You're Logged In!</h3>
+        <p>Great! You're authenticated. If you're still having issues:</p>
+        <ol>
+            <li>Click "Go to App" to access your family tree</li>
+            <li>If the tree doesn't appear, try clearing your browser cache</li>
+            <li>Make sure JavaScript is enabled in your browser</li>
+            <li>Try using a different browser or incognito mode</li>
+        </ol>
+    </div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
+            authDomain: "pyebwa-f5960.firebaseapp.com",
+            projectId: "pyebwa-f5960",
+            storageBucket: "pyebwa-f5960.firebasestorage.app",
+            messagingSenderId: "1042887343749",
+            appId: "1:1042887343749:web:c276bf69b6c0895111f3ec",
+            measurementId: "G-ZX92K1TMM3"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+        // Set persistence
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        
+        // Check auth state
+        let authCheckComplete = false;
+        
+        // Set a timeout to handle cases where auth never responds
+        setTimeout(() => {
+            if (!authCheckComplete) {
+                updateUI(null);
+            }
+        }, 5000);
+        
+        auth.onAuthStateChanged(async (user) => {
+            authCheckComplete = true;
+            console.log('Auth state:', user ? `Logged in as ${user.email}` : 'Not logged in');
+            updateUI(user);
+            
+            if (user) {
+                // Check if user has a family tree
+                try {
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        const infoEl = document.getElementById('userInfo');
+                        infoEl.innerHTML += `<p><strong>Family Tree ID:</strong> ${userData.familyTreeId || 'Not created yet'}</p>`;
+                        
+                        if (userData.familyTreeId) {
+                            // Check if tree exists
+                            const treeDoc = await db.collection('familyTrees').doc(userData.familyTreeId).get();
+                            infoEl.innerHTML += `<p><strong>Family Tree Exists:</strong> ${treeDoc.exists ? 'Yes ✓' : 'No ✗'}</p>`;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error checking user data:', error);
+                }
+            }
+        });
+        
+        function updateUI(user) {
+            const statusEl = document.getElementById('status');
+            const userInfoEl = document.getElementById('userInfo');
+            const actionsEl = document.getElementById('actions');
+            const notAuthInstructions = document.getElementById('notAuthInstructions');
+            const authInstructions = document.getElementById('authInstructions');
+            
+            if (user) {
+                // User is authenticated
+                statusEl.className = 'status authenticated';
+                statusEl.innerHTML = '✓ You are logged in';
+                
+                userInfoEl.style.display = 'block';
+                userInfoEl.innerHTML = `
+                    <p><strong>Email:</strong> ${user.email}</p>
+                    <p><strong>User ID:</strong> ${user.uid}</p>
+                    <p><strong>Email Verified:</strong> ${user.emailVerified ? 'Yes' : 'No'}</p>
+                `;
+                
+                actionsEl.style.display = 'block';
+                actionsEl.innerHTML = `
+                    <a href="/app/" class="action-button">Go to App</a>
+                    <button onclick="logout()" class="action-button secondary">Logout</button>
+                `;
+                
+                notAuthInstructions.style.display = 'none';
+                authInstructions.style.display = 'block';
+            } else {
+                // User is not authenticated
+                statusEl.className = 'status not-authenticated';
+                statusEl.innerHTML = '✗ You are not logged in';
+                
+                userInfoEl.style.display = 'none';
+                
+                actionsEl.style.display = 'block';
+                actionsEl.innerHTML = `
+                    <a href="/login.html" class="action-button">Go to Login</a>
+                    <a href="/signup.html" class="action-button secondary">Sign Up</a>
+                `;
+                
+                notAuthInstructions.style.display = 'block';
+                authInstructions.style.display = 'none';
+            }
+        }
+        
+        async function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                try {
+                    await auth.signOut();
+                    window.location.reload();
+                } catch (error) {
+                    alert('Error logging out: ' + error.message);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

@@ -65,31 +65,7 @@ function autoScaleTree() {
     }, 100);
 }
 
-// Add zoom controls to tree
-function addTreeZoomControls() {
-    const treeContainer = document.querySelector('.tree-container');
-    if (!treeContainer || window.innerWidth <= 768) return;
-    
-    // Check if controls already exist
-    if (document.querySelector('.tree-zoom-controls')) return;
-    
-    const zoomControls = document.createElement('div');
-    zoomControls.className = 'tree-zoom-controls';
-    zoomControls.innerHTML = `
-        <button class="zoom-btn" onclick="zoomTree('out')" title="Zoom Out">
-            <span class="material-icons">zoom_out</span>
-        </button>
-        <div class="zoom-level">100%</div>
-        <button class="zoom-btn" onclick="zoomTree('in')" title="Zoom In">
-            <span class="material-icons">zoom_in</span>
-        </button>
-        <button class="fit-to-screen-btn" onclick="fitTreeToScreen()" title="Fit to Screen">
-            <span class="material-icons">fit_screen</span>
-        </button>
-    `;
-    
-    treeContainer.appendChild(zoomControls);
-}
+// Zoom controls removed - no longer needed
 
 // Manual zoom function
 function zoomTree(direction) {
@@ -162,9 +138,6 @@ function applyTreeSizeClass() {
 function initializeResponsiveTree() {
     // Apply size class
     applyTreeSizeClass();
-    
-    // Add zoom controls
-    addTreeZoomControls();
     
     // Auto-scale to fit
     autoScaleTree();

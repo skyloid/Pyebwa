@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Family Tree - Pyebwa</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #00217D;
+        }
+        .debug-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+        .debug-section h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .status.info {
+            background: #cce5ff;
+            border: 1px solid #b8daff;
+            color: #004085;
+        }
+        .status.warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        button {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #001654;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .member-list {
+            max-height: 300px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .member-item {
+            padding: 5px;
+            margin: 2px 0;
+            background: white;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Family Tree Debug Tool</h1>
+        
+        <div class="debug-section">
+            <h3>1. Authentication Status</h3>
+            <div id="authStatus" class="status info">Checking authentication...</div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>2. Family Tree ID</h3>
+            <div id="treeIdStatus" class="status info">Checking family tree ID...</div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>3. Family Members</h3>
+            <div id="membersStatus" class="status info">Loading family members...</div>
+            <div id="membersList" class="member-list" style="display: none;"></div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>4. Console Errors</h3>
+            <div id="consoleErrors" class="status info">No errors detected</div>
+            <pre id="errorLog"></pre>
+        </div>
+        
+        <div class="debug-section">
+            <h3>5. Test Actions</h3>
+            <button onclick="testLoadMembers()">Test Load Members</button>
+            <button onclick="testRenderTree()">Test Render Tree</button>
+            <button onclick="checkGlobalVars()">Check Global Variables</button>
+            <button onclick="clearCacheAndReload()">Clear Cache & Reload</button>
+        </div>
+        
+        <div class="debug-section">
+            <h3>6. Debug Output</h3>
+            <pre id="debugOutput"></pre>
+        </div>
+    </div>
+    
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
+            authDomain: "pyebwa-f5960.firebaseapp.com",
+            projectId: "pyebwa-f5960",
+            storageBucket: "pyebwa-f5960.firebasestorage.app",
+            messagingSenderId: "1042887343749",
+            appId: "1:1042887343749:web:c276bf69b6c0895111f3ec",
+            measurementId: "G-ZX92K1TMM3"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+        let debugLog = [];
+        
+        // Override console.error to capture errors
+        const originalError = console.error;
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            const errorMsg = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            
+            document.getElementById('consoleErrors').className = 'status error';
+            document.getElementById('consoleErrors').textContent = 'Errors detected!';
+            document.getElementById('errorLog').textContent += errorMsg + '\n\n';
+        };
+        
+        function log(message, data = null) {
+            const timestamp = new Date().toISOString();
+            const logEntry = `[${timestamp}] ${message}`;
+            debugLog.push(logEntry);
+            if (data) {
+                debugLog.push(JSON.stringify(data, null, 2));
+            }
+            updateDebugOutput();
+        }
+        
+        function updateDebugOutput() {
+            document.getElementById('debugOutput').textContent = debugLog.join('\n');
+        }
+        
+        // Check authentication
+        auth.onAuthStateChanged(async (user) => {
+            const authStatus = document.getElementById('authStatus');
+            
+            if (user) {
+                authStatus.className = 'status success';
+                authStatus.innerHTML = `✓ Authenticated as: ${user.email}<br>UID: ${user.uid}`;
+                log('User authenticated', { email: user.email, uid: user.uid });
+                
+                // Check family tree
+                await checkFamilyTree(user);
+            } else {
+                authStatus.className = 'status error';
+                authStatus.innerHTML = '✗ Not authenticated - <a href="/login.html">Login</a>';
+                log('No user authenticated');
+            }
+        });
+        
+        async function checkFamilyTree(user) {
+            const treeStatus = document.getElementById('treeIdStatus');
+            
+            try {
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                log('User document exists:', userDoc.exists);
+                
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    log('User data:', userData);
+                    
+                    if (userData.familyTreeId) {
+                        treeStatus.className = 'status success';
+                        treeStatus.innerHTML = `✓ Family Tree ID: ${userData.familyTreeId}`;
+                        
+                        // Check if tree document exists
+                        const treeDoc = await db.collection('familyTrees').doc(userData.familyTreeId).get();
+                        if (treeDoc.exists) {
+                            log('Family tree document exists', treeDoc.data());
+                            await loadFamilyMembers(userData.familyTreeId);
+                        } else {
+                            treeStatus.className = 'status error';
+                            treeStatus.innerHTML += '<br>✗ Family tree document not found!';
+                            log('Family tree document does not exist');
+                        }
+                    } else {
+                        treeStatus.className = 'status warning';
+                        treeStatus.innerHTML = '⚠ No family tree ID in user document';
+                        log('No familyTreeId in user document');
+                    }
+                } else {
+                    treeStatus.className = 'status error';
+                    treeStatus.innerHTML = '✗ User document not found';
+                    log('User document does not exist');
+                }
+            } catch (error) {
+                treeStatus.className = 'status error';
+                treeStatus.innerHTML = `✗ Error: ${error.message}`;
+                log('Error checking family tree:', error);
+            }
+        }
+        
+        async function loadFamilyMembers(treeId) {
+            const membersStatus = document.getElementById('membersStatus');
+            const membersList = document.getElementById('membersList');
+            
+            try {
+                const snapshot = await db.collection('familyTrees')
+                    .doc(treeId)
+                    .collection('members')
+                    .get();
+                
+                const members = [];
+                snapshot.forEach(doc => {
+                    members.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                
+                log(`Loaded ${members.length} members`, members);
+                
+                if (members.length > 0) {
+                    membersStatus.className = 'status success';
+                    membersStatus.innerHTML = `✓ Found ${members.length} family members`;
+                    
+                    membersList.style.display = 'block';
+                    membersList.innerHTML = members.map(m => 
+                        `<div class="member-item">
+                            <strong>${m.firstName} ${m.lastName}</strong> 
+                            (${m.relationship || 'no relationship'} 
+                            ${m.relatedTo ? `to ${m.relatedTo}` : ''})
+                        </div>`
+                    ).join('');
+                    
+                    // Store globally for testing
+                    window.testMembers = members;
+                } else {
+                    membersStatus.className = 'status warning';
+                    membersStatus.innerHTML = '⚠ No family members found';
+                }
+            } catch (error) {
+                membersStatus.className = 'status error';
+                membersStatus.innerHTML = `✗ Error loading members: ${error.message}`;
+                log('Error loading members:', error);
+            }
+        }
+        
+        // Test functions
+        async function testLoadMembers() {
+            log('Testing loadFamilyMembers...');
+            const user = auth.currentUser;
+            if (user) {
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (userDoc.exists && userDoc.data().familyTreeId) {
+                    await loadFamilyMembers(userDoc.data().familyTreeId);
+                } else {
+                    alert('No family tree ID found');
+                }
+            } else {
+                alert('Not authenticated');
+            }
+        }
+        
+        function testRenderTree() {
+            log('Testing renderFamilyTree...');
+            
+            // Check if required functions exist
+            const checks = {
+                'window.familyMembers': window.familyMembers,
+                'window.renderFamilyTree': window.renderFamilyTree,
+                'window.t (translation)': window.t,
+                'window.showAddMemberModal': window.showAddMemberModal
+            };
+            
+            log('Function availability:', checks);
+            
+            if (!window.renderFamilyTree) {
+                alert('renderFamilyTree function not found! Make sure tree.js is loaded.');
+                return;
+            }
+            
+            // Try to render with test data
+            if (window.testMembers) {
+                window.familyMembers = window.testMembers;
+                log('Setting familyMembers to test data');
+                
+                // Create a test container
+                const testContainer = document.createElement('div');
+                testContainer.id = 'treeContainer';
+                testContainer.style.border = '2px solid red';
+                testContainer.style.padding = '20px';
+                testContainer.style.marginTop = '20px';
+                document.querySelector('.container').appendChild(testContainer);
+                
+                try {
+                    window.renderFamilyTree();
+                    log('renderFamilyTree called successfully');
+                } catch (error) {
+                    log('Error calling renderFamilyTree:', error);
+                    alert('Error: ' + error.message);
+                }
+            } else {
+                alert('No test members loaded. Click "Test Load Members" first.');
+            }
+        }
+        
+        function checkGlobalVars() {
+            const vars = {
+                'window.familyMembers': window.familyMembers,
+                'window.userFamilyTreeId': window.userFamilyTreeId,
+                'window.currentUser': window.currentUser,
+                'window.renderFamilyTree': typeof window.renderFamilyTree,
+                'window.buildTreeStructure': typeof window.buildTreeStructure,
+                'window.renderTreeNode': typeof window.renderTreeNode,
+                'window.showAddMemberModal': typeof window.showAddMemberModal,
+                'window.updateFamilyMember': typeof window.updateFamilyMember,
+                'window.t': typeof window.t
+            };
+            
+            log('Global variables check:', vars);
+            alert('Check the debug output for global variables status');
+        }
+        
+        function clearCacheAndReload() {
+            if (confirm('This will clear all local storage and reload the page. Continue?')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>

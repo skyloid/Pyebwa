@@ -260,67 +260,9 @@
 }
 
 /* Zoom controls for manual adjustment */
-.tree-zoom-controls {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    display: flex;
-    gap: 8px;
-    z-index: 10;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    padding: 8px;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-md);
-}
+/* Zoom controls removed */
 
-.zoom-btn {
-    width: 36px;
-    height: 36px;
-    border: 2px solid var(--gray-200);
-    background: white;
-    border-radius: var(--border-radius);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.zoom-btn:hover {
-    background: var(--gray-50);
-    border-color: var(--gray-300);
-    transform: translateY(-1px);
-}
-
-.zoom-level {
-    display: flex;
-    align-items: center;
-    padding: 0 12px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--gray-700);
-    min-width: 60px;
-    justify-content: center;
-}
-
-/* Fit to screen button */
-.fit-to-screen-btn {
-    padding: 8px 16px;
-    background: var(--primary-blue);
-    color: white;
-    border: none;
-    border-radius: var(--border-radius);
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.fit-to-screen-btn:hover {
-    background: var(--primary-blue-dark);
-    transform: translateY(-1px);
-}
+/* Zoom button styles removed */
 
 /* Mobile-specific styles - allow horizontal scroll */
 @media (max-width: 768px) {
@@ -368,9 +310,7 @@
     }
     
     /* Hide zoom controls on mobile */
-    .tree-zoom-controls {
-        display: none;
-    }
+    /* Zoom controls removed */
 }
 
 /* Smooth transitions for scaling */
@@ -405,7 +345,5 @@
         transform: scale(0.8) !important;
     }
     
-    .tree-zoom-controls {
-        display: none !important;
-    }
+    /* Zoom controls removed */
 }

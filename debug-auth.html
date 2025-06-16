@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Auth - Pyebwa</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #00ff00;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #00ff00;
+            border-bottom: 2px solid #00ff00;
+            padding-bottom: 10px;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+        }
+        .error {
+            color: #ff0000;
+        }
+        .success {
+            color: #00ff00;
+        }
+        .info {
+            color: #ffff00;
+        }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-family: monospace;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #00cc00;
+        }
+        input {
+            background: #000;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 8px;
+            margin: 5px 0;
+            width: 300px;
+            font-family: monospace;
+        }
+        pre {
+            background: #000;
+            padding: 10px;
+            overflow-x: auto;
+            border: 1px solid #00ff00;
+        }
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px;
+        }
+        .log-entry.error {
+            background: rgba(255, 0, 0, 0.2);
+        }
+        .log-entry.success {
+            background: rgba(0, 255, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Firebase Auth Debugger</h1>
+        
+        <div class="section">
+            <h2>Configuration Status</h2>
+            <div id="configStatus"></div>
+        </div>
+        
+        <div class="section">
+            <h2>Current Auth State</h2>
+            <div id="authStatus"></div>
+        </div>
+        
+        <div class="section">
+            <h2>Test Magic Link</h2>
+            <input type="email" id="testEmail" placeholder="test@example.com">
+            <button onclick="testMagicLink()">Send Test Magic Link</button>
+            <div id="magicLinkStatus"></div>
+        </div>
+        
+        <div class="section">
+            <h2>Console Logs</h2>
+            <div id="consoleLogs"></div>
+        </div>
+        
+        <div class="section">
+            <h2>Actions</h2>
+            <button onclick="checkFirebaseServices()">Check Firebase Services</button>
+            <button onclick="clearAllAuth()">Clear All Auth Data</button>
+            <button onclick="location.reload()">Reload Page</button>
+        </div>
+    </div>
+    
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
+            authDomain: "rasin.pyebwa.com",
+            projectId: "pyebwa-f5960",
+            storageBucket: "pyebwa-f5960.firebasestorage.app",
+            messagingSenderId: "1042887343749",
+            appId: "1:1042887343749:web:c276bf69b6c0895111f3ec",
+            measurementId: "G-ZX92K1TMM3"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        
+        // Log container
+        const logs = [];
+        
+        // Override console methods to capture logs
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addLog('log', args.join(' '));
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addLog('error', args.join(' '));
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addLog('warn', args.join(' '));
+        };
+        
+        function addLog(type, message) {
+            logs.push({
+                time: new Date().toLocaleTimeString(),
+                type: type,
+                message: message
+            });
+            updateLogsDisplay();
+        }
+        
+        function updateLogsDisplay() {
+            const logsDiv = document.getElementById('consoleLogs');
+            logsDiv.innerHTML = logs.slice(-20).reverse().map(log => 
+                `<div class="log-entry ${log.type === 'error' ? 'error' : log.type === 'success' ? 'success' : ''}">
+                    [${log.time}] ${log.type.toUpperCase()}: ${log.message}
+                </div>`
+            ).join('');
+        }
+        
+        // Check configuration
+        function checkConfig() {
+            const configDiv = document.getElementById('configStatus');
+            configDiv.innerHTML = `
+                <p class="success">✓ Firebase Initialized</p>
+                <p class="info">Auth Domain: ${firebaseConfig.authDomain}</p>
+                <p class="info">Project ID: ${firebaseConfig.projectId}</p>
+                <p class="info">Current URL: ${window.location.origin}</p>
+                <p class="info">Continue URL: ${window.location.origin}/auth.html</p>
+            `;
+        }
+        
+        // Check auth state
+        function checkAuthState() {
+            const authDiv = document.getElementById('authStatus');
+            const user = auth.currentUser;
+            
+            if (user) {
+                authDiv.innerHTML = `
+                    <p class="success">✓ Authenticated</p>
+                    <p class="info">Email: ${user.email}</p>
+                    <p class="info">UID: ${user.uid}</p>
+                `;
+            } else {
+                authDiv.innerHTML = `<p class="error">✗ Not authenticated</p>`;
+            }
+        }
+        
+        // Test magic link
+        async function testMagicLink() {
+            const email = document.getElementById('testEmail').value;
+            const statusDiv = document.getElementById('magicLinkStatus');
+            
+            if (!email) {
+                statusDiv.innerHTML = '<p class="error">Please enter an email address</p>';
+                return;
+            }
+            
+            statusDiv.innerHTML = '<p class="info">Sending magic link...</p>';
+            
+            const actionCodeSettings = {
+                url: window.location.origin + '/auth.html',
+                handleCodeInApp: true
+            };
+            
+            try {
+                console.log('Attempting to send magic link to:', email);
+                console.log('Action code settings:', JSON.stringify(actionCodeSettings));
+                
+                await auth.sendSignInLinkToEmail(email, actionCodeSettings);
+                
+                window.localStorage.setItem('emailForSignIn', email);
+                statusDiv.innerHTML = '<p class="success">✓ Magic link sent successfully! Check your email.</p>';
+                addLog('success', `Magic link sent to ${email}`);
+                
+            } catch (error) {
+                console.error('Magic link error:', error);
+                statusDiv.innerHTML = `<p class="error">✗ Error: ${error.message}</p>
+                                      <p class="error">Code: ${error.code}</p>`;
+                
+                // Provide specific guidance based on error
+                if (error.code === 'auth/operation-not-allowed') {
+                    statusDiv.innerHTML += '<p class="info">⚠️ Email link sign-in might not be enabled in Firebase Console</p>';
+                } else if (error.code === 'auth/unauthorized-continue-uri') {
+                    statusDiv.innerHTML += '<p class="info">⚠️ The domain might not be authorized in Firebase Console</p>';
+                }
+            }
+        }
+        
+        // Check Firebase services
+        async function checkFirebaseServices() {
+            addLog('info', 'Checking Firebase services...');
+            
+            try {
+                // Test auth
+                const providers = await auth.fetchSignInMethodsForEmail('test@example.com');
+                addLog('success', 'Auth service is accessible');
+                
+                // Check if email link is enabled
+                if (auth.isSignInWithEmailLink) {
+                    addLog('success', 'Email link sign-in method is available');
+                }
+                
+                // Test current auth state
+                auth.onAuthStateChanged((user) => {
+                    addLog('info', `Auth state: ${user ? 'Signed in as ' + user.email : 'Not signed in'}`);
+                });
+                
+            } catch (error) {
+                addLog('error', `Firebase service check failed: ${error.message}`);
+            }
+        }
+        
+        // Clear all auth data
+        function clearAllAuth() {
+            localStorage.clear();
+            sessionStorage.clear();
+            auth.signOut().then(() => {
+                addLog('success', 'All auth data cleared');
+                location.reload();
+            });
+        }
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            checkConfig();
+            checkAuthState();
+            
+            // Monitor auth state changes
+            auth.onAuthStateChanged((user) => {
+                checkAuthState();
+                addLog('info', `Auth state changed: ${user ? user.email : 'signed out'}`);
+            });
+            
+            addLog('info', 'Debug page loaded');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Tree Fix Test - Pyebwa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #00217D;
+            margin-bottom: 20px;
+        }
+        .success-box {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .info-box {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .test-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .test-section h3 {
+            color: #00217D;
+            margin-bottom: 10px;
+        }
+        ul {
+            margin: 10px 0;
+            padding-left: 25px;
+        }
+        li {
+            margin: 5px 0;
+            line-height: 1.6;
+        }
+        .button {
+            display: inline-block;
+            background: #00217D;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .button:hover {
+            background: #001654;
+        }
+        code {
+            background: #f0f0f0;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .fix-details {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✅ Family Tree Issue Fixed!</h1>
+        
+        <div class="success-box">
+            <strong>The missing <code>updateFamilyMember</code> function has been successfully added!</strong>
+            <p>Your family tree should now work properly, including all features like audio recording, story saving, and privacy settings.</p>
+        </div>
+        
+        <div class="fix-details">
+            <h3>What was the problem?</h3>
+            <p>The <code>updateFamilyMember</code> function was being called by various features (stories, privacy settings, etc.) but wasn't defined in the code, causing these features to fail.</p>
+            
+            <h3>What was fixed?</h3>
+            <p>Added the missing function that:</p>
+            <ul>
+                <li>Updates member data in Firebase Firestore</li>
+                <li>Maintains the local cache of family members</li>
+                <li>Adds proper timestamps to track updates</li>
+                <li>Handles errors appropriately</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h3>How to Verify the Fix:</h3>
+            <ol>
+                <li><strong>Log in to your account</strong> at <a href="/app/">rasin.pyebwa.com/app</a></li>
+                <li><strong>Check your family tree</strong> - it should load properly</li>
+                <li><strong>Test these features</strong> (they should all work now):
+                    <ul>
+                        <li>✅ View family members</li>
+                        <li>✅ Add/edit member profiles</li>
+                        <li>✅ Add stories with text</li>
+                        <li>✅ Record audio stories</li>
+                        <li>✅ Update privacy settings</li>
+                        <li>✅ Add life events to timeline</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+        
+        <div class="info-box">
+            <h3>Features Now Working:</h3>
+            <ul>
+                <li><strong>Audio Recording:</strong> Record stories in your own voice (up to 5 minutes)</li>
+                <li><strong>Story Templates:</strong> Use pre-made templates or create custom stories</li>
+                <li><strong>Privacy Controls:</strong> Set privacy levels for each field (private, family, public)</li>
+                <li><strong>Timeline Events:</strong> Track important life events with dates and locations</li>
+                <li><strong>Relationship Stories:</strong> Create stories that involve multiple family members</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h3>Still Having Issues?</h3>
+            <p>If you're still experiencing problems:</p>
+            <ol>
+                <li><strong>Clear your browser cache</strong> (Ctrl+Shift+Delete or Cmd+Shift+Delete)</li>
+                <li><strong>Log out and log back in</strong></li>
+                <li><strong>Check the browser console</strong> for any error messages (F12 → Console tab)</li>
+                <li><strong>Try a different browser</strong> to rule out browser-specific issues</li>
+            </ol>
+        </div>
+        
+        <a href="/app/" class="button">Go to Pyebwa App</a>
+    </div>
+</body>
+</html>

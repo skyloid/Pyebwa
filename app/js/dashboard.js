@@ -1,16 +1,210 @@
 // Modern Dashboard Component
 
+// Slideshow management
+let slideshowInterval = null;
+let currentMemberId = null;
+
+// Get random family member photo
+function getRandomFamilyMemberPhoto(excludeMemberId = null) {
+    const membersWithPhotos = (window.familyMembers || [])
+        .filter(member => member.photoUrl);
+    
+    if (membersWithPhotos.length === 0) {
+        console.log('No family members with photos found');
+        return null;
+    }
+    
+    console.log(`Found ${membersWithPhotos.length} members with photos`);
+    
+    // If only one photo, return it
+    if (membersWithPhotos.length === 1) {
+        const member = membersWithPhotos[0];
+        return {
+            url: member.photoUrl,
+            memberId: member.id,
+            memberName: `${member.firstName} ${member.lastName}`
+        };
+    }
+    
+    // Filter out the current member if specified
+    let availableMembers = membersWithPhotos;
+    if (excludeMemberId) {
+        availableMembers = membersWithPhotos.filter(m => m.id !== excludeMemberId);
+        console.log(`Excluding member ${excludeMemberId}, ${availableMembers.length} members available`);
+    }
+    
+    // If all were filtered out (shouldn't happen), use all
+    if (availableMembers.length === 0) {
+        availableMembers = membersWithPhotos;
+    }
+    
+    // Select random member
+    const randomMember = availableMembers[
+        Math.floor(Math.random() * availableMembers.length)
+    ];
+    
+    return {
+        url: randomMember.photoUrl,
+        memberId: randomMember.id,
+        memberName: `${randomMember.firstName} ${randomMember.lastName}`
+    };
+}
+
+// Transition to new image with fade effect
+function transitionToNewImage(container, photoData) {
+    const slideshowContainer = container.querySelector('.dashboard-bg-slideshow');
+    if (!slideshowContainer) return;
+    
+    const activeImage = slideshowContainer.querySelector('.slideshow-image.active');
+    const inactiveImage = slideshowContainer.querySelector('.slideshow-image:not(.active)');
+    
+    if (!activeImage || !inactiveImage) return;
+    
+    // Preload new image
+    const img = new Image();
+    img.onload = () => {
+        // Set new image on inactive div
+        inactiveImage.style.backgroundImage = `url('${photoData.url}')`;
+        
+        // Swap active states for smooth transition
+        activeImage.classList.remove('active');
+        inactiveImage.classList.add('active');
+        
+        currentMemberId = photoData.memberId;
+        console.log(`Transitioned to photo of ${photoData.memberName} (ID: ${photoData.memberId})`);
+    };
+    img.onerror = () => {
+        console.error(`Failed to load photo for ${photoData.memberName}`);
+    };
+    img.src = photoData.url;
+}
+
+// Start the family photo slideshow
+function startFamilyPhotoSlideshow(containerElement) {
+    // Clear any existing interval
+    if (slideshowInterval) {
+        clearInterval(slideshowInterval);
+        slideshowInterval = null;
+    }
+    
+    // Get initial photo
+    const initialPhoto = getRandomFamilyMemberPhoto();
+    if (!initialPhoto) {
+        console.log('No photos available for slideshow');
+        return;
+    }
+    
+    // Set initial image
+    const slideshowContainer = containerElement.querySelector('.dashboard-bg-slideshow');
+    if (slideshowContainer) {
+        const firstImage = slideshowContainer.querySelector('.slideshow-image.active');
+        if (firstImage) {
+            firstImage.style.backgroundImage = `url('${initialPhoto.url}')`;
+            currentMemberId = initialPhoto.memberId;
+            console.log(`Starting slideshow with photo of ${initialPhoto.memberName} (ID: ${initialPhoto.memberId})`);
+        }
+    }
+    
+    // Change image every 10 seconds
+    slideshowInterval = setInterval(() => {
+        const nextPhoto = getRandomFamilyMemberPhoto(currentMemberId);
+        if (nextPhoto) {
+            transitionToNewImage(containerElement, nextPhoto);
+        }
+    }, 10000);
+}
+
+// Stop the slideshow
+window.stopDashboardSlideshow = function() {
+    if (slideshowInterval) {
+        clearInterval(slideshowInterval);
+        slideshowInterval = null;
+        currentMemberId = null; // Reset current member
+        console.log('Dashboard slideshow stopped');
+    }
+};
+
 function createDashboard() {
+    console.log('Creating dashboard...');
+    
     // Calculate statistics
     const stats = calculateFamilyStats();
+    
+    // Check if we have family photos
+    const hasPhotos = (window.familyMembers || []).some(member => member.photoUrl);
     
     const dashboard = document.createElement('div');
     dashboard.className = 'dashboard-container';
     dashboard.innerHTML = `
+        <style>
+            .slideshow-image {
+                opacity: 0 !important;
+            }
+            .slideshow-image.active {
+                opacity: 0.4 !important;
+            }
+        </style>
         <!-- Welcome Section -->
-        <div class="dashboard-welcome card">
-            <h2>${t('welcomeBack') || 'Welcome back'}, ${currentUser?.displayName || currentUser?.email || 'User'}!</h2>
-            <p>${t('familyTreeSummary') || 'Your family tree has'} <strong>${stats.totalMembers}</strong> ${t('members') || 'members'} ${t('acrossGenerations') || 'across'} <strong>${stats.generations}</strong> ${t('generations') || 'generations'}.</p>
+        <div class="dashboard-welcome card" style="
+            position: relative; 
+            overflow: hidden; 
+            min-height: 250px; 
+            padding: 0;
+            background: linear-gradient(135deg, #00217D 0%, #D41125 100%);
+        ">
+            ${hasPhotos ? `
+                <!-- Slideshow container for family photos -->
+                <div class="dashboard-bg-slideshow" style="
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                ">
+                    <div class="slideshow-image active" style="
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background-size: cover;
+                        background-position: center;
+                        background-repeat: no-repeat;
+                        opacity: 0.4;
+                        transition: opacity 1.5s ease-in-out;
+                    "></div>
+                    <div class="slideshow-image" style="
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background-size: cover;
+                        background-position: center;
+                        background-repeat: no-repeat;
+                        opacity: 0;
+                        transition: opacity 1.5s ease-in-out;
+                    "></div>
+                </div>
+            ` : ''}
+            <div style="
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(135deg, rgba(0,33,125,0.7) 0%, rgba(212,17,37,0.5) 100%);
+            "></div>
+            <div style="position: relative; z-index: 2; padding: 40px;">
+                <h2 style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); margin-bottom: 15px;">${t('welcomeBack') || 'Welcome back'}, ${currentUser?.displayName || currentUser?.email || 'User'}!</h2>
+                <p style="color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); font-size: 18px; line-height: 1.5;">${t('familyTreeSummary') || 'Your family tree has'} <strong>${stats.totalMembers}</strong> ${t('members') || 'members'} ${t('acrossGenerations') || 'across'} <strong>${stats.generations}</strong> ${t('generations') || 'generations'}.</p>
+                ${!hasPhotos && stats.totalMembers > 0 ? `
+                    <p style="color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); font-size: 14px; margin-top: 15px; opacity: 0.9;">
+                        <span class="material-icons" style="font-size: 16px; vertical-align: middle;">photo_camera</span>
+                        ${t('addPhotosPrompt') || 'Add photos to your family members to see them here!'}
+                    </p>
+                ` : ''}
+            </div>
         </div>
         
         <!-- Statistics Grid -->
@@ -128,6 +322,14 @@ function createDashboard() {
             </div>
         </div>
     `;
+    
+    // Start slideshow if we have photos
+    if (hasPhotos) {
+        // Use setTimeout to ensure DOM is ready
+        setTimeout(() => {
+            startFamilyPhotoSlideshow(dashboard);
+        }, 100);
+    }
     
     return dashboard;
 }
@@ -409,17 +611,16 @@ const dashboardStyles = `
 }
 
 .dashboard-welcome {
-    padding: 32px;
-    background: linear-gradient(135deg, rgba(0, 33, 125, 0.05) 0%, rgba(212, 17, 37, 0.05) 100%);
+    /* Removed conflicting styles - using inline styles for background */
 }
 
 .dashboard-welcome h2 {
     margin-bottom: 8px;
-    color: var(--gray-900);
+    /* Color handled by inline styles */
 }
 
 .dashboard-welcome p {
-    color: var(--gray-600);
+    /* Color handled by inline styles */
     font-size: 16px;
 }
 

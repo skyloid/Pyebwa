@@ -76,8 +76,7 @@
         
         // Create search UI components
         createSearchComponents() {
-            // Quick search in header
-            this.createQuickSearch();
+            // Quick search removed - no longer needed
             
             // Advanced search modal
             this.createAdvancedSearchModal();
@@ -89,40 +88,7 @@
             this.addStyles();
         },
         
-        // Create quick search box
-        createQuickSearch() {
-            const header = document.querySelector('.app-header');
-            if (!header) return;
-            
-            const searchContainer = document.createElement('div');
-            searchContainer.className = 'quick-search-container';
-            searchContainer.innerHTML = `
-                <div class="quick-search">
-                    <input type="text" 
-                           class="quick-search-input" 
-                           placeholder="${t('searchFamily')}"
-                           autocomplete="off">
-                    <button class="search-btn" aria-label="${t('search')}">
-                        <i class="material-icons">search</i>
-                    </button>
-                    <button class="advanced-search-btn" aria-label="${t('advancedSearch')}">
-                        <i class="material-icons">tune</i>
-                    </button>
-                    <div class="search-suggestions"></div>
-                </div>
-            `;
-            
-            // Insert after logo/title
-            const title = header.querySelector('.app-title');
-            if (title && title.nextSibling) {
-                header.insertBefore(searchContainer, title.nextSibling);
-            } else {
-                header.appendChild(searchContainer);
-            }
-            
-            this.quickSearchInput = searchContainer.querySelector('.quick-search-input');
-            this.searchSuggestions = searchContainer.querySelector('.search-suggestions');
-        },
+        // Quick search removed - method no longer needed
         
         // Create advanced search modal
         createAdvancedSearchModal() {
@@ -246,100 +212,7 @@
         addStyles() {
             const style = document.createElement('style');
             style.textContent = `
-                /* Quick Search */
-                .quick-search-container {
-                    flex: 1;
-                    max-width: 400px;
-                    margin: 0 20px;
-                }
-                
-                .quick-search {
-                    position: relative;
-                    display: flex;
-                    align-items: center;
-                    background: rgba(255, 255, 255, 0.1);
-                    border-radius: 8px;
-                    padding: 4px;
-                }
-                
-                .quick-search-input {
-                    flex: 1;
-                    background: transparent;
-                    border: none;
-                    color: white;
-                    padding: 8px 12px;
-                    font-size: 14px;
-                    outline: none;
-                }
-                
-                .quick-search-input::placeholder {
-                    color: rgba(255, 255, 255, 0.7);
-                }
-                
-                .search-btn, .advanced-search-btn {
-                    background: none;
-                    border: none;
-                    color: rgba(255, 255, 255, 0.8);
-                    padding: 8px;
-                    cursor: pointer;
-                    transition: color 0.2s;
-                }
-                
-                .search-btn:hover, .advanced-search-btn:hover {
-                    color: white;
-                }
-                
-                /* Search Suggestions */
-                .search-suggestions {
-                    position: absolute;
-                    top: 100%;
-                    left: 0;
-                    right: 0;
-                    background: white;
-                    border-radius: 8px;
-                    margin-top: 4px;
-                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-                    display: none;
-                    z-index: 1000;
-                }
-                
-                .search-suggestions.active {
-                    display: block;
-                }
-                
-                .suggestion-item {
-                    padding: 12px 16px;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    transition: background 0.2s;
-                }
-                
-                .suggestion-item:hover {
-                    background: #f5f5f5;
-                }
-                
-                .suggestion-item img {
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 50%;
-                    object-fit: cover;
-                }
-                
-                .suggestion-info {
-                    flex: 1;
-                }
-                
-                .suggestion-name {
-                    font-weight: 500;
-                    color: #333;
-                }
-                
-                .suggestion-details {
-                    font-size: 12px;
-                    color: #666;
-                }
+                /* Quick Search removed - CSS removed */
                 
                 /* Search Modal */
                 .search-modal {
@@ -494,18 +367,7 @@
                 }
                 
                 /* Dark mode support */
-                body.dark-mode .quick-search {
-                    background: rgba(255, 255, 255, 0.05);
-                }
-                
-                body.dark-mode .search-suggestions {
-                    background: #2a2a2a;
-                    color: #f0f0f0;
-                }
-                
-                body.dark-mode .suggestion-item:hover {
-                    background: #3a3a3a;
-                }
+                /* Quick search dark mode styles removed */
                 
                 body.dark-mode .search-modal-content {
                     background: #1a1a1a;
@@ -553,9 +415,7 @@
                 
                 /* Mobile responsive */
                 @media (max-width: 768px) {
-                    .quick-search-container {
-                        margin: 0 10px;
-                    }
+                    /* Quick search mobile styles removed */
                     
                     .search-modal-content {
                         margin: 10px;
@@ -573,39 +433,24 @@
         
         // Attach event listeners
         attachEventListeners() {
-            // Quick search
-            this.quickSearchInput.addEventListener('input', 
-                this.debounce(() => this.handleQuickSearch(), 300));
-            
-            this.quickSearchInput.addEventListener('focus', 
-                () => this.showSuggestions());
-            
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.quick-search')) {
-                    this.hideSuggestions();
-                }
-            });
-            
-            // Advanced search button
-            document.querySelector('.advanced-search-btn').addEventListener('click', 
-                () => this.openAdvancedSearch());
+            // Quick search removed - event listeners removed
             
             // Modal controls
-            document.querySelector('.close-search-modal').addEventListener('click', 
+            document.querySelector('.close-search-modal')?.addEventListener('click', 
                 () => this.closeAdvancedSearch());
             
-            document.querySelector('.perform-search').addEventListener('click', 
+            document.querySelector('.perform-search')?.addEventListener('click', 
                 () => this.performAdvancedSearch());
             
-            document.querySelector('.clear-filters').addEventListener('click', 
+            document.querySelector('.clear-filters')?.addEventListener('click', 
                 () => this.clearFilters());
             
             // Results controls
-            document.querySelector('.close-results').addEventListener('click', 
+            document.querySelector('.close-results')?.addEventListener('click', 
                 () => this.closeResults());
             
             // Click outside modal to close
-            this.searchModal.addEventListener('click', (e) => {
+            this.searchModal?.addEventListener('click', (e) => {
                 if (e.target === this.searchModal) {
                     this.closeAdvancedSearch();
                 }
@@ -632,103 +477,8 @@
             });
         },
         
-        // Handle quick search
-        async handleQuickSearch() {
-            const query = this.quickSearchInput.value.trim();
+        // Quick search methods removed - no longer needed
             
-            if (query.length < 2) {
-                this.hideSuggestions();
-                return;
-            }
-            
-            this.state.currentQuery = query;
-            
-            // Show loading in suggestions
-            this.showSuggestions();
-            this.updateSuggestions([{ loading: true }]);
-            
-            try {
-                // Perform search
-                const results = await window.pyebwaSearch.search(
-                    query, 
-                    {}, 
-                    window.userFamilyTreeId
-                );
-                
-                // Show top 5 as suggestions
-                this.updateSuggestions(results.results.slice(0, 5));
-                
-            } catch (error) {
-                console.error('Search error:', error);
-                this.hideSuggestions();
-            }
-        },
-        
-        // Show suggestions dropdown
-        showSuggestions() {
-            this.searchSuggestions.classList.add('active');
-        },
-        
-        // Hide suggestions
-        hideSuggestions() {
-            this.searchSuggestions.classList.remove('active');
-        },
-        
-        // Update suggestions
-        updateSuggestions(suggestions) {
-            if (suggestions.length === 0) {
-                this.searchSuggestions.innerHTML = `
-                    <div class="no-suggestions">${t('noResults')}</div>
-                `;
-                return;
-            }
-            
-            if (suggestions[0].loading) {
-                this.searchSuggestions.innerHTML = `
-                    <div class="search-loading">
-                        <div class="spinner"></div>
-                    </div>
-                `;
-                return;
-            }
-            
-            const html = suggestions.map(person => `
-                <div class="suggestion-item" data-id="${person.id}">
-                    <img src="${person.photoUrl || '/app/images/default-avatar.svg'}" 
-                         alt="${person.firstName} ${person.lastName}">
-                    <div class="suggestion-info">
-                        <div class="suggestion-name">
-                            ${person.highlights?.firstName || person.firstName} 
-                            ${person.highlights?.lastName || person.lastName}
-                        </div>
-                        <div class="suggestion-details">
-                            ${this.formatPersonDetails(person)}
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-            
-            this.searchSuggestions.innerHTML = html + `
-                <div class="suggestion-item see-all" style="background: #f5f5f5;">
-                    <i class="material-icons" style="margin-left: 12px;">search</i>
-                    <div class="suggestion-info">
-                        <div class="suggestion-name">${t('seeAllResults')}</div>
-                    </div>
-                </div>
-            `;
-            
-            // Add click handlers
-            this.searchSuggestions.querySelectorAll('.suggestion-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    if (item.classList.contains('see-all')) {
-                        this.showAllResults();
-                    } else {
-                        const personId = item.dataset.id;
-                        this.viewPerson(personId);
-                    }
-                });
-            });
-        },
         
         // Format person details for display
         formatPersonDetails(person) {
@@ -749,8 +499,7 @@
         
         // View person profile
         viewPerson(personId) {
-            this.hideSuggestions();
-            this.quickSearchInput.value = '';
+            // Quick search removed - method simplified
             
             // Navigate to person view
             if (window.viewMemberProfile) {
@@ -760,7 +509,7 @@
         
         // Show all search results
         async showAllResults() {
-            this.hideSuggestions();
+            // Quick search removed - method simplified
             this.state.isSearching = true;
             
             // Show results container

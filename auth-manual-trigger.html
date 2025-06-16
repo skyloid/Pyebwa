@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Auth Trigger - Pyebwa</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #00217D;
+            margin-bottom: 30px;
+        }
+        button {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover:not(:disabled) {
+            background: #001654;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .info {
+            background: #cce5ff;
+            color: #004085;
+        }
+        .log {
+            text-align: left;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Manual Auth Trigger</h1>
+        
+        <p>If you're having trouble with authentication after logging in, use this tool to manually trigger authentication sync.</p>
+        
+        <div id="status" class="status info">Ready to check authentication</div>
+        
+        <button onclick="checkAuth()" id="checkBtn">Check Current Auth</button>
+        <button onclick="forceAuth()" id="forceBtn">Force Auth Sync</button>
+        <button onclick="goToApp()" id="appBtn" style="display: none;">Go to App</button>
+        
+        <div id="log" class="log" style="display: none;"></div>
+    </div>
+    
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
+            authDomain: "pyebwa-f5960.firebaseapp.com",
+            projectId: "pyebwa-f5960",
+            storageBucket: "pyebwa-f5960.firebasestorage.app",
+            messagingSenderId: "1042887343749",
+            appId: "1:1042887343749:web:c276bf69b6c0895111f3ec",
+            measurementId: "G-ZX92K1TMM3"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        
+        let logs = [];
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logs.push(`[${timestamp}] ${message}`);
+            const logEl = document.getElementById('log');
+            logEl.style.display = 'block';
+            logEl.innerHTML = logs.join('<br>');
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        function updateStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+        
+        async function checkAuth() {
+            log('Checking authentication state...');
+            const checkBtn = document.getElementById('checkBtn');
+            checkBtn.disabled = true;
+            
+            try {
+                // Check current user
+                const user = auth.currentUser;
+                if (user) {
+                    updateStatus(`✓ Authenticated as: ${user.email}`, 'success');
+                    log(`Found user: ${user.email}`);
+                    log(`UID: ${user.uid}`);
+                    log(`Provider: ${user.providerData[0]?.providerId}`);
+                    document.getElementById('appBtn').style.display = 'inline-block';
+                } else {
+                    updateStatus('Not authenticated', 'error');
+                    log('No authenticated user found');
+                    
+                    // Check session storage
+                    const recentLogin = sessionStorage.getItem('recentLogin');
+                    if (recentLogin) {
+                        log('Recent login flag detected');
+                        updateStatus('Recent login detected but no auth found. Try Force Auth Sync.', 'error');
+                    }
+                }
+            } catch (error) {
+                updateStatus(`Error: ${error.message}`, 'error');
+                log(`Error: ${error.message}`);
+            } finally {
+                checkBtn.disabled = false;
+            }
+        }
+        
+        async function forceAuth() {
+            log('Starting forced authentication sync...');
+            const forceBtn = document.getElementById('forceBtn');
+            forceBtn.disabled = true;
+            forceBtn.textContent = 'Syncing...';
+            
+            let attempts = 0;
+            const maxAttempts = 20;
+            
+            const tryAuth = async () => {
+                attempts++;
+                log(`Attempt ${attempts}/${maxAttempts}...`);
+                updateStatus(`Syncing... (${attempts}/${maxAttempts})`, 'info');
+                
+                // Method 1: Direct check
+                let user = auth.currentUser;
+                if (user) {
+                    onAuthFound(user);
+                    return;
+                }
+                
+                // Method 2: Force reload
+                try {
+                    await auth.currentUser?.reload();
+                    user = auth.currentUser;
+                    if (user) {
+                        onAuthFound(user);
+                        return;
+                    }
+                } catch (e) {
+                    log(`Reload failed: ${e.message}`);
+                }
+                
+                // Method 3: Set persistence
+                try {
+                    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+                    user = auth.currentUser;
+                    if (user) {
+                        onAuthFound(user);
+                        return;
+                    }
+                } catch (e) {
+                    log(`Persistence failed: ${e.message}`);
+                }
+                
+                // Method 4: Wait for state change
+                const waitPromise = new Promise((resolve) => {
+                    const timeout = setTimeout(() => resolve(null), 1500);
+                    const unsubscribe = auth.onAuthStateChanged((user) => {
+                        if (user) {
+                            clearTimeout(timeout);
+                            unsubscribe();
+                            resolve(user);
+                        }
+                    });
+                });
+                
+                user = await waitPromise;
+                if (user) {
+                    onAuthFound(user);
+                    return;
+                }
+                
+                // Continue trying
+                if (attempts < maxAttempts) {
+                    setTimeout(tryAuth, 1000);
+                } else {
+                    updateStatus('Could not sync authentication after 20 attempts', 'error');
+                    log('All sync attempts failed');
+                    forceBtn.disabled = false;
+                    forceBtn.textContent = 'Force Auth Sync';
+                }
+            };
+            
+            const onAuthFound = (user) => {
+                updateStatus(`✓ Authentication synced! Found: ${user.email}`, 'success');
+                log(`Success! Authenticated as ${user.email}`);
+                sessionStorage.setItem('authManuallyTriggered', 'true');
+                forceBtn.disabled = false;
+                forceBtn.textContent = 'Force Auth Sync';
+                document.getElementById('appBtn').style.display = 'inline-block';
+            };
+            
+            tryAuth();
+        }
+        
+        function goToApp() {
+            sessionStorage.setItem('recentLogin', 'true');
+            sessionStorage.setItem('authManuallyTriggered', 'true');
+            window.location.href = '/app/';
+        }
+        
+        // Listen for auth changes
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                log(`Auth state changed: ${user.email} detected`);
+            }
+        });
+        
+        // Auto-check on load
+        window.addEventListener('load', () => {
+            setTimeout(checkAuth, 500);
+        });
+    </script>
+</body>
+</html>

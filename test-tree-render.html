@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Tree Rendering - Pyebwa</title>
+    <link rel="stylesheet" href="/app/css/app-modern.css">
+    <link rel="stylesheet" href="/app/css/tree-modern.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-info {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-info h1 {
+            color: #00217D;
+            margin-top: 0;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status.info {
+            background: #cce5ff;
+            color: #004085;
+        }
+        #treeContainer {
+            background: white;
+            min-height: 400px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #001654;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-info">
+        <h1>Tree Rendering Test</h1>
+        <div id="authStatus" class="status info">Checking authentication...</div>
+        <div id="dataStatus" class="status info">Loading data...</div>
+        <button onclick="manualRender()">Manually Render Tree</button>
+        <button onclick="showDebugInfo()">Show Debug Info</button>
+    </div>
+    
+    <div id="treeContainer">
+        <p>Tree will appear here...</p>
+    </div>
+    
+    <div class="test-info">
+        <h3>Debug Output</h3>
+        <pre id="debugOutput"></pre>
+    </div>
+    
+    <script src="/app/js/firebase-config.js"></script>
+    <script src="/app/js/translations.js"></script>
+    <script>
+        // Test data
+        let testMembers = [
+            {
+                id: '1',
+                firstName: 'John',
+                lastName: 'Doe',
+                gender: 'male',
+                relationship: null,
+                relatedTo: null
+            },
+            {
+                id: '2',
+                firstName: 'Jane',
+                lastName: 'Doe',
+                gender: 'female',
+                relationship: 'spouse',
+                relatedTo: '1'
+            },
+            {
+                id: '3',
+                firstName: 'Jimmy',
+                lastName: 'Doe',
+                gender: 'male',
+                relationship: 'child',
+                relatedTo: '1'
+            },
+            {
+                id: '4',
+                firstName: 'Jenny',
+                lastName: 'Doe',
+                gender: 'female',
+                relationship: 'child',
+                relatedTo: '1'
+            }
+        ];
+        
+        let debugLog = [];
+        
+        function log(message, data = null) {
+            console.log(message, data);
+            debugLog.push(message);
+            if (data) {
+                debugLog.push(JSON.stringify(data, null, 2));
+            }
+            document.getElementById('debugOutput').textContent = debugLog.join('\n');
+        }
+        
+        // Override console.error
+        const originalError = console.error;
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            log('ERROR: ' + args.join(' '));
+        };
+        
+        // Set up global variables
+        window.familyMembers = testMembers;
+        window.currentUser = { uid: 'test123', email: 'test@example.com' };
+        window.userFamilyTreeId = 'test-tree-id';
+        
+        // Mock showAddMemberModal if not exists
+        if (!window.showAddMemberModal) {
+            window.showAddMemberModal = function() {
+                alert('Add member modal would appear here');
+            };
+        }
+        
+        // Load tree.js
+        const script = document.createElement('script');
+        script.src = '/app/js/tree.js';
+        script.onload = function() {
+            log('tree.js loaded successfully');
+            document.getElementById('dataStatus').className = 'status success';
+            document.getElementById('dataStatus').textContent = '✓ Scripts loaded';
+            checkFunctions();
+        };
+        script.onerror = function() {
+            log('ERROR: Failed to load tree.js');
+            document.getElementById('dataStatus').className = 'status error';
+            document.getElementById('dataStatus').textContent = '✗ Failed to load tree.js';
+        };
+        document.head.appendChild(script);
+        
+        // Check authentication
+        auth.onAuthStateChanged((user) => {
+            const authStatus = document.getElementById('authStatus');
+            if (user) {
+                authStatus.className = 'status success';
+                authStatus.textContent = `✓ Authenticated as: ${user.email}`;
+                log('Authenticated', { email: user.email });
+                loadRealData(user);
+            } else {
+                authStatus.className = 'status info';
+                authStatus.textContent = 'ℹ Not authenticated - using test data';
+                log('Not authenticated, using test data');
+            }
+        });
+        
+        async function loadRealData(user) {
+            try {
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (userDoc.exists && userDoc.data().familyTreeId) {
+                    const treeId = userDoc.data().familyTreeId;
+                    window.userFamilyTreeId = treeId;
+                    
+                    const snapshot = await db.collection('familyTrees')
+                        .doc(treeId)
+                        .collection('members')
+                        .get();
+                    
+                    const members = [];
+                    snapshot.forEach(doc => {
+                        members.push({ id: doc.id, ...doc.data() });
+                    });
+                    
+                    if (members.length > 0) {
+                        window.familyMembers = members;
+                        log(`Loaded ${members.length} real members`);
+                        document.getElementById('dataStatus').className = 'status success';
+                        document.getElementById('dataStatus').textContent = `✓ Loaded ${members.length} family members`;
+                    }
+                }
+            } catch (error) {
+                log('Error loading real data:', error);
+            }
+        }
+        
+        function checkFunctions() {
+            const functions = [
+                'renderFamilyTree',
+                'buildTreeStructure',
+                'renderTreeNode',
+                't'
+            ];
+            
+            const missing = functions.filter(fn => typeof window[fn] !== 'function');
+            
+            if (missing.length === 0) {
+                log('All required functions are available');
+            } else {
+                log('Missing functions: ' + missing.join(', '));
+            }
+        }
+        
+        function manualRender() {
+            log('Attempting manual render...');
+            log('familyMembers:', window.familyMembers);
+            
+            if (typeof window.renderFamilyTree !== 'function') {
+                alert('renderFamilyTree function not found!');
+                return;
+            }
+            
+            try {
+                window.renderFamilyTree();
+                log('renderFamilyTree() called successfully');
+            } catch (error) {
+                log('Error in renderFamilyTree:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        function showDebugInfo() {
+            const info = {
+                'window.familyMembers': window.familyMembers,
+                'window.familyMembers.length': window.familyMembers ? window.familyMembers.length : 0,
+                'window.userFamilyTreeId': window.userFamilyTreeId,
+                'window.currentUser': window.currentUser,
+                'renderFamilyTree exists': typeof window.renderFamilyTree === 'function',
+                'buildTreeStructure exists': typeof window.buildTreeStructure === 'function',
+                'renderTreeNode exists': typeof window.renderTreeNode === 'function',
+                't (translation) exists': typeof window.t === 'function',
+                'treeContainer exists': document.getElementById('treeContainer') !== null
+            };
+            
+            log('Debug info:', info);
+            alert('Check the debug output below');
+        }
+    </script>
+</body>
+</html>
