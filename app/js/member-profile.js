@@ -389,26 +389,7 @@
                         </div>
                     </div>
                 </div>
-                
-                <!-- Social Media Profiles Section -->
-                <div class="content-section" id="social-profiles-section">
-                    <!-- Will be populated by social-connect.js -->
-                </div>
             `;
-            
-            // Load social media profiles if available
-            if (window.socialConnect) {
-                try {
-                    const socialProfiles = await window.socialConnect.getMemberSocialProfiles(member.id);
-                    const socialSection = document.getElementById('social-profiles-section');
-                    if (socialSection) {
-                        const socialUI = window.socialConnect.createSocialProfileUI(member.id, socialProfiles);
-                        socialSection.appendChild(socialUI);
-                    }
-                } catch (error) {
-                    console.error('Error loading social profiles:', error);
-                }
-            }
         },
         
         // Load timeline tab
