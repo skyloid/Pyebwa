@@ -14,9 +14,23 @@ service firebase.storage {
       return request.resource.contentType.matches('image/.*');
     }
     
-    // Helper function to check file size (5MB limit)
+    // Helper function to check file size (5MB limit for images, 50MB for audio/video)
     function isValidFileSize() {
       return request.resource.size <= 5 * 1024 * 1024;
+    }
+    
+    function isValidAudioVideoSize() {
+      return request.resource.size <= 50 * 1024 * 1024;
+    }
+    
+    // Helper function to check if upload is audio
+    function isAudioFile() {
+      return request.resource.contentType.matches('audio/.*');
+    }
+    
+    // Helper function to check if upload is video
+    function isVideoFile() {
+      return request.resource.contentType.matches('video/.*');
     }
     
     // Rules for family tree photos
@@ -61,6 +75,61 @@ service firebase.storage {
       // Users can delete their own profile photos
       allow delete: if isAuthenticated() 
         && request.auth.uid == userId;
+    }
+    
+    // Rules for audio stories
+    match /audio_stories/{treeId}/{memberId}/{filename} {
+      // Anyone authenticated can listen to audio stories
+      allow read: if isAuthenticated();
+      
+      // Authenticated users can upload audio stories
+      allow write: if isAuthenticated()
+        && isAudioFile()
+        && isValidAudioVideoSize();
+        
+      // Authenticated users can delete audio stories
+      allow delete: if isAuthenticated();
+    }
+    
+    // Rules for video messages
+    match /video_messages/{treeId}/{memberId}/{filename} {
+      // Anyone authenticated can view video messages
+      allow read: if isAuthenticated();
+      
+      // Authenticated users can upload video messages (including webm format)
+      allow write: if isAuthenticated()
+        && (isVideoFile() || request.resource.contentType.matches('video/webm'))
+        && isValidAudioVideoSize();
+        
+      // Authenticated users can delete video messages
+      allow delete: if isAuthenticated();
+    }
+    
+    // Rules for family documents
+    match /documents/{treeId}/{memberId}/{filename} {
+      // Anyone authenticated can view documents
+      allow read: if isAuthenticated();
+      
+      // Authenticated users can upload documents
+      allow write: if isAuthenticated()
+        && isValidFileSize();
+        
+      // Authenticated users can delete documents
+      allow delete: if isAuthenticated();
+    }
+    
+    // Rules for member photos in the enhanced profile
+    match /family_photos/{treeId}/{memberId}/{filename} {
+      // Anyone authenticated can view photos
+      allow read: if isAuthenticated();
+      
+      // Authenticated users can upload photos
+      allow write: if isAuthenticated()
+        && isImageFile()
+        && isValidFileSize();
+        
+      // Authenticated users can delete photos
+      allow delete: if isAuthenticated();
     }
     
     // Default: Deny all other access

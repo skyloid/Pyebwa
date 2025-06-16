@@ -633,28 +633,32 @@
 .photo-delete-btn {
     position: absolute;
     top: 10px;
-    left: 10px;
-    width: 32px;
-    height: 32px;
+    right: 10px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.9);
-    border: none;
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid rgba(0, 0, 0, 0.1);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     opacity: 0;
-    transition: opacity 0.2s, background 0.2s, transform 0.2s;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 10;
 }
 
 .gallery-item:hover .photo-delete-btn {
     opacity: 1;
+    transform: scale(1.05);
 }
 
 .photo-delete-btn:hover {
     background: #ff4444;
+    border-color: #ff4444;
     transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
 }
 
 .photo-delete-btn:hover .material-icons {
@@ -662,7 +666,7 @@
 }
 
 .photo-delete-btn .material-icons {
-    font-size: 18px;
+    font-size: 20px;
     color: #666;
     transition: color 0.2s;
 }

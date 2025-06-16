@@ -77,6 +77,10 @@
                                 <i class="material-icons">auto_stories</i>
                                 <span>${t('stories') || 'Stories'}</span>
                             </button>
+                            <button class="profile-tab" data-tab="videos">
+                                <i class="material-icons">videocam</i>
+                                <span>${t('videos') || 'Videos'}</span>
+                            </button>
                             <button class="profile-tab" data-tab="family">
                                 <i class="material-icons">group</i>
                                 <span>${t('family') || 'Family'}</span>
@@ -90,6 +94,7 @@
                             <div class="profile-tab-content" id="gallery-tab"></div>
                             <div class="profile-tab-content" id="documents-tab"></div>
                             <div class="profile-tab-content" id="stories-tab"></div>
+                            <div class="profile-tab-content" id="videos-tab"></div>
                             <div class="profile-tab-content" id="family-tab"></div>
                         </div>
                     </div>
@@ -277,6 +282,9 @@
                     break;
                 case 'stories':
                     this.loadStories(container);
+                    break;
+                case 'videos':
+                    this.loadVideos(container);
                     break;
                 case 'family':
                     this.loadFamily(container);
@@ -535,6 +543,19 @@
             console.log('Loading gallery for member:', member.id);
             console.log('Member photos count:', photos.length);
             console.log('Has profile photo:', !!member.photoUrl);
+            
+            // Debug: Check if delete buttons are rendered
+            setTimeout(() => {
+                const deleteButtons = container.querySelectorAll('.photo-delete-btn');
+                console.log('Delete buttons found in gallery:', deleteButtons.length);
+                deleteButtons.forEach((btn, index) => {
+                    console.log(`Delete button ${index}:`, {
+                        visible: window.getComputedStyle(btn).opacity,
+                        display: window.getComputedStyle(btn).display,
+                        zIndex: window.getComputedStyle(btn).zIndex
+                    });
+                });
+            }, 100);
             
             // Check if user can view photos
             const canView = window.canViewField || (() => true);
@@ -845,6 +866,91 @@
                     window.showError(t('errorDeletingStory') || 'Error deleting story');
                 }
             }
+        },
+        
+        // Load videos tab
+        loadVideos(container) {
+            const member = this.currentMember;
+            const videos = member.videoMessages || [];
+            
+            if (videos.length === 0) {
+                container.innerHTML = `
+                    <div class="videos-container">
+                        <div class="videos-empty">
+                            <i class="material-icons">videocam_off</i>
+                            <h3>${t('noVideosYet') || 'No video messages yet'}</h3>
+                            <p>${t('recordFirstVideo') || 'Record a video message to share with your family'}</p>
+                            <button class="btn btn-primary" onclick="pyebwaVideoMessages.showVideoMessageModal()">
+                                <i class="material-icons">videocam</i>
+                                ${t('recordVideoMessage') || 'Record Video Message'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="videos-container">
+                    <div class="videos-header">
+                        <h3>${t('videoMessages') || 'Video Messages'} (${videos.length})</h3>
+                        <button class="btn btn-primary" onclick="pyebwaVideoMessages.showVideoMessageModal()">
+                            <i class="material-icons">videocam</i>
+                            ${t('recordNew') || 'Record New'}
+                        </button>
+                    </div>
+                    
+                    <div class="videos-grid">
+                        ${videos.map(video => this.renderVideoCard(video)).join('')}
+                    </div>
+                </div>
+            `;
+        },
+        
+        // Render video card
+        renderVideoCard(video) {
+            const privacyIcons = {
+                'family': 'group',
+                'spouse_children': 'family_restroom',
+                'private': 'lock'
+            };
+            
+            return `
+                <div class="video-card" onclick="pyebwaVideoMessages.viewVideoMessage('${video.id}')">
+                    <div class="video-thumbnail">
+                        <div class="play-icon">
+                            <i class="material-icons">play_arrow</i>
+                        </div>
+                        <span class="video-duration">${this.formatDuration(video.duration || 0)}</span>
+                        <div class="video-actions">
+                            <button onclick="event.stopPropagation(); pyebwaVideoMessages.deleteVideoMessage('${video.id}')" title="${t('deleteVideo') || 'Delete video'}">
+                                <i class="material-icons">delete</i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="video-card-content">
+                        <h4>${video.title}</h4>
+                        ${video.description ? `<p>${video.description}</p>` : ''}
+                        <div class="video-meta">
+                            <span><i class="material-icons">person</i> ${video.recordedByName || 'Unknown'}</span>
+                            <span><i class="material-icons">calendar_today</i> ${this.formatDate(video.recordedAt)}</span>
+                            ${video.privacy ? `
+                                <span class="privacy-badge">
+                                    <i class="material-icons">${privacyIcons[video.privacy] || 'lock'}</i>
+                                    ${t(video.privacy) || video.privacy}
+                                </span>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        },
+        
+        // Format duration helper
+        formatDuration(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
         },
         
         // Load family tab
