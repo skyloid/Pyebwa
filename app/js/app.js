@@ -633,8 +633,12 @@ async function initializeAuth() {
                     // Hide loading and show main view
                     hideLoadingState();
                     
-                    // Check if onboarding is needed
-                    if (window.shouldShowOnboarding && window.shouldShowOnboarding()) {
+                    // Check if enhanced onboarding is needed
+                    const needsOnboarding = await window.shouldShowEnhancedOnboarding();
+                    if (needsOnboarding) {
+                        window.showEnhancedOnboarding();
+                    } else if (window.shouldShowOnboarding && window.shouldShowOnboarding()) {
+                        // Fallback to basic onboarding if enhanced onboarding is not needed
                         window.showOnboarding();
                     }
                     
@@ -1040,6 +1044,11 @@ function initializeEventListeners() {
 
 // Show view
 function showView(viewName) {
+    // Stop dashboard slideshow when leaving dashboard
+    if (viewName !== 'dashboard' && window.stopDashboardSlideshow) {
+        window.stopDashboardSlideshow();
+    }
+    
     // Hide all views
     document.querySelectorAll('.view-container').forEach(view => {
         view.style.display = 'none';

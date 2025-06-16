@@ -4,14 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pyebwa - Your Family Tree</title>
-    <link rel="icon" type="image/x-icon" href="/app/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     
     <!-- CSS -->
     <link rel="stylesheet" href="/app/css/app-modern.css?v=3">
     <link rel="stylesheet" href="/app/css/tree-modern.css?v=1">
     <link rel="stylesheet" href="/app/css/tree-responsive.css?v=1">
     <link rel="stylesheet" href="/app/css/tree-controls.css?v=1">
-    <link rel="stylesheet" href="/app/css/member-profile.css?v=1">
+    <link rel="stylesheet" href="/app/css/member-profile.css?v=2">
+    <link rel="stylesheet" href="/app/css/onboarding-flow.css">
     <link rel="stylesheet" href="/app/css/animations.css?v=1">
     <link rel="stylesheet" href="/app/css/mobile.css?v=1">
     <link rel="stylesheet" href="/app/css/desktop.css?v=1">
@@ -102,7 +103,7 @@
                             <a href="https://pyebwa.com/mission.html">Our Mission</a>
                             <a href="https://pyebwa.com/contact.html">Contact</a>
                             <hr>
-                            <a href="#" id="logoutBtn" data-i18n="logout">Dekonekte</a>
+                            <a href="#" id="logoutBtn" onclick="logout(); return false;" data-i18n="logout">Dekonekte</a>
                         </div>
                     </div>
                 </div>
@@ -244,9 +245,15 @@
                         </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label data-i18n="email">Email</label>
-                        <input type="email" name="email" placeholder="example@email.com">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label data-i18n="deathDate">Dat lanmò</label>
+                            <input type="date" name="deathDate">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="email">Email</label>
+                            <input type="email" name="email" placeholder="example@email.com">
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -294,11 +301,11 @@
     </footer>
 
     <!-- JavaScript -->
-    <script src="/app/js/firebase-config.js?v=3"></script>
+    <script src="/app/js/firebase-config.js?v=4"></script>
     <script src="/app/js/auth-enhanced.js?v=1"></script>
     <script src="/app/js/cookies.js?v=1"></script>
     <script src="/app/js/translations.js?v=4"></script>
-    <script src="/app/js/app.js?v=20250109-single-domain"></script>
+    <script src="/app/js/app.js?v=20250116-auth-state-fix"></script>
     <script src="/app/js/tree.js"></script>
     <script src="/app/js/tree-responsive.js"></script>
     <script src="/app/js/tree-controls.js"></script>
@@ -306,7 +313,7 @@
     <script src="/app/js/tree-performance.js"></script>
     <script src="/app/js/tree-export.js"></script>
     <script src="/app/js/members.js"></script>
-    <script src="/app/js/member-profile.js"></script>
+    <script src="/app/js/member-profile.js?v=2"></script>
     <script src="/app/js/photo-gallery.js"></script>
     <script src="/app/js/document-manager.js"></script>
     <script src="/app/js/stories.js"></script>
@@ -315,6 +322,7 @@
     <script src="/app/js/mobile-nav-enhanced.js"></script>
     <script src="/app/js/dashboard.js"></script>
     <script src="/app/js/onboarding.js"></script>
+    <script src="/app/js/onboarding-flow.js"></script>
     <script src="/app/js/pdf-export.js"></script>
     <script src="/app/js/modal-fix.js"></script>
     
@@ -325,7 +333,7 @@
     <script src="/app/js/sw-register.js"></script>
     
     <!-- Security Scripts -->
-    <script src="/app/js/security-headers.js"></script>
+    <script src="/app/js/security-headers.js?v=2"></script>
     <script src="/app/js/input-validator.js"></script>
     <script src="/app/js/rate-limiter.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" integrity="sha512-H+rglffZ6f5gF7UJgvH4Naa+fGCgjrHKMgoFOGmcPTRwR6oILo5R+gtzNrpDp7iMV3udbymBVjkeZGNz1Em4rQ==" crossorigin="anonymous"></script>

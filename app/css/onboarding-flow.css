@@ -1,0 +1,689 @@
+/* Enhanced 3-Step Onboarding Flow Styles */
+
+.onboarding-flow-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.onboarding-flow-container {
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 900px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.4s ease-out;
+}
+
+/* Progress Bar */
+.onboarding-progress {
+    padding: 24px 32px;
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.progress-bar {
+    height: 8px;
+    background: var(--gray-200);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00BCD4 0%, #40E0D0 100%);
+    border-radius: 4px;
+    transition: width 0.4s ease-out;
+}
+
+.progress-text {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.step-counter {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-700);
+}
+
+/* Content Area */
+.onboarding-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 40px 32px;
+}
+
+/* Steps */
+.onboarding-step {
+    display: none;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.onboarding-step.active {
+    display: block;
+}
+
+.step-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.step-subtitle {
+    font-size: 18px;
+    color: var(--gray-600);
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+/* Form Styles */
+.onboarding-form {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group select {
+    padding: 12px 16px;
+    border: 2px solid var(--gray-200);
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.2s;
+    background: white;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #40E0D0;
+    box-shadow: 0 0 0 3px rgba(64, 224, 208, 0.1);
+}
+
+.form-group input.error {
+    border-color: var(--primary-red);
+}
+
+.error-message {
+    font-size: 12px;
+    color: var(--primary-red);
+    margin-top: 4px;
+    min-height: 16px;
+}
+
+/* Start Choice */
+.start-choice {
+    text-align: center;
+    margin-top: 40px;
+}
+
+.choice-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 20px;
+}
+
+.choice-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+}
+
+.choice-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 24px 32px;
+    border: 2px solid var(--gray-200);
+    border-radius: 12px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 180px;
+}
+
+.choice-btn:hover {
+    border-color: #40E0D0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(64, 224, 208, 0.2);
+}
+
+.choice-btn.active {
+    background: linear-gradient(135deg, #00BCD4 0%, #40E0D0 100%);
+    border-color: transparent;
+    color: white;
+}
+
+.choice-btn .material-icons {
+    font-size: 32px;
+}
+
+/* Step 2: Members Form */
+.members-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.members-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.member-form-item {
+    background: var(--gray-50);
+    padding: 24px;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.member-form-item:hover {
+    border-color: var(--gray-200);
+}
+
+.member-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.member-header h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin: 0;
+}
+
+.remove-member-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--gray-400);
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.remove-member-btn:hover {
+    background: var(--gray-200);
+    color: var(--primary-red);
+}
+
+.member-fields {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.add-member-btn {
+    width: 100%;
+    justify-content: center;
+}
+
+/* Photo Upload */
+.photo-upload-compact {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.photo-preview {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.photo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.photo-loading {
+    font-size: 12px;
+    color: var(--gray-600);
+}
+
+/* Tree Preview */
+.tree-preview {
+    margin-top: 40px;
+    padding: 24px;
+    background: var(--gray-50);
+    border-radius: 12px;
+    text-align: center;
+}
+
+.tree-preview h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: 20px;
+}
+
+.mini-tree-container {
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.empty-preview {
+    color: var(--gray-500);
+    font-style: italic;
+}
+
+.mini-tree {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+}
+
+.tree-node {
+    background: white;
+    border: 2px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    min-width: 120px;
+    transition: all 0.2s;
+}
+
+.tree-node.me {
+    background: linear-gradient(135deg, #00BCD4 0%, #40E0D0 100%);
+    border-color: transparent;
+    color: white;
+}
+
+.node-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.node-content img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.node-content .material-icons {
+    font-size: 48px;
+    color: var(--gray-400);
+}
+
+.tree-node.me .material-icons {
+    color: white;
+}
+
+.node-content span {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Step 3: Tutorial */
+.tutorial-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.skip-tutorial-btn {
+    background: none;
+    border: 2px solid var(--gray-300);
+    padding: 8px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-700);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.skip-tutorial-btn:hover {
+    background: var(--gray-100);
+    border-color: var(--gray-400);
+}
+
+.tutorial-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: start;
+}
+
+.sample-tree-container {
+    background: var(--gray-50);
+    border-radius: 12px;
+    padding: 32px;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sample-tree-visual {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+}
+
+.tree-member {
+    background: white;
+    border: 2px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.tree-member img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+}
+
+.tree-member.highlight {
+    border-color: #40E0D0;
+    box-shadow: 0 0 0 3px rgba(64, 224, 208, 0.2);
+    animation: pulse 2s infinite;
+}
+
+.tree-member .tooltip {
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--gray-900);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tree-member .tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid var(--gray-900);
+}
+
+.tree-connection {
+    width: 2px;
+    height: 40px;
+    background: var(--gray-300);
+}
+
+/* Tutorial Tips */
+.tutorial-tips {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.tip-card {
+    background: white;
+    border: 2px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 20px;
+    opacity: 0.6;
+    transition: all 0.3s;
+}
+
+.tip-card.active {
+    opacity: 1;
+    border-color: #40E0D0;
+    transform: translateX(8px);
+}
+
+.tip-card .material-icons {
+    font-size: 24px;
+    color: #40E0D0;
+    margin-bottom: 12px;
+}
+
+.tip-card h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 8px;
+}
+
+.tip-card p {
+    font-size: 14px;
+    color: var(--gray-600);
+    line-height: 1.5;
+}
+
+/* Navigation */
+.onboarding-navigation {
+    padding: 24px 32px;
+    background: var(--gray-50);
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.back-btn {
+    color: var(--gray-700);
+}
+
+.next-btn {
+    min-width: 140px;
+    justify-content: center;
+}
+
+/* Tour Prompt Modal */
+.tour-prompt-modal .modal-content {
+    max-width: 500px;
+    text-align: center;
+    padding: 40px;
+}
+
+.tour-prompt-modal h3 {
+    font-size: 24px;
+    margin-bottom: 16px;
+}
+
+.tour-prompt-modal p {
+    font-size: 16px;
+    color: var(--gray-600);
+    margin-bottom: 32px;
+}
+
+.tour-prompt-modal .modal-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(64, 224, 208, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 12px rgba(64, 224, 208, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(64, 224, 208, 0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .onboarding-flow-container {
+        max-width: 100%;
+        height: 100%;
+        max-height: 100%;
+        border-radius: 0;
+    }
+    
+    .onboarding-content {
+        padding: 24px 20px;
+    }
+    
+    .step-title {
+        font-size: 24px;
+    }
+    
+    .step-subtitle {
+        font-size: 16px;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .choice-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .choice-btn {
+        width: 100%;
+    }
+    
+    .member-fields {
+        grid-template-columns: 1fr;
+    }
+    
+    .tutorial-content {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+    
+    .sample-tree-container {
+        min-height: 300px;
+    }
+    
+    .tree-member {
+        padding: 12px 16px;
+    }
+    
+    .tree-member img {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+@media (max-width: 480px) {
+    .onboarding-progress {
+        padding: 16px 20px;
+    }
+    
+    .onboarding-navigation {
+        padding: 16px 20px;
+    }
+    
+    .step-title {
+        font-size: 20px;
+    }
+    
+    .step-subtitle {
+        font-size: 14px;
+        margin-bottom: 24px;
+    }
+    
+    .member-form-item {
+        padding: 16px;
+    }
+    
+    .tutorial-tips {
+        gap: 12px;
+    }
+    
+    .tip-card {
+        padding: 16px;
+    }
+}
