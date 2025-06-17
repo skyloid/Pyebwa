@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "PYEBWA Planter",
+    "slug": "pyebwa-planter",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.pyebwa.planter",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app needs GPS to verify tree planting locations.",
+        "NSCameraUsageDescription": "This app needs camera access to capture tree planting evidence."
+      }
+    },
+    "android": {
+      "package": "com.pyebwa.planter",
+      "permissions": ["CAMERA", "ACCESS_FINE_LOCATION", "WRITE_EXTERNAL_STORAGE"]
+    }
+  }
+}

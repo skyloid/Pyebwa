@@ -42,7 +42,8 @@
       "Bash(git commit:*)",
       "Bash(tar:*)",
       "Bash(firebase deploy:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(./project-structure.sh:*)"
     ],
     "deny": []
   }
