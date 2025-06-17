@@ -1,0 +1,459 @@
+{
+  "version": "0.1.0",
+  "name": "pyebwa_token",
+  "instructions": [
+    {
+      "name": "initialize",
+      "accounts": [
+        {
+          "name": "tokenPool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "InitializeParams"
+          }
+        }
+      ]
+    },
+    {
+      "name": "purchaseTokens",
+      "accounts": [
+        {
+          "name": "buyer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "familyAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenPool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "preserveHeritage",
+      "accounts": [
+        {
+          "name": "family",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "familyAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenPool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treeFund",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "ipfsHash",
+          "type": "string"
+        },
+        {
+          "name": "heritageType",
+          "type": {
+            "defined": "HeritageType"
+          }
+        },
+        {
+          "name": "tokenCost",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "submitPlanting",
+      "accounts": [
+        {
+          "name": "planter",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "planterAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "plantingEvidence",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "treeCount",
+          "type": "u16"
+        },
+        {
+          "name": "gpsCoordinates",
+          "type": {
+            "array": ["f64", 2]
+          }
+        },
+        {
+          "name": "evidenceHash",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "verifyPlanting",
+      "accounts": [
+        {
+          "name": "verifier",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "tokenPool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "plantingEvidence",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "planterAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treeFund",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "TokenPool",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "totalSupply",
+            "type": "u64"
+          },
+          {
+            "name": "treesFunded",
+            "type": "u64"
+          },
+          {
+            "name": "heritagePreserved",
+            "type": "u64"
+          },
+          {
+            "name": "tokenPrice",
+            "type": "u64"
+          },
+          {
+            "name": "treeFundRate",
+            "type": "u16"
+          },
+          {
+            "name": "treePaymentRate",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FamilyAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "publicKey"
+          },
+          {
+            "name": "tokenBalance",
+            "type": "u64"
+          },
+          {
+            "name": "heritageItems",
+            "type": "u32"
+          },
+          {
+            "name": "treesFunded",
+            "type": "u32"
+          },
+          {
+            "name": "totalSpent",
+            "type": "u64"
+          },
+          {
+            "name": "createdAt",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PlanterAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "publicKey"
+          },
+          {
+            "name": "verified",
+            "type": "bool"
+          },
+          {
+            "name": "treesPlanted",
+            "type": "u32"
+          },
+          {
+            "name": "treesVerified",
+            "type": "u32"
+          },
+          {
+            "name": "earnings",
+            "type": "u64"
+          },
+          {
+            "name": "reputationScore",
+            "type": "u16"
+          },
+          {
+            "name": "gpsLat",
+            "type": "f64"
+          },
+          {
+            "name": "gpsLon",
+            "type": "f64"
+          },
+          {
+            "name": "createdAt",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PlantingEvidence",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "planter",
+            "type": "publicKey"
+          },
+          {
+            "name": "treeCount",
+            "type": "u16"
+          },
+          {
+            "name": "gpsLat",
+            "type": "f64"
+          },
+          {
+            "name": "gpsLon",
+            "type": "f64"
+          },
+          {
+            "name": "ipfsHash",
+            "type": "string"
+          },
+          {
+            "name": "submittedAt",
+            "type": "i64"
+          },
+          {
+            "name": "verified",
+            "type": "bool"
+          },
+          {
+            "name": "verifiedBy",
+            "type": {
+              "option": "publicKey"
+            }
+          },
+          {
+            "name": "verifiedAt",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "paymentReleased",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "InitializeParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "tokenPrice",
+            "type": "u64"
+          },
+          {
+            "name": "treeFundRate",
+            "type": "u16"
+          },
+          {
+            "name": "treePaymentRate",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "HeritageType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Photo"
+          },
+          {
+            "name": "Document"
+          },
+          {
+            "name": "Audio"
+          },
+          {
+            "name": "Video"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InsufficientBalance",
+      "msg": "Insufficient token balance"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidGPSCoordinates",
+      "msg": "Invalid GPS coordinates"
+    },
+    {
+      "code": 6002,
+      "name": "IPFSHashTooLong",
+      "msg": "IPFS hash too long"
+    },
+    {
+      "code": 6003,
+      "name": "AlreadyVerified",
+      "msg": "Evidence already verified"
+    },
+    {
+      "code": 6004,
+      "name": "PlanterNotVerified",
+      "msg": "Planter not verified"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidTreeCount",
+      "msg": "Invalid tree count"
+    },
+    {
+      "code": 6006,
+      "name": "Unauthorized",
+      "msg": "Unauthorized"
+    },
+    {
+      "code": 6007,
+      "name": "MathOverflow",
+      "msg": "Math overflow"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidHeritageType",
+      "msg": "Invalid heritage type"
+    },
+    {
+      "code": 6009,
+      "name": "PaymentAlreadyReleased",
+      "msg": "Payment already released"
+    }
+  ]
+}

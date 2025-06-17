@@ -1,0 +1,74 @@
+{
+  "common": {
+    "loading": "Ap chaje...",
+    "error": "Erè",
+    "success": "Siksè",
+    "cancel": "Anile",
+    "save": "Anrejistre",
+    "delete": "Efase",
+    "confirm": "Konfime",
+    "back": "Retounen",
+    "next": "Kontinye"
+  },
+  "nav": {
+    "dashboard": "Dachbòd",
+    "preserve": "Prezève Eritaj",
+    "impact": "Enpak Ou",
+    "about": "Konsènan"
+  },
+  "wallet": {
+    "connect": "Konekte Bous",
+    "disconnect": "Dekonekte",
+    "balance": "Balans",
+    "address": "Adrès"
+  },
+  "dashboard": {
+    "title": "PYEBWA Token",
+    "subtitle": "Konekte Eritaj ak Peyi Natal",
+    "welcome": "Byenveni nan PYEBWA Token",
+    "connectPrompt": "Konekte bous ou pou kòmanse prezève eritaj epi finanse plantasyon pyebwa nan Ayiti.",
+    "yourWallet": "Bous Ou",
+    "solBalance": "Balans SOL",
+    "tokenBalance": "Balans PYEBWA",
+    "platformStats": "Estatistik Platfòm",
+    "totalSupply": "Pwovizyon Total",
+    "treesFunded": "Pyebwa Finanse",
+    "heritageItems": "Atik Eritaj",
+    "tokenPrice": "Pri Token"
+  },
+  "purchase": {
+    "title": "Achte Token PYEBWA",
+    "amount": "Kantite Token",
+    "pricePerToken": "Pri pou chak Token",
+    "totalCost": "Pri Total",
+    "purchaseButton": "Achte Token",
+    "processing": "Ap trete...",
+    "successMessage": "Ou achte {{amount}} token PYEBWA avèk siksè!",
+    "disclaimer": "Token yo ap ajoute nan bous ou imedyatman apre acha a"
+  },
+  "impact": {
+    "title": "Enpak Ou",
+    "heritagePreserved": "Atik Eritaj Prezève",
+    "treesFunded": "Pyebwa Finanse",
+    "tokensSpent": "Token Depanse",
+    "co2Offset": "Souvni ou yo prezève finanse {{trees}} pyebwa nan Ayiti, sa retire apeprè {{co2}} kg CO₂ nan atmosfè.",
+    "getStarted": "Kòmanse",
+    "preserveHeritage": "Prezève Eritaj",
+    "startMessage": "Kòmanse prezève eritaj fanmi ou pou finanse plantasyon pyebwa nan Ayiti."
+  },
+  "preserve": {
+    "title": "Prezève Eritaj Ou",
+    "uploadPhoto": "Mete Foto",
+    "uploadDocument": "Mete Dokiman",
+    "recordAudio": "Anrejistre Istwa",
+    "uploadVideo": "Mete Videyo",
+    "dragDrop": "Trennen ak lage fichye yo isit la oswa klike pou navige",
+    "fileType": "Tip Fichye",
+    "cost": "Pri",
+    "treesFunded": "Pyebwa Finanse",
+    "photo": "Foto",
+    "document": "Dokiman",
+    "audio": "Istwa Odyo",
+    "video": "Souvni Videyo"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "preserve": "Preserve Heritage",
+    "impact": "Your Impact",
+    "about": "About"
+  },
+  "wallet": {
+    "connect": "Connect Wallet",
+    "disconnect": "Disconnect",
+    "balance": "Balance",
+    "address": "Address"
+  },
+  "dashboard": {
+    "title": "PYEBWA Token",
+    "subtitle": "Connecting Heritage to Homeland",
+    "welcome": "Welcome to PYEBWA Token",
+    "connectPrompt": "Connect your wallet to start preserving heritage and funding tree planting in Haiti.",
+    "yourWallet": "Your Wallet",
+    "solBalance": "SOL Balance",
+    "tokenBalance": "PYEBWA Balance",
+    "platformStats": "Platform Statistics",
+    "totalSupply": "Total Supply",
+    "treesFunded": "Trees Funded",
+    "heritageItems": "Heritage Items",
+    "tokenPrice": "Token Price"
+  },
+  "purchase": {
+    "title": "Purchase PYEBWA Tokens",
+    "amount": "Amount of Tokens",
+    "pricePerToken": "Price per Token",
+    "totalCost": "Total Cost",
+    "purchaseButton": "Purchase Tokens",
+    "processing": "Processing...",
+    "successMessage": "Successfully purchased {{amount}} PYEBWA tokens!",
+    "disclaimer": "Tokens will be added to your wallet immediately after purchase"
+  },
+  "impact": {
+    "title": "Your Impact",
+    "heritagePreserved": "Heritage Items Preserved",
+    "treesFunded": "Trees Funded",
+    "tokensSpent": "Tokens Spent",
+    "co2Offset": "Your preserved memories have funded {{trees}} trees in Haiti, offsetting approximately {{co2}} kg of CO₂.",
+    "getStarted": "Get Started",
+    "preserveHeritage": "Preserve Heritage",
+    "startMessage": "Start preserving your family heritage to fund tree planting in Haiti."
+  },
+  "preserve": {
+    "title": "Preserve Your Heritage",
+    "uploadPhoto": "Upload Photo",
+    "uploadDocument": "Upload Document",
+    "recordAudio": "Record Audio Story",
+    "uploadVideo": "Upload Video",
+    "dragDrop": "Drag & drop files here or click to browse",
+    "fileType": "File Type",
+    "cost": "Cost",
+    "treesFunded": "Trees Funded",
+    "photo": "Photo",
+    "document": "Document",
+    "audio": "Audio Story",
+    "video": "Video Memory"
+  }
+}

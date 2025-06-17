@@ -1,0 +1,74 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "confirm": "Confirmer",
+    "back": "Retour",
+    "next": "Suivant"
+  },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "preserve": "Préserver l'héritage",
+    "impact": "Votre impact",
+    "about": "À propos"
+  },
+  "wallet": {
+    "connect": "Connecter le portefeuille",
+    "disconnect": "Déconnecter",
+    "balance": "Solde",
+    "address": "Adresse"
+  },
+  "dashboard": {
+    "title": "PYEBWA Token",
+    "subtitle": "Connecter l'héritage à la patrie",
+    "welcome": "Bienvenue sur PYEBWA Token",
+    "connectPrompt": "Connectez votre portefeuille pour commencer à préserver l'héritage et financer la plantation d'arbres en Haïti.",
+    "yourWallet": "Votre portefeuille",
+    "solBalance": "Solde SOL",
+    "tokenBalance": "Solde PYEBWA",
+    "platformStats": "Statistiques de la plateforme",
+    "totalSupply": "Offre totale",
+    "treesFunded": "Arbres financés",
+    "heritageItems": "Articles du patrimoine",
+    "tokenPrice": "Prix du token"
+  },
+  "purchase": {
+    "title": "Acheter des tokens PYEBWA",
+    "amount": "Nombre de tokens",
+    "pricePerToken": "Prix par token",
+    "totalCost": "Coût total",
+    "purchaseButton": "Acheter des tokens",
+    "processing": "Traitement...",
+    "successMessage": "Achat réussi de {{amount}} tokens PYEBWA!",
+    "disclaimer": "Les tokens seront ajoutés à votre portefeuille immédiatement après l'achat"
+  },
+  "impact": {
+    "title": "Votre impact",
+    "heritagePreserved": "Articles du patrimoine préservés",
+    "treesFunded": "Arbres financés",
+    "tokensSpent": "Tokens dépensés",
+    "co2Offset": "Vos souvenirs préservés ont financé {{trees}} arbres en Haïti, compensant environ {{co2}} kg de CO₂.",
+    "getStarted": "Commencer",
+    "preserveHeritage": "Préserver l'héritage",
+    "startMessage": "Commencez à préserver votre patrimoine familial pour financer la plantation d'arbres en Haïti."
+  },
+  "preserve": {
+    "title": "Préservez votre héritage",
+    "uploadPhoto": "Télécharger une photo",
+    "uploadDocument": "Télécharger un document",
+    "recordAudio": "Enregistrer une histoire audio",
+    "uploadVideo": "Télécharger une vidéo",
+    "dragDrop": "Glissez-déposez des fichiers ici ou cliquez pour parcourir",
+    "fileType": "Type de fichier",
+    "cost": "Coût",
+    "treesFunded": "Arbres financés",
+    "photo": "Photo",
+    "document": "Document",
+    "audio": "Histoire audio",
+    "video": "Mémoire vidéo"
+  }
+}
