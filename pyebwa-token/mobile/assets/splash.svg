@@ -1,0 +1,8 @@
+
+<svg width="1280" height="1280" viewBox="0 0 1280 1280" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1280" height="1280" fill="#ffffff"/>
+  <circle cx="640" cy="480" r="240" fill="#4CAF50"/>
+  <path d="M640 480 L640 880" stroke="#8B4513" stroke-width="48" fill="none"/>
+  <text x="640" y="1100" font-family="Arial" font-size="144" fill="#00217D" text-anchor="middle">PYEBWA</text>
+  <text x="640" y="1200" font-family="Arial" font-size="72" fill="#D41125" text-anchor="middle">Token</text>
+</svg>

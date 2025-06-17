@@ -1,0 +1,7 @@
+
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1024" height="1024" fill="#00217D"/>
+  <circle cx="512" cy="400" r="200" fill="#4CAF50"/>
+  <path d="M512 400 L512 724" stroke="#8B4513" stroke-width="40" fill="none"/>
+  <text x="512" y="900" font-family="Arial" font-size="120" fill="white" text-anchor="middle">PYEBWA</text>
+</svg>
