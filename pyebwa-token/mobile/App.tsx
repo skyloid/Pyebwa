@@ -7,10 +7,11 @@ import { useTranslation } from 'react-i18next';
 import './src/i18n'; // Initialize i18n
 import { LanguageSwitcher } from './src/components/LanguageSwitcher';
 import { HeritageUploadScreen } from './src/screens/HeritageUploadScreen';
+import { TokenPurchaseScreen } from './src/screens/TokenPurchaseScreen';
 
 export default function App() {
   const { t, i18n } = useTranslation();
-  const [screen, setScreen] = React.useState<'login' | 'home' | 'camera' | 'heritage'>('login');
+  const [screen, setScreen] = React.useState<'login' | 'home' | 'camera' | 'heritage' | 'purchase'>('login');
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
   const [userType, setUserType] = React.useState<'family' | 'planter'>('family');
@@ -425,7 +426,10 @@ export default function App() {
               <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 15, marginBottom: 20, alignItems: 'center' }}>
                 <Text style={{ fontSize: 16, color: '#666', marginBottom: 10 }}>{t('dashboard.tokenBalance')}</Text>
                 <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#00217D', marginBottom: 15 }}>100 PYEBWA</Text>
-                <TouchableOpacity style={{ backgroundColor: '#D41125', paddingHorizontal: 30, paddingVertical: 10, borderRadius: 20 }}>
+                <TouchableOpacity 
+                  style={{ backgroundColor: '#D41125', paddingHorizontal: 30, paddingVertical: 10, borderRadius: 20 }}
+                  onPress={() => setScreen('purchase')}
+                >
                   <Text style={{ color: 'white', fontWeight: 'bold' }}>{t('dashboard.buyMoreTokens')}</Text>
                 </TouchableOpacity>
               </View>
@@ -493,6 +497,24 @@ export default function App() {
           <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white' }}>{t('dashboard.uploadHeritage')}</Text>
         </View>
         <HeritageUploadScreen />
+      </View>
+    );
+  }
+
+  // Token Purchase Screen
+  if (screen === 'purchase') {
+    return (
+      <View style={{ flex: 1 }}>
+        <View style={{ backgroundColor: '#00217D', padding: 20, paddingTop: 50, flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity 
+            onPress={() => setScreen('home')}
+            style={{ marginRight: 15 }}
+          >
+            <Text style={{ color: 'white', fontSize: 18 }}>{t('camera.back')}</Text>
+          </TouchableOpacity>
+          <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white' }}>{t('dashboard.buyMoreTokens')}</Text>
+        </View>
+        <TokenPurchaseScreen />
       </View>
     );
   }

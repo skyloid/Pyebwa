@@ -98,5 +98,40 @@
       "story": "Istwa",
       "artifact": "Atifak"
     }
+  },
+  "purchase": {
+    "currentBalance": "Balans Kounye a",
+    "selectPackage": "Chwazi yon Pake Token",
+    "mostPopular": "PI POPILÈ",
+    "bonus": "bonis",
+    "token": "token",
+    "buy": "Achte",
+    "whyBuyTokens": "Pouki Achte Token PYEBWA?",
+    "benefits": {
+      "environment": {
+        "title": "Sipote Rebwazman",
+        "description": "Chak token ede finanse pwojè plantasyon pyebwa nan Ayiti"
+      },
+      "heritage": {
+        "title": "Konseve Eritaj Fanmi",
+        "description": "Sèvi ak token pou estoke ak pwoteje souvni fanmi ou pou tout tan"
+      },
+      "value": {
+        "title": "Valè k ap Grandi",
+        "description": "Pandan plis pyebwa plante, token ou yo ka vin gen plis valè"
+      }
+    },
+    "recentTransactions": "Tranzaksyon Resan",
+    "completePayment": "Konplete Peman",
+    "orderSummary": "Rezime Kòmand",
+    "paymentMethod": "Metòd Peman",
+    "paymentMethods": {
+      "creditCard": "Kat Kredi/Debi",
+      "mobileMoney": "Lajan Mobil"
+    },
+    "confirmPayment": "Peye ${{amount}}",
+    "securePayment": "Pwosesis peman an sekirite",
+    "successMessage": "Ou achte {{tokens}} token PYEBWA pou ${{price}} avek siksè!",
+    "paymentError": "Peman an echwe. Tanpri eseye ankò oswa sèvi ak yon lòt metòd peman."
   }
 }

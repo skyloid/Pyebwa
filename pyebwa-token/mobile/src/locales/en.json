@@ -98,5 +98,40 @@
       "story": "Story",
       "artifact": "Artifact"
     }
+  },
+  "purchase": {
+    "currentBalance": "Current Balance",
+    "selectPackage": "Select a Token Package",
+    "mostPopular": "MOST POPULAR",
+    "bonus": "bonus",
+    "token": "token",
+    "buy": "Buy",
+    "whyBuyTokens": "Why Buy PYEBWA Tokens?",
+    "benefits": {
+      "environment": {
+        "title": "Support Reforestation",
+        "description": "Every token helps fund tree planting initiatives in Haiti"
+      },
+      "heritage": {
+        "title": "Preserve Family Heritage",
+        "description": "Use tokens to store and protect your family's memories forever"
+      },
+      "value": {
+        "title": "Growing Value",
+        "description": "As more trees are planted, your tokens may increase in value"
+      }
+    },
+    "recentTransactions": "Recent Transactions",
+    "completePayment": "Complete Payment",
+    "orderSummary": "Order Summary",
+    "paymentMethod": "Payment Method",
+    "paymentMethods": {
+      "creditCard": "Credit/Debit Card",
+      "mobileMoney": "Mobile Money"
+    },
+    "confirmPayment": "Pay ${{amount}}",
+    "securePayment": "Secure payment processing",
+    "successMessage": "Successfully purchased {{tokens}} PYEBWA tokens for ${{price}}!",
+    "paymentError": "Payment failed. Please try again or use a different payment method."
   }
 }

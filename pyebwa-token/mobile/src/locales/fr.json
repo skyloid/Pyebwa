@@ -98,5 +98,40 @@
       "story": "Histoire",
       "artifact": "Artefact"
     }
+  },
+  "purchase": {
+    "currentBalance": "Solde Actuel",
+    "selectPackage": "Sélectionnez un Forfait de Jetons",
+    "mostPopular": "LE PLUS POPULAIRE",
+    "bonus": "bonus",
+    "token": "jeton",
+    "buy": "Acheter",
+    "whyBuyTokens": "Pourquoi Acheter des Jetons PYEBWA ?",
+    "benefits": {
+      "environment": {
+        "title": "Soutenir le Reboisement",
+        "description": "Chaque jeton aide à financer des initiatives de plantation d'arbres en Haïti"
+      },
+      "heritage": {
+        "title": "Préserver l'Héritage Familial",
+        "description": "Utilisez des jetons pour stocker et protéger les souvenirs de votre famille pour toujours"
+      },
+      "value": {
+        "title": "Valeur Croissante",
+        "description": "À mesure que plus d'arbres sont plantés, vos jetons peuvent prendre de la valeur"
+      }
+    },
+    "recentTransactions": "Transactions Récentes",
+    "completePayment": "Finaliser le Paiement",
+    "orderSummary": "Résumé de la Commande",
+    "paymentMethod": "Méthode de Paiement",
+    "paymentMethods": {
+      "creditCard": "Carte de Crédit/Débit",
+      "mobileMoney": "Mobile Money"
+    },
+    "confirmPayment": "Payer {{amount}} $",
+    "securePayment": "Traitement de paiement sécurisé",
+    "successMessage": "Achat réussi de {{tokens}} jetons PYEBWA pour {{price}} $ !",
+    "paymentError": "Le paiement a échoué. Veuillez réessayer ou utiliser une autre méthode de paiement."
   }
 }
