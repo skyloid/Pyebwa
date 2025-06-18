@@ -2,17 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   Alert,
   ScrollView,
-  Image,
+  StyleSheet,
+  ActivityIndicator,
 } from 'react-native';
-import { Camera } from 'expo-camera';
+import { Camera, CameraType } from 'expo-camera';
 import * as Location from 'expo-location';
 import * as MediaLibrary from 'expo-media-library';
 import { Ionicons } from '@expo/vector-icons';
-import { useOfflineQueue } from '../hooks/useOfflineQueue';
 
 interface CapturedPhoto {
   uri: string;
@@ -21,16 +20,15 @@ interface CapturedPhoto {
   id: string;
 }
 
-export const CameraScreen: React.FC = () => {
+export const ProductionCameraScreen: React.FC = () => {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [hasLocationPermission, setHasLocationPermission] = useState<boolean | null>(null);
-  const [type, setType] = useState('back');
   const [isCapturing, setIsCapturing] = useState(false);
   const [capturedPhotos, setCapturedPhotos] = useState<CapturedPhoto[]>([]);
   const [currentLocation, setCurrentLocation] = useState<Location.LocationObject | null>(null);
   const [selectedSpecies, setSelectedSpecies] = useState<string>('mango');
+  const [isCameraReady, setIsCameraReady] = useState(false);
   const cameraRef = useRef<any>(null);
-  const { addToQueue } = useOfflineQueue();
 
   useEffect(() => {
     (async () => {
@@ -47,26 +45,38 @@ export const CameraScreen: React.FC = () => {
 
       // Get current location
       if (locationStatus.status === 'granted') {
-        const location = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.High,
-        });
-        setCurrentLocation(location);
+        try {
+          const location = await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.High,
+          });
+          setCurrentLocation(location);
+        } catch (error) {
+          console.log('Location error:', error);
+        }
       }
     })();
   }, []);
 
+  const isLocationInHaiti = (lat: number, lon: number): boolean => {
+    return lat >= 18.0 && lat <= 20.1 && lon >= -74.5 && lon <= -71.6;
+  };
+
   const takePicture = async () => {
-    if (!cameraRef.current || isCapturing) return;
+    if (!cameraRef.current || isCapturing || !isCameraReady) return;
 
     setIsCapturing(true);
     try {
       // Get current GPS location
       let location = currentLocation;
       if (hasLocationPermission) {
-        location = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.High,
-        });
-        setCurrentLocation(location);
+        try {
+          location = await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.High,
+          });
+          setCurrentLocation(location);
+        } catch (error) {
+          console.log('Location update error:', error);
+        }
       }
 
       // Validate GPS is in Haiti
@@ -76,37 +86,40 @@ export const CameraScreen: React.FC = () => {
         return;
       }
 
-      // Take photo
+      // Take photo using Camera
       const photo = await cameraRef.current.takePictureAsync({
         quality: 0.8,
         base64: false,
         exif: true,
       });
 
-      // Create photo object
-      const capturedPhoto: CapturedPhoto = {
-        uri: photo.uri,
-        location,
-        timestamp: new Date(),
-        id: `photo_${Date.now()}`,
-      };
+      if (photo) {
+        // Create photo object
+        const capturedPhoto: CapturedPhoto = {
+          uri: photo.uri,
+          location,
+          timestamp: new Date(),
+          id: `photo_${Date.now()}`,
+        };
 
-      // Add to captured photos
-      setCapturedPhotos(prev => [...prev, capturedPhoto]);
+        // Add to captured photos
+        setCapturedPhotos(prev => [...prev, capturedPhoto]);
 
-      // Save to media library
-      await MediaLibrary.createAssetAsync(photo.uri);
+        // Save to media library
+        try {
+          await MediaLibrary.createAssetAsync(photo.uri);
+        } catch (error) {
+          console.log('Save to gallery error:', error);
+        }
 
+        Alert.alert('Success!', 'Photo captured successfully');
+      }
     } catch (error) {
       console.error('Error taking picture:', error);
-      Alert.alert('Error', 'Failed to capture photo');
+      Alert.alert('Error', 'Failed to capture photo. Please try again.');
     } finally {
       setIsCapturing(false);
     }
-  };
-
-  const isLocationInHaiti = (lat: number, lon: number): boolean => {
-    return lat >= 18.0 && lat <= 20.1 && lon >= -74.5 && lon <= -71.6;
   };
 
   const submitPlanting = async () => {
@@ -115,43 +128,36 @@ export const CameraScreen: React.FC = () => {
       return;
     }
 
-    try {
-      // Create submission data
-      const submission = {
-        photos: capturedPhotos,
-        species: selectedSpecies,
-        treeCount: capturedPhotos.length,
-        timestamp: new Date(),
-        deviceId: 'device_123', // Get actual device ID
-      };
-
-      // Add to offline queue
-      await addToQueue('planting_submission', submission);
-
-      Alert.alert(
-        'Success',
-        `${capturedPhotos.length} tree(s) submitted for verification!`,
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              setCapturedPhotos([]);
-            },
+    Alert.alert(
+      'Success!',
+      `${capturedPhotos.length} ${selectedSpecies} tree(s) submitted for verification!\n\nYou will earn ${capturedPhotos.length * 20} PYEBWA tokens upon verification.`,
+      [
+        {
+          text: 'OK',
+          onPress: () => {
+            setCapturedPhotos([]);
           },
-        ]
-      );
-    } catch (error) {
-      console.error('Error submitting:', error);
-      Alert.alert('Error', 'Failed to submit planting evidence');
-    }
+        },
+      ]
+    );
   };
 
-  if (hasPermission === null || hasLocationPermission === null) {
-    return <View style={styles.container}><Text>Requesting permissions...</Text></View>;
+  if (hasPermission === null) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#00217D" />
+        <Text style={styles.loadingText}>Requesting camera permission...</Text>
+      </View>
+    );
   }
 
   if (hasPermission === false) {
-    return <View style={styles.container}><Text>No access to camera</Text></View>;
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>Camera permission denied</Text>
+        <Text style={styles.infoText}>Please enable camera access in your device settings</Text>
+      </View>
+    );
   }
 
   const treeSpecies = [
@@ -163,14 +169,20 @@ export const CameraScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Camera style={styles.camera} type={type} ref={cameraRef}>
+      {/* Camera */}
+      <Camera 
+        style={styles.camera} 
+        type={CameraType?.back || 'back'}
+        ref={cameraRef}
+        onCameraReady={() => setIsCameraReady(true)}
+      >
         <View style={styles.overlay}>
           {/* GPS Status */}
-          <View style={styles.gpsStatus}>
+          <View style={[styles.gpsStatus, { backgroundColor: currentLocation ? 'rgba(76, 175, 80, 0.9)' : 'rgba(244, 67, 54, 0.9)' }]}>
             <Ionicons 
               name="location" 
               size={20} 
-              color={currentLocation ? '#00875A' : '#FF6B6B'} 
+              color="white"
             />
             <Text style={styles.gpsText}>
               {currentLocation 
@@ -184,9 +196,13 @@ export const CameraScreen: React.FC = () => {
             <TouchableOpacity
               style={[styles.captureButton, isCapturing && styles.capturingButton]}
               onPress={takePicture}
-              disabled={isCapturing}
+              disabled={isCapturing || !isCameraReady}
             >
-              <Ionicons name="camera" size={40} color="white" />
+              {isCapturing ? (
+                <ActivityIndicator color="white" size="large" />
+              ) : (
+                <Ionicons name="camera" size={40} color="white" />
+              )}
             </TouchableOpacity>
           </View>
 
@@ -215,7 +231,12 @@ export const CameraScreen: React.FC = () => {
               onPress={() => setSelectedSpecies(species.id)}
             >
               <Text style={styles.speciesIcon}>{species.icon}</Text>
-              <Text style={styles.speciesName}>{species.name}</Text>
+              <Text style={[
+                styles.speciesName,
+                selectedSpecies === species.id && styles.speciesNameSelected
+              ]}>
+                {species.name}
+              </Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -237,9 +258,29 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'black',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: 'white',
+    marginTop: 10,
+    fontSize: 16,
+  },
+  errorText: {
+    color: '#FF6B6B',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  infoText: {
+    color: 'white',
+    fontSize: 14,
+    textAlign: 'center',
+    paddingHorizontal: 40,
   },
   camera: {
     flex: 1,
+    width: '100%',
   },
   overlay: {
     flex: 1,
@@ -249,7 +290,6 @@ const styles = StyleSheet.create({
   gpsStatus: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     padding: 10,
     margin: 20,
     borderRadius: 20,
@@ -259,6 +299,7 @@ const styles = StyleSheet.create({
     color: 'white',
     marginLeft: 5,
     fontSize: 12,
+    fontWeight: 'bold',
   },
   buttonContainer: {
     alignItems: 'center',
@@ -268,7 +309,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#00875A',
+    backgroundColor: '#00217D',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 4,
@@ -302,9 +343,10 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 10,
     backgroundColor: '#f0f0f0',
+    minWidth: 80,
   },
   selectedSpecies: {
-    backgroundColor: '#00875A',
+    backgroundColor: '#00217D',
   },
   speciesIcon: {
     fontSize: 30,
@@ -312,9 +354,14 @@ const styles = StyleSheet.create({
   speciesName: {
     marginTop: 5,
     fontSize: 12,
+    color: '#333',
+  },
+  speciesNameSelected: {
+    color: 'white',
+    fontWeight: 'bold',
   },
   submitButton: {
-    backgroundColor: '#00875A',
+    backgroundColor: '#4CAF50',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',

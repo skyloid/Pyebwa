@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Image, ActivityIndicator, TextInput, Alert, ScrollView } from 'react-native';
-import { SimpleCameraScreen } from './src/screens/SimpleCameraScreen';
+// Camera imports are causing issues with expo-camera 16.1.8
+// import { CameraScreen } from './src/screens/CameraScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function App() {
@@ -455,7 +456,18 @@ export default function App() {
           </TouchableOpacity>
           <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white' }}>Plant Trees</Text>
         </View>
-        <SimpleCameraScreen />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f5f5' }}>
+          <Text style={{ fontSize: 18, color: '#333', marginBottom: 20 }}>Camera Feature</Text>
+          <Text style={{ fontSize: 14, color: '#666', textAlign: 'center', paddingHorizontal: 40 }}>
+            Camera functionality requires a development build due to expo-camera compatibility issues.
+          </Text>
+          <TouchableOpacity 
+            style={{ backgroundColor: '#00217D', padding: 15, borderRadius: 10, marginTop: 20 }}
+            onPress={() => Alert.alert('Camera Demo', 'This would capture a photo and validate GPS location in Haiti for tree planting verification.')}
+          >
+            <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>📸 Simulate Capture</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
