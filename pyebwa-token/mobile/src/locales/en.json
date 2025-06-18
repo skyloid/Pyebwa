@@ -1,0 +1,76 @@
+{
+  "app": {
+    "name": "PYEBWA Token",
+    "tagline": "Preserve Heritage • Plant Trees"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "fullName": "Full Name",
+    "createAccount": "Create Account",
+    "loginSuccess": "Logged in successfully!",
+    "registerSuccess": "Account created successfully!",
+    "authError": "Authentication failed. Please try again.",
+    "demoLogin": "Try with demo account:",
+    "demoFamily": "Demo Family",
+    "demoPlanter": "Demo Planter",
+    "or": "OR",
+    "iAmA": "I am a:",
+    "familyMember": "👨‍👩‍👧‍👦 Family Member",
+    "treePlanter": "🌳 Tree Planter",
+    "emailRequired": "Please enter email and password",
+    "nameRequired": "Please enter your name"
+  },
+  "dashboard": {
+    "familyDashboard": "👨‍👩‍👧‍👦 Family Dashboard",
+    "planterDashboard": "🌳 Tree Planter Dashboard",
+    "yourEarnings": "Your Earnings",
+    "treesPlanted": "Trees Planted",
+    "pending": "Pending",
+    "submitNewPlanting": "📸 Submit New Planting",
+    "yourImpact": "Your Impact",
+    "treesFunded": "Trees Funded",
+    "co2Offset": "kg CO₂ Offset",
+    "tokenBalance": "Token Balance",
+    "buyMoreTokens": "Buy More Tokens",
+    "uploadHeritage": "📸 Upload Heritage"
+  },
+  "camera": {
+    "plantTrees": "Plant Trees",
+    "back": "← Back",
+    "cameraFeature": "Camera Feature",
+    "cameraRequiresBuild": "Camera functionality requires a development build due to expo-camera compatibility issues.",
+    "simulateCapture": "📸 Simulate Capture",
+    "cameraDemo": "Camera Demo",
+    "cameraDemoMessage": "This would capture a photo and validate GPS location in Haiti for tree planting verification.",
+    "noGPS": "No GPS signal",
+    "invalidLocation": "Invalid Location",
+    "notInHaiti": "GPS shows you are not in Haiti. Please check your location.",
+    "photosCaptured": "photo(s) captured",
+    "success": "Success!",
+    "photoCaptured": "Photo captured successfully",
+    "error": "Error",
+    "captureError": "Failed to capture photo. Please try again.",
+    "noPhotos": "No Photos",
+    "captureFirst": "Please capture at least one photo before submitting.",
+    "submitTrees": "Submit {{count}} Tree",
+    "submitTreesPlural": "Submit {{count}} Trees",
+    "submissionSuccess": "{{count}} {{species}} tree(s) submitted for verification!\n\nYou will earn {{tokens}} PYEBWA tokens upon verification."
+  },
+  "trees": {
+    "mango": "Mango",
+    "moringa": "Moringa",
+    "cedar": "Cedar",
+    "bamboo": "Bamboo"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "comingSoon": "Coming Soon",
+    "featureComingSoon": "{{feature}} feature will be available soon!"
+  }
+}

@@ -1,0 +1,253 @@
+.onboarding-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.onboarding-container {
+  background: white;
+  border-radius: 20px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.onboarding-progress {
+  height: 4px;
+  background: #E0E0E0;
+  position: relative;
+  overflow: hidden;
+}
+
+.onboarding-progress-bar {
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
+.onboarding-skip {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: transparent;
+  border: none;
+  color: #666;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.onboarding-skip:hover {
+  background: #F5F5F5;
+  color: #333;
+}
+
+.onboarding-content {
+  padding: 40px;
+  text-align: center;
+  overflow-y: auto;
+  max-height: calc(90vh - 150px);
+}
+
+.onboarding-steps {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 30px;
+}
+
+.step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.step-dot.active {
+  width: 24px;
+  border-radius: 4px;
+}
+
+.onboarding-icon {
+  margin-bottom: 20px;
+  display: inline-block;
+}
+
+.onboarding-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #1A1A1A;
+}
+
+.onboarding-description {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #666;
+  margin-bottom: 30px;
+  max-width: 450px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.onboarding-image {
+  max-width: 100%;
+  height: auto;
+  max-height: 250px;
+  margin-bottom: 20px;
+}
+
+.onboarding-navigation {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px 40px;
+  background: #F8F9FA;
+  border-top: 1px solid #E0E0E0;
+}
+
+.onboarding-nav-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+  color: #333;
+  border: 1px solid #E0E0E0;
+}
+
+.onboarding-nav-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.onboarding-nav-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.onboarding-nav-button.primary {
+  color: white;
+  border: none;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .onboarding-container {
+    margin: 20px;
+    max-height: calc(100vh - 40px);
+  }
+
+  .onboarding-content {
+    padding: 30px 20px;
+  }
+
+  .onboarding-title {
+    font-size: 24px;
+  }
+
+  .onboarding-description {
+    font-size: 14px;
+  }
+
+  .onboarding-image {
+    max-height: 180px;
+  }
+
+  .onboarding-navigation {
+    padding: 15px 20px;
+  }
+
+  .onboarding-nav-button {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .onboarding-progress-bar,
+  .onboarding-nav-button,
+  .step-dot {
+    transition: none;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .onboarding-container {
+    background: #1A1A1A;
+    color: white;
+  }
+
+  .onboarding-title {
+    color: white;
+  }
+
+  .onboarding-description {
+    color: #B0B0B0;
+  }
+
+  .onboarding-skip {
+    color: #B0B0B0;
+  }
+
+  .onboarding-skip:hover {
+    background: #333;
+    color: white;
+  }
+
+  .onboarding-navigation {
+    background: #2A2A2A;
+    border-top-color: #333;
+  }
+
+  .onboarding-nav-button {
+    background: #333;
+    color: white;
+    border-color: #444;
+  }
+}

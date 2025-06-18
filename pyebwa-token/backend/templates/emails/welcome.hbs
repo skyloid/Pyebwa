@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to PYEBWA Token</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #00217D 0%, #D41125 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: 700;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .welcome-message {
+            font-size: 20px;
+            color: #00217D;
+            margin-bottom: 20px;
+        }
+        .steps {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+            margin: 30px 0;
+        }
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        .step-number {
+            background: #00217D;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+            margin-right: 15px;
+        }
+        .step-content h3 {
+            margin: 0 0 5px 0;
+            color: #00217D;
+        }
+        .step-content p {
+            margin: 0;
+            color: #666;
+        }
+        .cta-section {
+            text-align: center;
+            margin: 40px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 15px 40px;
+            background: #00217D;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .button.secondary {
+            background: #D41125;
+            margin-left: 10px;
+        }
+        .resources {
+            background: #e8f5e9;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 30px 0;
+        }
+        .resources h3 {
+            color: #2e7d32;
+            margin-top: 0;
+        }
+        .resource-link {
+            display: block;
+            color: #00217D;
+            text-decoration: none;
+            padding: 8px 0;
+            border-bottom: 1px solid #c3e6cb;
+        }
+        .resource-link:last-child {
+            border-bottom: none;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+        .footer a {
+            color: #00217D;
+            text-decoration: none;
+        }
+        .social-links {
+            margin: 20px 0;
+        }
+        .social-links a {
+            display: inline-block;
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌳 Welcome to PYEBWA Token!</h1>
+        </div>
+        
+        <div class="content">
+            <div class="welcome-message">
+                Byenveni {{firstName}}! Welcome to the PYEBWA family!
+            </div>
+            
+            <p>You've just joined a revolutionary movement that connects Haitian heritage preservation with environmental restoration. Every memory you preserve will directly fund tree planting initiatives in Haiti.</p>
+            
+            {{#if (eq userType 'family')}}
+            <div class="steps">
+                <h2>🚀 Get Started in 4 Easy Steps</h2>
+                
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Purchase PYEBWA Tokens</h3>
+                        <p>Buy tokens starting at just $0.0001 each. Use credit card, crypto, or bank transfer.</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Upload Your Family Memories</h3>
+                        <p>Preserve photos, videos, and stories permanently on the blockchain.</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Track Your Impact</h3>
+                        <p>See exactly how many trees your memories have funded and where they're planted.</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Share With Family</h3>
+                        <p>Invite relatives to view memories and contribute to your family forest.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="cta-section">
+                <a href="{{appUrl}}/tokens/purchase" class="button">Buy Your First Tokens</a>
+                <a href="{{appUrl}}/heritage/upload" class="button secondary">Upload a Memory</a>
+            </div>
+            {{else}}
+            <div class="steps">
+                <h2>🌱 Start Earning as a Tree Planter</h2>
+                
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Complete Your Profile</h3>
+                        <p>Verify your phone number and location to start planting.</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Plant Trees</h3>
+                        <p>Use the mobile app to capture GPS-tagged photos of your plantings.</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Submit Evidence</h3>
+                        <p>Upload your planting sessions for automatic verification.</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Earn Tokens</h3>
+                        <p>Receive 200 PYEBWA tokens for each verified tree (worth $0.02).</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="cta-section">
+                <a href="{{appUrl}}/planter/start" class="button">Start Planting</a>
+                <a href="{{appUrl}}/planter/guide" class="button secondary">View Training Guide</a>
+            </div>
+            {{/if}}
+            
+            <div class="resources">
+                <h3>📚 Helpful Resources</h3>
+                <a href="{{appUrl}}/help/getting-started" class="resource-link">Getting Started Guide</a>
+                <a href="{{appUrl}}/help/faq" class="resource-link">Frequently Asked Questions</a>
+                <a href="{{appUrl}}/help/video-tutorials" class="resource-link">Video Tutorials</a>
+                <a href="{{appUrl}}/community" class="resource-link">Join Our Community</a>
+            </div>
+            
+            <p>If you have any questions, our support team is here to help. Simply reply to this email or visit our <a href="{{appUrl}}/help">Help Center</a>.</p>
+            
+            <p>
+                Together, we're rebuilding Haiti's forests one memory at a time!<br><br>
+                
+                Mèsi anpil,<br>
+                The PYEBWA Team
+            </p>
+        </div>
+        
+        <div class="footer">
+            <div class="social-links">
+                <a href="https://twitter.com/pyebwatoken">Twitter</a>
+                <a href="https://discord.gg/pyebwa">Discord</a>
+                <a href="https://instagram.com/pyebwatoken">Instagram</a>
+            </div>
+            
+            <p>© {{year}} {{appName}} | <a href="{{appUrl}}">pyebwa.com</a></p>
+            <p>
+                <a href="{{appUrl}}/privacy">Privacy Policy</a> | 
+                <a href="{{appUrl}}/terms">Terms of Service</a> | 
+                <a href="{{appUrl}}/help">Help Center</a>
+            </p>
+            <p style="margin-top: 20px; font-size: 12px; color: #999;">
+                You received this email because you signed up for PYEBWA Token.
+                <a href="{{appUrl}}/unsubscribe">Unsubscribe</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

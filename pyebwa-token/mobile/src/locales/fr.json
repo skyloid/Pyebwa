@@ -1,0 +1,76 @@
+{
+  "app": {
+    "name": "PYEBWA Token",
+    "tagline": "Préserver l'Héritage • Planter des Arbres"
+  },
+  "auth": {
+    "login": "Connexion",
+    "register": "S'inscrire",
+    "logout": "Déconnexion",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "fullName": "Nom complet",
+    "createAccount": "Créer un compte",
+    "loginSuccess": "Connexion réussie !",
+    "registerSuccess": "Compte créé avec succès !",
+    "authError": "Échec de l'authentification. Veuillez réessayer.",
+    "demoLogin": "Essayer avec un compte démo :",
+    "demoFamily": "Démo Famille",
+    "demoPlanter": "Démo Planteur",
+    "or": "OU",
+    "iAmA": "Je suis :",
+    "familyMember": "👨‍👩‍👧‍👦 Membre de Famille",
+    "treePlanter": "🌳 Planteur d'Arbres",
+    "emailRequired": "Veuillez entrer l'e-mail et le mot de passe",
+    "nameRequired": "Veuillez entrer votre nom"
+  },
+  "dashboard": {
+    "familyDashboard": "👨‍👩‍👧‍👦 Tableau de Bord Famille",
+    "planterDashboard": "🌳 Tableau de Bord Planteur",
+    "yourEarnings": "Vos Gains",
+    "treesPlanted": "Arbres Plantés",
+    "pending": "En Attente",
+    "submitNewPlanting": "📸 Soumettre Nouvelle Plantation",
+    "yourImpact": "Votre Impact",
+    "treesFunded": "Arbres Financés",
+    "co2Offset": "kg CO₂ Compensés",
+    "tokenBalance": "Solde de Jetons",
+    "buyMoreTokens": "Acheter Plus de Jetons",
+    "uploadHeritage": "📸 Télécharger Héritage"
+  },
+  "camera": {
+    "plantTrees": "Planter des Arbres",
+    "back": "← Retour",
+    "cameraFeature": "Fonction Caméra",
+    "cameraRequiresBuild": "La fonctionnalité de la caméra nécessite une version de développement en raison de problèmes de compatibilité avec expo-camera.",
+    "simulateCapture": "📸 Simuler la Capture",
+    "cameraDemo": "Démo Caméra",
+    "cameraDemoMessage": "Ceci capturerait une photo et validerait la localisation GPS en Haïti pour la vérification de la plantation d'arbres.",
+    "noGPS": "Pas de signal GPS",
+    "invalidLocation": "Localisation Invalide",
+    "notInHaiti": "Le GPS montre que vous n'êtes pas en Haïti. Veuillez vérifier votre localisation.",
+    "photosCaptured": "photo(s) capturée(s)",
+    "success": "Succès !",
+    "photoCaptured": "Photo capturée avec succès",
+    "error": "Erreur",
+    "captureError": "Échec de la capture de photo. Veuillez réessayer.",
+    "noPhotos": "Aucune Photo",
+    "captureFirst": "Veuillez capturer au moins une photo avant de soumettre.",
+    "submitTrees": "Soumettre {{count}} Arbre",
+    "submitTreesPlural": "Soumettre {{count}} Arbres",
+    "submissionSuccess": "{{count}} {{species}} arbre(s) soumis pour vérification !\n\nVous gagnerez {{tokens}} jetons PYEBWA après vérification."
+  },
+  "trees": {
+    "mango": "Mangue",
+    "moringa": "Moringa",
+    "cedar": "Cèdre",
+    "bamboo": "Bambou"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "comingSoon": "Bientôt Disponible",
+    "featureComingSoon": "La fonctionnalité {{feature}} sera bientôt disponible !"
+  }
+}

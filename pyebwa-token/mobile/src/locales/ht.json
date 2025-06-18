@@ -1,0 +1,76 @@
+{
+  "app": {
+    "name": "PYEBWA Token",
+    "tagline": "Prezève Eritaj • Plante Pyebwa"
+  },
+  "auth": {
+    "login": "Konekte",
+    "register": "Enskri",
+    "logout": "Dekonekte",
+    "email": "Imel",
+    "password": "Modpas",
+    "fullName": "Non Konplè",
+    "createAccount": "Kreye Kont",
+    "loginSuccess": "Koneksyon reyisi!",
+    "registerSuccess": "Kont kreye avèk siksè!",
+    "authError": "Otantifikasyon echwe. Tanpri eseye ankò.",
+    "demoLogin": "Eseye ak kont demo:",
+    "demoFamily": "Demo Fanmi",
+    "demoPlanter": "Demo Plantè",
+    "or": "OSWA",
+    "iAmA": "Mwen se:",
+    "familyMember": "👨‍👩‍👧‍👦 Manm Fanmi",
+    "treePlanter": "🌳 Plantè Pyebwa",
+    "emailRequired": "Tanpri antre imel ak modpas",
+    "nameRequired": "Tanpri antre non ou"
+  },
+  "dashboard": {
+    "familyDashboard": "👨‍👩‍👧‍👦 Tablo Fanmi",
+    "planterDashboard": "🌳 Tablo Plantè",
+    "yourEarnings": "Kòb Ou Genyen",
+    "treesPlanted": "Pyebwa Plante",
+    "pending": "Ap Tann",
+    "submitNewPlanting": "📸 Soumèt Nouvo Plantasyon",
+    "yourImpact": "Enpak Ou",
+    "treesFunded": "Pyebwa Finanse",
+    "co2Offset": "kg CO₂ Konpanse",
+    "tokenBalance": "Balans Token",
+    "buyMoreTokens": "Achte Plis Token",
+    "uploadHeritage": "📸 Voye Eritaj"
+  },
+  "camera": {
+    "plantTrees": "Plante Pyebwa",
+    "back": "← Retounen",
+    "cameraFeature": "Fonksyon Kamera",
+    "cameraRequiresBuild": "Fonksyon kamera a mande yon vèsyon devlopman akòz pwoblèm konpatibilite ak expo-camera.",
+    "simulateCapture": "📸 Simile Kaptire",
+    "cameraDemo": "Demo Kamera",
+    "cameraDemoMessage": "Sa ta kaptire yon foto epi valide pozisyon GPS nan Ayiti pou verifikasyon plantasyon pyebwa.",
+    "noGPS": "Pa gen siyal GPS",
+    "invalidLocation": "Pozisyon Envalid",
+    "notInHaiti": "GPS montre ou pa nan Ayiti. Tanpri tcheke pozisyon ou.",
+    "photosCaptured": "foto kaptire",
+    "success": "Siksè!",
+    "photoCaptured": "Foto kaptire avèk siksè",
+    "error": "Erè",
+    "captureError": "Echwe pou kaptire foto. Tanpri eseye ankò.",
+    "noPhotos": "Pa Gen Foto",
+    "captureFirst": "Tanpri kaptire omwen yon foto anvan ou soumèt.",
+    "submitTrees": "Soumèt {{count}} Pyebwa",
+    "submitTreesPlural": "Soumèt {{count}} Pyebwa",
+    "submissionSuccess": "{{count}} {{species}} pyebwa soumèt pou verifikasyon!\n\nOu pral genyen {{tokens}} token PYEBWA apre verifikasyon."
+  },
+  "trees": {
+    "mango": "Mango",
+    "moringa": "Moringa",
+    "cedar": "Sèd",
+    "bamboo": "Banbou"
+  },
+  "common": {
+    "loading": "Ap Chaje...",
+    "error": "Erè",
+    "success": "Siksè",
+    "comingSoon": "Vini Byento",
+    "featureComingSoon": "Fonksyon {{feature}} pral disponib byento!"
+  }
+}

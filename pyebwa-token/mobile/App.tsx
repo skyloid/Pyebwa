@@ -3,8 +3,12 @@ import { View, Text, TouchableOpacity, Image, ActivityIndicator, TextInput, Aler
 // Camera imports are causing issues with expo-camera 16.1.8
 // import { CameraScreen } from './src/screens/CameraScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
+import './src/i18n'; // Initialize i18n
+import { LanguageSwitcher } from './src/components/LanguageSwitcher';
 
 export default function App() {
+  const { t, i18n } = useTranslation();
   const [screen, setScreen] = React.useState('login');
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -41,12 +45,12 @@ export default function App() {
 
   const handleAuth = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please enter email and password');
+      Alert.alert(t('common.error'), t('auth.emailRequired'));
       return;
     }
 
     if (mode === 'register' && !name) {
-      Alert.alert('Error', 'Please enter your name');
+      Alert.alert(t('common.error'), t('auth.nameRequired'));
       return;
     }
 
@@ -64,9 +68,9 @@ export default function App() {
       setIsLoggedIn(true);
       setScreen('home');
       
-      Alert.alert('Success', `${mode === 'login' ? 'Logged in' : 'Account created'} successfully!`);
+      Alert.alert(t('common.success'), t(mode === 'login' ? 'auth.loginSuccess' : 'auth.registerSuccess'));
     } catch (error) {
-      Alert.alert('Error', 'Authentication failed. Please try again.');
+      Alert.alert(t('common.error'), t('auth.authError'));
     } finally {
       setAuthLoading(false);
     }
@@ -84,7 +88,7 @@ export default function App() {
       setIsLoggedIn(true);
       setScreen('home');
     } catch (error) {
-      Alert.alert('Error', 'Demo login failed');
+      Alert.alert(t('common.error'), t('auth.authError'));
     } finally {
       setAuthLoading(false);
     }
@@ -112,7 +116,7 @@ export default function App() {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f5f5' }}>
         <ActivityIndicator size="large" color="#00217D" />
-        <Text style={{ marginTop: 10, color: '#666' }}>Loading...</Text>
+        <Text style={{ marginTop: 10, color: '#666' }}>{t('common.loading')}</Text>
       </View>
     );
   }
@@ -129,10 +133,10 @@ export default function App() {
               style={{ width: 100, height: 100, marginBottom: 20 }} 
             />
             <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#00217D', marginBottom: 5 }}>
-              PYEBWA Token
+              {t('app.name')}
             </Text>
             <Text style={{ fontSize: 16, color: '#666' }}>
-              Preserve Heritage • Plant Trees
+              {t('app.tagline')}
             </Text>
           </View>
 
@@ -158,7 +162,7 @@ export default function App() {
                 color: mode === 'login' ? 'white' : '#666',
                 fontWeight: mode === 'login' ? 'bold' : 'normal'
               }}>
-                Login
+                {t('auth.login')}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -175,7 +179,7 @@ export default function App() {
                 color: mode === 'register' ? 'white' : '#666',
                 fontWeight: mode === 'register' ? 'bold' : 'normal'
               }}>
-                Register
+                {t('auth.register')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -184,7 +188,7 @@ export default function App() {
           {mode === 'register' && (
             <View style={{ marginBottom: 20 }}>
               <Text style={{ fontSize: 16, color: '#333', marginBottom: 10 }}>
-                I am a:
+                {t('auth.iAmA')}
               </Text>
               <View style={{ flexDirection: 'row', gap: 10 }}>
                 <TouchableOpacity
@@ -204,7 +208,7 @@ export default function App() {
                     color: userType === 'family' ? '#00217D' : '#666',
                     fontWeight: userType === 'family' ? 'bold' : 'normal'
                   }}>
-                    👨‍👩‍👧‍👦 Family Member
+                    {t('auth.familyMember')}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -224,7 +228,7 @@ export default function App() {
                     color: userType === 'planter' ? '#00217D' : '#666',
                     fontWeight: userType === 'planter' ? 'bold' : 'normal'
                   }}>
-                    🌳 Tree Planter
+                    {t('auth.treePlanter')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -243,7 +247,7 @@ export default function App() {
                 fontSize: 16,
                 backgroundColor: 'white',
               }}
-              placeholder="Full Name"
+              placeholder={t('auth.fullName')}
               value={name}
               onChangeText={setName}
               placeholderTextColor="#999"
@@ -261,7 +265,7 @@ export default function App() {
               fontSize: 16,
               backgroundColor: 'white',
             }}
-            placeholder="Email"
+            placeholder={t('auth.email')}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -280,7 +284,7 @@ export default function App() {
               fontSize: 16,
               backgroundColor: 'white',
             }}
-            placeholder="Password"
+            placeholder={t('auth.password')}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -304,7 +308,7 @@ export default function App() {
               <ActivityIndicator color="white" />
             ) : (
               <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
-                {mode === 'login' ? 'Login' : 'Create Account'}
+                {t(mode === 'login' ? 'auth.login' : 'auth.createAccount')}
               </Text>
             )}
           </TouchableOpacity>
@@ -312,13 +316,13 @@ export default function App() {
           {/* Divider */}
           <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 20 }}>
             <View style={{ flex: 1, height: 1, backgroundColor: '#ddd' }} />
-            <Text style={{ marginHorizontal: 10, color: '#999' }}>OR</Text>
+            <Text style={{ marginHorizontal: 10, color: '#999' }}>{t('auth.or')}</Text>
             <View style={{ flex: 1, height: 1, backgroundColor: '#ddd' }} />
           </View>
 
           {/* Demo Login Buttons */}
           <Text style={{ textAlign: 'center', color: '#666', marginBottom: 10 }}>
-            Try with demo account:
+            {t('auth.demoLogin')}
           </Text>
           <View style={{ flexDirection: 'row', gap: 10 }}>
             <TouchableOpacity
@@ -333,7 +337,7 @@ export default function App() {
               disabled={authLoading}
             >
               <Text style={{ color: 'white', fontWeight: 'bold' }}>
-                Demo Family
+                {t('auth.demoFamily')}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -348,7 +352,7 @@ export default function App() {
               disabled={authLoading}
             >
               <Text style={{ color: 'white', fontWeight: 'bold' }}>
-                Demo Planter
+                {t('auth.demoPlanter')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -362,18 +366,20 @@ export default function App() {
     return (
       <View style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
         <View style={{ backgroundColor: '#00217D', padding: 20, paddingTop: 50 }}>
-          <Text style={{ fontSize: 24, fontWeight: 'bold', color: 'white' }}>PYEBWA Token</Text>
+          <Text style={{ fontSize: 24, fontWeight: 'bold', color: 'white' }}>{t('app.name')}</Text>
           <Text style={{ fontSize: 16, color: 'rgba(255,255,255,0.8)', marginTop: 5 }}>
-            {userType === 'planter' ? '🌳 Tree Planter Dashboard' : '👨‍👩‍👧‍👦 Family Dashboard'}
+            {t(userType === 'planter' ? 'dashboard.planterDashboard' : 'dashboard.familyDashboard')}
           </Text>
         </View>
         
         <View style={{ flex: 1, padding: 20 }}>
+          {/* Language Switcher */}
+          <LanguageSwitcher />
           {userType === 'planter' ? (
             <>
               {/* Planter Dashboard */}
               <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 15, marginBottom: 20, alignItems: 'center' }}>
-                <Text style={{ fontSize: 18, color: '#666', marginBottom: 10 }}>Your Earnings</Text>
+                <Text style={{ fontSize: 18, color: '#666', marginBottom: 10 }}>{t('dashboard.yourEarnings')}</Text>
                 <Text style={{ fontSize: 36, fontWeight: 'bold', color: '#4CAF50' }}>1,000 PYEBWA</Text>
                 <Text style={{ fontSize: 16, color: '#999', marginTop: 5 }}>≈ $0.10 USD</Text>
               </View>
@@ -381,11 +387,11 @@ export default function App() {
               <View style={{ flexDirection: 'row', gap: 15, marginBottom: 20 }}>
                 <View style={{ flex: 1, backgroundColor: 'white', padding: 20, borderRadius: 15, alignItems: 'center' }}>
                   <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#00217D' }}>50</Text>
-                  <Text style={{ fontSize: 14, color: '#666', marginTop: 5 }}>Trees Planted</Text>
+                  <Text style={{ fontSize: 14, color: '#666', marginTop: 5 }}>{t('dashboard.treesPlanted')}</Text>
                 </View>
                 <View style={{ flex: 1, backgroundColor: 'white', padding: 20, borderRadius: 15, alignItems: 'center' }}>
                   <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#00217D' }}>200</Text>
-                  <Text style={{ fontSize: 14, color: '#666', marginTop: 5 }}>Pending</Text>
+                  <Text style={{ fontSize: 14, color: '#666', marginTop: 5 }}>{t('dashboard.pending')}</Text>
                 </View>
               </View>
 
@@ -393,7 +399,7 @@ export default function App() {
                 style={{ backgroundColor: '#00217D', padding: 20, borderRadius: 15, alignItems: 'center', marginBottom: 20 }}
                 onPress={() => setScreen('camera')}
               >
-                <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>📸 Submit New Planting</Text>
+                <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>{t('dashboard.submitNewPlanting')}</Text>
               </TouchableOpacity>
             </>
           ) : (
@@ -401,33 +407,33 @@ export default function App() {
               {/* Family Dashboard */}
               <View style={{ backgroundColor: '#e8f5e9', padding: 20, borderRadius: 15, marginBottom: 20 }}>
                 <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#2e7d32', marginBottom: 15, textAlign: 'center' }}>
-                  Your Impact
+                  {t('dashboard.yourImpact')}
                 </Text>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
                   <View style={{ alignItems: 'center' }}>
                     <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#2e7d32' }}>25</Text>
-                    <Text style={{ fontSize: 14, color: '#558b2f', marginTop: 5 }}>Trees Funded</Text>
+                    <Text style={{ fontSize: 14, color: '#558b2f', marginTop: 5 }}>{t('dashboard.treesFunded')}</Text>
                   </View>
                   <View style={{ alignItems: 'center' }}>
                     <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#2e7d32' }}>500</Text>
-                    <Text style={{ fontSize: 14, color: '#558b2f', marginTop: 5 }}>kg CO₂ Offset</Text>
+                    <Text style={{ fontSize: 14, color: '#558b2f', marginTop: 5 }}>{t('dashboard.co2Offset')}</Text>
                   </View>
                 </View>
               </View>
 
               <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 15, marginBottom: 20, alignItems: 'center' }}>
-                <Text style={{ fontSize: 16, color: '#666', marginBottom: 10 }}>Token Balance</Text>
+                <Text style={{ fontSize: 16, color: '#666', marginBottom: 10 }}>{t('dashboard.tokenBalance')}</Text>
                 <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#00217D', marginBottom: 15 }}>100 PYEBWA</Text>
                 <TouchableOpacity style={{ backgroundColor: '#D41125', paddingHorizontal: 30, paddingVertical: 10, borderRadius: 20 }}>
-                  <Text style={{ color: 'white', fontWeight: 'bold' }}>Buy More Tokens</Text>
+                  <Text style={{ color: 'white', fontWeight: 'bold' }}>{t('dashboard.buyMoreTokens')}</Text>
                 </TouchableOpacity>
               </View>
 
               <TouchableOpacity 
                 style={{ backgroundColor: '#00217D', padding: 20, borderRadius: 15, alignItems: 'center', marginBottom: 20 }}
-                onPress={() => Alert.alert('Coming Soon', 'Heritage upload feature will be available soon!')}
+                onPress={() => Alert.alert(t('common.comingSoon'), t('common.featureComingSoon', { feature: 'Heritage upload' }))}
               >
-                <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>📸 Upload Heritage</Text>
+                <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>{t('dashboard.uploadHeritage')}</Text>
               </TouchableOpacity>
             </>
           )}
@@ -436,7 +442,7 @@ export default function App() {
             style={{ backgroundColor: '#D41125', padding: 15, borderRadius: 10, alignItems: 'center' }}
             onPress={handleLogout}
           >
-            <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>Logout</Text>
+            <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>{t('auth.logout')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -452,20 +458,20 @@ export default function App() {
             onPress={() => setScreen('home')}
             style={{ marginRight: 15 }}
           >
-            <Text style={{ color: 'white', fontSize: 18 }}>← Back</Text>
+            <Text style={{ color: 'white', fontSize: 18 }}>{t('camera.back')}</Text>
           </TouchableOpacity>
-          <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white' }}>Plant Trees</Text>
+          <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white' }}>{t('camera.plantTrees')}</Text>
         </View>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f5f5' }}>
-          <Text style={{ fontSize: 18, color: '#333', marginBottom: 20 }}>Camera Feature</Text>
+          <Text style={{ fontSize: 18, color: '#333', marginBottom: 20 }}>{t('camera.cameraFeature')}</Text>
           <Text style={{ fontSize: 14, color: '#666', textAlign: 'center', paddingHorizontal: 40 }}>
-            Camera functionality requires a development build due to expo-camera compatibility issues.
+            {t('camera.cameraRequiresBuild')}
           </Text>
           <TouchableOpacity 
             style={{ backgroundColor: '#00217D', padding: 15, borderRadius: 10, marginTop: 20 }}
-            onPress={() => Alert.alert('Camera Demo', 'This would capture a photo and validate GPS location in Haiti for tree planting verification.')}
+            onPress={() => Alert.alert(t('camera.cameraDemo'), t('camera.cameraDemoMessage'))}
           >
-            <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>📸 Simulate Capture</Text>
+            <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>{t('camera.simulateCapture')}</Text>
           </TouchableOpacity>
         </View>
       </View>

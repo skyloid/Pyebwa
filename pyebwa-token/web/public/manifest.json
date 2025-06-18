@@ -1,0 +1,139 @@
+{
+  "name": "PYEBWA Token - Plant Trees, Preserve Heritage",
+  "short_name": "PYEBWA",
+  "description": "Connect your family heritage to Haiti's reforestation. Every memory preserved plants trees.",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#00217D",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "categories": ["social", "finance", "lifestyle"],
+  "icons": [
+    {
+      "src": "/icons/icon-48x48.png",
+      "sizes": "48x48",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/home.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "PYEBWA Token Homepage"
+    },
+    {
+      "src": "/screenshots/dashboard.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "Your Impact Dashboard"
+    },
+    {
+      "src": "/screenshots/heritage.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "Heritage Gallery"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Upload Heritage",
+      "short_name": "Upload",
+      "description": "Preserve a family memory",
+      "url": "/heritage/upload",
+      "icons": [{ "src": "/icons/upload-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Buy Tokens",
+      "short_name": "Buy",
+      "description": "Purchase PYEBWA tokens",
+      "url": "/tokens/purchase",
+      "icons": [{ "src": "/icons/token-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "View Impact",
+      "short_name": "Impact",
+      "description": "See your environmental impact",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icons/tree-96x96.png", "sizes": "96x96" }]
+    }
+  ],
+  "share_target": {
+    "action": "/heritage/upload",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "description",
+      "files": [
+        {
+          "name": "media",
+          "accept": ["image/*", "video/*"]
+        }
+      ]
+    }
+  },
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.pyebwa.token",
+      "id": "com.pyebwa.token"
+    },
+    {
+      "platform": "itunes",
+      "url": "https://apps.apple.com/app/pyebwa-token/id123456789"
+    }
+  ],
+  "prefer_related_applications": false,
+  "lang": "en-US",
+  "dir": "ltr"
+}

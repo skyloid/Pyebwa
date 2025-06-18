@@ -43,7 +43,19 @@
       "Bash(tar:*)",
       "Bash(firebase deploy:*)",
       "Bash(git reset:*)",
-      "Bash(./project-structure.sh:*)"
+      "Bash(./project-structure.sh:*)",
+      "Bash(npx expo start:*)",
+      "Bash(./start-dev.sh:*)",
+      "Bash(npm run dev:*)",
+      "Bash(./start-test.sh:*)",
+      "Bash(npx expo install:*)",
+      "Bash(ngrok:*)",
+      "Bash(METRO_CACHE=.metro-cache npx expo start --clear)",
+      "Bash(PORT=8082 npx expo start)",
+      "Bash(kill:*)",
+      "Bash(pkill:*)",
+      "Bash(true)",
+      "Bash(expo start:*)"
     ],
     "deny": []
   }

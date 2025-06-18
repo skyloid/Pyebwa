@@ -10,14 +10,17 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface ProfileScreenProps {
   onLogout: () => void;
 }
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout }) => {
+  const { t, i18n } = useTranslation();
   const [notifications, setNotifications] = useState(true);
-  const [language, setLanguage] = useState('en');
+  const [language, setLanguage] = useState(i18n.language);
 
   const handleLogout = () => {
     Alert.alert(
@@ -36,10 +39,16 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout }) => {
     );
   };
 
-  const handleLanguageChange = (lang: string) => {
-    setLanguage(lang);
-    // TODO: Implement language change with i18n
-    Alert.alert('Language', `Language changed to ${lang.toUpperCase()}`);
+  const handleLanguageChange = async (lang: string) => {
+    try {
+      await i18n.changeLanguage(lang);
+      await AsyncStorage.setItem('userLanguage', lang);
+      setLanguage(lang);
+      Alert.alert(t('common.success'), `Language changed to ${lang.toUpperCase()}`);
+    } catch (error) {
+      console.error('Error changing language:', error);
+      Alert.alert(t('common.error'), 'Failed to change language');
+    }
   };
 
   return (
