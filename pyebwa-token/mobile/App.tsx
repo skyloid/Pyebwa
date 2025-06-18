@@ -6,10 +6,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import './src/i18n'; // Initialize i18n
 import { LanguageSwitcher } from './src/components/LanguageSwitcher';
+import { HeritageUploadScreen } from './src/screens/HeritageUploadScreen';
 
 export default function App() {
   const { t, i18n } = useTranslation();
-  const [screen, setScreen] = React.useState('login');
+  const [screen, setScreen] = React.useState<'login' | 'home' | 'camera' | 'heritage'>('login');
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
   const [userType, setUserType] = React.useState<'family' | 'planter'>('family');
@@ -431,7 +432,7 @@ export default function App() {
 
               <TouchableOpacity 
                 style={{ backgroundColor: '#00217D', padding: 20, borderRadius: 15, alignItems: 'center', marginBottom: 20 }}
-                onPress={() => Alert.alert(t('common.comingSoon'), t('common.featureComingSoon', { feature: 'Heritage upload' }))}
+                onPress={() => setScreen('heritage')}
               >
                 <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>{t('dashboard.uploadHeritage')}</Text>
               </TouchableOpacity>
@@ -474,6 +475,24 @@ export default function App() {
             <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>{t('camera.simulateCapture')}</Text>
           </TouchableOpacity>
         </View>
+      </View>
+    );
+  }
+
+  // Heritage Upload Screen
+  if (screen === 'heritage') {
+    return (
+      <View style={{ flex: 1 }}>
+        <View style={{ backgroundColor: '#00217D', padding: 20, paddingTop: 50, flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity 
+            onPress={() => setScreen('home')}
+            style={{ marginRight: 15 }}
+          >
+            <Text style={{ color: 'white', fontSize: 18 }}>{t('camera.back')}</Text>
+          </TouchableOpacity>
+          <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white' }}>{t('dashboard.uploadHeritage')}</Text>
+        </View>
+        <HeritageUploadScreen />
       </View>
     );
   }

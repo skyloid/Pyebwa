@@ -72,5 +72,31 @@
     "success": "Success",
     "comingSoon": "Coming Soon",
     "featureComingSoon": "{{feature}} feature will be available soon!"
+  },
+  "heritage": {
+    "addNewHeritage": "Add New Heritage",
+    "yourHeritage": "Your Heritage Collection",
+    "takePhoto": "Take Photo",
+    "chooseFromLibrary": "Choose from Library",
+    "category": "Category",
+    "title": "Title",
+    "titlePlaceholder": "Give this heritage item a title",
+    "date": "Date",
+    "datePlaceholder": "When was this from? (e.g., 1950s, June 1985)",
+    "description": "Description",
+    "descriptionPlaceholder": "Tell the story behind this heritage item...",
+    "upload": "Upload Heritage",
+    "uploadSuccess": "Heritage item uploaded successfully!",
+    "uploadError": "Failed to upload heritage item. Please try again.",
+    "requiredFields": "Please add an image and title.",
+    "imagePickError": "Failed to select image. Please try again.",
+    "cameraPermissionDenied": "Camera permission is required to take photos.",
+    "libraryPermissionDenied": "Photo library permission is required to select photos.",
+    "categories": {
+      "photo": "Photo",
+      "document": "Document",
+      "story": "Story",
+      "artifact": "Artifact"
+    }
   }
 }

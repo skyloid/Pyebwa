@@ -72,5 +72,31 @@
     "success": "Succès",
     "comingSoon": "Bientôt Disponible",
     "featureComingSoon": "La fonctionnalité {{feature}} sera bientôt disponible !"
+  },
+  "heritage": {
+    "addNewHeritage": "Ajouter un Nouvel Héritage",
+    "yourHeritage": "Votre Collection d'Héritage",
+    "takePhoto": "Prendre une Photo",
+    "chooseFromLibrary": "Choisir de la Bibliothèque",
+    "category": "Catégorie",
+    "title": "Titre",
+    "titlePlaceholder": "Donnez un titre à cet élément d'héritage",
+    "date": "Date",
+    "datePlaceholder": "Quand était-ce ? (ex: années 1950, juin 1985)",
+    "description": "Description",
+    "descriptionPlaceholder": "Racontez l'histoire derrière cet élément d'héritage...",
+    "upload": "Télécharger l'Héritage",
+    "uploadSuccess": "Élément d'héritage téléchargé avec succès !",
+    "uploadError": "Échec du téléchargement. Veuillez réessayer.",
+    "requiredFields": "Veuillez ajouter une image et un titre.",
+    "imagePickError": "Échec de la sélection d'image. Veuillez réessayer.",
+    "cameraPermissionDenied": "L'autorisation de la caméra est requise pour prendre des photos.",
+    "libraryPermissionDenied": "L'autorisation de la bibliothèque photo est requise.",
+    "categories": {
+      "photo": "Photo",
+      "document": "Document",
+      "story": "Histoire",
+      "artifact": "Artefact"
+    }
   }
 }

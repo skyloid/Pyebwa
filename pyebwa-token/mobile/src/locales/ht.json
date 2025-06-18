@@ -72,5 +72,31 @@
     "success": "Siksè",
     "comingSoon": "Vini Byento",
     "featureComingSoon": "Fonksyon {{feature}} pral disponib byento!"
+  },
+  "heritage": {
+    "addNewHeritage": "Ajoute Nouvo Eritaj",
+    "yourHeritage": "Koleksyon Eritaj Ou",
+    "takePhoto": "Pran Foto",
+    "chooseFromLibrary": "Chwazi nan Bibliyotèk",
+    "category": "Kategori",
+    "title": "Tit",
+    "titlePlaceholder": "Bay eritaj sa a yon tit",
+    "date": "Dat",
+    "datePlaceholder": "Kilè sa te ye? (egzanp: ane 1950 yo, jen 1985)",
+    "description": "Deskripsyon",
+    "descriptionPlaceholder": "Rakonte istwa ki dèyè eritaj sa a...",
+    "upload": "Voye Eritaj",
+    "uploadSuccess": "Eritaj la voye avek siksè!",
+    "uploadError": "Pa rive voye eritaj la. Tanpri eseye ankò.",
+    "requiredFields": "Tanpri ajoute yon imaj ak yon tit.",
+    "imagePickError": "Pa rive chwazi imaj. Tanpri eseye ankò.",
+    "cameraPermissionDenied": "Nou bezwen otorizasyon kamera pou pran foto.",
+    "libraryPermissionDenied": "Nou bezwen otorizasyon bibliyotèk foto.",
+    "categories": {
+      "photo": "Foto",
+      "document": "Dokiman",
+      "story": "Istwa",
+      "artifact": "Atifak"
+    }
   }
 }
