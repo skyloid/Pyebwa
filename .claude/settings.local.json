@@ -61,7 +61,16 @@
       "Bash(adb:*)",
       "Bash(npx expo export:*)",
       "Bash(git restore:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(npx expo:*)",
+      "Bash(npx eas-cli:*)",
+      "Bash(npx eas:*)",
+      "Bash(keytool:*)",
+      "Bash(./gradlew:*)",
+      "Bash(sudo apt:*)",
+      "Bash(sudo apt install:*)",
+      "Bash(java:*)",
+      "Bash(export:*)"
     ],
     "deny": []
   }

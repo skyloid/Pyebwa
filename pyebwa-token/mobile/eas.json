@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 3.0.0"
+    "version": ">= 3.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -9,6 +10,16 @@
       "android": {
         "buildType": "apk",
         "gradleCommand": ":app:assembleDebug"
+      }
+    },
+    "debug": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDebug"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.pyebwa.com"
       }
     },
     "preview": {
