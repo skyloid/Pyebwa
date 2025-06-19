@@ -15,6 +15,7 @@ import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import { FieldMappingService } from '../services/FieldMappingService';
 import { PlantingField, Coordinate } from '../types';
+import { FieldSelector } from '../components/FieldSelector';
 
 interface CapturedPhoto {
   id: string;
@@ -29,11 +30,13 @@ export const PlanterCameraScreen: React.FC = () => {
   const { t } = useTranslation();
   const [photos, setPhotos] = useState<CapturedPhoto[]>([]);
   const [currentLocation, setCurrentLocation] = useState<Coordinate | null>(null);
-  const [nearbyField, setNearbyField] = useState<PlantingField | null>(null);
-  const [locationStatus, setLocationStatus] = useState<'loading' | 'valid' | 'invalid' | 'outside'>('loading');
-  const [distance, setDistance] = useState<number | null>(null);
+  const [selectedField, setSelectedField] = useState<PlantingField | null>(null);
+  const [fieldsInside, setFieldsInside] = useState<PlantingField[]>([]);
+  const [fieldsNearby, setFieldsNearby] = useState<Array<{ field: PlantingField; distance: number }>>([]);
+  const [locationStatus, setLocationStatus] = useState<'loading' | 'valid' | 'invalid' | 'outside' | 'multiple'>('loading');
   const [selectedSpecies, setSelectedSpecies] = useState('mango');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showFieldSelector, setShowFieldSelector] = useState(false);
 
   const fieldService = FieldMappingService.getInstance();
 
@@ -65,21 +68,30 @@ export const PlanterCameraScreen: React.FC = () => {
 
       setCurrentLocation(currentCoord);
 
-      // Validate location against fields
-      const validation = await fieldService.validateLocation(currentCoord);
+      // Get nearby fields
+      const nearbyFields = await fieldService.getNearbyFields(currentCoord, 1000);
+      setFieldsInside(nearbyFields.fieldsInside);
+      setFieldsNearby(nearbyFields.fieldsNearby);
 
-      if (validation.isValid && validation.field) {
+      // Determine status and auto-select field if appropriate
+      if (nearbyFields.fieldsInside.length === 1) {
+        // Single field - auto select
+        setSelectedField(nearbyFields.fieldsInside[0]);
         setLocationStatus('valid');
-        setNearbyField(validation.field);
-        setDistance(null);
-      } else if (validation.field && validation.distance) {
+      } else if (nearbyFields.fieldsInside.length > 1) {
+        // Multiple fields - need selection
+        setLocationStatus('multiple');
+        if (!selectedField || !nearbyFields.fieldsInside.some(f => f.id === selectedField.id)) {
+          setSelectedField(null);
+        }
+      } else if (nearbyFields.fieldsNearby.length > 0) {
+        // Outside but near fields
         setLocationStatus('outside');
-        setNearbyField(validation.field);
-        setDistance(validation.distance);
+        setSelectedField(null);
       } else {
+        // No fields nearby
         setLocationStatus('invalid');
-        setNearbyField(null);
-        setDistance(null);
+        setSelectedField(null);
       }
     } catch (error) {
       console.error('Location error:', error);
@@ -88,32 +100,33 @@ export const PlanterCameraScreen: React.FC = () => {
   };
 
   const capturePhoto = async () => {
-    if (locationStatus !== 'valid') {
-      Alert.alert(
-        t('camera.invalidLocation'),
-        locationStatus === 'outside' && nearbyField && distance
-          ? t('camera.outsideField', { 
-              field: nearbyField.name, 
-              distance: Math.round(distance) 
-            })
-          : t('camera.noValidField')
-      );
+    if (locationStatus === 'multiple') {
+      setShowFieldSelector(true);
+      return;
+    }
+
+    if (locationStatus !== 'valid' || !selectedField) {
+      if (locationStatus === 'outside' && fieldsNearby.length > 0) {
+        setShowFieldSelector(true);
+        return;
+      }
+      Alert.alert(t('camera.invalidLocation'), t('camera.noValidField'));
       return;
     }
 
     // Check if field has capacity
-    if (nearbyField && nearbyField.plantedCount >= nearbyField.capacity) {
-      Alert.alert(t('common.error'), t('camera.fieldFull', { field: nearbyField.name }));
+    if (selectedField.plantedCount >= selectedField.capacity) {
+      Alert.alert(t('common.error'), t('camera.fieldFull', { field: selectedField.name }));
       return;
     }
 
     // Check if selected species is allowed
-    if (nearbyField && !nearbyField.allowedSpecies.includes(selectedSpecies)) {
+    if (!selectedField.allowedSpecies.includes(selectedSpecies)) {
       Alert.alert(
         t('common.error'), 
         t('camera.speciesNotAllowed', { 
           species: t(`trees.${selectedSpecies}`),
-          field: nearbyField.name 
+          field: selectedField.name 
         })
       );
       return;
@@ -139,8 +152,8 @@ export const PlanterCameraScreen: React.FC = () => {
           id: `photo_${Date.now()}`,
           uri: result.assets[0].uri,
           location: currentLocation!,
-          fieldId: nearbyField?.id,
-          fieldName: nearbyField?.name,
+          fieldId: selectedField?.id,
+          fieldName: selectedField?.name,
           timestamp: new Date(),
         };
 
@@ -195,6 +208,8 @@ export const PlanterCameraScreen: React.FC = () => {
     switch (locationStatus) {
       case 'valid':
         return <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />;
+      case 'multiple':
+        return <MaterialIcons name="list" size={24} color="#2196F3" />;
       case 'outside':
         return <MaterialIcons name="warning" size={24} color="#FF9800" />;
       case 'invalid':
@@ -208,12 +223,16 @@ export const PlanterCameraScreen: React.FC = () => {
     if (locationStatus === 'loading') {
       return t('camera.checkingLocation');
     }
-    if (locationStatus === 'valid' && nearbyField) {
-      const remaining = nearbyField.capacity - nearbyField.plantedCount;
-      return t('camera.inField', { field: nearbyField.name, remaining });
+    if (locationStatus === 'valid' && selectedField) {
+      const remaining = selectedField.capacity - selectedField.plantedCount;
+      return t('camera.inField', { field: selectedField.name, remaining });
     }
-    if (locationStatus === 'outside' && nearbyField && distance) {
-      return t('camera.nearField', { field: nearbyField.name, distance: Math.round(distance) });
+    if (locationStatus === 'multiple') {
+      return t('camera.multipleFields', { count: fieldsInside.length });
+    }
+    if (locationStatus === 'outside' && fieldsNearby.length > 0) {
+      const nearest = fieldsNearby[0];
+      return t('camera.nearField', { field: nearest.field.name, distance: Math.round(nearest.distance) });
     }
     return t('camera.noFieldsNearby');
   };
@@ -224,12 +243,21 @@ export const PlanterCameraScreen: React.FC = () => {
       <View style={[
         styles.statusCard,
         locationStatus === 'valid' ? styles.validStatus : 
+        locationStatus === 'multiple' ? styles.multipleStatus :
         locationStatus === 'outside' ? styles.warningStatus : 
         styles.invalidStatus
       ]}>
         <View style={styles.statusHeader}>
           {getLocationStatusIcon()}
           <Text style={styles.statusTitle}>{t('camera.locationStatus')}</Text>
+          {(locationStatus === 'multiple' || (locationStatus === 'outside' && fieldsNearby.length > 0)) && (
+            <TouchableOpacity
+              style={styles.selectFieldButton}
+              onPress={() => setShowFieldSelector(true)}
+            >
+              <Text style={styles.selectFieldText}>{t('camera.selectField')}</Text>
+            </TouchableOpacity>
+          )}
         </View>
         <Text style={styles.statusText}>{getLocationStatusText()}</Text>
         {currentLocation && currentLocation.accuracy && (
@@ -240,20 +268,20 @@ export const PlanterCameraScreen: React.FC = () => {
       </View>
 
       {/* Field Info */}
-      {nearbyField && locationStatus === 'valid' && (
+      {selectedField && locationStatus === 'valid' && (
         <View style={styles.fieldInfo}>
-          <Text style={styles.fieldName}>{nearbyField.name}</Text>
+          <Text style={styles.fieldName}>{selectedField.name}</Text>
           <View style={styles.fieldStats}>
             <View style={styles.fieldStat}>
               <Text style={styles.fieldStatLabel}>{t('camera.capacity')}</Text>
               <Text style={styles.fieldStatValue}>
-                {nearbyField.plantedCount} / {nearbyField.capacity}
+                {selectedField.plantedCount} / {selectedField.capacity}
               </Text>
             </View>
             <View style={styles.fieldStat}>
               <Text style={styles.fieldStatLabel}>{t('camera.allowedSpecies')}</Text>
               <View style={styles.speciesIcons}>
-                {nearbyField.allowedSpecies.map(species => {
+                {selectedField.allowedSpecies.map(species => {
                   const tree = treeSpecies.find(t => t.id === species);
                   return tree ? (
                     <Text key={species} style={styles.speciesIcon}>{tree.icon}</Text>
@@ -269,7 +297,7 @@ export const PlanterCameraScreen: React.FC = () => {
       <Text style={styles.sectionTitle}>{t('camera.selectSpecies')}</Text>
       <View style={styles.speciesContainer}>
         {treeSpecies.map(species => {
-          const isAllowed = !nearbyField || nearbyField.allowedSpecies.includes(species.id);
+          const isAllowed = !selectedField || selectedField.allowedSpecies.includes(species.id);
           return (
             <TouchableOpacity
               key={species.id}
@@ -298,13 +326,17 @@ export const PlanterCameraScreen: React.FC = () => {
       <TouchableOpacity
         style={[
           styles.captureButton,
-          locationStatus !== 'valid' && styles.disabledButton,
+          (locationStatus !== 'valid' && locationStatus !== 'multiple' && locationStatus !== 'outside') && styles.disabledButton,
         ]}
         onPress={capturePhoto}
-        disabled={locationStatus !== 'valid'}
+        disabled={locationStatus !== 'valid' && locationStatus !== 'multiple' && locationStatus !== 'outside'}
       >
         <Ionicons name="camera" size={24} color="white" />
-        <Text style={styles.captureButtonText}>{t('camera.captureTree')}</Text>
+        <Text style={styles.captureButtonText}>
+          {locationStatus === 'multiple' || (locationStatus === 'outside' && fieldsNearby.length > 0)
+            ? t('camera.selectFieldToCapture')
+            : t('camera.captureTree')}
+        </Text>
       </TouchableOpacity>
 
       {/* Photo Preview */}
@@ -353,6 +385,19 @@ export const PlanterCameraScreen: React.FC = () => {
           )}
         </TouchableOpacity>
       )}
+
+      {/* Field Selector Modal */}
+      <FieldSelector
+        visible={showFieldSelector}
+        fieldsInside={fieldsInside}
+        fieldsNearby={fieldsNearby}
+        selectedField={selectedField}
+        onSelectField={(field) => {
+          setSelectedField(field);
+          setLocationStatus('valid');
+        }}
+        onClose={() => setShowFieldSelector(false)}
+      />
     </ScrollView>
   );
 };
@@ -377,6 +422,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff3e0',
     borderColor: '#FF9800',
   },
+  multipleStatus: {
+    backgroundColor: '#e3f2fd',
+    borderColor: '#2196F3',
+  },
   invalidStatus: {
     backgroundColor: '#ffebee',
     borderColor: '#F44336',
@@ -384,6 +433,7 @@ const styles = StyleSheet.create({
   statusHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 8,
   },
   statusTitle: {
@@ -391,6 +441,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: 8,
     color: '#333',
+    flex: 1,
+  },
+  selectFieldButton: {
+    backgroundColor: '#2196F3',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+  },
+  selectFieldText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   statusText: {
     fontSize: 14,

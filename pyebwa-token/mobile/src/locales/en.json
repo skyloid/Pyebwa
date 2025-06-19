@@ -74,7 +74,23 @@
     "allowedSpecies": "Allowed Species",
     "selectSpecies": "Select Tree Species",
     "captureTree": "Capture Tree Photo",
-    "submissionError": "Failed to submit photos. Please try again."
+    "submissionError": "Failed to submit photos. Please try again.",
+    "multipleFields": "{{count}} fields available at your location",
+    "selectField": "Select Field",
+    "selectFieldToCapture": "Select Field to Capture"
+  },
+  "fieldSelector": {
+    "selectField": "Select Planting Field",
+    "fieldsInside": "Fields at Your Location",
+    "fieldsNearby": "Nearby Fields",
+    "inside": "HERE",
+    "capacity": "Capacity",
+    "remaining": "{{count}} spots remaining",
+    "fieldFull": "Field Full",
+    "allowedSpecies": "Allowed",
+    "noFields": "No Fields Available",
+    "noFieldsMessage": "There are no planting fields in your area. Please contact a validator to map new fields.",
+    "plantIn": "Plant in {{field}}"
   },
   "trees": {
     "mango": "Mango",

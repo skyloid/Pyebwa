@@ -74,7 +74,23 @@
     "allowedSpecies": "Espès ki Otorize",
     "selectSpecies": "Chwazi Espès Pyebwa",
     "captureTree": "Pran Foto Pyebwa",
-    "submissionError": "Pa rive voye foto yo. Tanpri eseye ankò."
+    "submissionError": "Pa rive voye foto yo. Tanpri eseye ankò.",
+    "multipleFields": "{{count}} jaden disponib nan pozisyon ou",
+    "selectField": "Chwazi Jaden",
+    "selectFieldToCapture": "Chwazi Jaden pou Pran Foto"
+  },
+  "fieldSelector": {
+    "selectField": "Chwazi Jaden Plantasyon",
+    "fieldsInside": "Jaden nan Pozisyon Ou",
+    "fieldsNearby": "Jaden Toupre",
+    "inside": "ISIT LA",
+    "capacity": "Kapasite",
+    "remaining": "{{count}} plas ki rete",
+    "fieldFull": "Jaden Plen",
+    "allowedSpecies": "Otorize",
+    "noFields": "Pa Gen Jaden Disponib",
+    "noFieldsMessage": "Pa gen jaden plantasyon nan zòn ou an. Tanpri kontakte yon validatè pou katografie nouvo jaden.",
+    "plantIn": "Plante nan {{field}}"
   },
   "trees": {
     "mango": "Mango",

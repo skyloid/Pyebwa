@@ -236,6 +236,34 @@ export class FieldMappingService {
     };
   }
 
+  // Get all nearby fields (within a certain radius)
+  async getNearbyFields(location: Coordinate, radiusMeters: number = 1000): Promise<{
+    fieldsInside: PlantingField[];
+    fieldsNearby: Array<{ field: PlantingField; distance: number }>;
+  }> {
+    const fields = await this.getAllFields();
+    const activeFields = fields.filter(f => f.status === 'active');
+
+    const fieldsInside: PlantingField[] = [];
+    const fieldsNearby: Array<{ field: PlantingField; distance: number }> = [];
+
+    for (const field of activeFields) {
+      if (this.isPointInPolygon(location, field.polygon)) {
+        fieldsInside.push(field);
+      } else {
+        const distance = this.getDistanceToPolygon(location, field.polygon);
+        if (distance <= radiusMeters) {
+          fieldsNearby.push({ field, distance });
+        }
+      }
+    }
+
+    // Sort nearby fields by distance
+    fieldsNearby.sort((a, b) => a.distance - b.distance);
+
+    return { fieldsInside, fieldsNearby };
+  }
+
   // Get distance from point to nearest edge of polygon
   private getDistanceToPolygon(point: Coordinate, polygon: Coordinate[]): number {
     let minDistance = Infinity;

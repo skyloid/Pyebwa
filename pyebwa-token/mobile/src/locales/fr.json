@@ -74,7 +74,23 @@
     "allowedSpecies": "Espèces Autorisées",
     "selectSpecies": "Sélectionner l'Espèce d'Arbre",
     "captureTree": "Capturer Photo d'Arbre",
-    "submissionError": "Échec de l'envoi des photos. Veuillez réessayer."
+    "submissionError": "Échec de l'envoi des photos. Veuillez réessayer.",
+    "multipleFields": "{{count}} champs disponibles à votre emplacement",
+    "selectField": "Sélectionner Champ",
+    "selectFieldToCapture": "Sélectionner Champ pour Capturer"
+  },
+  "fieldSelector": {
+    "selectField": "Sélectionner Champ de Plantation",
+    "fieldsInside": "Champs à Votre Emplacement",
+    "fieldsNearby": "Champs Proximité",
+    "inside": "ICI",
+    "capacity": "Capacité",
+    "remaining": "{{count}} places restantes",
+    "fieldFull": "Champ Plein",
+    "allowedSpecies": "Autorisées",
+    "noFields": "Aucun Champ Disponible",
+    "noFieldsMessage": "Il n'y a pas de champs de plantation dans votre région. Veuillez contacter un validateur pour cartographier de nouveaux champs.",
+    "plantIn": "Planter dans {{field}}"
   },
   "trees": {
     "mango": "Mangue",
