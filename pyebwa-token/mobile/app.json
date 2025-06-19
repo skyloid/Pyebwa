@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "PYEBWA Planter",
+    "name": "PYEBWA Token",
     "slug": "pyebwa-planter",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,27 +9,40 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#00217D"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.pyebwa.planter",
+      "bundleIdentifier": "com.pyebwa.token",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "This app needs GPS to verify tree planting locations.",
         "NSCameraUsageDescription": "This app needs camera access to capture tree planting evidence."
       }
     },
     "android": {
-      "package": "com.pyebwa.planter",
+      "package": "com.pyebwa.token",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#00217D"
+      },
       "permissions": [
         "CAMERA",
         "ACCESS_FINE_LOCATION",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE",
+        "ACCESS_COARSE_LOCATION"
       ]
     },
+    "plugins": [
+      "expo-camera",
+      "expo-location",
+      "expo-media-library",
+      "expo-image-picker"
+    ],
     "extra": {
       "eas": {
         "projectId": "4d671f6b-5713-467e-aa59-2c2ab261e76d"
