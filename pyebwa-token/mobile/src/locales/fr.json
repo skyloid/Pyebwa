@@ -70,6 +70,7 @@
     "loading": "Chargement...",
     "error": "Erreur",
     "success": "Succès",
+    "cancel": "Annuler",
     "comingSoon": "Bientôt Disponible",
     "featureComingSoon": "La fonctionnalité {{feature}} sera bientôt disponible !"
   },
@@ -133,5 +134,42 @@
     "securePayment": "Traitement de paiement sécurisé",
     "successMessage": "Achat réussi de {{tokens}} jetons PYEBWA pour {{price}} $ !",
     "paymentError": "Le paiement a échoué. Veuillez réessayer ou utiliser une autre méthode de paiement."
+  },
+  "fieldMapper": {
+    "startMapping": "Commencer la Cartographie",
+    "stopMapping": "Arrêter la Cartographie",
+    "resumeSession": "Reprendre la Session Précédente",
+    "resumeSessionMessage": "Vous avez une session de cartographie incomplète. Voulez-vous reprendre ?",
+    "resume": "Reprendre",
+    "startWalking": "Commencer à marcher pour cartographier le champ",
+    "walkInstructions": "Marchez autour du périmètre de la zone de plantation. L'application suivra votre chemin.",
+    "startInstructions": "Appuyez sur démarrer et marchez autour de la limite du champ pour créer une zone géolocalisée.",
+    "duration": "Durée",
+    "distance": "Distance",
+    "points": "Points",
+    "accuracy": "Précision GPS",
+    "insufficientPoints": "Pas Assez de Points",
+    "needMorePoints": "Vous avez besoin d'au moins 4 points pour créer un champ. Continuez à marcher !",
+    "completeMapping": "Compléter la Cartographie du Champ",
+    "totalDistance": "Distance Totale Parcourue",
+    "pointsCaptured": "Points Capturés",
+    "fieldName": "Nom du Champ",
+    "fieldNamePlaceholder": "ex. Zone de Plantation Colline Nord",
+    "capacity": "Capacité d'Arbres",
+    "capacityPlaceholder": "Nombre maximum d'arbres",
+    "allowedSpecies": "Espèces d'Arbres Autorisées",
+    "description": "Description",
+    "descriptionPlaceholder": "Notes supplémentaires sur cette zone de plantation...",
+    "createField": "Créer le Champ",
+    "fillRequiredFields": "Veuillez remplir tous les champs obligatoires",
+    "fieldCreated": "Champ '{{name}}' créé avec succès ! Surface : {{area}} m²"
+  },
+  "validator": {
+    "dashboard": "🔍 Tableau de Bord Validateur",
+    "createField": "📍 Cartographier Nouveau Champ",
+    "myFields": "Mes Champs",
+    "totalArea": "Surface Totale Cartographiée",
+    "activeFields": "Champs Actifs",
+    "capacityUsed": "Capacité Utilisée"
   }
 }

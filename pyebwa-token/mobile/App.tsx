@@ -8,13 +8,14 @@ import './src/i18n'; // Initialize i18n
 import { LanguageSwitcher } from './src/components/LanguageSwitcher';
 import { HeritageUploadScreen } from './src/screens/HeritageUploadScreen';
 import { TokenPurchaseScreen } from './src/screens/TokenPurchaseScreen';
+import { FieldMapperScreen } from './src/screens/FieldMapperScreen';
 
 export default function App() {
   const { t, i18n } = useTranslation();
-  const [screen, setScreen] = React.useState<'login' | 'home' | 'camera' | 'heritage' | 'purchase'>('login');
+  const [screen, setScreen] = React.useState<'login' | 'home' | 'camera' | 'heritage' | 'purchase' | 'fieldMapper'>('login');
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
-  const [userType, setUserType] = React.useState<'family' | 'planter'>('family');
+  const [userType, setUserType] = React.useState<'family' | 'planter' | 'validator'>('family');
   
   // Auth form state
   const [mode, setMode] = React.useState<'login' | 'register'>('login');
@@ -78,7 +79,7 @@ export default function App() {
     }
   };
 
-  const handleDemoLogin = async (type: 'family' | 'planter') => {
+  const handleDemoLogin = async (type: 'family' | 'planter' | 'validator') => {
     setAuthLoading(true);
     try {
       await AsyncStorage.setItem('isLoggedIn', 'true');
@@ -192,8 +193,12 @@ export default function App() {
               <Text style={{ fontSize: 16, color: '#333', marginBottom: 10 }}>
                 {t('auth.iAmA')}
               </Text>
-              <View style={{ flexDirection: 'row', gap: 10 }}>
-                <TouchableOpacity
+              <View style={{ marginBottom: 20 }}>
+                <Text style={{ fontSize: 16, color: '#333', marginBottom: 10 }}>
+                  {t('auth.iAmA')}
+                </Text>
+                <View style={{ flexDirection: 'row', gap: 10, marginBottom: 10 }}>
+                  <TouchableOpacity
                   style={{
                     flex: 1,
                     padding: 15,
@@ -231,6 +236,27 @@ export default function App() {
                     fontWeight: userType === 'planter' ? 'bold' : 'normal'
                   }}>
                     {t('auth.treePlanter')}
+                  </Text>
+                </TouchableOpacity>
+                </View>
+                <TouchableOpacity
+                  style={{
+                    flex: 1,
+                    padding: 15,
+                    borderRadius: 10,
+                    borderWidth: 2,
+                    borderColor: userType === 'validator' ? '#00217D' : '#ddd',
+                    backgroundColor: userType === 'validator' ? '#f0f5ff' : 'white',
+                  }}
+                  onPress={() => setUserType('validator')}
+                >
+                  <Text style={{
+                    textAlign: 'center',
+                    fontSize: 14,
+                    color: userType === 'validator' ? '#00217D' : '#666',
+                    fontWeight: userType === 'validator' ? 'bold' : 'normal'
+                  }}>
+                    🔍 Validator
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -326,35 +352,51 @@ export default function App() {
           <Text style={{ textAlign: 'center', color: '#666', marginBottom: 10 }}>
             {t('auth.demoLogin')}
           </Text>
-          <View style={{ flexDirection: 'row', gap: 10 }}>
+          <View style={{ gap: 10 }}>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  backgroundColor: '#4CAF50',
+                  paddingVertical: 12,
+                  borderRadius: 10,
+                  alignItems: 'center',
+                }}
+                onPress={() => handleDemoLogin('family')}
+                disabled={authLoading}
+              >
+                <Text style={{ color: 'white', fontWeight: 'bold' }}>
+                  {t('auth.demoFamily')}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  backgroundColor: '#4CAF50',
+                  paddingVertical: 12,
+                  borderRadius: 10,
+                  alignItems: 'center',
+                }}
+                onPress={() => handleDemoLogin('planter')}
+                disabled={authLoading}
+              >
+                <Text style={{ color: 'white', fontWeight: 'bold' }}>
+                  {t('auth.demoPlanter')}
+                </Text>
+              </TouchableOpacity>
+            </View>
             <TouchableOpacity
               style={{
-                flex: 1,
-                backgroundColor: '#4CAF50',
+                backgroundColor: '#FF6B6B',
                 paddingVertical: 12,
                 borderRadius: 10,
                 alignItems: 'center',
               }}
-              onPress={() => handleDemoLogin('family')}
+              onPress={() => handleDemoLogin('validator')}
               disabled={authLoading}
             >
               <Text style={{ color: 'white', fontWeight: 'bold' }}>
-                {t('auth.demoFamily')}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{
-                flex: 1,
-                backgroundColor: '#4CAF50',
-                paddingVertical: 12,
-                borderRadius: 10,
-                alignItems: 'center',
-              }}
-              onPress={() => handleDemoLogin('planter')}
-              disabled={authLoading}
-            >
-              <Text style={{ color: 'white', fontWeight: 'bold' }}>
-                {t('auth.demoPlanter')}
+                Demo Validator
               </Text>
             </TouchableOpacity>
           </View>
@@ -370,14 +412,49 @@ export default function App() {
         <View style={{ backgroundColor: '#00217D', padding: 20, paddingTop: 50 }}>
           <Text style={{ fontSize: 24, fontWeight: 'bold', color: 'white' }}>{t('app.name')}</Text>
           <Text style={{ fontSize: 16, color: 'rgba(255,255,255,0.8)', marginTop: 5 }}>
-            {t(userType === 'planter' ? 'dashboard.planterDashboard' : 'dashboard.familyDashboard')}
+            {t(userType === 'planter' ? 'dashboard.planterDashboard' : userType === 'validator' ? 'validator.dashboard' : 'dashboard.familyDashboard')}
           </Text>
         </View>
         
         <View style={{ flex: 1, padding: 20 }}>
           {/* Language Switcher */}
           <LanguageSwitcher />
-          {userType === 'planter' ? (
+          {userType === 'validator' ? (
+            <>
+              {/* Validator Dashboard */}
+              <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 15, marginBottom: 20 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+                  <View style={{ alignItems: 'center' }}>
+                    <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#00217D' }}>12</Text>
+                    <Text style={{ fontSize: 14, color: '#666', marginTop: 5 }}>{t('validator.myFields')}</Text>
+                  </View>
+                  <View style={{ alignItems: 'center' }}>
+                    <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#00217D' }}>45.2</Text>
+                    <Text style={{ fontSize: 14, color: '#666', marginTop: 5 }}>Hectares</Text>
+                  </View>
+                </View>
+              </View>
+
+              <TouchableOpacity 
+                style={{ backgroundColor: '#FF6B6B', padding: 20, borderRadius: 15, alignItems: 'center', marginBottom: 20 }}
+                onPress={() => setScreen('fieldMapper')}
+              >
+                <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>{t('validator.createField')}</Text>
+              </TouchableOpacity>
+
+              <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 15, marginBottom: 20 }}>
+                <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#333', marginBottom: 15 }}>{t('validator.activeFields')}</Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={{ fontSize: 14, color: '#666' }}>{t('validator.totalArea')}</Text>
+                  <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#00217D' }}>45.2 ha</Text>
+                </View>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+                  <Text style={{ fontSize: 14, color: '#666' }}>{t('validator.capacityUsed')}</Text>
+                  <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#4CAF50' }}>2,150 / 10,000</Text>
+                </View>
+              </View>
+            </>
+          ) : userType === 'planter' ? (
             <>
               {/* Planter Dashboard */}
               <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 15, marginBottom: 20, alignItems: 'center' }}>
@@ -515,6 +592,24 @@ export default function App() {
           <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white' }}>{t('dashboard.buyMoreTokens')}</Text>
         </View>
         <TokenPurchaseScreen />
+      </View>
+    );
+  }
+
+  // Field Mapper Screen
+  if (screen === 'fieldMapper') {
+    return (
+      <View style={{ flex: 1 }}>
+        <View style={{ backgroundColor: '#FF6B6B', padding: 20, paddingTop: 50, flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity 
+            onPress={() => setScreen('home')}
+            style={{ marginRight: 15 }}
+          >
+            <Text style={{ color: 'white', fontSize: 18 }}>{t('camera.back')}</Text>
+          </TouchableOpacity>
+          <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white' }}>{t('validator.createField')}</Text>
+        </View>
+        <FieldMapperScreen />
       </View>
     );
   }

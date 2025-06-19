@@ -70,6 +70,7 @@
     "loading": "Ap Chaje...",
     "error": "Erè",
     "success": "Siksè",
+    "cancel": "Anile",
     "comingSoon": "Vini Byento",
     "featureComingSoon": "Fonksyon {{feature}} pral disponib byento!"
   },
@@ -133,5 +134,42 @@
     "securePayment": "Pwosesis peman an sekirite",
     "successMessage": "Ou achte {{tokens}} token PYEBWA pou ${{price}} avek siksè!",
     "paymentError": "Peman an echwe. Tanpri eseye ankò oswa sèvi ak yon lòt metòd peman."
+  },
+  "fieldMapper": {
+    "startMapping": "Kòmanse Katografi",
+    "stopMapping": "Sispann Katografi",
+    "resumeSession": "Reprann Sesyon Anvan",
+    "resumeSessionMessage": "Ou gen yon sesyon katografi ki poko fini. Èske ou vle reprann li?",
+    "resume": "Reprann",
+    "startWalking": "Kòmanse mache pou katografie jaden an",
+    "walkInstructions": "Mache alantou perimèt zòn plantasyon an. App la ap swiv chemen ou.",
+    "startInstructions": "Peze kòmanse epi mache alantou limit jaden an pou kreye yon zòn jeyolokalize.",
+    "duration": "Dire",
+    "distance": "Distans",
+    "points": "Pwen",
+    "accuracy": "Presizyon GPS",
+    "insufficientPoints": "Pa Gen Ase Pwen",
+    "needMorePoints": "Ou bezwen omwen 4 pwen pou kreye yon jaden. Kontinye mache!",
+    "completeMapping": "Konplete Katografi Jaden",
+    "totalDistance": "Distans Total Ou Mache",
+    "pointsCaptured": "Pwen Kaptire",
+    "fieldName": "Non Jaden",
+    "fieldNamePlaceholder": "egz. Zòn Plantasyon Ti Mòn Nò",
+    "capacity": "Kapasite Pyebwa",
+    "capacityPlaceholder": "Maksimòm kantite pyebwa",
+    "allowedSpecies": "Espès Pyebwa ki Otorize",
+    "description": "Deskripsyon",
+    "descriptionPlaceholder": "Nòt adisyonèl sou zòn plantasyon sa a...",
+    "createField": "Kreye Jaden",
+    "fillRequiredFields": "Tanpri ranpli tout chan obligatwa yo",
+    "fieldCreated": "Jaden '{{name}}' kreye avèk siksè! Sipèfisi: {{area}} m²"
+  },
+  "validator": {
+    "dashboard": "🔍 Tablo Validatè",
+    "createField": "📍 Katografie Nouvo Jaden",
+    "myFields": "Jaden Mwen",
+    "totalArea": "Sipèfisi Total Katografie",
+    "activeFields": "Jaden Aktif",
+    "capacityUsed": "Kapasite Itilize"
   }
 }

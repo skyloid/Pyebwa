@@ -70,6 +70,7 @@
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",
+    "cancel": "Cancel",
     "comingSoon": "Coming Soon",
     "featureComingSoon": "{{feature}} feature will be available soon!"
   },
@@ -133,5 +134,42 @@
     "securePayment": "Secure payment processing",
     "successMessage": "Successfully purchased {{tokens}} PYEBWA tokens for ${{price}}!",
     "paymentError": "Payment failed. Please try again or use a different payment method."
+  },
+  "fieldMapper": {
+    "startMapping": "Start Mapping",
+    "stopMapping": "Stop Mapping",
+    "resumeSession": "Resume Previous Session",
+    "resumeSessionMessage": "You have an incomplete mapping session. Would you like to resume?",
+    "resume": "Resume",
+    "startWalking": "Start walking to map field",
+    "walkInstructions": "Walk around the perimeter of the planting area. The app will track your path.",
+    "startInstructions": "Press start and walk around the field boundary to create a geofenced area.",
+    "duration": "Duration",
+    "distance": "Distance",
+    "points": "Points",
+    "accuracy": "GPS Accuracy",
+    "insufficientPoints": "Not Enough Points",
+    "needMorePoints": "You need at least 4 points to create a field. Keep walking!",
+    "completeMapping": "Complete Field Mapping",
+    "totalDistance": "Total Distance Walked",
+    "pointsCaptured": "Points Captured",
+    "fieldName": "Field Name",
+    "fieldNamePlaceholder": "e.g., North Hill Planting Zone",
+    "capacity": "Tree Capacity",
+    "capacityPlaceholder": "Maximum number of trees",
+    "allowedSpecies": "Allowed Tree Species",
+    "description": "Description",
+    "descriptionPlaceholder": "Additional notes about this planting area...",
+    "createField": "Create Field",
+    "fillRequiredFields": "Please fill in all required fields",
+    "fieldCreated": "Field '{{name}}' created successfully! Area: {{area}} m²"
+  },
+  "validator": {
+    "dashboard": "🔍 Validator Dashboard",
+    "createField": "📍 Map New Field",
+    "myFields": "My Fields",
+    "totalArea": "Total Area Mapped",
+    "activeFields": "Active Fields",
+    "capacityUsed": "Capacity Used"
   }
 }

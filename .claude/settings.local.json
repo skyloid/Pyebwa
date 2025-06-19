@@ -59,7 +59,9 @@
       "Bash(eas build:*)",
       "Bash(npx expo prebuild:*)",
       "Bash(adb:*)",
-      "Bash(npx expo export:*)"
+      "Bash(npx expo export:*)",
+      "Bash(git restore:*)",
+      "Bash(npm run:*)"
     ],
     "deny": []
   }
