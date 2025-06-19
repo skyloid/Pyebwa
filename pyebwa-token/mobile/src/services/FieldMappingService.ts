@@ -308,7 +308,16 @@ export class FieldMappingService {
   async getAllFields(): Promise<PlantingField[]> {
     try {
       const fieldsJson = await AsyncStorage.getItem(STORAGE_KEYS.FIELDS);
-      return fieldsJson ? JSON.parse(fieldsJson) : [];
+      const fields = fieldsJson ? JSON.parse(fieldsJson) : [];
+      
+      // If no fields exist, create demo fields for testing
+      if (fields.length === 0 && await this.isDemoMode()) {
+        const demoFields = this.createDemoFields();
+        await AsyncStorage.setItem(STORAGE_KEYS.FIELDS, JSON.stringify(demoFields));
+        return demoFields;
+      }
+      
+      return fields;
     } catch (error) {
       console.error('Error loading fields:', error);
       return [];
@@ -343,5 +352,78 @@ export class FieldMappingService {
       console.error('Error resuming session:', error);
     }
     return null;
+  }
+
+  // Check if in demo mode
+  private async isDemoMode(): Promise<boolean> {
+    const email = await AsyncStorage.getItem('userEmail');
+    return email?.includes('@demo.com') || false;
+  }
+
+  // Create demo fields for testing
+  private createDemoFields(): PlantingField[] {
+    const now = new Date();
+    return [
+      {
+        id: 'demo_field_1',
+        validatorId: 'validator_demo',
+        name: 'North Hill Plantation',
+        polygon: [
+          { latitude: 18.9712, longitude: -72.2852, timestamp: now },
+          { latitude: 18.9715, longitude: -72.2850, timestamp: now },
+          { latitude: 18.9713, longitude: -72.2847, timestamp: now },
+          { latitude: 18.9710, longitude: -72.2849, timestamp: now },
+          { latitude: 18.9712, longitude: -72.2852, timestamp: now },
+        ],
+        area: 5000, // 0.5 hectares
+        capacity: 250,
+        plantedCount: 45,
+        allowedSpecies: ['mango', 'moringa', 'cedar'],
+        createdAt: now,
+        updatedAt: now,
+        status: 'active',
+        description: 'Main planting area on the north hill slope',
+      },
+      {
+        id: 'demo_field_2',
+        validatorId: 'validator_demo',
+        name: 'River Valley Zone',
+        polygon: [
+          { latitude: 18.9700, longitude: -72.2840, timestamp: now },
+          { latitude: 18.9703, longitude: -72.2838, timestamp: now },
+          { latitude: 18.9701, longitude: -72.2835, timestamp: now },
+          { latitude: 18.9698, longitude: -72.2837, timestamp: now },
+          { latitude: 18.9700, longitude: -72.2840, timestamp: now },
+        ],
+        area: 3500, // 0.35 hectares
+        capacity: 175,
+        plantedCount: 120,
+        allowedSpecies: ['bamboo', 'moringa'],
+        createdAt: now,
+        updatedAt: now,
+        status: 'active',
+        description: 'Fertile valley area near the river',
+      },
+      {
+        id: 'demo_field_3',
+        validatorId: 'validator_demo',
+        name: 'East Garden',
+        polygon: [
+          { latitude: 18.9720, longitude: -72.2830, timestamp: now },
+          { latitude: 18.9723, longitude: -72.2828, timestamp: now },
+          { latitude: 18.9721, longitude: -72.2825, timestamp: now },
+          { latitude: 18.9718, longitude: -72.2827, timestamp: now },
+          { latitude: 18.9720, longitude: -72.2830, timestamp: now },
+        ],
+        area: 2000, // 0.2 hectares
+        capacity: 100,
+        plantedCount: 98,
+        allowedSpecies: ['mango', 'cedar'],
+        createdAt: now,
+        updatedAt: now,
+        status: 'active',
+        description: 'Small garden area for fruit trees',
+      },
+    ];
   }
 }

@@ -1,7 +1,5 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Image, ActivityIndicator, TextInput, Alert, ScrollView } from 'react-native';
-// Camera imports are causing issues with expo-camera 16.1.8
-// import { CameraScreen } from './src/screens/CameraScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import './src/i18n'; // Initialize i18n
@@ -9,6 +7,7 @@ import { LanguageSwitcher } from './src/components/LanguageSwitcher';
 import { HeritageUploadScreen } from './src/screens/HeritageUploadScreen';
 import { TokenPurchaseScreen } from './src/screens/TokenPurchaseScreen';
 import { FieldMapperScreen } from './src/screens/FieldMapperScreen';
+import { PlanterCameraScreen } from './src/screens/PlanterCameraScreen';
 
 export default function App() {
   const { t, i18n } = useTranslation();
@@ -544,18 +543,7 @@ export default function App() {
           </TouchableOpacity>
           <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white' }}>{t('camera.plantTrees')}</Text>
         </View>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f5f5' }}>
-          <Text style={{ fontSize: 18, color: '#333', marginBottom: 20 }}>{t('camera.cameraFeature')}</Text>
-          <Text style={{ fontSize: 14, color: '#666', textAlign: 'center', paddingHorizontal: 40 }}>
-            {t('camera.cameraRequiresBuild')}
-          </Text>
-          <TouchableOpacity 
-            style={{ backgroundColor: '#00217D', padding: 15, borderRadius: 10, marginTop: 20 }}
-            onPress={() => Alert.alert(t('camera.cameraDemo'), t('camera.cameraDemoMessage'))}
-          >
-            <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>{t('camera.simulateCapture')}</Text>
-          </TouchableOpacity>
-        </View>
+        <PlanterCameraScreen />
       </View>
     );
   }
