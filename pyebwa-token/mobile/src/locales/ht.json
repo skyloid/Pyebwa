@@ -36,7 +36,8 @@
     "co2Offset": "kg CO₂ Konpanse",
     "tokenBalance": "Balans Token",
     "buyMoreTokens": "Achte Plis Token",
-    "uploadHeritage": "📸 Voye Eritaj"
+    "uploadHeritage": "📸 Voye Eritaj",
+    "viewAnalytics": "📊 Gade Analis"
   },
   "camera": {
     "plantTrees": "Plante Pyebwa",
@@ -249,7 +250,30 @@
     "save": "Konsève",
     "close": "Fèmen",
     "confirm": "Konfime",
+    "retry": "Eseye Ankò",
     "comingSoon": "Vini Byento",
     "featureComingSoon": "Fonksyon {{feature}} pral disponib byento!"
+  },
+  "analytics": {
+    "dashboard": "Tablo Analis",
+    "generatingInsights": "Ap jenere enfòmasyon...",
+    "noData": "Pa gen done analis disponib",
+    "totalTrees": "Total Pyebwa",
+    "treesPlanted": "Pyebwa Plante",
+    "co2Offset": "Konpansasyon CO₂",
+    "perYear": "pou chak ane",
+    "totalFields": "Total Jaden",
+    "utilization": "Itilizasyon",
+    "environmentalImpact": "Enpak sou Anviwonman",
+    "oxygenProduced": "Oksijèn Pwodwi",
+    "carbonStored": "Kabòn Depo",
+    "tokenEconomy": "Ekonomi Token",
+    "tokensEarned": "Token yo Genyen",
+    "estimatedValue": "valè estime",
+    "avgTokensPerTree": "Token Moy./Pyebwa",
+    "dailyPlantings": "Plantasyon Chak Jou (14 Jou Ki Pase)",
+    "speciesDistribution": "Distribisyon Espès",
+    "topFields": "Pi Bon Jaden yo",
+    "topPlanters": "Pi Bon Plantè yo"
   }
 }

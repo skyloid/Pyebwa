@@ -36,7 +36,8 @@
     "co2Offset": "kg CO₂ Compensés",
     "tokenBalance": "Solde de Jetons",
     "buyMoreTokens": "Acheter Plus de Jetons",
-    "uploadHeritage": "📸 Télécharger Héritage"
+    "uploadHeritage": "📸 Télécharger Héritage",
+    "viewAnalytics": "📊 Voir Analytiques"
   },
   "camera": {
     "plantTrees": "Planter des Arbres",
@@ -249,7 +250,30 @@
     "save": "Sauvegarder",
     "close": "Fermer",
     "confirm": "Confirmer",
+    "retry": "Réessayer",
     "comingSoon": "Bientôt Disponible",
     "featureComingSoon": "La fonctionnalité {{feature}} sera bientôt disponible !"
+  },
+  "analytics": {
+    "dashboard": "Tableau de Bord Analytique",
+    "generatingInsights": "Génération d'insights...",
+    "noData": "Aucune donnée analytique disponible",
+    "totalTrees": "Total d'Arbres",
+    "treesPlanted": "Arbres Plantés",
+    "co2Offset": "Compensation CO₂",
+    "perYear": "par an",
+    "totalFields": "Total des Champs",
+    "utilization": "Utilisation",
+    "environmentalImpact": "Impact Environnemental",
+    "oxygenProduced": "Oxygène Produit",
+    "carbonStored": "Carbone Stocké",
+    "tokenEconomy": "Économie de Jetons",
+    "tokensEarned": "Jetons Gagnés",
+    "estimatedValue": "valeur est.",
+    "avgTokensPerTree": "Jetons Moy./Arbre",
+    "dailyPlantings": "Plantations Quotidiennes (14 Derniers Jours)",
+    "speciesDistribution": "Distribution des Espèces",
+    "topFields": "Meilleurs Champs",
+    "topPlanters": "Meilleurs Planteurs"
   }
 }

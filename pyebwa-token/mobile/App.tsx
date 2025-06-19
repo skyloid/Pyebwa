@@ -9,10 +9,11 @@ import { TokenPurchaseScreen } from './src/screens/TokenPurchaseScreen';
 import { FieldMapperScreen } from './src/screens/FieldMapperScreen';
 import { PlanterCameraScreen } from './src/screens/PlanterCameraScreen';
 import { FieldManagementScreen } from './src/screens/FieldManagementScreen';
+import { AnalyticsDashboard } from './src/screens/AnalyticsDashboard';
 
 export default function App() {
   const { t, i18n } = useTranslation();
-  const [screen, setScreen] = React.useState<'login' | 'home' | 'camera' | 'heritage' | 'purchase' | 'fieldMapper' | 'fieldManagement'>('login');
+  const [screen, setScreen] = React.useState<'login' | 'home' | 'camera' | 'heritage' | 'purchase' | 'fieldMapper' | 'fieldManagement' | 'analytics'>('login');
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
   const [userType, setUserType] = React.useState<'family' | 'planter' | 'validator'>('family');
@@ -461,6 +462,13 @@ export default function App() {
                   <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#4CAF50' }}>2,150 / 10,000</Text>
                 </View>
               </View>
+
+              <TouchableOpacity 
+                style={{ backgroundColor: '#4CAF50', padding: 20, borderRadius: 15, alignItems: 'center', marginBottom: 20 }}
+                onPress={() => setScreen('analytics')}
+              >
+                <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>{t('dashboard.viewAnalytics')}</Text>
+              </TouchableOpacity>
             </>
           ) : userType === 'planter' ? (
             <>
@@ -482,12 +490,20 @@ export default function App() {
                 </View>
               </View>
 
-              <TouchableOpacity 
-                style={{ backgroundColor: '#00217D', padding: 20, borderRadius: 15, alignItems: 'center', marginBottom: 20 }}
-                onPress={() => setScreen('camera')}
-              >
-                <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>{t('dashboard.submitNewPlanting')}</Text>
-              </TouchableOpacity>
+              <View style={{ flexDirection: 'row', gap: 15, marginBottom: 20 }}>
+                <TouchableOpacity 
+                  style={{ flex: 1, backgroundColor: '#00217D', padding: 20, borderRadius: 15, alignItems: 'center' }}
+                  onPress={() => setScreen('camera')}
+                >
+                  <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>{t('dashboard.submitNewPlanting')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={{ flex: 1, backgroundColor: '#4CAF50', padding: 20, borderRadius: 15, alignItems: 'center' }}
+                  onPress={() => setScreen('analytics')}
+                >
+                  <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>{t('dashboard.viewAnalytics')}</Text>
+                </TouchableOpacity>
+              </View>
             </>
           ) : (
             <>
@@ -519,12 +535,20 @@ export default function App() {
                 </TouchableOpacity>
               </View>
 
-              <TouchableOpacity 
-                style={{ backgroundColor: '#00217D', padding: 20, borderRadius: 15, alignItems: 'center', marginBottom: 20 }}
-                onPress={() => setScreen('heritage')}
-              >
-                <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>{t('dashboard.uploadHeritage')}</Text>
-              </TouchableOpacity>
+              <View style={{ flexDirection: 'row', gap: 15, marginBottom: 20 }}>
+                <TouchableOpacity 
+                  style={{ flex: 1, backgroundColor: '#00217D', padding: 20, borderRadius: 15, alignItems: 'center' }}
+                  onPress={() => setScreen('heritage')}
+                >
+                  <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>{t('dashboard.uploadHeritage')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={{ flex: 1, backgroundColor: '#4CAF50', padding: 20, borderRadius: 15, alignItems: 'center' }}
+                  onPress={() => setScreen('analytics')}
+                >
+                  <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>{t('dashboard.viewAnalytics')}</Text>
+                </TouchableOpacity>
+              </View>
             </>
           )}
 
@@ -625,6 +649,24 @@ export default function App() {
           <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white' }}>{t('validator.manageFields')}</Text>
         </View>
         <FieldManagementScreen />
+      </View>
+    );
+  }
+
+  // Analytics Dashboard
+  if (screen === 'analytics') {
+    return (
+      <View style={{ flex: 1 }}>
+        <View style={{ backgroundColor: '#4CAF50', padding: 20, paddingTop: 50, flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity 
+            onPress={() => setScreen('home')}
+            style={{ marginRight: 15 }}
+          >
+            <Text style={{ color: 'white', fontSize: 18 }}>{t('camera.back')}</Text>
+          </TouchableOpacity>
+          <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white' }}>{t('analytics.dashboard')}</Text>
+        </View>
+        <AnalyticsDashboard />
       </View>
     );
   }

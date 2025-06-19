@@ -36,7 +36,8 @@
     "co2Offset": "kg CO₂ Offset",
     "tokenBalance": "Token Balance",
     "buyMoreTokens": "Buy More Tokens",
-    "uploadHeritage": "📸 Upload Heritage"
+    "uploadHeritage": "📸 Upload Heritage",
+    "viewAnalytics": "📊 View Analytics"
   },
   "camera": {
     "plantTrees": "Plant Trees",
@@ -249,7 +250,30 @@
     "save": "Save",
     "close": "Close",
     "confirm": "Confirm",
+    "retry": "Retry",
     "comingSoon": "Coming Soon",
     "featureComingSoon": "{{feature}} feature will be available soon!"
+  },
+  "analytics": {
+    "dashboard": "Analytics Dashboard",
+    "generatingInsights": "Generating insights...",
+    "noData": "No analytics data available",
+    "totalTrees": "Total Trees",
+    "treesPlanted": "Trees Planted",
+    "co2Offset": "CO₂ Offset",
+    "perYear": "per year",
+    "totalFields": "Total Fields",
+    "utilization": "Utilization",
+    "environmentalImpact": "Environmental Impact",
+    "oxygenProduced": "Oxygen Produced",
+    "carbonStored": "Carbon Stored",
+    "tokenEconomy": "Token Economy",
+    "tokensEarned": "Tokens Earned",
+    "estimatedValue": "est. value",
+    "avgTokensPerTree": "Avg Tokens/Tree",
+    "dailyPlantings": "Daily Plantings (Last 14 Days)",
+    "speciesDistribution": "Species Distribution",
+    "topFields": "Top Performing Fields",
+    "topPlanters": "Top Planters"
   }
 }
