@@ -1,16 +1,18 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, initializeAuth, getReactNativePersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Firebase config - you'll need to replace with your actual Firebase project config
+// Firebase configuration for PYEBWA Token
 const firebaseConfig = {
-  apiKey: "your-api-key",
-  authDomain: "pyebwa-token.firebaseapp.com",
-  projectId: "pyebwa-token",
-  storageBucket: "pyebwa-token.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "your-app-id"
+  apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
+  authDomain: "rasin.pyebwa.com",
+  projectId: "pyebwa-f5960",
+  storageBucket: "pyebwa-f5960.firebasestorage.app",
+  messagingSenderId: "1042887343749",
+  appId: "1:1042887343749:web:c276bf69b6c0895111f3ec",
+  measurementId: "G-ZX92K1TMM3"
 };
 
 // Initialize Firebase
@@ -24,5 +26,8 @@ const auth = initializeAuth(app, {
 // Initialize Firestore
 const db = getFirestore(app);
 
-export { auth, db };
+// Initialize Storage
+const storage = getStorage(app);
+
+export { auth, db, storage };
 export default app;

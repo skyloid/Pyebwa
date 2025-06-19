@@ -14,6 +14,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { FieldMappingService } from '../services/FieldMappingService';
 import { Coordinate, MappingSession } from '../types';
+import firebaseFieldService from '../services/firebaseFieldService';
+import offlineSync from '../services/offlineSync';
+import authService from '../services/authService';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -29,6 +32,7 @@ export const FieldMapperScreen: React.FC = () => {
   const [capacity, setCapacity] = useState('');
   const [selectedSpecies, setSelectedSpecies] = useState<string[]>(['mango']);
   const [description, setDescription] = useState('');
+  const [isCreatingField, setIsCreatingField] = useState(false);
   
   const mappingService = useRef(FieldMappingService.getInstance());
 
@@ -103,21 +107,57 @@ export const FieldMapperScreen: React.FC = () => {
       return;
     }
 
+    // Check if user is authenticated and is a validator
+    const user = authService.getCurrentUser();
+    const userProfile = authService.getUserProfile();
+    
+    if (!user || !userProfile) {
+      Alert.alert(t('common.error'), t('auth.pleaseLogin'));
+      return;
+    }
+
+    if (userProfile.userType !== 'validator') {
+      Alert.alert(t('common.error'), t('fieldMapper.validatorsOnly'));
+      return;
+    }
+
+    if (!currentSession || currentSession.points.length < 4) {
+      Alert.alert(t('common.error'), t('fieldMapper.insufficientPoints'));
+      return;
+    }
+
+    setIsCreatingField(true);
+
     try {
-      const field = await mappingService.current.completeFieldMapping(
+      // Create field using offline sync (handles online/offline automatically)
+      const fieldId = await offlineSync.createField(
         fieldName,
+        currentSession.points,
         parseInt(capacity),
         selectedSpecies,
         description
       );
 
+      // Calculate area for display
+      const area = mappingService.current.calculatePolygonArea(currentSession.points);
+
       Alert.alert(
         t('common.success'),
-        t('fieldMapper.fieldCreated', { name: field.name, area: Math.round(field.area) }),
+        t('fieldMapper.fieldCreated', { 
+          name: fieldName, 
+          area: Math.round(area) 
+        }),
         [{ text: 'OK', onPress: resetForm }]
       );
+
+      // Clear the mapping session
+      await mappingService.current.stopMapping();
+      
     } catch (error: any) {
-      Alert.alert(t('common.error'), error.message);
+      console.error('Error creating field:', error);
+      Alert.alert(t('common.error'), error.message || t('fieldMapper.createFieldError'));
+    } finally {
+      setIsCreatingField(false);
     }
   };
 

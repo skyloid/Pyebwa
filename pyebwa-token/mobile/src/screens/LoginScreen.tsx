@@ -12,7 +12,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native';
-import authService from '../services/auth';
+import authService from '../services/authService';
 
 interface LoginScreenProps {
   onLoginSuccess: () => void;
@@ -21,7 +21,7 @@ interface LoginScreenProps {
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [userType, setUserType] = useState<'family' | 'planter'>('family');
+  const [userType, setUserType] = useState<'validator' | 'planter'>('planter');
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
@@ -32,7 +32,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
 
     setLoading(true);
     try {
-      await authService.login(email, password, userType);
+      await authService.login(email, password);
       onLoginSuccess();
     } catch (error: any) {
       Alert.alert('Login Failed', error.message || 'Please check your credentials');
@@ -41,14 +41,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     }
   };
 
-  const handleDemoLogin = async (type: 'family' | 'planter') => {
+  const handleDemoLogin = async (type: 'validator' | 'planter') => {
     setLoading(true);
     try {
-      await authService.login(
-        type === 'family' ? 'family@demo.com' : 'planter@demo.com',
-        'demo123',
-        type
-      );
+      await authService.demoLogin(type);
       onLoginSuccess();
     } catch (error: any) {
       Alert.alert('Demo Login Failed', error.message);
@@ -79,17 +75,17 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
             <TouchableOpacity
               style={[
                 styles.userTypeButton,
-                userType === 'family' && styles.userTypeButtonActive,
+                userType === 'validator' && styles.userTypeButtonActive,
               ]}
-              onPress={() => setUserType('family')}
+              onPress={() => setUserType('validator')}
             >
               <Text
                 style={[
                   styles.userTypeText,
-                  userType === 'family' && styles.userTypeTextActive,
+                  userType === 'validator' && styles.userTypeTextActive,
                 ]}
               >
-                👨‍👩‍👧‍👦 Family Member
+                ✅ Validator
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -151,10 +147,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           <View style={styles.demoButtonsContainer}>
             <TouchableOpacity
               style={styles.demoButton}
-              onPress={() => handleDemoLogin('family')}
+              onPress={() => handleDemoLogin('validator')}
               disabled={loading}
             >
-              <Text style={styles.demoButtonText}>Demo Family</Text>
+              <Text style={styles.demoButtonText}>Demo Validator</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.demoButton}

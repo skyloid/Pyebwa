@@ -14,7 +14,9 @@ export interface UserProfile {
   uid: string;
   email: string;
   name: string;
-  userType: 'family' | 'planter';
+  userType: 'validator' | 'planter';
+  phoneNumber?: string;
+  organization?: string;
   createdAt: Date;
   lastLogin: Date;
 }
@@ -44,7 +46,8 @@ class AuthService {
     email: string, 
     password: string, 
     name: string, 
-    userType: 'family' | 'planter'
+    userType: 'validator' | 'planter',
+    additionalInfo?: { phoneNumber?: string; organization?: string }
   ): Promise<UserProfile> {
     try {
       // Create Firebase auth user
@@ -60,6 +63,8 @@ class AuthService {
         email: user.email!,
         name,
         userType,
+        phoneNumber: additionalInfo?.phoneNumber,
+        organization: additionalInfo?.organization,
         createdAt: new Date(),
         lastLogin: new Date()
       };
@@ -106,17 +111,20 @@ class AuthService {
   }
 
   // Demo login for testing
-  async demoLogin(userType: 'family' | 'planter'): Promise<UserProfile> {
+  async demoLogin(userType: 'validator' | 'planter'): Promise<UserProfile> {
     const demoUsers = {
-      family: {
-        email: 'family@demo.com',
+      validator: {
+        email: 'validator@demo.com',
         password: 'demo123',
-        name: 'Demo Family User'
+        name: 'Demo Validator',
+        phoneNumber: '+1234567890',
+        organization: 'PYEBWA Demo Org'
       },
       planter: {
         email: 'planter@demo.com', 
         password: 'demo123',
-        name: 'Demo Tree Planter'
+        name: 'Demo Tree Planter',
+        phoneNumber: '+0987654321'
       }
     };
 
@@ -131,7 +139,11 @@ class AuthService {
         demoUser.email, 
         demoUser.password, 
         demoUser.name, 
-        userType
+        userType,
+        {
+          phoneNumber: demoUser.phoneNumber,
+          organization: (demoUser as any).organization
+        }
       );
     }
   }
@@ -173,13 +185,23 @@ class AuthService {
   }
 
   // Get user type from storage (for quick access)
-  async getUserType(): Promise<'family' | 'planter' | null> {
+  async getUserType(): Promise<'validator' | 'planter' | null> {
     try {
       const userType = await AsyncStorage.getItem('userType');
-      return userType as 'family' | 'planter' | null;
+      return userType as 'validator' | 'planter' | null;
     } catch (error) {
       return null;
     }
+  }
+
+  // Check if user is a validator
+  isValidator(): boolean {
+    return this.userProfile?.userType === 'validator';
+  }
+
+  // Check if user is a planter
+  isPlanter(): boolean {
+    return this.userProfile?.userType === 'planter';
   }
 
   // Convert Firebase error codes to user-friendly messages

@@ -13,6 +13,11 @@ import * as Location from 'expo-location';
 import * as MediaLibrary from 'expo-media-library';
 import { Ionicons } from '@expo/vector-icons';
 import { useOfflineQueue } from '../hooks/useOfflineQueue';
+import { PlantingField, Coordinate } from '../types';
+import firebaseFieldService from '../services/firebaseFieldService';
+import offlineSync from '../services/offlineSync';
+import authService from '../services/authService';
+import { useTranslation } from 'react-i18next';
 
 interface CapturedPhoto {
   uri: string;
@@ -22,6 +27,7 @@ interface CapturedPhoto {
 }
 
 export const CameraScreen: React.FC = () => {
+  const { t } = useTranslation();
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [hasLocationPermission, setHasLocationPermission] = useState<boolean | null>(null);
   const [type, setType] = useState('back');
@@ -29,6 +35,9 @@ export const CameraScreen: React.FC = () => {
   const [capturedPhotos, setCapturedPhotos] = useState<CapturedPhoto[]>([]);
   const [currentLocation, setCurrentLocation] = useState<Location.LocationObject | null>(null);
   const [selectedSpecies, setSelectedSpecies] = useState<string>('mango');
+  const [nearbyFields, setNearbyFields] = useState<PlantingField[]>([]);
+  const [selectedField, setSelectedField] = useState<PlantingField | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const cameraRef = useRef<any>(null);
   const { addToQueue } = useOfflineQueue();
 
@@ -51,9 +60,46 @@ export const CameraScreen: React.FC = () => {
           accuracy: Location.Accuracy.High,
         });
         setCurrentLocation(location);
+        await checkNearbyFields(location);
       }
     })();
   }, []);
+
+  const checkNearbyFields = async (location: Location.LocationObject) => {
+    try {
+      const coordinate: Coordinate = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        timestamp: new Date(),
+        accuracy: location.coords.accuracy
+      };
+
+      const result = await firebaseFieldService.getNearbyFields(coordinate, 1000); // 1km radius
+      const allFields = [...result.fieldsInside, ...result.fieldsNearby.map(fn => fn.field)];
+      
+      setNearbyFields(allFields);
+      
+      // Auto-select field if location is inside one
+      if (result.fieldsInside.length > 0) {
+        setSelectedField(result.fieldsInside[0]);
+      } else if (result.fieldsNearby.length > 0) {
+        setSelectedField(result.fieldsNearby[0].field);
+      }
+      
+    } catch (error) {
+      console.error('Error checking nearby fields:', error);
+      // Fall back to cached fields if offline
+      try {
+        const cachedFields = await offlineSync.getCachedFields();
+        setNearbyFields(cachedFields);
+        if (cachedFields.length > 0) {
+          setSelectedField(cachedFields[0]);
+        }
+      } catch (cacheError) {
+        console.error('Error getting cached fields:', cacheError);
+      }
+    }
+  };
 
   const takePicture = async () => {
     if (!cameraRef.current || isCapturing) return;
@@ -67,6 +113,7 @@ export const CameraScreen: React.FC = () => {
           accuracy: Location.Accuracy.High,
         });
         setCurrentLocation(location);
+        await checkNearbyFields(location);
       }
 
       // Validate GPS is in Haiti
@@ -111,38 +158,78 @@ export const CameraScreen: React.FC = () => {
 
   const submitPlanting = async () => {
     if (capturedPhotos.length === 0) {
-      Alert.alert('No Photos', 'Please capture at least one photo before submitting.');
+      Alert.alert(t('camera.noPhotos'), t('camera.capturePhotoFirst'));
       return;
     }
 
-    try {
-      // Create submission data
-      const submission = {
-        photos: capturedPhotos,
-        species: selectedSpecies,
-        treeCount: capturedPhotos.length,
-        timestamp: new Date(),
-        deviceId: 'device_123', // Get actual device ID
-      };
+    if (!selectedField) {
+      Alert.alert(t('camera.noField'), t('camera.selectFieldFirst'));
+      return;
+    }
 
-      // Add to offline queue
-      await addToQueue('planting_submission', submission);
+    // Check authentication
+    const user = authService.getCurrentUser();
+    const userProfile = authService.getUserProfile();
+    
+    if (!user || !userProfile) {
+      Alert.alert(t('common.error'), t('auth.pleaseLogin'));
+      return;
+    }
+
+    if (userProfile.userType !== 'planter') {
+      Alert.alert(t('common.error'), t('camera.plantersOnly'));
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Submit each photo as a separate planting record
+      const plantingPromises = capturedPhotos.map(async (photo) => {
+        if (!photo.location) {
+          throw new Error(t('camera.noLocationData'));
+        }
+
+        const coordinate: Coordinate = {
+          latitude: photo.location.coords.latitude,
+          longitude: photo.location.coords.longitude,
+          timestamp: photo.timestamp,
+          accuracy: photo.location.coords.accuracy
+        };
+
+        // Create planting data
+        const plantingData = {
+          fieldId: selectedField.id,
+          species: selectedSpecies,
+          location: coordinate,
+          photoUri: photo.uri,
+          notes: `Planted on ${photo.timestamp.toLocaleDateString()}`
+        };
+
+        // Use offline sync for automatic online/offline handling
+        return await offlineSync.createPlanting(plantingData);
+      });
+
+      await Promise.all(plantingPromises);
 
       Alert.alert(
-        'Success',
-        `${capturedPhotos.length} tree(s) submitted for verification!`,
+        t('common.success'),
+        t('camera.plantingSubmitted', { count: capturedPhotos.length }),
         [
           {
             text: 'OK',
             onPress: () => {
               setCapturedPhotos([]);
+              setSelectedField(null);
             },
           },
         ]
       );
-    } catch (error) {
-      console.error('Error submitting:', error);
-      Alert.alert('Error', 'Failed to submit planting evidence');
+    } catch (error: any) {
+      console.error('Error submitting planting:', error);
+      Alert.alert(t('common.error'), error.message || t('camera.submitError'));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
