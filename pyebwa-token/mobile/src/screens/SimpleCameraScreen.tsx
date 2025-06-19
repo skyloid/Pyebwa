@@ -8,6 +8,10 @@ import {
 } from 'react-native';
 import { Camera } from 'expo-camera';
 import * as Location from 'expo-location';
+import { getLocationValidationDetails, formatDistance } from '../utils/gpsValidator';
+import { getPlantingRecommendations } from '../data/haitiBoundaries';
+import { geofenceService } from '../services/GeofenceService';
+import { PlantingZoneMap } from '../components/PlantingZoneMap';
 
 export const SimpleCameraScreen: React.FC = () => {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -15,6 +19,9 @@ export const SimpleCameraScreen: React.FC = () => {
   const [currentLocation, setCurrentLocation] = useState<Location.LocationObject | null>(null);
   const [selectedSpecies, setSelectedSpecies] = useState<string>('mango');
   const [photoCount, setPhotoCount] = useState(0);
+  const [validationDetails, setValidationDetails] = useState<any>(null);
+  const [recommendations, setRecommendations] = useState<any>(null);
+  const [showMap, setShowMap] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -26,13 +33,27 @@ export const SimpleCameraScreen: React.FC = () => {
       const locationStatus = await Location.requestForegroundPermissionsAsync();
       setHasLocationPermission(locationStatus.status === 'granted');
 
-      // Get current location
+      // Get current location and validate
       if (locationStatus.status === 'granted') {
         try {
           const location = await Location.getCurrentPositionAsync({
             accuracy: Location.Accuracy.High,
           });
           setCurrentLocation(location);
+          
+          // Get validation details
+          const details = getLocationValidationDetails(location.coords);
+          setValidationDetails(details);
+          
+          // Get planting recommendations
+          const recs = getPlantingRecommendations(
+            location.coords.latitude,
+            location.coords.longitude
+          );
+          setRecommendations(recs);
+          
+          // Start geofence monitoring
+          geofenceService.startMonitoring().catch(console.error);
         } catch (error) {
           console.log('Location error:', error);
         }
@@ -40,9 +61,32 @@ export const SimpleCameraScreen: React.FC = () => {
     })();
   }, []);
 
-  const isLocationInHaiti = (lat: number, lon: number): boolean => {
-    return lat >= 18.0 && lat <= 20.1 && lon >= -74.5 && lon <= -71.6;
-  };
+  // Update location periodically
+  useEffect(() => {
+    if (!hasLocationPermission) return;
+    
+    const interval = setInterval(async () => {
+      try {
+        const location = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.High,
+        });
+        setCurrentLocation(location);
+        
+        const details = getLocationValidationDetails(location.coords);
+        setValidationDetails(details);
+        
+        const recs = getPlantingRecommendations(
+          location.coords.latitude,
+          location.coords.longitude
+        );
+        setRecommendations(recs);
+      } catch (error) {
+        console.log('Location update error:', error);
+      }
+    }, 5000); // Update every 5 seconds
+    
+    return () => clearInterval(interval);
+  }, [hasLocationPermission]);
 
   const takePicture = async () => {
     if (!currentLocation) {
@@ -51,13 +95,40 @@ export const SimpleCameraScreen: React.FC = () => {
     }
 
     const { latitude, longitude } = currentLocation.coords;
-    if (!isLocationInHaiti(latitude, longitude)) {
+    
+    // Check if location is valid for planting
+    if (!validationDetails?.isValid) {
       Alert.alert('Invalid Location', 'GPS shows you are not in Haiti. Tree planting must be verified within Haiti.');
       return;
     }
+    
+    // Check if in restricted area
+    if (recommendations && !recommendations.canPlant) {
+      Alert.alert('Restricted Area', recommendations.reason || 'Planting is not allowed in this area.');
+      return;
+    }
+    
+    // Warn if not in designated planting zone
+    if (!validationDetails?.isInPlantingZone) {
+      Alert.alert(
+        'Outside Planting Zone',
+        `You are ${formatDistance(validationDetails?.distanceToNearestZone || 0)} from the nearest designated planting zone. Photos will still be accepted but may receive lower priority for verification.`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Continue Anyway', onPress: () => capturePhoto() }
+        ]
+      );
+      return;
+    }
+    
+    capturePhoto();
+  };
+  
+  const capturePhoto = () => {
 
     // Simulate photo capture
     setPhotoCount(prev => prev + 1);
+    const { latitude, longitude } = currentLocation.coords;
     Alert.alert(
       'Photo Captured!', 
       `${selectedSpecies} tree photo saved with GPS coordinates: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
@@ -123,20 +194,55 @@ export const SimpleCameraScreen: React.FC = () => {
     <View style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
       {/* GPS Status */}
       <View style={{ 
-        backgroundColor: currentLocation ? '#e8f5e8' : '#ffebee', 
-        padding: 15, 
-        flexDirection: 'row', 
-        alignItems: 'center',
-        justifyContent: 'center'
+        backgroundColor: validationDetails?.isInPlantingZone ? '#e8f5e8' : 
+                       validationDetails?.isValid ? '#fff3cd' : '#ffebee', 
+        padding: 15
       }}>
-        <Text style={{ fontSize: 18, marginRight: 10 }}>
-          {currentLocation ? '🟢' : '🔴'}
-        </Text>
-        <Text style={{ fontSize: 16, color: currentLocation ? '#2e7d32' : '#c62828' }}>
-          {currentLocation 
-            ? `GPS: ${currentLocation.coords.latitude.toFixed(4)}, ${currentLocation.coords.longitude.toFixed(4)}`
-            : 'Waiting for GPS signal...'}
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+          <Text style={{ fontSize: 18, marginRight: 10 }}>
+            {validationDetails?.isInPlantingZone ? '🟢' : 
+             validationDetails?.isValid ? '🟡' : '🔴'}
+          </Text>
+          <Text style={{ 
+            fontSize: 16, 
+            color: validationDetails?.isInPlantingZone ? '#2e7d32' : 
+                   validationDetails?.isValid ? '#856404' : '#c62828' 
+          }}>
+            {currentLocation 
+              ? `GPS: ${currentLocation.coords.latitude.toFixed(4)}, ${currentLocation.coords.longitude.toFixed(4)}`
+              : 'Waiting for GPS signal...'}
+          </Text>
+          </View>
+          <TouchableOpacity 
+            onPress={() => setShowMap(true)}
+            style={{ 
+              backgroundColor: 'rgba(0,0,0,0.1)', 
+              paddingHorizontal: 15, 
+              paddingVertical: 8, 
+              borderRadius: 20 
+            }}
+          >
+            <Text style={{ fontSize: 14, color: '#333' }}>📍 View Map</Text>
+          </TouchableOpacity>
+        </View>
+        
+        {validationDetails && (
+          <View style={{ marginTop: 10 }}>
+            <Text style={{ fontSize: 14, textAlign: 'center', color: '#666' }}>
+              {validationDetails.isInPlantingZone 
+                ? `✓ In ${validationDetails.nearestPlantingZone}` 
+                : validationDetails.isInHaiti
+                  ? `${formatDistance(validationDetails.distanceToNearestZone || 0)} to ${validationDetails.nearestPlantingZone}`
+                  : 'Outside Haiti - planting not allowed'}
+            </Text>
+            {validationDetails.accuracy && (
+              <Text style={{ fontSize: 12, textAlign: 'center', color: '#999', marginTop: 5 }}>
+                GPS Accuracy: ±{Math.round(validationDetails.accuracy)}m
+              </Text>
+            )}
+          </View>
+        )}
       </View>
 
       {/* Camera Simulation Area */}
@@ -194,6 +300,26 @@ export const SimpleCameraScreen: React.FC = () => {
 
       {/* Bottom Controls */}
       <View style={{ backgroundColor: 'white', padding: 20 }}>
+        {/* Planting Recommendations */}
+        {recommendations?.canPlant && recommendations.recommendations && (
+          <View style={{ 
+            backgroundColor: '#e3f2fd', 
+            padding: 15, 
+            borderRadius: 10, 
+            marginBottom: 15 
+          }}>
+            <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#1976d2', marginBottom: 5 }}>
+              Recommended for this area:
+            </Text>
+            <Text style={{ fontSize: 13, color: '#333' }}>
+              Species: {recommendations.recommendations.species.join(', ')}
+            </Text>
+            <Text style={{ fontSize: 13, color: '#333' }}>
+              Best planting season: {recommendations.recommendations.season}
+            </Text>
+          </View>
+        )}
+        
         {/* Species Selector */}
         <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 10, color: '#333' }}>
           Select Tree Species:
@@ -241,6 +367,14 @@ export const SimpleCameraScreen: React.FC = () => {
           </TouchableOpacity>
         )}
       </View>
+      
+      {/* Map Modal */}
+      {showMap && (
+        <PlantingZoneMap 
+          currentLocation={currentLocation}
+          onClose={() => setShowMap(false)}
+        />
+      )}
     </View>
   );
 };

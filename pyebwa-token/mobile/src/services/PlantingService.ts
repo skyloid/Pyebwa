@@ -1,6 +1,7 @@
 import * as Location from 'expo-location';
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
+import * as Network from 'expo-network';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getDeviceId } from '../utils/device';
 import { compressImage } from '../utils/imageCompression';
