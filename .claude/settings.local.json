@@ -55,7 +55,11 @@
       "Bash(kill:*)",
       "Bash(pkill:*)",
       "Bash(true)",
-      "Bash(expo start:*)"
+      "Bash(expo start:*)",
+      "Bash(eas build:*)",
+      "Bash(npx expo prebuild:*)",
+      "Bash(adb:*)",
+      "Bash(npx expo export:*)"
     ],
     "deny": []
   }

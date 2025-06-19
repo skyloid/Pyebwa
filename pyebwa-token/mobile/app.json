@@ -24,7 +24,16 @@
     },
     "android": {
       "package": "com.pyebwa.planter",
-      "permissions": ["CAMERA", "ACCESS_FINE_LOCATION", "WRITE_EXTERNAL_STORAGE"]
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "extra": {
+      "eas": {
+        "projectId": "4d671f6b-5713-467e-aa59-2c2ab261e76d"
+      }
     }
   }
 }
