@@ -183,9 +183,57 @@
   "validator": {
     "dashboard": "🔍 Validator Dashboard",
     "createField": "📍 Map New Field",
+    "manageFields": "📊 Manage Fields",
     "myFields": "My Fields",
     "totalArea": "Total Area Mapped",
     "activeFields": "Active Fields",
     "capacityUsed": "Capacity Used"
+  },
+  "fieldManagement": {
+    "totalFields": "Total Fields",
+    "totalArea": "Total Area",
+    "totalTrees": "Trees Planted",
+    "exportData": "Export Data",
+    "capacity": "Capacity",
+    "editField": "Edit Field",
+    "area": "Area",
+    "planted": "Planted",
+    "created": "Created",
+    "description": "Description",
+    "activate": "activate",
+    "deactivate": "deactivate",
+    "confirmStatusChange": "Confirm Status Change",
+    "confirmStatusMessage": "Are you sure you want to {{action}} {{field}}?",
+    "statusChangeSuccess": "Field status updated successfully",
+    "statusChangeError": "Failed to update field status",
+    "updateSuccess": "Field updated successfully",
+    "updateError": "Failed to update field",
+    "loadError": "Failed to load fields",
+    "exportSuccess": "Export Complete",
+    "exportMessage": "Successfully exported {{count}} field(s) data",
+    "exportError": "Failed to export data",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "full": "Full"
+    }
+  },
+  "trees": {
+    "mango": "Mango",
+    "moringa": "Moringa",
+    "cedar": "Cedar",
+    "bamboo": "Bamboo",
+    "trees": "trees"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close",
+    "confirm": "Confirm",
+    "comingSoon": "Coming Soon",
+    "featureComingSoon": "{{feature}} feature will be available soon!"
   }
 }

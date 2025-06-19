@@ -329,6 +329,18 @@ export class FieldMappingService {
     return fields.find(f => f.id === id) || null;
   }
 
+  async updateField(updatedField: PlantingField): Promise<void> {
+    const fields = await this.getAllFields();
+    const index = fields.findIndex(f => f.id === updatedField.id);
+    
+    if (index === -1) {
+      throw new Error('Field not found');
+    }
+    
+    fields[index] = updatedField;
+    await AsyncStorage.setItem(STORAGE_KEYS.FIELDS, JSON.stringify(fields));
+  }
+
   private async getValidatorId(): Promise<string> {
     // In production, get from authenticated user
     // For now, use device-specific ID

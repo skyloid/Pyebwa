@@ -183,9 +183,57 @@
   "validator": {
     "dashboard": "🔍 Tableau de Bord Validateur",
     "createField": "📍 Cartographier Nouveau Champ",
+    "manageFields": "📊 Gérer les Champs",
     "myFields": "Mes Champs",
     "totalArea": "Surface Totale Cartographiée",
     "activeFields": "Champs Actifs",
     "capacityUsed": "Capacité Utilisée"
+  },
+  "fieldManagement": {
+    "totalFields": "Total des Champs",
+    "totalArea": "Surface Totale",
+    "totalTrees": "Arbres Plantés",
+    "exportData": "Exporter Données",
+    "capacity": "Capacité",
+    "editField": "Modifier le Champ",
+    "area": "Surface",
+    "planted": "Plantés",
+    "created": "Créé",
+    "description": "Description",
+    "activate": "activer",
+    "deactivate": "désactiver",
+    "confirmStatusChange": "Confirmer le Changement de Statut",
+    "confirmStatusMessage": "Êtes-vous sûr de vouloir {{action}} {{field}} ?",
+    "statusChangeSuccess": "Statut du champ mis à jour avec succès",
+    "statusChangeError": "Échec de la mise à jour du statut du champ",
+    "updateSuccess": "Champ mis à jour avec succès",
+    "updateError": "Échec de la mise à jour du champ",
+    "loadError": "Échec du chargement des champs",
+    "exportSuccess": "Exportation Terminée",
+    "exportMessage": "Données de {{count}} champ(s) exportées avec succès",
+    "exportError": "Échec de l'exportation des données",
+    "status": {
+      "active": "Actif",
+      "inactive": "Inactif",
+      "full": "Plein"
+    }
+  },
+  "trees": {
+    "mango": "Mangue",
+    "moringa": "Moringa",
+    "cedar": "Cèdre",
+    "bamboo": "Bambou",
+    "trees": "arbres"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "save": "Sauvegarder",
+    "close": "Fermer",
+    "confirm": "Confirmer",
+    "comingSoon": "Bientôt Disponible",
+    "featureComingSoon": "La fonctionnalité {{feature}} sera bientôt disponible !"
   }
 }

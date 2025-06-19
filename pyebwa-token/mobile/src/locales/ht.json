@@ -183,9 +183,57 @@
   "validator": {
     "dashboard": "🔍 Tablo Validatè",
     "createField": "📍 Katografie Nouvo Jaden",
+    "manageFields": "📊 Jere Jaden yo",
     "myFields": "Jaden Mwen",
     "totalArea": "Sipèfisi Total Katografie",
     "activeFields": "Jaden Aktif",
     "capacityUsed": "Kapasite Itilize"
+  },
+  "fieldManagement": {
+    "totalFields": "Total Jaden",
+    "totalArea": "Sipèfisi Total",
+    "totalTrees": "Pyebwa Plante",
+    "exportData": "Ekspòte Done",
+    "capacity": "Kapasite",
+    "editField": "Modifye Jaden",
+    "area": "Sipèfisi",
+    "planted": "Plante",
+    "created": "Kreye",
+    "description": "Deskripsyon",
+    "activate": "aktive",
+    "deactivate": "dezaktive",
+    "confirmStatusChange": "Konfime Chanjman Estati",
+    "confirmStatusMessage": "Èske ou si ou vle {{action}} {{field}}?",
+    "statusChangeSuccess": "Estati jaden an chanje avèk siksè",
+    "statusChangeError": "Pa rive chanje estati jaden an",
+    "updateSuccess": "Jaden an modifye avèk siksè",
+    "updateError": "Pa rive modifye jaden an",
+    "loadError": "Pa rive chaje jaden yo",
+    "exportSuccess": "Ekspòtasyon Fini",
+    "exportMessage": "Done {{count}} jaden ekspòte avèk siksè",
+    "exportError": "Pa rive ekspòte done yo",
+    "status": {
+      "active": "Aktif",
+      "inactive": "Inaktif",
+      "full": "Plen"
+    }
+  },
+  "trees": {
+    "mango": "Mango",
+    "moringa": "Moringa",
+    "cedar": "Sèd",
+    "bamboo": "Banbou",
+    "trees": "pyebwa"
+  },
+  "common": {
+    "loading": "Ap Chaje...",
+    "error": "Erè",
+    "success": "Siksè",
+    "cancel": "Anile",
+    "save": "Konsève",
+    "close": "Fèmen",
+    "confirm": "Konfime",
+    "comingSoon": "Vini Byento",
+    "featureComingSoon": "Fonksyon {{feature}} pral disponib byento!"
   }
 }
