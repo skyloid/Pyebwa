@@ -42,13 +42,13 @@
             ],
             'media-src': [
                 "'self'",
+                "blob:",
                 "https://firebasestorage.googleapis.com" // For audio/video playback
             ],
             'frame-src': ["'none'"],
             'object-src': ["'none'"],
             'base-uri': ["'self'"],
             'form-action': ["'self'"],
-            'frame-ancestors': ["'none'"],
             'upgrade-insecure-requests': true
         },
         

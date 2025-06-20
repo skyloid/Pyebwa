@@ -367,8 +367,30 @@
 
 /* Profile Content */
 .profile-content {
-    padding: 30px;
+    padding: 40px;
     min-height: 400px;
+}
+
+/* Better spacing for form elements in edit mode */
+.profile-content .form-group {
+    margin-bottom: 24px;
+}
+
+.profile-content .form-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.profile-content label {
+    margin-bottom: 8px;
+    display: block;
+}
+
+.profile-content input,
+.profile-content select,
+.profile-content textarea {
+    margin-top: 4px;
 }
 
 .profile-tab-content {

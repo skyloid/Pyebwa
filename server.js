@@ -17,6 +17,17 @@ app.use(express.json());
 // Serve static files from the app directory
 app.use('/app', express.static(path.join(__dirname, 'app')));
 
+// Serve favicon.ico from root
+app.get('/favicon.ico', (req, res) => {
+    res.sendFile(path.join(__dirname, 'favicon.ico'));
+});
+
+// Serve service worker from root
+app.get('/sw.js', (req, res) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.sendFile(path.join(__dirname, 'sw.js'));
+});
+
 // Serve login.html
 app.get('/login.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'login.html'));

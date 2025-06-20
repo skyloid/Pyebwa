@@ -24,6 +24,7 @@ const translations = {
         
         // Family tree
         familyTree: "My Family Tree",
+        familyNameFormat: "The {{name}} Family",
         addMember: "Add Member",
         addFamilyMember: "Add Family Member",
         editFamilyMember: "Edit Family Member",
@@ -503,6 +504,7 @@ const translations = {
         
         // Family tree
         familyTree: "Mon Arbre Généalogique",
+        familyNameFormat: "La Famille {{name}}",
         addMember: "Ajouter Membre",
         addFamilyMember: "Ajouter un Membre de la Famille",
         editFamilyMember: "Modifier le Membre de la Famille",
@@ -764,6 +766,7 @@ const translations = {
         
         // Family tree
         familyTree: "Pyebwa Fanmi Mwen",
+        familyNameFormat: "Fanmi {{name}}",
         addMember: "Ajoute Manm",
         addFamilyMember: "Ajoute Manm Fanmi",
         editFamilyMember: "Modifye Manm Fanmi",

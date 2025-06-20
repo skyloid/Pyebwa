@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.com
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Standard Workflow
 1. First think through the problem, read the codebase for relevant files, and write a plan to projectplan.md.
@@ -15,59 +15,105 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Running the Application
 ```bash
-# iOS
-npx react-native run-ios
+# Development server
+npm run dev
 
-# Android  
-npx react-native run-android
+# Production server
+npm start
 ```
 
 ### Dependencies Installation
 ```bash
 # Initial setup
 npm install
+```
 
-# iOS-specific setup (required after installing new native dependencies)
-cd ios && pod install && cd ..
+### Development Commands
+```bash
+# Start development server with auto-reload
+nodemon server.js
+
+# Check server health
+curl https://rasin.pyebwa.com/health
 ```
 
 ## Architecture
 
 ### Overview
-Pyebwa App is a React Native application for managing family genealogy data. It uses Firebase for backend services and supports three languages (English, French, and Haitian Creole).
+Pyebwa is a web application for managing family genealogy data. It uses Firebase for backend services and supports three languages (English, French, and Haitian Creole). The application runs on Express.js server serving static HTML/CSS/JS files.
 
 ### Core Technical Stack
-- **React Native**: Cross-platform mobile framework
-- **Firebase**: Authentication, Firestore database, and Storage
-- **React Native Paper**: Material Design 3 components
-- **i18next**: Internationalization
+- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
+- **Backend**: Node.js with Express.js
+- **Database**: Firebase Firestore
+- **Authentication**: Firebase Auth
+- **Storage**: Firebase Storage
+- **UI Framework**: Material Design 3 with custom CSS
+- **Internationalization**: Custom translation system
 
 ### Key Architectural Patterns
 
-1. **Data Model**:
+1. **Server Architecture**:
+   - Express.js server on port 9111
+   - Static file serving from `/app` directory
+   - CORS configuration for cross-domain requests
+   - Compression middleware for performance
+
+2. **Data Model**:
    - Users have a `familyTreeId` linking them to their family tree
    - Family trees contain collections of persons with biographical data
    - Firestore security rules enforce user-based access control
 
-2. **Theme System**:
+3. **Theme System**:
    - Custom Material Design 3 theme using Haitian flag colors (Red #D41125, Blue #00217D)
    - Consistent elevation system and 8px rounded corners
+   - Dark mode support
 
-3. **Internationalization**:
-   - Three language support configured in `src/services/i18n.js`
-   - Translation files in `src/locales/` directory
-   - Default language: English
+4. **Internationalization**:
+   - Three language support (English, French, Haitian Creole)
+   - Translation files in `/app/locales/` directory
+   - Dynamic language switching
 
-4. **Firebase Integration**:
-   - API functions in `src/services/firebaseApi.js` handle all Firestore operations
+5. **Firebase Integration**:
+   - API functions in `/app/js/` files handle all Firestore operations
    - Security rules in `firestore.rules` ensure users can only access their own data
-   - Helper function `getUserFamilyTreeId()` validates tree access
+   - Real-time updates for family tree data
 
-### Current Development State
-- LoginScreen and AddPersonScreen UI components are implemented
-- Firebase authentication integration is pending
-- Navigation setup between screens needs to be implemented
-- Core Firebase API functions are ready but not yet connected to UI
+### Current Features
+- Complete authentication system (login/logout)
+- Family tree visualization and management
+- Member management (add, edit, view profiles)
+- Photo upload and management
+- Multi-language interface (EN, FR, HT)
+- Responsive design for mobile and desktop
+- Real-time data synchronization
+- Search functionality
+- PDF export capabilities
+
+### File Structure
+```
+/app/
+├── index.html              # Main application entry
+├── css/                    # Stylesheets
+├── js/                     # JavaScript modules
+│   ├── app.js             # Main application logic
+│   ├── firebase-config.js # Firebase configuration
+│   ├── auth-enhanced.js   # Authentication system
+│   ├── tree.js           # Family tree functionality
+│   └── ...               # Other feature modules
+├── images/                # Static assets
+└── locales/              # Translation files
+```
+
+### Development State
+- Fully functional web application
+- Firebase authentication is implemented and working
+- Family tree functionality is operational
+- Multi-language support is active
+- Real-time data synchronization is working
 
 ## Server Information
-- This server is rasin.pyebwa.com
+- Server: rasin.pyebwa.com
+- Port: 9111
+- Environment: Production
+- URL: https://rasin.pyebwa.com/app

@@ -264,7 +264,7 @@
         setupRealtimeValidation() {
             document.addEventListener('blur', (e) => {
                 const input = e.target;
-                if (!input.matches('input, textarea') || !input.dataset.validate) return;
+                if (!input || typeof input.matches !== 'function' || !input.matches('input, textarea') || !input.dataset.validate) return;
                 
                 this.validateField(input);
             }, true);
@@ -272,7 +272,7 @@
             // Validate on input for better UX
             document.addEventListener('input', (e) => {
                 const input = e.target;
-                if (!input.matches('input, textarea') || !input.dataset.validate) return;
+                if (!input || typeof input.matches !== 'function' || !input.matches('input, textarea') || !input.dataset.validate) return;
                 
                 // Clear error state if valid
                 if (input.classList.contains('error')) {

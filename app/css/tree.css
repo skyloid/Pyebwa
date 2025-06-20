@@ -5,6 +5,40 @@
     min-height: 400px;
 }
 
+/* Family name header */
+.family-name-header {
+    text-align: center;
+    font-size: 56px;
+    font-weight: 700;
+    color: #2D7F3E; /* Forest green color for tree theme */
+    margin-bottom: 40px;
+    padding: 30px 20px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-family: 'Montserrat', sans-serif;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .family-name-header {
+        font-size: 36px;
+        margin-bottom: 25px;
+        padding: 20px 15px;
+        letter-spacing: 2px;
+    }
+}
+
+@media (max-width: 480px) {
+    .family-name-header {
+        font-size: 28px;
+        letter-spacing: 1px;
+    }
+}
+
 /* Empty state */
 .empty-state {
     text-align: center;

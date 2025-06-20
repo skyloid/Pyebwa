@@ -31,7 +31,55 @@ function renderFamilyTree(viewMode = 'full') {
     
     // Create tree structure
     const treeData = buildTreeStructure(viewMode);
-    container.innerHTML = '<div class="tree-wrapper tree-scale-auto"><div class="tree"></div></div>';
+    
+    // Get the family name from the oldest male member
+    let familyNameHtml = '';
+    if (familyMembers.length > 0) {
+        // Find all male members
+        const maleMembers = familyMembers.filter(member => member.gender === 'male');
+        
+        let oldestMember = null;
+        
+        if (maleMembers.length > 0) {
+            // Sort male members by birthDate (oldest first)
+            maleMembers.sort((a, b) => {
+                // If both have birthdates, compare them
+                if (a.birthDate && b.birthDate) {
+                    return new Date(a.birthDate) - new Date(b.birthDate);
+                }
+                // If only one has birthdate, put the one with birthdate first
+                if (a.birthDate && !b.birthDate) return -1;
+                if (!a.birthDate && b.birthDate) return 1;
+                // If neither has birthdate, maintain original order
+                return 0;
+            });
+            oldestMember = maleMembers[0];
+        } else {
+            // No male members, fall back to oldest member regardless of gender
+            const sortedMembers = [...familyMembers].sort((a, b) => {
+                if (a.birthDate && b.birthDate) {
+                    return new Date(a.birthDate) - new Date(b.birthDate);
+                }
+                if (a.birthDate && !b.birthDate) return -1;
+                if (!a.birthDate && b.birthDate) return 1;
+                return 0;
+            });
+            oldestMember = sortedMembers[0];
+        }
+        
+        if (oldestMember && oldestMember.lastName) {
+            const familyName = oldestMember.lastName;
+            // Use translation system for family name format
+            const familyNameFormat = t('familyNameFormat') || 'The {{name}} Family';
+            const formattedName = familyNameFormat.replace('{{name}}', familyName);
+            familyNameHtml = `<div class="family-name-header">${formattedName}</div>`;
+        }
+    }
+    
+    container.innerHTML = `
+        ${familyNameHtml}
+        <div class="tree-wrapper tree-scale-auto"><div class="tree"></div></div>
+    `;
     const treeElement = container.querySelector('.tree');
     
     // Render tree nodes
