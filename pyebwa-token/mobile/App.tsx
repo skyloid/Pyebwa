@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Image, ActivityIndicator, TextInput, Alert, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
-import './src/i18n'; // Initialize i18n
+import './src/i18n/index'; // Initialize i18n
 import { LanguageSwitcher } from './src/components/LanguageSwitcher';
 import { HeritageUploadScreen } from './src/screens/HeritageUploadScreen';
 import { TokenPurchaseScreen } from './src/screens/TokenPurchaseScreen';
