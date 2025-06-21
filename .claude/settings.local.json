@@ -74,7 +74,8 @@
       "Bash(fuser:*)",
       "Bash(pm2 list:*)",
       "Bash(git push:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(./fix-crash.sh:*)"
     ],
     "deny": []
   }
