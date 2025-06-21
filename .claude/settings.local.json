@@ -70,7 +70,9 @@
       "Bash(sudo apt:*)",
       "Bash(sudo apt install:*)",
       "Bash(java:*)",
-      "Bash(export:*)"
+      "Bash(export:*)",
+      "Bash(fuser:*)",
+      "Bash(pm2 list:*)"
     ],
     "deny": []
   }

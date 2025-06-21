@@ -203,6 +203,8 @@
                 if (isNewUser) {
                     userData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
                     userData.familyTreeId = null; // Will be created on first tree creation
+                    userData.role = 'user'; // Default role for new users
+                    userData.isAdmin = false; // Quick admin check flag
                     
                     // Extract additional info based on provider
                     if (this.currentProvider === 'google') {

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Admin Setup Instructions - Pyebwa</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #f5f6fa;
+            line-height: 1.6;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #00217D;
+            margin-bottom: 8px;
+        }
+        h2 {
+            color: #333;
+            margin-top: 32px;
+            margin-bottom: 16px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 18px;
+            margin-bottom: 32px;
+        }
+        .step {
+            background: #f8f9fa;
+            border-left: 4px solid #00217D;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .step h3 {
+            margin: 0 0 12px 0;
+            color: #00217D;
+        }
+        .code {
+            background: #2d3748;
+            color: #f7fafc;
+            padding: 16px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 12px 0;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        ul {
+            margin: 12px 0;
+            padding-left: 24px;
+        }
+        li {
+            margin: 8px 0;
+        }
+        .field-name {
+            font-weight: 600;
+            color: #00217D;
+        }
+        .field-value {
+            background: #e3f2fd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .btn {
+            display: inline-block;
+            background: #00217D;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            background: #001654;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Manual Admin Setup Instructions</h1>
+        <p class="subtitle">Since the automatic setup tools are having permission issues, follow these manual steps to set up your first admin user.</p>
+        
+        <div class="warning">
+            <strong>⚠️ Important:</strong> You need to have access to the Firebase Console for this project. If you don't have access, contact the project owner.
+        </div>
+
+        <h2>Method 1: Using Firebase Console (Recommended)</h2>
+        
+        <div class="step">
+            <h3>Step 1: Create a Regular User Account</h3>
+            <p>First, create a regular user account through the app:</p>
+            <ol>
+                <li>Go to <a href="/app/" target="_blank">https://rasin.pyebwa.com/app/</a></li>
+                <li>Sign up or log in with your email</li>
+                <li>Complete the onboarding process</li>
+                <li>Note your email address - you'll need it for the next steps</li>
+            </ol>
+        </div>
+        
+        <div class="step">
+            <h3>Step 2: Access Firebase Console</h3>
+            <p>Open the Firebase Console for this project:</p>
+            <ol>
+                <li>Go to <a href="https://console.firebase.google.com/project/pyebwa-f5960/firestore/data/~2Fusers" target="_blank">Firebase Console - Firestore</a></li>
+                <li>Sign in with your Google account (must have project access)</li>
+                <li>Navigate to <strong>Firestore Database</strong> → <strong>users</strong> collection</li>
+            </ol>
+        </div>
+        
+        <div class="step">
+            <h3>Step 3: Find Your User Document</h3>
+            <p>In the users collection:</p>
+            <ol>
+                <li>Look for the document with your email address</li>
+                <li>Click on the document to open it</li>
+                <li>You should see fields like <span class="field-name">email</span>, <span class="field-name">createdAt</span>, etc.</li>
+            </ol>
+        </div>
+        
+        <div class="step">
+            <h3>Step 4: Add Admin Fields</h3>
+            <p>Click the "Add field" button and add these fields:</p>
+            <ul>
+                <li>
+                    Field: <span class="field-name">role</span><br>
+                    Type: <strong>string</strong><br>
+                    Value: <span class="field-value">superadmin</span> (or <span class="field-value">admin</span> or <span class="field-value">moderator</span>)
+                </li>
+                <li>
+                    Field: <span class="field-name">isAdmin</span><br>
+                    Type: <strong>boolean</strong><br>
+                    Value: <span class="field-value">true</span>
+                </li>
+                <li>
+                    Field: <span class="field-name">adminPromotedAt</span><br>
+                    Type: <strong>timestamp</strong><br>
+                    Value: Click "Add timestamp" button
+                </li>
+                <li>
+                    Field: <span class="field-name">adminPromotedBy</span><br>
+                    Type: <strong>string</strong><br>
+                    Value: <span class="field-value">manual-setup</span>
+                </li>
+            </ul>
+            <p>Click <strong>Save</strong> after adding all fields.</p>
+        </div>
+        
+        <div class="success">
+            <strong>✅ Success!</strong> You've now promoted your user to admin. You can access the admin dashboard at <a href="/app/admin">https://rasin.pyebwa.com/app/admin</a>
+        </div>
+
+        <h2>Method 2: Using Firebase CLI (Advanced)</h2>
+        
+        <div class="step">
+            <h3>If you have Firebase CLI access:</h3>
+            <div class="code">
+# 1. Install Firebase CLI
+npm install -g firebase-tools
+
+# 2. Login to Firebase
+firebase login
+
+# 3. Connect to your project
+firebase use pyebwa-f5960
+
+# 4. Run Firestore shell
+firebase firestore:shell
+
+# 5. Update your user document (replace YOUR_USER_ID)
+db.collection('users').doc('YOUR_USER_ID').update({
+  role: 'superadmin',
+  isAdmin: true,
+  adminPromotedAt: firebase.firestore.FieldValue.serverTimestamp(),
+  adminPromotedBy: 'cli-setup'
+});
+            </div>
+        </div>
+
+        <h2>Role Descriptions</h2>
+        <ul>
+            <li><strong>superadmin</strong>: Full access to all admin features including system settings</li>
+            <li><strong>admin</strong>: Can manage users, family trees, and content</li>
+            <li><strong>moderator</strong>: Can only manage content (limited access)</li>
+        </ul>
+
+        <h2>After Setup</h2>
+        <div class="warning">
+            <strong>🔒 Security Note:</strong> After setting up your first admin user:
+            <ol>
+                <li>Remove the temporary Firestore rule that allows setup-tool access</li>
+                <li>Delete or restrict access to setup pages</li>
+                <li>Use the admin dashboard to promote other users</li>
+            </ol>
+        </div>
+
+        <a href="/app/admin" class="btn">Go to Admin Dashboard →</a>
+    </div>
+</body>
+</html>

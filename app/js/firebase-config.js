@@ -15,7 +15,16 @@ firebase.initializeApp(firebaseConfig);
 // Initialize services
 const auth = firebase.auth();
 const db = firebase.firestore();
-const storage = firebase.storage();
+let storage = null;
+
+// Initialize storage only if available
+try {
+    if (firebase.storage) {
+        storage = firebase.storage();
+    }
+} catch (error) {
+    console.log('Firebase Storage not available:', error.message);
+}
 
 // Set auth persistence to LOCAL (persists across browser sessions and domains)
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)

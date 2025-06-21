@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promote Claude to SuperAdmin (Authenticated) - Pyebwa</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #f5f6fa;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #00217D;
+            margin-bottom: 24px;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 8px;
+            display: none;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+        button {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #001654;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .auth-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .current-user {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .instructions {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Promote Claude to SuperAdmin</h1>
+        
+        <div class="instructions">
+            <strong>📋 Instructions:</strong>
+            <ol>
+                <li>First, sign in with YOUR account (any existing user)</li>
+                <li>Then promote claude@humanlevel.ai to superadmin</li>
+                <li>This uses the authenticated user's permissions to read/write</li>
+            </ol>
+        </div>
+        
+        <div id="status" class="status"></div>
+        
+        <!-- Authentication Section -->
+        <div class="auth-section" id="authSection">
+            <h3>Step 1: Sign In</h3>
+            <p>Sign in with any existing account to proceed:</p>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" placeholder="your-email@example.com">
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" placeholder="Your password">
+            </div>
+            <button onclick="signIn()">Sign In</button>
+            
+            <div class="current-user" id="currentUser" style="display: none;">
+                <strong>Signed in as:</strong> <span id="currentUserEmail"></span>
+            </div>
+        </div>
+        
+        <!-- Promotion Section -->
+        <div class="auth-section" id="promotionSection" style="display: none;">
+            <h3>Step 2: Promote claude@humanlevel.ai</h3>
+            <button onclick="promoteClaudeToSuperAdmin()">Promote to SuperAdmin</button>
+            <button onclick="checkClaudeStatus()">Check Current Status</button>
+            <button onclick="signOut()">Sign Out</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
+            authDomain: "rasin.pyebwa.com",
+            projectId: "pyebwa-f5960",
+            storageBucket: "pyebwa-f5960.firebasestorage.app",
+            messagingSenderId: "1042887343749",
+            appId: "1:1042887343749:web:c276bf69b6c0895111f3ec"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const targetEmail = 'claude@humanlevel.ai';
+
+        // Auth state listener
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                showStatus(`✅ Signed in as: ${user.email}`, 'success');
+                document.getElementById('currentUserEmail').textContent = user.email;
+                document.getElementById('currentUser').style.display = 'block';
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('promotionSection').style.display = 'block';
+            } else {
+                document.getElementById('authSection').style.display = 'block';
+                document.getElementById('promotionSection').style.display = 'none';
+                document.getElementById('currentUser').style.display = 'none';
+            }
+        });
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.innerHTML = message;
+            status.className = `status ${type}`;
+        }
+
+        async function signIn() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                showStatus('Please enter email and password', 'error');
+                return;
+            }
+            
+            try {
+                showStatus('Signing in...', 'info');
+                await auth.signInWithEmailAndPassword(email, password);
+                showStatus(`✅ Signed in successfully as ${email}`, 'success');
+            } catch (error) {
+                console.error('Sign in error:', error);
+                showStatus(`❌ Sign in failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function promoteClaudeToSuperAdmin() {
+            try {
+                showStatus(`Searching for ${targetEmail}...`, 'info');
+                
+                // First, try to find claude@humanlevel.ai
+                const usersRef = db.collection('users');
+                const snapshot = await usersRef.where('email', '==', targetEmail).get();
+                
+                if (snapshot.empty) {
+                    showStatus(`❌ No user found with email: ${targetEmail}<br>
+                        Make sure claude@humanlevel.ai has created an account first.`, 'error');
+                    return;
+                }
+                
+                // User found
+                const userDoc = snapshot.docs[0];
+                const userId = userDoc.id;
+                const userData = userDoc.data();
+                
+                showStatus(`Found user! Current role: ${userData.role || 'user'}, isAdmin: ${userData.isAdmin || false}`, 'info');
+                
+                // Check if already superadmin
+                if (userData.role === 'superadmin' && userData.isAdmin === true) {
+                    showStatus(`ℹ️ ${targetEmail} is already a superadmin!`, 'info');
+                    return;
+                }
+                
+                // Promote to superadmin
+                showStatus('Promoting to superadmin...', 'info');
+                
+                await usersRef.doc(userId).update({
+                    role: 'superadmin',
+                    isAdmin: true,
+                    adminPromotedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    adminPromotedBy: 'setup-tool',
+                    promotedByEmail: auth.currentUser.email,
+                    adminNote: 'Promoted via authenticated setup tool'
+                });
+                
+                showStatus(`✅ Successfully promoted ${targetEmail} to superadmin!<br>
+                    They can now access the admin dashboard at <a href="/app/admin">/app/admin</a>`, 'success');
+                
+            } catch (error) {
+                console.error('Error promoting user:', error);
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkClaudeStatus() {
+            try {
+                showStatus(`Checking status of ${targetEmail}...`, 'info');
+                
+                const snapshot = await db.collection('users').where('email', '==', targetEmail).get();
+                
+                if (snapshot.empty) {
+                    showStatus(`❌ ${targetEmail} has not created an account yet`, 'error');
+                    return;
+                }
+                
+                const userData = snapshot.docs[0].data();
+                
+                showStatus(`📊 Current Status for ${targetEmail}:<br>
+                    • Role: ${userData.role || 'user (default)'}<br>
+                    • Is Admin: ${userData.isAdmin || false}<br>
+                    • Display Name: ${userData.displayName || 'Not set'}<br>
+                    • Account Created: ${userData.createdAt ? new Date(userData.createdAt.toDate()).toLocaleString() : 'Unknown'}`, 'info');
+                
+            } catch (error) {
+                console.error('Error checking status:', error);
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function signOut() {
+            try {
+                await auth.signOut();
+                showStatus('Signed out successfully', 'info');
+                document.getElementById('email').value = '';
+                document.getElementById('password').value = '';
+            } catch (error) {
+                console.error('Sign out error:', error);
+                showStatus(`❌ Error signing out: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

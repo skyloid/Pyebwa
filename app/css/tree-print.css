@@ -1,0 +1,310 @@
+/* Print-friendly Tree Layout Styles */
+
+@media print {
+    /* Hide non-essential elements */
+    .app-header,
+    .app-footer,
+    .tree-controls,
+    .tree-minimap,
+    .minimap-toggle,
+    .view-header button,
+    .mobile-nav,
+    .control-btn,
+    .tree-search,
+    .tree-search-results,
+    .export-modal,
+    .profile-modal,
+    .modal {
+        display: none !important;
+    }
+    
+    /* Reset page margins */
+    @page {
+        margin: 0.5in;
+        size: landscape;
+    }
+    
+    /* Main container adjustments */
+    body {
+        margin: 0;
+        padding: 0;
+        background: white;
+    }
+    
+    #app {
+        min-height: auto;
+    }
+    
+    .app-main {
+        padding: 0;
+        margin: 0;
+    }
+    
+    .view-container {
+        padding: 0;
+        margin: 0;
+    }
+    
+    /* Tree specific print styles */
+    #treeView {
+        page-break-inside: avoid;
+    }
+    
+    .view-header {
+        text-align: center;
+        margin-bottom: 20px;
+        padding: 10px 0;
+        border-bottom: 2px solid #333;
+    }
+    
+    .view-header h2 {
+        color: #000;
+        font-size: 24px;
+        margin: 0;
+    }
+    
+    /* Family name header print styling */
+    .family-name-header {
+        color: #000 !important;
+        text-align: center;
+        margin-bottom: 30px;
+        page-break-after: avoid;
+    }
+    
+    /* Tree container adjustments */
+    .tree-container {
+        overflow: visible !important;
+        height: auto !important;
+        transform: none !important;
+        padding: 20px;
+    }
+    
+    .tree-wrapper {
+        transform: none !important;
+        width: 100% !important;
+        overflow: visible !important;
+    }
+    
+    /* Tree structure adjustments */
+    .tree {
+        transform: scale(0.8);
+        transform-origin: center top;
+        width: 100%;
+        margin: 0 auto;
+    }
+    
+    /* Node styling for print */
+    .tree-node {
+        background: white !important;
+        border: 2px solid #333 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+    }
+    
+    .tree-node.search-match {
+        background: white !important;
+        box-shadow: none !important;
+    }
+    
+    .tree-node.search-dimmed {
+        opacity: 1 !important;
+    }
+    
+    /* Member photo adjustments */
+    .member-photo {
+        width: 60px !important;
+        height: 60px !important;
+        border: 2px solid #333 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    /* Text adjustments */
+    .member-name {
+        color: #000 !important;
+        font-weight: bold !important;
+        font-size: 14px !important;
+    }
+    
+    .member-dates {
+        color: #333 !important;
+        font-size: 12px !important;
+    }
+    
+    .member-age {
+        color: #666 !important;
+        font-size: 11px !important;
+    }
+    
+    /* Connection lines */
+    .tree::before,
+    .tree-node::before,
+    .tree-node::after,
+    .tree-child::before,
+    .tree-child::after,
+    .tree-parents::after,
+    .tree-parent::after,
+    .tree-parent::before,
+    .tree li::before,
+    .tree li::after {
+        background: #333 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    /* Ensure proper page breaks */
+    .tree > li {
+        page-break-inside: avoid;
+    }
+    
+    .tree-parents {
+        page-break-inside: avoid;
+    }
+    
+    .tree-children {
+        page-break-before: auto;
+    }
+    
+    /* Remove animations */
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+    
+    /* High contrast mode for better printing */
+    .high-contrast-print .tree-node {
+        background: white !important;
+        border: 3px solid #000 !important;
+    }
+    
+    .high-contrast-print .member-name {
+        font-size: 16px !important;
+        font-weight: 900 !important;
+    }
+    
+    /* Print header/footer info */
+    .print-header {
+        display: block !important;
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 18px;
+        font-weight: bold;
+    }
+    
+    .print-date {
+        display: block !important;
+        text-align: right;
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 10px;
+    }
+    
+    /* Statistics summary for print */
+    .print-stats {
+        display: block !important;
+        margin-top: 30px;
+        padding: 20px;
+        border: 1px solid #ccc;
+        page-break-inside: avoid;
+    }
+    
+    .print-stats h3 {
+        margin: 0 0 10px 0;
+        font-size: 16px;
+    }
+    
+    .print-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+    }
+    
+    .print-stat {
+        text-align: center;
+    }
+    
+    .print-stat-value {
+        font-size: 20px;
+        font-weight: bold;
+        color: #000;
+    }
+    
+    .print-stat-label {
+        font-size: 12px;
+        color: #666;
+    }
+}
+
+/* Print preview mode */
+body.print-preview {
+    background: #f0f0f0;
+}
+
+body.print-preview .app-main {
+    background: white;
+    margin: 20px auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    max-width: 1200px;
+}
+
+body.print-preview .tree-controls,
+body.print-preview .app-header,
+body.print-preview .app-footer {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+/* Print-specific utility classes */
+.print-only {
+    display: none;
+}
+
+@media print {
+    .print-only {
+        display: block !important;
+    }
+    
+    .no-print {
+        display: none !important;
+    }
+}
+
+/* Landscape orientation optimization */
+@media print and (orientation: landscape) {
+    .tree {
+        transform: scale(0.9);
+    }
+    
+    .tree-container {
+        padding: 10px;
+    }
+}
+
+/* Portrait orientation optimization */
+@media print and (orientation: portrait) {
+    @page {
+        size: portrait;
+    }
+    
+    .tree {
+        transform: scale(0.7);
+        max-width: 100%;
+    }
+    
+    .tree-node {
+        padding: 8px !important;
+    }
+    
+    .member-photo {
+        width: 50px !important;
+        height: 50px !important;
+    }
+    
+    .member-name {
+        font-size: 12px !important;
+    }
+    
+    .member-dates {
+        font-size: 10px !important;
+    }
+}

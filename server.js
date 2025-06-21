@@ -14,6 +14,35 @@ app.use(cors({
 app.use(compression());
 app.use(express.json());
 
+// Admin routes (must come before static middleware)
+app.get('/app/admin/setup-admin.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app/admin/setup-admin.html'));
+});
+
+app.get('/app/admin/setup-simple.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app/admin/setup-simple.html'));
+});
+
+app.get('/app/admin/manual-setup.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app/admin/manual-setup.html'));
+});
+
+app.get('/app/admin/promote-claude.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app/admin/promote-claude.html'));
+});
+
+app.get('/app/admin/promote-claude-auth.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app/admin/promote-claude-auth.html'));
+});
+
+app.get('/app/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app/admin/index.html'));
+});
+
+app.get('/app/admin/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app/admin/index.html'));
+});
+
 // Serve static files from the app directory
 app.use('/app', express.static(path.join(__dirname, 'app')));
 

@@ -1,0 +1,246 @@
+/* Admin Dashboard Dark Mode Styles */
+
+body.dark-theme {
+    --admin-bg: #121212;
+    --admin-card-bg: #1e1e1e;
+    --admin-text: #ffffff;
+    --admin-text-secondary: #b3b3b3;
+    --admin-border: #333333;
+}
+
+/* Dark mode overrides */
+body.dark-theme .admin-nav {
+    background: var(--admin-card-bg);
+    border-bottom: 1px solid var(--admin-border);
+}
+
+body.dark-theme .nav-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .nav-user:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .user-dropdown {
+    background: var(--admin-card-bg);
+    border: 1px solid var(--admin-border);
+}
+
+body.dark-theme .dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .admin-sidebar {
+    background: var(--admin-card-bg);
+    border-right: 1px solid var(--admin-border);
+}
+
+body.dark-theme .menu-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .menu-item.active .menu-link {
+    background: rgba(0, 33, 125, 0.3);
+}
+
+body.dark-theme .stat-card {
+    background: var(--admin-card-bg);
+    border: 1px solid var(--admin-border);
+}
+
+body.dark-theme .chart-container {
+    background: var(--admin-card-bg);
+    border: 1px solid var(--admin-border);
+}
+
+body.dark-theme .activity-section {
+    background: var(--admin-card-bg);
+    border: 1px solid var(--admin-border);
+}
+
+body.dark-theme .activity-item {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-theme .filters-section {
+    background: var(--admin-card-bg);
+    border: 1px solid var(--admin-border);
+}
+
+body.dark-theme .search-box input {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--admin-border);
+    color: var(--admin-text);
+}
+
+body.dark-theme .search-box input::placeholder {
+    color: var(--admin-text-secondary);
+}
+
+body.dark-theme .filter-group select,
+body.dark-theme .filter-group input[type="date"] {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--admin-border);
+    color: var(--admin-text);
+}
+
+body.dark-theme .data-table-container {
+    background: var(--admin-card-bg);
+    border: 1px solid var(--admin-border);
+}
+
+body.dark-theme .data-table thead {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-theme .data-table th {
+    border-bottom: 1px solid var(--admin-border);
+}
+
+body.dark-theme .data-table td {
+    border-bottom: 1px solid var(--admin-border);
+}
+
+body.dark-theme .data-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-theme .table-pagination {
+    background: rgba(255, 255, 255, 0.05);
+    border-top: 1px solid var(--admin-border);
+}
+
+body.dark-theme .pagination-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--admin-border);
+    color: var(--admin-text);
+}
+
+body.dark-theme .pagination-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+body.dark-theme .btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--admin-text);
+}
+
+body.dark-theme .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+body.dark-theme .admin-modal {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+body.dark-theme .modal-content {
+    background: var(--admin-card-bg);
+    border: 1px solid var(--admin-border);
+}
+
+body.dark-theme .modal-header {
+    border-bottom: 1px solid var(--admin-border);
+}
+
+body.dark-theme .modal-footer {
+    border-top: 1px solid var(--admin-border);
+}
+
+body.dark-theme .form-group input,
+body.dark-theme .form-group select,
+body.dark-theme .form-group textarea {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--admin-border);
+    color: var(--admin-text);
+}
+
+body.dark-theme .form-group input::placeholder,
+body.dark-theme .form-group textarea::placeholder {
+    color: var(--admin-text-secondary);
+}
+
+body.dark-theme .form-group input:focus,
+body.dark-theme .form-group select:focus,
+body.dark-theme .form-group textarea:focus {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Toast notifications dark mode */
+body.dark-theme .admin-toast {
+    background: var(--admin-card-bg);
+    border: 1px solid var(--admin-border);
+    color: var(--admin-text);
+}
+
+/* Skeleton loading dark mode */
+body.dark-theme .skeleton {
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+}
+
+/* Empty state dark mode */
+body.dark-theme .empty-state .material-icons {
+    color: var(--admin-text-secondary);
+}
+
+/* Status and role badges dark mode */
+body.dark-theme .status-badge.active {
+    background: rgba(76, 175, 80, 0.2);
+}
+
+body.dark-theme .status-badge.inactive {
+    background: rgba(255, 152, 0, 0.2);
+}
+
+body.dark-theme .status-badge.suspended {
+    background: rgba(244, 67, 54, 0.2);
+}
+
+body.dark-theme .role-badge.user {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--admin-text);
+}
+
+/* Chart backgrounds dark mode */
+body.dark-theme canvas {
+    filter: brightness(0.9);
+}
+
+/* Scrollbar dark mode */
+body.dark-theme ::-webkit-scrollbar {
+    width: 8px;
+}
+
+body.dark-theme ::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+body.dark-theme ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Selection dark mode */
+body.dark-theme ::selection {
+    background: rgba(0, 33, 125, 0.5);
+}
+
+/* Focus outlines dark mode */
+body.dark-theme *:focus {
+    outline-color: var(--admin-primary-light);
+}
+
+/* Animation adjustments for dark mode */
+@media (prefers-color-scheme: dark) {
+    body.dark-theme {
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    
+    body.dark-theme * {
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+}

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pyebwa Admin Dashboard</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Main Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/admin.css">
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
+</head>
+<body class="admin-body">
+    <!-- Loading Screen -->
+    <div id="adminLoadingScreen" class="admin-loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p>Authenticating admin access...</p>
+        </div>
+    </div>
+    
+    <!-- Admin Header -->
+    <header class="admin-header">
+        <div class="admin-header-content">
+            <div class="admin-logo">
+                <h1>Pyebwa Admin</h1>
+            </div>
+            <nav class="admin-nav">
+                <a href="#dashboard" class="nav-link active" data-section="dashboard">
+                    <span class="material-icons">dashboard</span>
+                    Dashboard
+                </a>
+                <a href="#users" class="nav-link" data-section="users">
+                    <span class="material-icons">people</span>
+                    Users
+                </a>
+                <a href="#trees" class="nav-link" data-section="trees">
+                    <span class="material-icons">account_tree</span>
+                    Family Trees
+                </a>
+                <a href="#analytics" class="nav-link" data-section="analytics">
+                    <span class="material-icons">analytics</span>
+                    Analytics
+                </a>
+                <a href="#logs" class="nav-link" data-section="logs">
+                    <span class="material-icons">history</span>
+                    Activity Logs
+                </a>
+            </nav>
+            <div class="admin-user-menu">
+                <div class="admin-user-info">
+                    <span class="admin-username" id="adminUsername">Admin</span>
+                    <span class="admin-role" id="adminRole">Administrator</span>
+                </div>
+                <button class="btn-icon" onclick="adminAuthGuard.signOut()">
+                    <span class="material-icons">logout</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Admin Main Content -->
+    <main class="admin-main">
+        <!-- Dashboard Section -->
+        <section id="dashboardSection" class="admin-section active">
+            <div class="section-header">
+                <h2>Dashboard Overview</h2>
+                <p>System statistics and recent activity</p>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="admin-stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <span class="material-icons">people</span>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalUsers">0</h3>
+                        <p>Total Users</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <span class="material-icons">account_tree</span>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalTrees">0</h3>
+                        <p>Family Trees</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <span class="material-icons">group</span>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalMembers">0</h3>
+                        <p>Family Members</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <span class="material-icons">photo_library</span>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalPhotos">0</h3>
+                        <p>Photos Uploaded</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="admin-card">
+                <h3>Recent User Activity</h3>
+                <div id="recentActivity" class="activity-list">
+                    <p class="loading-text">Loading activity...</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Users Section -->
+        <section id="usersSection" class="admin-section">
+            <div class="section-header">
+                <h2>User Management</h2>
+                <div class="section-actions">
+                    <input type="text" class="search-input" id="userSearch" placeholder="Search users...">
+                    <button class="btn btn-primary" onclick="adminUserManagement.exportUsers()">
+                        <span class="material-icons">download</span>
+                        Export
+                    </button>
+                </div>
+            </div>
+            
+            <div class="admin-card">
+                <div class="table-responsive">
+                    <table class="admin-table" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Family Tree</th>
+                                <th>Joined</th>
+                                <th>Last Login</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr>
+                                <td colspan="7" class="loading-cell">Loading users...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-pagination" id="usersPagination"></div>
+            </div>
+        </section>
+        
+        <!-- Family Trees Section -->
+        <section id="treesSection" class="admin-section">
+            <div class="section-header">
+                <h2>Family Tree Management</h2>
+                <div class="section-actions">
+                    <input type="text" class="search-input" id="treeSearch" placeholder="Search trees...">
+                </div>
+            </div>
+            
+            <div class="admin-card">
+                <div class="table-responsive">
+                    <table class="admin-table" id="treesTable">
+                        <thead>
+                            <tr>
+                                <th>Tree Name</th>
+                                <th>Owner</th>
+                                <th>Members</th>
+                                <th>Region</th>
+                                <th>Created</th>
+                                <th>Last Updated</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="treesTableBody">
+                            <tr>
+                                <td colspan="7" class="loading-cell">Loading family trees...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-pagination" id="treesPagination"></div>
+            </div>
+        </section>
+        
+        <!-- Analytics Section -->
+        <section id="analyticsSection" class="admin-section">
+            <div class="section-header">
+                <h2>System Analytics</h2>
+                <div class="section-actions">
+                    <select id="analyticsRange" class="select-input" onchange="adminAnalytics.updateRange()">
+                        <option value="7">Last 7 days</option>
+                        <option value="30" selected>Last 30 days</option>
+                        <option value="90">Last 90 days</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="analytics-grid">
+                <div class="admin-card">
+                    <h3>User Growth</h3>
+                    <div id="userGrowthChart" class="chart-container"></div>
+                </div>
+                <div class="admin-card">
+                    <h3>Authentication Methods</h3>
+                    <div id="authMethodsChart" class="chart-container"></div>
+                </div>
+                <div class="admin-card">
+                    <h3>User Locations</h3>
+                    <div id="userLocationsChart" class="chart-container"></div>
+                </div>
+                <div class="admin-card">
+                    <h3>Storage Usage</h3>
+                    <div id="storageChart" class="chart-container"></div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Activity Logs Section -->
+        <section id="logsSection" class="admin-section">
+            <div class="section-header">
+                <h2>Activity Logs</h2>
+                <div class="section-actions">
+                    <select id="logFilter" class="select-input" onchange="adminLogs.filterLogs()">
+                        <option value="all">All Activities</option>
+                        <option value="user">User Actions</option>
+                        <option value="admin">Admin Actions</option>
+                        <option value="auth">Authentication</option>
+                        <option value="error">Errors</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="admin-card">
+                <div class="logs-container" id="logsContainer">
+                    <p class="loading-text">Loading logs...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- User Edit Modal -->
+    <div id="userEditModal" class="admin-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit User</h3>
+                <button class="btn-icon" onclick="adminUserManagement.closeEditModal()">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="userEditForm">
+                    <input type="hidden" id="editUserId">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="editUserName" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="editUserEmail" class="form-input" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Role</label>
+                        <select id="editUserRole" class="form-input">
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                            <option value="superadmin">Super Admin</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="editUserActive">
+                            Account Active
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="adminUserManagement.closeEditModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="adminUserManagement.saveUser()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/admin/auth-guard.js"></script>
+    <script src="js/admin/user-management.js"></script>
+    <script src="js/admin/family-tree-management.js"></script>
+    <script src="js/admin/analytics.js"></script>
+    <script src="js/admin/activity-logs.js"></script>
+    <script src="js/admin/dashboard.js"></script>
+    
+    <script>
+        // Initialize admin dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            // Navigation handling
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.admin-section');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const section = link.dataset.section;
+                    
+                    // Update active states
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    
+                    sections.forEach(s => s.classList.remove('active'));
+                    document.getElementById(section + 'Section').classList.add('active');
+                    
+                    // Update URL hash
+                    window.location.hash = section;
+                });
+            });
+            
+            // Handle initial hash
+            if (window.location.hash) {
+                const hash = window.location.hash.substring(1);
+                const link = document.querySelector(`[data-section="${hash}"]`);
+                if (link) link.click();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -40,6 +40,12 @@
                     <button class="control-btn zoom-out" title="Zoom Out (-)">
                         <i class="material-icons">remove</i>
                     </button>
+                    <div class="zoom-slider-container">
+                        <div class="zoom-slider" id="zoomSlider">
+                            <div class="zoom-slider-track" style="width: 50%"></div>
+                            <div class="zoom-slider-thumb" style="left: 50%"></div>
+                        </div>
+                    </div>
                     <div class="zoom-level">
                         <span class="zoom-value">100%</span>
                     </div>
@@ -145,6 +151,9 @@
             document.querySelector('.zoom-in')?.addEventListener('click', () => this.zoom(this.state.zoomStep));
             document.querySelector('.zoom-out')?.addEventListener('click', () => this.zoom(-this.state.zoomStep));
             document.querySelector('.zoom-reset')?.addEventListener('click', () => this.resetZoom());
+            
+            // Zoom slider
+            this.setupZoomSlider();
             
             // View mode controls
             document.querySelectorAll('.view-mode').forEach(btn => {
@@ -253,8 +262,25 @@
             wrapper.style.transformOrigin = 'center top';
             this.elements.zoomValue.textContent = `${this.state.zoom}%`;
             
+            // Update zoom slider position
+            this.updateZoomSlider();
+            
             // Update mini-map
             this.updateMiniMap();
+        },
+        
+        // Update zoom slider position
+        updateZoomSlider() {
+            const slider = document.getElementById('zoomSlider');
+            const thumb = slider?.querySelector('.zoom-slider-thumb');
+            const track = slider?.querySelector('.zoom-slider-track');
+            
+            if (!slider || !thumb || !track) return;
+            
+            const percent = (this.state.zoom - this.state.minZoom) / (this.state.maxZoom - this.state.minZoom);
+            const position = percent * 100;
+            thumb.style.left = `${position}%`;
+            track.style.width = `${position}%`;
         },
         
         // Reset zoom
@@ -424,7 +450,136 @@
         
         // Print tree
         printTree() {
-            window.print();
+            // Add print preparation
+            this.preparePrint();
+            
+            // Trigger print after a short delay
+            setTimeout(() => {
+                window.print();
+                
+                // Clean up after print
+                setTimeout(() => {
+                    this.cleanupPrint();
+                }, 100);
+            }, 500);
+        },
+        
+        // Prepare tree for printing
+        preparePrint() {
+            // Add print-specific elements
+            const treeView = document.getElementById('treeView');
+            if (!treeView) return;
+            
+            // Add print date
+            const printDate = document.createElement('div');
+            printDate.className = 'print-date print-only';
+            printDate.textContent = `Printed on: ${new Date().toLocaleDateString()}`;
+            treeView.insertBefore(printDate, treeView.firstChild);
+            
+            // Add print statistics
+            this.addPrintStatistics();
+            
+            // Reset zoom to 100% for consistent printing
+            const currentZoom = this.state.zoom;
+            this.state.zoom = 100;
+            this.applyZoom();
+            
+            // Store current zoom to restore later
+            this.printPreviousZoom = currentZoom;
+            
+            // Add print preview class
+            document.body.classList.add('print-preview');
+            
+            // Ensure tree is centered
+            this.centerTree();
+        },
+        
+        // Clean up after printing
+        cleanupPrint() {
+            // Remove print-only elements
+            document.querySelectorAll('.print-only').forEach(el => el.remove());
+            
+            // Restore previous zoom
+            if (this.printPreviousZoom) {
+                this.state.zoom = this.printPreviousZoom;
+                this.applyZoom();
+                delete this.printPreviousZoom;
+            }
+            
+            // Remove print preview class
+            document.body.classList.remove('print-preview');
+        },
+        
+        // Add print statistics
+        addPrintStatistics() {
+            const nodes = document.querySelectorAll('.tree-node');
+            const treeContainer = document.querySelector('.tree-container');
+            if (!treeContainer) return;
+            
+            // Calculate statistics
+            const stats = {
+                total: nodes.length,
+                male: 0,
+                female: 0,
+                living: 0,
+                deceased: 0,
+                generations: this.calculateGenerations()
+            };
+            
+            // Count members
+            nodes.forEach(node => {
+                const memberData = node.dataset;
+                if (memberData.gender === 'male') stats.male++;
+                if (memberData.gender === 'female') stats.female++;
+                
+                const deathDate = node.querySelector('.member-dates')?.textContent.includes('†');
+                if (deathDate) {
+                    stats.deceased++;
+                } else {
+                    stats.living++;
+                }
+            });
+            
+            // Create statistics element
+            const statsEl = document.createElement('div');
+            statsEl.className = 'print-stats print-only';
+            statsEl.innerHTML = `
+                <h3>Family Tree Statistics</h3>
+                <div class="print-stats-grid">
+                    <div class="print-stat">
+                        <div class="print-stat-value">${stats.total}</div>
+                        <div class="print-stat-label">Total Members</div>
+                    </div>
+                    <div class="print-stat">
+                        <div class="print-stat-value">${stats.male}/${stats.female}</div>
+                        <div class="print-stat-label">Male/Female</div>
+                    </div>
+                    <div class="print-stat">
+                        <div class="print-stat-value">${stats.generations}</div>
+                        <div class="print-stat-label">Generations</div>
+                    </div>
+                </div>
+            `;
+            
+            treeContainer.appendChild(statsEl);
+        },
+        
+        // Calculate number of generations
+        calculateGenerations() {
+            // This is a simplified calculation
+            // In a real implementation, you would traverse the tree structure
+            const tree = document.querySelector('.tree');
+            if (!tree) return 1;
+            
+            let maxDepth = 1;
+            const calculateDepth = (element, depth = 1) => {
+                maxDepth = Math.max(maxDepth, depth);
+                const children = element.querySelectorAll(':scope > li > ul');
+                children.forEach(child => calculateDepth(child, depth + 1));
+            };
+            
+            calculateDepth(tree);
+            return maxDepth;
         },
         
         // Show export options
@@ -540,6 +695,85 @@
                 clearTimeout(timeout);
                 timeout = setTimeout(later, wait);
             };
+        },
+        
+        // Setup zoom slider
+        setupZoomSlider() {
+            const slider = document.getElementById('zoomSlider');
+            const thumb = slider?.querySelector('.zoom-slider-thumb');
+            const track = slider?.querySelector('.zoom-slider-track');
+            
+            if (!slider || !thumb || !track) return;
+            
+            let isDragging = false;
+            
+            // Update slider position based on zoom
+            const updateSliderPosition = () => {
+                const percent = (this.state.zoom - this.state.minZoom) / (this.state.maxZoom - this.state.minZoom);
+                const position = percent * 100;
+                thumb.style.left = `${position}%`;
+                track.style.width = `${position}%`;
+            };
+            
+            // Set zoom from slider position
+            const setZoomFromPosition = (clientX) => {
+                const rect = slider.getBoundingClientRect();
+                const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+                const percent = x / rect.width;
+                const newZoom = Math.round(this.state.minZoom + percent * (this.state.maxZoom - this.state.minZoom));
+                
+                if (newZoom !== this.state.zoom) {
+                    this.state.zoom = newZoom;
+                    this.applyZoom();
+                    updateSliderPosition();
+                }
+            };
+            
+            // Mouse events
+            thumb.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                e.preventDefault();
+                thumb.style.cursor = 'grabbing';
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    setZoomFromPosition(e.clientX);
+                }
+            });
+            
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    thumb.style.cursor = 'grab';
+                }
+            });
+            
+            // Click on track
+            slider.addEventListener('click', (e) => {
+                if (e.target !== thumb) {
+                    setZoomFromPosition(e.clientX);
+                }
+            });
+            
+            // Touch events
+            thumb.addEventListener('touchstart', (e) => {
+                isDragging = true;
+                e.preventDefault();
+            });
+            
+            document.addEventListener('touchmove', (e) => {
+                if (isDragging && e.touches.length > 0) {
+                    setZoomFromPosition(e.touches[0].clientX);
+                }
+            });
+            
+            document.addEventListener('touchend', () => {
+                isDragging = false;
+            });
+            
+            // Initial position
+            updateSliderPosition();
         }
     };
     

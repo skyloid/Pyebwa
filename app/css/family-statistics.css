@@ -1,0 +1,417 @@
+/* Family Statistics Widget Styles */
+
+/* Stats Widget Container */
+.stats-widget {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+.stats-widget .widget-header {
+    background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+    padding: 16px 20px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.stats-widget .widget-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stats-widget .widget-header .material-icons {
+    color: var(--primary-color);
+}
+
+.widget-refresh {
+    background: transparent;
+    border: none;
+    padding: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s;
+    color: #666;
+}
+
+.widget-refresh:hover {
+    background: rgba(0, 0, 0, 0.05);
+    transform: rotate(180deg);
+}
+
+.widget-content {
+    padding: 20px;
+}
+
+/* Loading State */
+.stats-loading {
+    text-align: center;
+    padding: 40px;
+}
+
+.stats-loading .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f0f0f0;
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Stats Overview Cards */
+.stats-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.stat-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    background: white;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.stat-icon .material-icons {
+    font-size: 24px;
+    color: var(--primary-color);
+}
+
+.stat-info {
+    flex: 1;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: #666;
+    margin-top: 4px;
+}
+
+/* Special card colors */
+.total-members .stat-icon { background: #e3f2fd; }
+.total-members .stat-icon .material-icons { color: #1976d2; }
+
+.living-members .stat-icon { background: #ffebee; }
+.living-members .stat-icon .material-icons { color: #d32f2f; }
+
+.generations .stat-icon { background: #e8f5e9; }
+.generations .stat-icon .material-icons { color: #388e3c; }
+
+.avg-lifespan .stat-icon { background: #fff8e1; }
+.avg-lifespan .stat-icon .material-icons { color: #f57c00; }
+
+/* Stats Sections */
+.stats-section {
+    margin-bottom: 32px;
+}
+
+.stats-section h4 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Gender Chart */
+.gender-chart {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.chart-bars {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    height: 120px;
+}
+
+.chart-bar {
+    flex: 1;
+    background: #e0e0e0;
+    border-radius: 8px;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 8px;
+    transition: width 0.5s ease;
+}
+
+.chart-bar.male {
+    background: linear-gradient(to top, #2196f3, #64b5f6);
+}
+
+.chart-bar.female {
+    background: linear-gradient(to top, #e91e63, #f06292);
+}
+
+.chart-bar .bar-label {
+    color: white;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.chart-legend {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+}
+
+.legend-color.male {
+    background: #2196f3;
+}
+
+.legend-color.female {
+    background: #e91e63;
+}
+
+.legend-percent {
+    font-weight: 600;
+    color: #666;
+}
+
+/* Age Distribution */
+.age-distribution {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.age-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.age-group:last-child {
+    margin-bottom: 0;
+}
+
+.age-label {
+    width: 60px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.age-bar {
+    flex: 1;
+    height: 24px;
+    background: #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.age-fill {
+    height: 100%;
+    background: linear-gradient(to right, #4caf50, #66bb6a);
+    transition: width 0.5s ease;
+}
+
+.age-count {
+    width: 40px;
+    text-align: right;
+    font-weight: 600;
+    color: #666;
+}
+
+/* Recent Activity */
+.activity-list {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-item .material-icons {
+    color: #666;
+    font-size: 20px;
+}
+
+.activity-text {
+    flex: 1;
+    font-size: 14px;
+}
+
+.activity-time {
+    font-size: 12px;
+    color: #999;
+}
+
+.no-activity {
+    text-align: center;
+    color: #999;
+    padding: 20px;
+}
+
+/* Stats Actions */
+.stats-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.stats-actions .btn {
+    flex: 1;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .stats-overview {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .stat-card {
+        padding: 12px;
+    }
+    
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .stat-value {
+        font-size: 20px;
+    }
+    
+    .stat-label {
+        font-size: 12px;
+    }
+    
+    .chart-bars {
+        height: 80px;
+    }
+    
+    .stats-actions {
+        flex-direction: column;
+    }
+}
+
+/* Dark Mode Support */
+body.dark-mode .stats-widget {
+    background: #1a1a1a;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .stats-widget .widget-header {
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+    border-bottom-color: #333;
+}
+
+body.dark-mode .stats-widget .widget-header h3 {
+    color: #f0f0f0;
+}
+
+body.dark-mode .widget-refresh {
+    color: #ccc;
+}
+
+body.dark-mode .widget-refresh:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .stat-card {
+    background: #2a2a2a;
+}
+
+body.dark-mode .stat-icon {
+    background: #333;
+}
+
+body.dark-mode .stat-value {
+    color: #f0f0f0;
+}
+
+body.dark-mode .stat-label {
+    color: #999;
+}
+
+body.dark-mode .stats-section h4 {
+    color: #f0f0f0;
+}
+
+body.dark-mode .gender-chart,
+body.dark-mode .age-distribution,
+body.dark-mode .activity-list {
+    background: #2a2a2a;
+}
+
+body.dark-mode .age-bar,
+body.dark-mode .chart-bar {
+    background: #444;
+}
+
+body.dark-mode .activity-item {
+    border-bottom-color: #444;
+}
+
+body.dark-mode .activity-text {
+    color: #f0f0f0;
+}

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Admin - Pyebwa</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #f5f6fa;
+        }
+        .setup-container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #00217D;
+            margin-bottom: 24px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        button {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 12px;
+        }
+        button:hover {
+            background: #001654;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .users-list {
+            margin-top: 30px;
+        }
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .user-info {
+            flex: 1;
+        }
+        .user-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .role-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .role-superadmin { background: #00217D; color: white; }
+        .role-admin { background: #2196f3; color: white; }
+        .role-user { background: #f5f5f5; color: #333; }
+    </style>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="setup-container">
+        <h1>Setup Admin Users</h1>
+        <p>Use this tool to set up admin users for the Pyebwa admin dashboard.</p>
+        
+        <div class="form-group">
+            <label for="userEmail">User Email:</label>
+            <input type="email" id="userEmail" placeholder="Enter user email" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="userRole">Role:</label>
+            <select id="userRole" required>
+                <option value="">Select Role</option>
+                <option value="superadmin">Super Admin</option>
+                <option value="admin">Admin</option>
+                <option value="moderator">Moderator</option>
+            </select>
+        </div>
+        
+        <button onclick="promoteUser()">Promote User</button>
+        <button onclick="loadUsers()">Refresh Users</button>
+        <button onclick="migrateAllUsers()">Migrate All Users</button>
+        
+        <div id="status" class="status"></div>
+        
+        <div class="users-list">
+            <h3>Current Users</h3>
+            <div id="usersList">
+                <p>Click "Refresh Users" to load users...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/app/js/firebase-config.js"></script>
+    <script>
+        // Wait for Firebase to be ready
+        window.addEventListener('load', async () => {
+            try {
+                // Sign in anonymously for admin setup (remove this in production)
+                await firebase.auth().signInAnonymously();
+                showStatus('Connected to Firebase', 'success');
+            } catch (error) {
+                console.error('Firebase connection error:', error);
+                showStatus('Failed to connect to Firebase: ' + error.message, 'error');
+            }
+        });
+
+        async function promoteUser() {
+            const email = document.getElementById('userEmail').value.trim();
+            const role = document.getElementById('userRole').value;
+            
+            if (!email || !role) {
+                showStatus('Please enter email and select role', 'error');
+                return;
+            }
+            
+            try {
+                // Find user by email
+                const usersRef = firebase.firestore().collection('users');
+                const querySnapshot = await usersRef.where('email', '==', email).get();
+                
+                if (querySnapshot.empty) {
+                    showStatus('User not found with email: ' + email, 'error');
+                    return;
+                }
+                
+                const userDoc = querySnapshot.docs[0];
+                const userId = userDoc.id;
+                
+                // Update user role
+                await usersRef.doc(userId).update({
+                    role: role,
+                    isAdmin: role !== 'user',
+                    adminPromotedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    adminPromotedBy: 'setup-script'
+                });
+                
+                showStatus(`Successfully promoted ${email} to ${role}`, 'success');
+                
+                // Clear form
+                document.getElementById('userEmail').value = '';
+                document.getElementById('userRole').value = '';
+                
+                // Refresh users list
+                loadUsers();
+                
+            } catch (error) {
+                console.error('Error promoting user:', error);
+                showStatus('Error promoting user: ' + error.message, 'error');
+            }
+        }
+        
+        async function loadUsers() {
+            try {
+                const usersRef = firebase.firestore().collection('users');
+                const snapshot = await usersRef.orderBy('email').get();
+                
+                const usersList = document.getElementById('usersList');
+                
+                if (snapshot.empty) {
+                    usersList.innerHTML = '<p>No users found.</p>';
+                    return;
+                }
+                
+                let html = '';
+                snapshot.forEach(doc => {
+                    const user = doc.data();
+                    const role = user.role || 'user';
+                    
+                    html += `
+                        <div class="user-item">
+                            <div class="user-info">
+                                <strong>${user.email}</strong>
+                                <br>
+                                <small>${user.displayName || 'No display name'}</small>
+                                <br>
+                                <span class="role-badge role-${role}">${formatRole(role)}</span>
+                            </div>
+                            <div class="user-actions">
+                                <button onclick="changeUserRole('${doc.id}', '${user.email}')">Change Role</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                usersList.innerHTML = html;
+                showStatus(`Loaded ${snapshot.size} users`, 'success');
+                
+            } catch (error) {
+                console.error('Error loading users:', error);
+                showStatus('Error loading users: ' + error.message, 'error');
+            }
+        }
+        
+        async function changeUserRole(userId, email) {
+            const newRole = prompt(`Enter new role for ${email}:\n- superadmin\n- admin\n- moderator\n- user`);
+            
+            if (!newRole || !['superadmin', 'admin', 'moderator', 'user'].includes(newRole)) {
+                return;
+            }
+            
+            try {
+                await firebase.firestore().collection('users').doc(userId).update({
+                    role: newRole,
+                    isAdmin: newRole !== 'user',
+                    adminPromotedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    adminPromotedBy: 'setup-script'
+                });
+                
+                showStatus(`Successfully changed ${email} role to ${newRole}`, 'success');
+                loadUsers();
+                
+            } catch (error) {
+                console.error('Error changing user role:', error);
+                showStatus('Error changing user role: ' + error.message, 'error');
+            }
+        }
+        
+        async function migrateAllUsers() {
+            if (!confirm('This will add role fields to all users who don\'t have them. Continue?')) {
+                return;
+            }
+            
+            try {
+                const usersRef = firebase.firestore().collection('users');
+                const snapshot = await usersRef.get();
+                
+                const batch = firebase.firestore().batch();
+                let updateCount = 0;
+                
+                snapshot.forEach(doc => {
+                    const user = doc.data();
+                    
+                    // Only update users who don't have role field
+                    if (!user.role) {
+                        batch.update(doc.ref, {
+                            role: 'user',
+                            isAdmin: false,
+                            migratedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        updateCount++;
+                    }
+                });
+                
+                if (updateCount > 0) {
+                    await batch.commit();
+                    showStatus(`Successfully migrated ${updateCount} users`, 'success');
+                } else {
+                    showStatus('All users already have role fields', 'success');
+                }
+                
+                loadUsers();
+                
+            } catch (error) {
+                console.error('Error migrating users:', error);
+                showStatus('Error migrating users: ' + error.message, 'error');
+            }
+        }
+        
+        function formatRole(role) {
+            const roleMap = {
+                'superadmin': 'Super Admin',
+                'admin': 'Admin',
+                'moderator': 'Moderator',
+                'user': 'User'
+            };
+            return roleMap[role] || 'User';
+        }
+        
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

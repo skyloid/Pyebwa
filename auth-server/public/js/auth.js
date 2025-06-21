@@ -46,6 +46,8 @@ async function createUserProfile(uid, userData) {
             uid: uid,
             email: userData.email,
             fullName: userData.fullName,
+            role: 'user', // Default role for new users
+            isAdmin: false, // Quick admin check flag
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
             language: currentLang,
