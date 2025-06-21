@@ -5,25 +5,34 @@ The EAS build was failing with error:
 ```
 Failed to apply plugin 'expo-root-project'.
 > Key 1.9.24 is missing in the map.
+> Key 1.9.25 is missing in the map.
 ```
 
-This occurs because Expo SDK 53 has a mismatch between the expected Kotlin version and what some dependencies require.
+This occurs because:
+1. Expo SDK 53 has limited Kotlin version support
+2. React Native 0.76.3 is not fully compatible with SDK 53 (requires 0.79.4)
 
 ## Solution Applied
 
-### 1. Added expo-build-properties Plugin
+### 1. Downgraded to Expo SDK 52
+```bash
+npx expo install expo@~52.0.0
+npx expo install --fix
+```
+
+### 2. Added expo-build-properties Plugin
 ```bash
 npm install expo-build-properties --legacy-peer-deps
 ```
 
-### 2. Configured Kotlin Version in app.json
+### 3. Configured Kotlin Version in app.json
 ```json
 "plugins": [
   [
     "expo-build-properties",
     {
       "android": {
-        "kotlinVersion": "1.9.25"
+        "kotlinVersion": "1.9.0"
       }
     }
   ],
