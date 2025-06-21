@@ -1,37 +1,34 @@
 # Kotlin Version Fix for EAS Build
 
-## Problem
-EAS build failing with error: "Key 1.9.24 is missing in the map" related to Kotlin version incompatibility.
+## Issue
+The EAS build was failing with error:
+```
+Failed to apply plugin 'expo-root-project'.
+> Key 1.9.24 is missing in the map.
+```
 
-## Root Cause
-- Expo SDK 53 defaults to Kotlin 2.0.21
-- React Native 0.76.3 has compatibility issues with certain Kotlin versions
-- The error occurs when there's a mismatch between expected and actual Kotlin versions
+This occurs because Expo SDK 53 has a mismatch between the expected Kotlin version and what some dependencies require.
 
 ## Solution Applied
 
-### 1. Installed expo-build-properties
+### 1. Added expo-build-properties Plugin
 ```bash
-npx expo install expo-build-properties
+npm install expo-build-properties --legacy-peer-deps
 ```
 
 ### 2. Configured Kotlin Version in app.json
 ```json
-{
-  "expo": {
-    "plugins": [
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "kotlinVersion": "1.9.25"
-          }
-        }
-      ],
-      // ... other plugins
-    ]
-  }
-}
+"plugins": [
+  [
+    "expo-build-properties",
+    {
+      "android": {
+        "kotlinVersion": "1.9.25"
+      }
+    }
+  ],
+  // ... other plugins
+]
 ```
 
 ### 3. Regenerated Native Directories
@@ -39,70 +36,50 @@ npx expo install expo-build-properties
 npx expo prebuild --clean
 ```
 
-## Build Commands
-
-### Standard Build
-```bash
-eas build --platform android
+This creates the android/ directory with the correct Kotlin version in `gradle.properties`:
+```
+android.kotlinVersion=1.9.25
 ```
 
-### Build with Cache Clear (if previous builds failed)
-```bash
-eas build --platform android --clear-cache
-```
+## Building the App
 
-### Using the Helper Script
+### Option 1: Use the Helper Script
 ```bash
 ./eas-build-fix.sh
 ```
 
-## If Build Still Fails
-
-### Option 1: Disable New Architecture
-1. In app.json, set:
-   ```json
-   {
-     "expo": {
-       "newArchEnabled": false
-     }
-   }
-   ```
-
-2. Regenerate native code:
-   ```bash
-   npx expo prebuild --clean
-   ```
-
-3. Rebuild:
-   ```bash
-   eas build --platform android --clear-cache
-   ```
-
-### Option 2: Update React Native Version
-Consider updating to React Native 0.77.0 or later which has better Kotlin compatibility:
+### Option 2: Direct Command
 ```bash
-npm install react-native@0.77.0
-npx expo install --fix
+# For APK
+eas build --platform android --profile preview --clear-cache
+
+# For AAB (Play Store)
+eas build --platform android --profile production --clear-cache
 ```
 
-### Option 3: Try Different Kotlin Version
-If 1.9.25 doesn't work, try 1.9.23 or 2.0.0:
-```json
-{
-  "android": {
-    "kotlinVersion": "1.9.23"  // or "2.0.0"
-  }
-}
-```
+## Important Notes
 
-## Verification
+1. **Always use --clear-cache** after changing Kotlin version
+2. The android/ and ios/ directories are gitignored (CNG/Prebuild workflow)
+3. Run `npx expo prebuild --clean` after any plugin configuration changes
 
-After successful build:
-1. Check build logs on EAS dashboard
-2. Verify Kotlin version in logs matches configured version
-3. Test the built APK/AAB on a device
+## Alternative Kotlin Versions
 
-## Related Issues
-- Expo SDK 53 New Architecture enabled by default
-- React Native 0.76.3 Kotlin compatibility issues
-- expo-modules-core version conflicts
+If 1.9.25 doesn't work, try these versions:
+- 1.9.23 (older, more stable)
+- 1.9.24 (the version it was looking for)
+- 2.0.0 (newer, might have compatibility issues)
+
+To change the version, update app.json and run prebuild again.
+
+## Troubleshooting
+
+If the build still fails:
+
+1. **Check the build logs** on the EAS build page for specific errors
+2. **Try disabling New Architecture**:
+   ```json
+   "newArchEnabled": false
+   ```
+3. **Update Expo SDK** to the latest version
+4. **Check for conflicting dependencies** that might require specific Kotlin versions
