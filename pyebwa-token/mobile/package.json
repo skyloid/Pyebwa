@@ -49,11 +49,5 @@
     "@babel/core": "7.25.2",
     "@types/react": "~18.3.14",
     "typescript": "5.3.3"
-  },
-  "overrides": {
-    "expo-constants": "~15.4.6",
-    "expo-linking": "~6.2.2",
-    "expo-font": "~13.0.4",
-    "@expo/config-plugins": "~9.0.0"
   }
 }
