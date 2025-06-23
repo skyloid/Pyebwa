@@ -75,7 +75,10 @@
       "Bash(pm2 list:*)",
       "Bash(git push:*)",
       "Bash(git config:*)",
-      "Bash(./fix-crash.sh:*)"
+      "Bash(./fix-crash.sh:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(npm cache clean:*)",
+      "Bash(npm view:*)"
     ],
     "deny": []
   }
