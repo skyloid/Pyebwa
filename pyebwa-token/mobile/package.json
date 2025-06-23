@@ -28,6 +28,7 @@
     "expo-local-authentication": "~15.0.0",
     "expo-location": "~18.0.0",
     "expo-media-library": "~17.0.0",
+    "expo-modules-core": "~2.0.0",
     "expo-network": "~7.0.0",
     "expo-secure-store": "~14.0.0",
     "expo-status-bar": "~2.0.0",
@@ -53,7 +54,6 @@
     "expo-constants": "~15.4.6",
     "expo-linking": "~6.2.2",
     "expo-font": "~13.0.4",
-    "@expo/config-plugins": "~9.0.0",
-    "expo-modules-core": "~2.0.0"
+    "@expo/config-plugins": "~9.0.0"
   }
 }

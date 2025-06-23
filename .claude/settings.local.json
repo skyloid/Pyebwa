@@ -78,7 +78,9 @@
       "Bash(./fix-crash.sh:*)",
       "WebFetch(domain:github.com)",
       "Bash(npm cache clean:*)",
-      "Bash(npm view:*)"
+      "Bash(npm view:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm info:*)"
     ],
     "deny": []
   }
