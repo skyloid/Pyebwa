@@ -80,7 +80,8 @@
       "Bash(npm cache clean:*)",
       "Bash(npm view:*)",
       "Bash(npm ls:*)",
-      "Bash(npm info:*)"
+      "Bash(npm info:*)",
+      "Bash(npm uninstall:*)"
     ],
     "deny": []
   }

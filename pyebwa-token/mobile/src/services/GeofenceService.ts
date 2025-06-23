@@ -4,7 +4,7 @@
  */
 
 import * as Location from 'expo-location';
-import * as TaskManager from 'expo-task-manager';
+// import * as TaskManager from 'expo-task-manager'; // Removed due to SDK 52 compatibility issues
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { 
   validateGPSCoordinates, 
@@ -13,7 +13,7 @@ import {
   getHaitiBoundary 
 } from '../utils/gpsValidator';
 
-const LOCATION_TASK_NAME = 'pyebwa-location-tracking';
+// const LOCATION_TASK_NAME = 'pyebwa-location-tracking'; // Not needed without TaskManager
 const GEOFENCE_STORAGE_KEY = 'pyebwa_geofence_data';
 
 interface GeofenceRegion {
@@ -68,21 +68,9 @@ class GeofenceService {
       await this.initializeDefaultRegions();
     }
 
-    // Define background location task
-    TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
-      if (error) {
-        console.error('Location tracking error:', error);
-        return;
-      }
-
-      if (data) {
-        const { locations } = data as any;
-        const location = locations[0];
-        if (location) {
-          await this.processLocationUpdate(location);
-        }
-      }
-    });
+    // Background tasks not available without TaskManager in SDK 52
+    // Will use foreground-only monitoring instead
+    console.log('GeofenceService initialized (foreground-only mode)');
   }
 
   /**
@@ -137,25 +125,9 @@ class GeofenceService {
         throw new Error('Location permission not granted');
       }
 
-      // Request background permission for continuous monitoring
-      const { status: backgroundStatus } = await Location.requestBackgroundPermissionsAsync();
-      if (backgroundStatus === 'granted') {
-        // Start background location updates
-        await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
-          accuracy: Location.Accuracy.High,
-          timeInterval: 10000, // 10 seconds
-          distanceInterval: 10, // 10 meters
-          showsBackgroundLocationIndicator: true,
-          foregroundService: {
-            notificationTitle: 'PYEBWA Tree Planting',
-            notificationBody: 'Monitoring your location for valid planting zones',
-            notificationColor: '#00217D',
-          },
-        });
-      } else {
-        // Fall back to foreground-only monitoring
-        this.startForegroundMonitoring();
-      }
+      // Background location not available without TaskManager
+      // Use foreground-only monitoring
+      this.startForegroundMonitoring();
 
       this.isMonitoring = true;
       console.log('Geofence monitoring started');
@@ -193,9 +165,6 @@ class GeofenceService {
     }
 
     try {
-      // Stop background updates
-      await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
-
       // Stop foreground subscription if exists
       if ((this as any).locationSubscription) {
         (this as any).locationSubscription.remove();
