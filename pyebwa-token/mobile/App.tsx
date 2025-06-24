@@ -420,6 +420,92 @@ export default function App() {
         <View style={{ flex: 1, padding: 20 }}>
           {/* Language Switcher */}
           <LanguageSwitcher />
+          
+          {/* User Type Switcher */}
+          <View style={{ 
+            backgroundColor: 'white', 
+            padding: 15, 
+            borderRadius: 10, 
+            marginBottom: 20,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 3,
+            elevation: 3
+          }}>
+            <Text style={{ fontSize: 14, color: '#666', marginBottom: 10 }}>
+              {t('dashboard.viewAs') || 'View as:'}
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  paddingVertical: 10,
+                  paddingHorizontal: 15,
+                  borderRadius: 8,
+                  backgroundColor: userType === 'family' ? '#00217D' : '#f0f0f0',
+                  alignItems: 'center'
+                }}
+                onPress={async () => {
+                  setUserType('family');
+                  await AsyncStorage.setItem('userType', 'family');
+                }}
+              >
+                <Text style={{ 
+                  color: userType === 'family' ? 'white' : '#666',
+                  fontWeight: userType === 'family' ? 'bold' : 'normal',
+                  fontSize: 14
+                }}>
+                  {t('auth.familyMember')}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  paddingVertical: 10,
+                  paddingHorizontal: 15,
+                  borderRadius: 8,
+                  backgroundColor: userType === 'planter' ? '#00217D' : '#f0f0f0',
+                  alignItems: 'center'
+                }}
+                onPress={async () => {
+                  setUserType('planter');
+                  await AsyncStorage.setItem('userType', 'planter');
+                }}
+              >
+                <Text style={{ 
+                  color: userType === 'planter' ? 'white' : '#666',
+                  fontWeight: userType === 'planter' ? 'bold' : 'normal',
+                  fontSize: 14
+                }}>
+                  {t('auth.treePlanter')}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  paddingVertical: 10,
+                  paddingHorizontal: 15,
+                  borderRadius: 8,
+                  backgroundColor: userType === 'validator' ? '#00217D' : '#f0f0f0',
+                  alignItems: 'center'
+                }}
+                onPress={async () => {
+                  setUserType('validator');
+                  await AsyncStorage.setItem('userType', 'validator');
+                }}
+              >
+                <Text style={{ 
+                  color: userType === 'validator' ? 'white' : '#666',
+                  fontWeight: userType === 'validator' ? 'bold' : 'normal',
+                  fontSize: 14
+                }}>
+                  {t('validator.title') || 'Validator'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          
           {userType === 'validator' ? (
             <>
               {/* Validator Dashboard */}
