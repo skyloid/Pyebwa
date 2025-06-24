@@ -35,9 +35,12 @@ export default function App() {
       const savedAuth = await AsyncStorage.getItem('isLoggedIn');
       const savedUserType = await AsyncStorage.getItem('userType');
       
+      console.log('Loaded auth status:', savedAuth);
+      console.log('Loaded user type:', savedUserType);
+      
       if (savedAuth === 'true') {
         setIsLoggedIn(true);
-        setUserType(savedUserType as 'family' | 'planter' || 'family');
+        setUserType((savedUserType as 'family' | 'planter' | 'validator') || 'family');
         setScreen('home');
       }
     } catch (error) {
@@ -415,6 +418,18 @@ export default function App() {
           <Text style={{ fontSize: 16, color: 'rgba(255,255,255,0.8)', marginTop: 5 }}>
             {t(userType === 'planter' ? 'dashboard.planterDashboard' : userType === 'validator' ? 'validator.dashboard' : 'dashboard.familyDashboard')}
           </Text>
+          <View style={{ 
+            backgroundColor: 'rgba(255,255,255,0.2)', 
+            paddingHorizontal: 12, 
+            paddingVertical: 4, 
+            borderRadius: 15, 
+            marginTop: 8,
+            alignSelf: 'flex-start'
+          }}>
+            <Text style={{ fontSize: 12, color: 'white', fontWeight: 'bold' }}>
+              {userType.toUpperCase()} MODE
+            </Text>
+          </View>
         </View>
         
         <View style={{ flex: 1, padding: 20 }}>
@@ -427,13 +442,15 @@ export default function App() {
             padding: 15, 
             borderRadius: 10, 
             marginBottom: 20,
+            borderWidth: 2,
+            borderColor: '#00217D',
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.1,
             shadowRadius: 3,
-            elevation: 3
+            elevation: 5
           }}>
-            <Text style={{ fontSize: 14, color: '#666', marginBottom: 10 }}>
+            <Text style={{ fontSize: 16, color: '#000', marginBottom: 10, fontWeight: 'bold' }}>
               {t('dashboard.viewAs') || 'View as:'}
             </Text>
             <View style={{ flexDirection: 'row', gap: 10 }}>
