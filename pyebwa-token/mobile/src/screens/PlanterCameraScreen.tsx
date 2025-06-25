@@ -16,6 +16,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { FieldMappingService } from '../services/FieldMappingService';
 import { PlantingField, Coordinate } from '../types';
 import { FieldSelector } from '../components/FieldSelector';
+import { simplePlantingService } from '../services/SimplePlantingService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface CapturedPhoto {
   id: string;
@@ -37,6 +39,7 @@ export const PlanterCameraScreen: React.FC = () => {
   const [selectedSpecies, setSelectedSpecies] = useState('mango');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showFieldSelector, setShowFieldSelector] = useState(false);
+  const [fieldLocked, setFieldLocked] = useState(false); // Lock field selection
 
   const fieldService = FieldMappingService.getInstance();
 
@@ -68,12 +71,40 @@ export const PlanterCameraScreen: React.FC = () => {
 
       setCurrentLocation(currentCoord);
 
+      // Get all fields for debugging
+      const allFields = await fieldService.getAllFields();
+      console.log(`Total fields available: ${allFields.length}`);
+      
       // Get nearby fields
       const nearbyFields = await fieldService.getNearbyFields(currentCoord, 1000);
       setFieldsInside(nearbyFields.fieldsInside);
       setFieldsNearby(nearbyFields.fieldsNearby);
+      
+      console.log(`Fields at location: ${nearbyFields.fieldsInside.length}`);
+      console.log(`Fields nearby: ${nearbyFields.fieldsNearby.length}`);
 
-      // Determine status and auto-select field if appropriate
+      // If field is locked and selected, check if we're still reasonably close
+      if (fieldLocked && selectedField) {
+        // Check if we're inside the selected field
+        const stillInside = nearbyFields.fieldsInside.some(f => f.id === selectedField.id);
+        
+        // Check if we're near the selected field (within 20m tolerance)
+        const nearSelected = nearbyFields.fieldsNearby.some(
+          item => item.field.id === selectedField.id && item.distance <= 20
+        );
+        
+        if (stillInside) {
+          setLocationStatus('valid');
+        } else if (nearSelected) {
+          setLocationStatus('valid'); // Still consider valid if within 20m
+        } else {
+          setLocationStatus('outside');
+          // Don't clear the field since it's locked
+        }
+        return; // Don't auto-update when locked
+      }
+
+      // Normal auto-selection logic when not locked
       if (nearbyFields.fieldsInside.length === 1) {
         // Single field - auto select
         setSelectedField(nearbyFields.fieldsInside[0]);
@@ -100,17 +131,27 @@ export const PlanterCameraScreen: React.FC = () => {
   };
 
   const capturePhoto = async () => {
-    if (locationStatus === 'multiple') {
-      setShowFieldSelector(true);
-      return;
-    }
-
-    if (locationStatus !== 'valid' || !selectedField) {
-      if (locationStatus === 'outside' && fieldsNearby.length > 0) {
+    // If field is NOT locked or NOT selected, check field selection
+    if (!fieldLocked || !selectedField) {
+      // Normal field selection logic
+      if (locationStatus === 'multiple') {
         setShowFieldSelector(true);
         return;
       }
-      Alert.alert(t('camera.invalidLocation'), t('camera.noValidField'));
+
+      if (locationStatus !== 'valid' || !selectedField) {
+        if (locationStatus === 'outside' && fieldsNearby.length > 0) {
+          setShowFieldSelector(true);
+          return;
+        }
+        Alert.alert(t('camera.invalidLocation'), t('camera.noValidField'));
+        return;
+      }
+    }
+
+    // At this point, we have a valid selected field (either locked or auto-selected)
+    if (!selectedField) {
+      Alert.alert(t('common.error'), t('camera.noFieldSelected'));
       return;
     }
 
@@ -175,23 +216,49 @@ export const PlanterCameraScreen: React.FC = () => {
       return;
     }
 
+    if (!selectedField) {
+      Alert.alert(t('common.error'), t('camera.noFieldSelected'));
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      // Simulate submission
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Get planter name from AsyncStorage
+      const planterName = await AsyncStorage.getItem('userName') || 'Unknown Planter';
 
-      const tokens = photos.length * 20; // 20 tokens per tree
+      // Prepare photos with location data
+      const photosWithLocation = photos.map(photo => ({
+        uri: photo.uri,
+        location: photo.location,
+      }));
+
+      // Record plantings
+      const plantingRecords = await simplePlantingService.recordPlantings(
+        selectedField.id,
+        selectedSpecies,
+        photosWithLocation,
+        planterName
+      );
+
+      const tokens = plantingRecords.length * 20; // 20 tokens per tree
+      
+      // Update the selectedField state to reflect new planted count
+      const updatedField = await fieldService.getFieldById(selectedField.id);
+      if (updatedField) {
+        setSelectedField(updatedField);
+      }
+
       Alert.alert(
         t('camera.success'),
         t('camera.submissionSuccess', {
-          count: photos.length,
+          count: plantingRecords.length,
           species: t(`trees.${selectedSpecies}`),
           tokens,
         }),
         [{ text: 'OK', onPress: () => setPhotos([]) }]
       );
-    } catch (error) {
-      Alert.alert(t('common.error'), t('camera.submissionError'));
+    } catch (error: any) {
+      Alert.alert(t('common.error'), error.message || t('camera.submissionError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -237,6 +304,14 @@ export const PlanterCameraScreen: React.FC = () => {
     return t('camera.noFieldsNearby');
   };
 
+  const formatCoordinate = (coord: number, isLat: boolean) => {
+    const absolute = Math.abs(coord);
+    const degrees = Math.floor(absolute);
+    const minutes = (absolute - degrees) * 60;
+    const direction = isLat ? (coord >= 0 ? 'N' : 'S') : (coord >= 0 ? 'E' : 'W');
+    return `${degrees}°${minutes.toFixed(3)}'${direction}`;
+  };
+
   return (
     <ScrollView style={styles.container}>
       {/* Location Status Card */}
@@ -265,12 +340,35 @@ export const PlanterCameraScreen: React.FC = () => {
             {t('camera.gpsAccuracy')}: {Math.round(currentLocation.accuracy)}m
           </Text>
         )}
+        {/* GPS Debug Info */}
+        {currentLocation && (
+          <View style={styles.debugInfo}>
+            <Text style={styles.debugText}>
+              {formatCoordinate(currentLocation.latitude, true)} {formatCoordinate(currentLocation.longitude, false)}
+            </Text>
+            <Text style={styles.debugText}>
+              Total fields available: {fieldsInside.length + fieldsNearby.length}
+            </Text>
+          </View>
+        )}
       </View>
 
       {/* Field Info */}
-      {selectedField && locationStatus === 'valid' && (
+      {selectedField && (locationStatus === 'valid' || fieldLocked) && (
         <View style={styles.fieldInfo}>
-          <Text style={styles.fieldName}>{selectedField.name}</Text>
+          <View style={styles.fieldHeader}>
+            <Text style={styles.fieldName}>{selectedField.name}</Text>
+            <TouchableOpacity
+              style={[styles.lockButton, fieldLocked && styles.lockButtonActive]}
+              onPress={() => setFieldLocked(!fieldLocked)}
+            >
+              <Ionicons 
+                name={fieldLocked ? "lock-closed" : "lock-open"} 
+                size={20} 
+                color={fieldLocked ? "#4CAF50" : "#666"} 
+              />
+            </TouchableOpacity>
+          </View>
           <View style={styles.fieldStats}>
             <View style={styles.fieldStat}>
               <Text style={styles.fieldStatLabel}>{t('camera.capacity')}</Text>
@@ -289,6 +387,20 @@ export const PlanterCameraScreen: React.FC = () => {
                 })}
               </View>
             </View>
+          </View>
+          {/* Progress Bar */}
+          <View style={styles.progressContainer}>
+            <View style={styles.progressBar}>
+              <View 
+                style={[
+                  styles.progressFill, 
+                  { width: `${(selectedField.plantedCount / selectedField.capacity) * 100}%` }
+                ]} 
+              />
+            </View>
+            <Text style={styles.progressText}>
+              {Math.round((selectedField.plantedCount / selectedField.capacity) * 100)}% {t('common.complete')}
+            </Text>
           </View>
         </View>
       )}
@@ -326,16 +438,18 @@ export const PlanterCameraScreen: React.FC = () => {
       <TouchableOpacity
         style={[
           styles.captureButton,
-          (locationStatus !== 'valid' && locationStatus !== 'multiple' && locationStatus !== 'outside') && styles.disabledButton,
+          (!fieldLocked && locationStatus !== 'valid' && locationStatus !== 'multiple' && locationStatus !== 'outside') && styles.disabledButton,
         ]}
         onPress={capturePhoto}
-        disabled={locationStatus !== 'valid' && locationStatus !== 'multiple' && locationStatus !== 'outside'}
+        disabled={!fieldLocked && locationStatus !== 'valid' && locationStatus !== 'multiple' && locationStatus !== 'outside'}
       >
         <Ionicons name="camera" size={24} color="white" />
         <Text style={styles.captureButtonText}>
-          {locationStatus === 'multiple' || (locationStatus === 'outside' && fieldsNearby.length > 0)
-            ? t('camera.selectFieldToCapture')
-            : t('camera.captureTree')}
+          {(fieldLocked && selectedField) 
+            ? t('camera.captureTree')
+            : (locationStatus === 'multiple' || (locationStatus === 'outside' && fieldsNearby.length > 0)
+              ? t('camera.selectFieldToCapture')
+              : t('camera.captureTree'))}
         </Text>
       </TouchableOpacity>
 
@@ -395,6 +509,7 @@ export const PlanterCameraScreen: React.FC = () => {
         onSelectField={(field) => {
           setSelectedField(field);
           setLocationStatus('valid');
+          setFieldLocked(true); // Lock the field when manually selected
         }}
         onClose={() => setShowFieldSelector(false)}
       />
@@ -608,5 +723,51 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  debugInfo: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+  },
+  debugText: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  progressContainer: {
+    marginTop: 15,
+  },
+  progressBar: {
+    height: 20,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#4CAF50',
+    borderRadius: 10,
+  },
+  progressText: {
+    textAlign: 'center',
+    marginTop: 5,
+    fontSize: 12,
+    color: '#666',
+  },
+  fieldHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  lockButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: '#f0f0f0',
+  },
+  lockButtonActive: {
+    backgroundColor: '#e8f5e9',
   },
 });

@@ -432,7 +432,7 @@ export default function App() {
           </View>
         </View>
         
-        <View style={{ flex: 1, padding: 20 }}>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
           {/* Language Switcher */}
           <LanguageSwitcher />
           
@@ -661,7 +661,7 @@ export default function App() {
           >
             <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>{t('auth.logout')}</Text>
           </TouchableOpacity>
-        </View>
+        </ScrollView>
       </View>
     );
   }

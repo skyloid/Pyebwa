@@ -22,7 +22,8 @@
     "familyMember": "👨‍👩‍👧‍👦 Manm Fanmi",
     "treePlanter": "🌳 Plantè Pyebwa",
     "emailRequired": "Tanpri antre imel ak modpas",
-    "nameRequired": "Tanpri antre non ou"
+    "nameRequired": "Tanpri antre non ou",
+    "pleaseLogin": "Tanpri konekte pou kontinye"
   },
   "dashboard": {
     "familyDashboard": "👨‍👩‍👧‍👦 Tablo Fanmi",
@@ -79,7 +80,8 @@
     "submissionError": "Pa rive voye foto yo. Tanpri eseye ankò.",
     "multipleFields": "{{count}} jaden disponib nan pozisyon ou",
     "selectField": "Chwazi Jaden",
-    "selectFieldToCapture": "Chwazi Jaden pou Pran Foto"
+    "selectFieldToCapture": "Chwazi Jaden pou Pran Foto",
+    "noFieldSelected": "Tanpri chwazi yon jaden dabò"
   },
   "fieldSelector": {
     "selectField": "Chwazi Jaden Plantasyon",
@@ -196,7 +198,10 @@
     "descriptionPlaceholder": "Nòt adisyonèl sou zòn plantasyon sa a...",
     "createField": "Kreye Jaden",
     "fillRequiredFields": "Tanpri ranpli tout chan obligatwa yo",
-    "fieldCreated": "Jaden '{{name}}' kreye avèk siksè! Sipèfisi: {{area}} m²"
+    "fieldCreated": "Jaden '{{name}}' kreye avèk siksè! Sipèfisi: {{area}} m²",
+    "validatorsOnly": "Se sèlman validatè ki ka kreye nouvo jaden",
+    "createFieldError": "Pa rive kreye jaden an. Tanpri eseye ankò.",
+    "pointAdded": "Kwen Ajoute"
   },
   "validator": {
     "dashboard": "🔍 Tablo Validatè",
@@ -253,7 +258,8 @@
     "confirm": "Konfime",
     "retry": "Eseye Ankò",
     "comingSoon": "Vini Byento",
-    "featureComingSoon": "Fonksyon {{feature}} pral disponib byento!"
+    "featureComingSoon": "Fonksyon {{feature}} pral disponib byento!",
+    "complete": "fini"
   },
   "analytics": {
     "dashboard": "Tablo Analis",

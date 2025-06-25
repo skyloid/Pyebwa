@@ -46,6 +46,21 @@ export class FieldMappingService {
       },
       (location) => {
         if (this.currentSession) {
+          // Only accept points with good accuracy (less than 10 meters)
+          if (location.coords.accuracy && location.coords.accuracy > 10) {
+            console.log(`Skipping inaccurate point: ${location.coords.accuracy}m`);
+            // Still callback for UI updates
+            if (onLocationUpdate) {
+              onLocationUpdate({
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+                timestamp: new Date(),
+                accuracy: location.coords.accuracy || undefined,
+              });
+            }
+            return;
+          }
+
           const newPoint: Coordinate = {
             latitude: location.coords.latitude,
             longitude: location.coords.longitude,
@@ -53,20 +68,28 @@ export class FieldMappingService {
             accuracy: location.coords.accuracy || undefined,
           };
 
-          // Add point to session
-          this.currentSession.points.push(newPoint);
-
-          // Calculate distance from last point
-          if (this.currentSession.points.length > 1) {
-            const lastPoint = this.currentSession.points[this.currentSession.points.length - 2];
+          // Only add point if it's at least 2 meters from the last point
+          let shouldAddPoint = true;
+          if (this.currentSession.points.length > 0) {
+            const lastPoint = this.currentSession.points[this.currentSession.points.length - 1];
             const distance = this.calculateDistance(lastPoint, newPoint);
-            this.currentSession.totalDistance += distance;
+            
+            if (distance < 2) {
+              shouldAddPoint = false;
+            } else {
+              this.currentSession.totalDistance += distance;
+            }
           }
 
-          // Save session
-          this.saveCurrentSession();
+          if (shouldAddPoint) {
+            // Add point to session
+            this.currentSession.points.push(newPoint);
+            
+            // Save session
+            this.saveCurrentSession();
+          }
 
-          // Callback for UI updates
+          // Always callback for UI updates (even if point not saved)
           if (onLocationUpdate) {
             onLocationUpdate(newPoint);
           }
@@ -76,6 +99,69 @@ export class FieldMappingService {
 
     await this.saveCurrentSession();
     return this.currentSession;
+  }
+
+  // Manually mark a point with averaging
+  async markPoint(): Promise<Coordinate | null> {
+    if (!this.currentSession) {
+      throw new Error('No active mapping session');
+    }
+
+    // Take multiple readings and average them
+    const readings: Coordinate[] = [];
+    const numReadings = 5; // Take 5 readings
+
+    for (let i = 0; i < numReadings; i++) {
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.BestForNavigation,
+      });
+
+      // Only use readings with good accuracy
+      if (!location.coords.accuracy || location.coords.accuracy <= 10) {
+        readings.push({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          timestamp: new Date(),
+          accuracy: location.coords.accuracy || undefined,
+        });
+      }
+
+      // Small delay between readings
+      if (i < numReadings - 1) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
+
+    if (readings.length === 0) {
+      return null; // No accurate readings
+    }
+
+    // Average the coordinates
+    const avgLat = readings.reduce((sum, r) => sum + r.latitude, 0) / readings.length;
+    const avgLon = readings.reduce((sum, r) => sum + r.longitude, 0) / readings.length;
+    const avgAccuracy = readings.reduce((sum, r) => sum + (r.accuracy || 0), 0) / readings.length;
+
+    const averagedPoint: Coordinate = {
+      latitude: avgLat,
+      longitude: avgLon,
+      timestamp: new Date(),
+      accuracy: avgAccuracy,
+    };
+
+    // Add to session
+    this.currentSession.points.push(averagedPoint);
+
+    // Calculate distance from last point
+    if (this.currentSession.points.length > 1) {
+      const lastPoint = this.currentSession.points[this.currentSession.points.length - 2];
+      const distance = this.calculateDistance(lastPoint, averagedPoint);
+      this.currentSession.totalDistance += distance;
+    }
+
+    // Save session
+    await this.saveCurrentSession();
+
+    return averagedPoint;
   }
 
   // Stop mapping and optionally save as field
@@ -338,12 +424,7 @@ export class FieldMappingService {
       const fieldsJson = await AsyncStorage.getItem(STORAGE_KEYS.FIELDS);
       const fields = fieldsJson ? JSON.parse(fieldsJson) : [];
       
-      // If no fields exist, create demo fields for testing
-      if (fields.length === 0 && await this.isDemoMode()) {
-        const demoFields = this.createDemoFields();
-        await AsyncStorage.setItem(STORAGE_KEYS.FIELDS, JSON.stringify(demoFields));
-        return demoFields;
-      }
+      // Don't create demo fields automatically anymore - let validators create real fields
       
       return fields;
     } catch (error) {

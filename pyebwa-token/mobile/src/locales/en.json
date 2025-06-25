@@ -22,7 +22,8 @@
     "familyMember": "👨‍👩‍👧‍👦 Family Member",
     "treePlanter": "🌳 Tree Planter",
     "emailRequired": "Please enter email and password",
-    "nameRequired": "Please enter your name"
+    "nameRequired": "Please enter your name",
+    "pleaseLogin": "Please login to continue"
   },
   "dashboard": {
     "familyDashboard": "👨‍👩‍👧‍👦 Family Dashboard",
@@ -79,7 +80,8 @@
     "submissionError": "Failed to submit photos. Please try again.",
     "multipleFields": "{{count}} fields available at your location",
     "selectField": "Select Field",
-    "selectFieldToCapture": "Select Field to Capture"
+    "selectFieldToCapture": "Select Field to Capture",
+    "noFieldSelected": "Please select a field first"
   },
   "fieldSelector": {
     "selectField": "Select Planting Field",
@@ -196,7 +198,11 @@
     "descriptionPlaceholder": "Additional notes about this planting area...",
     "createField": "Create Field",
     "fillRequiredFields": "Please fill in all required fields",
-    "fieldCreated": "Field '{{name}}' created successfully! Area: {{area}} m²"
+    "fieldCreated": "Field '{{name}}' created successfully! Area: {{area}} m²",
+    "validatorsOnly": "Only validators can create new fields",
+    "createFieldError": "Failed to create field. Please try again.",
+    "pointAdded": "Corner Added",
+    "trackingStarted": "Tracking Started"
   },
   "validator": {
     "dashboard": "🔍 Validator Dashboard",
@@ -253,7 +259,8 @@
     "confirm": "Confirm",
     "retry": "Retry",
     "comingSoon": "Coming Soon",
-    "featureComingSoon": "{{feature}} feature will be available soon!"
+    "featureComingSoon": "{{feature}} feature will be available soon!",
+    "complete": "complete"
   },
   "analytics": {
     "dashboard": "Analytics Dashboard",

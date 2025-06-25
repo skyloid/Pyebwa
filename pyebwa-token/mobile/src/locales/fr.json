@@ -22,7 +22,8 @@
     "familyMember": "👨‍👩‍👧‍👦 Membre de Famille",
     "treePlanter": "🌳 Planteur d'Arbres",
     "emailRequired": "Veuillez entrer l'e-mail et le mot de passe",
-    "nameRequired": "Veuillez entrer votre nom"
+    "nameRequired": "Veuillez entrer votre nom",
+    "pleaseLogin": "Veuillez vous connecter pour continuer"
   },
   "dashboard": {
     "familyDashboard": "👨‍👩‍👧‍👦 Tableau de Bord Famille",
@@ -79,7 +80,8 @@
     "submissionError": "Échec de l'envoi des photos. Veuillez réessayer.",
     "multipleFields": "{{count}} champs disponibles à votre emplacement",
     "selectField": "Sélectionner Champ",
-    "selectFieldToCapture": "Sélectionner Champ pour Capturer"
+    "selectFieldToCapture": "Sélectionner Champ pour Capturer",
+    "noFieldSelected": "Veuillez d'abord sélectionner un champ"
   },
   "fieldSelector": {
     "selectField": "Sélectionner Champ de Plantation",
@@ -196,7 +198,10 @@
     "descriptionPlaceholder": "Notes supplémentaires sur cette zone de plantation...",
     "createField": "Créer le Champ",
     "fillRequiredFields": "Veuillez remplir tous les champs obligatoires",
-    "fieldCreated": "Champ '{{name}}' créé avec succès ! Surface : {{area}} m²"
+    "fieldCreated": "Champ '{{name}}' créé avec succès ! Surface : {{area}} m²",
+    "validatorsOnly": "Seuls les validateurs peuvent créer de nouveaux champs",
+    "createFieldError": "Échec de la création du champ. Veuillez réessayer.",
+    "pointAdded": "Coin Ajouté"
   },
   "validator": {
     "dashboard": "🔍 Tableau de Bord Validateur",
@@ -253,7 +258,8 @@
     "confirm": "Confirmer",
     "retry": "Réessayer",
     "comingSoon": "Bientôt Disponible",
-    "featureComingSoon": "La fonctionnalité {{feature}} sera bientôt disponible !"
+    "featureComingSoon": "La fonctionnalité {{feature}} sera bientôt disponible !",
+    "complete": "terminé"
   },
   "analytics": {
     "dashboard": "Tableau de Bord Analytique",

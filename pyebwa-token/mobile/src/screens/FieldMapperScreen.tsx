@@ -9,14 +9,19 @@ import {
   TextInput,
   ActivityIndicator,
   Dimensions,
+  Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FieldMappingService } from '../services/FieldMappingService';
 import { Coordinate, MappingSession } from '../types';
 import firebaseFieldService from '../services/firebaseFieldService';
 import offlineSync from '../services/offlineSync';
 import authService from '../services/authService';
+import { ManualFieldMapper } from '../components/ManualFieldMapper';
+import { GPSStepFieldMapper } from '../components/GPSStepFieldMapper';
+import { ContinuousFieldMapper } from '../components/ContinuousFieldMapper';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -33,6 +38,9 @@ export const FieldMapperScreen: React.FC = () => {
   const [selectedSpecies, setSelectedSpecies] = useState<string[]>(['mango']);
   const [description, setDescription] = useState('');
   const [isCreatingField, setIsCreatingField] = useState(false);
+  const [showManualMode, setShowManualMode] = useState(false);
+  const [showGPSStepMode, setShowGPSStepMode] = useState(false);
+  const [showContinuousMode, setShowContinuousMode] = useState(false);
   
   const mappingService = useRef(FieldMappingService.getInstance());
 
@@ -108,16 +116,24 @@ export const FieldMapperScreen: React.FC = () => {
     }
 
     // Check if user is authenticated and is a validator
+    // First check AsyncStorage for demo users
+    const asyncUserType = await AsyncStorage.getItem('userType');
+    const asyncIsLoggedIn = await AsyncStorage.getItem('isLoggedIn');
+    
+    // Check Firebase auth
     const user = authService.getCurrentUser();
     const userProfile = authService.getUserProfile();
     
-    if (!user || !userProfile) {
-      Alert.alert(t('common.error'), t('auth.pleaseLogin'));
-      return;
-    }
-
-    if (userProfile.userType !== 'validator') {
-      Alert.alert(t('common.error'), t('fieldMapper.validatorsOnly'));
+    // Allow demo validators or Firebase authenticated validators
+    const isDemoValidator = asyncIsLoggedIn === 'true' && asyncUserType === 'validator';
+    const isFirebaseValidator = user && userProfile && userProfile.userType === 'validator';
+    
+    if (!isDemoValidator && !isFirebaseValidator) {
+      if (!asyncIsLoggedIn && !user) {
+        Alert.alert(t('common.error'), t('auth.pleaseLogin'));
+      } else {
+        Alert.alert(t('common.error'), t('fieldMapper.validatorsOnly'));
+      }
       return;
     }
 
@@ -129,8 +145,16 @@ export const FieldMapperScreen: React.FC = () => {
     setIsCreatingField(true);
 
     try {
-      // Create field using offline sync (handles online/offline automatically)
-      const fieldId = await offlineSync.createField(
+      // Create field using FieldMappingService to ensure it's saved locally
+      const field = await mappingService.current.completeFieldMapping(
+        fieldName,
+        parseInt(capacity),
+        selectedSpecies,
+        description
+      );
+
+      // Also queue for Firebase sync
+      await offlineSync.createField(
         fieldName,
         currentSession.points,
         parseInt(capacity),
@@ -139,7 +163,7 @@ export const FieldMapperScreen: React.FC = () => {
       );
 
       // Calculate area for display
-      const area = mappingService.current.calculatePolygonArea(currentSession.points);
+      const area = field.area;
 
       Alert.alert(
         t('common.success'),
@@ -150,8 +174,7 @@ export const FieldMapperScreen: React.FC = () => {
         [{ text: 'OK', onPress: resetForm }]
       );
 
-      // Clear the mapping session
-      await mappingService.current.stopMapping();
+      // Don't call stopMapping again as completeFieldMapping already handles cleanup
       
     } catch (error: any) {
       console.error('Error creating field:', error);
@@ -169,6 +192,22 @@ export const FieldMapperScreen: React.FC = () => {
     setSelectedSpecies(['mango']);
     setDescription('');
     setCurrentLocation(null);
+  };
+
+  const handleManualComplete = (points: Coordinate[], totalDistance: number) => {
+    // Create a session from manual data
+    const manualSession: MappingSession = {
+      id: `session_${Date.now()}`,
+      points: points,
+      startTime: new Date(),
+      endTime: new Date(),
+      totalDistance: totalDistance,
+      isComplete: true,
+    };
+    
+    setCurrentSession(manualSession);
+    setShowManualMode(false);
+    setShowCompleteForm(true);
   };
 
   const toggleSpecies = (species: string) => {
@@ -297,14 +336,14 @@ export const FieldMapperScreen: React.FC = () => {
           
           <View style={styles.statCard}>
             <Text style={styles.statLabel}>{t('fieldMapper.totalDistance')}</Text>
-            <Text style={styles.statValue}>
+            <Text style={styles.statusValue}>
               {formatDistance(currentSession?.totalDistance || 0)}
             </Text>
           </View>
           
           <View style={styles.statCard}>
             <Text style={styles.statLabel}>{t('fieldMapper.pointsCaptured')}</Text>
-            <Text style={styles.statValue}>{currentSession?.points.length || 0}</Text>
+            <Text style={styles.statusValue}>{currentSession?.points.length || 0}</Text>
           </View>
           
           <Text style={styles.label}>{t('fieldMapper.fieldName')} *</Text>
@@ -411,10 +450,14 @@ export const FieldMapperScreen: React.FC = () => {
                 <Ionicons 
                   name="location" 
                   size={16} 
-                  color={currentLocation.accuracy < 10 ? '#4CAF50' : '#FF9800'} 
+                  color={currentLocation.accuracy < 10 ? '#4CAF50' : currentLocation.accuracy < 20 ? '#FF9800' : '#F44336'} 
                 />
-                <Text style={styles.accuracyText}>
+                <Text style={[
+                  styles.accuracyText,
+                  { color: currentLocation.accuracy < 10 ? '#4CAF50' : currentLocation.accuracy < 20 ? '#FF9800' : '#F44336' }
+                ]}>
                   {t('fieldMapper.accuracy')}: {Math.round(currentLocation.accuracy)}m
+                  {currentLocation.accuracy > 10 && ' (Waiting for better GPS...)'}
                 </Text>
               </View>
             )}
@@ -423,10 +466,33 @@ export const FieldMapperScreen: React.FC = () => {
         
         {/* Control buttons */}
         {!isMapping ? (
-          <TouchableOpacity style={styles.startButton} onPress={startMapping}>
-            <Ionicons name="play" size={24} color="white" />
-            <Text style={styles.buttonText}>{t('fieldMapper.startMapping')}</Text>
-          </TouchableOpacity>
+          <>
+            <TouchableOpacity style={styles.startButton} onPress={startMapping}>
+              <Ionicons name="play" size={24} color="white" />
+              <Text style={styles.buttonText}>{t('fieldMapper.startMapping')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.button, styles.manualButton]} 
+              onPress={() => setShowManualMode(true)}
+            >
+              <Ionicons name="hand-left" size={24} color="white" />
+              <Text style={styles.buttonText}>Manual GPS Marking</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.button, styles.hybridButton]} 
+              onPress={() => setShowGPSStepMode(true)}
+            >
+              <Ionicons name="footsteps" size={24} color="white" />
+              <Text style={styles.buttonText}>GPS + Step Counter</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.button, styles.continuousButton]} 
+              onPress={() => setShowContinuousMode(true)}
+            >
+              <Ionicons name="radio-button-on" size={24} color="white" />
+              <Text style={styles.buttonText}>Continuous Tracking</Text>
+            </TouchableOpacity>
+          </>
         ) : (
           <TouchableOpacity 
             style={[styles.stopButton, currentSession && currentSession.points.length < 4 && styles.disabledButton]} 
@@ -443,6 +509,48 @@ export const FieldMapperScreen: React.FC = () => {
             : t('fieldMapper.startInstructions')}
         </Text>
       </View>
+      
+      {/* Manual Mode Modal */}
+      <Modal
+        visible={showManualMode}
+        animationType="slide"
+        onRequestClose={() => setShowManualMode(false)}
+      >
+        <ManualFieldMapper
+          onComplete={handleManualComplete}
+          onCancel={() => setShowManualMode(false)}
+        />
+      </Modal>
+      
+      {/* GPS + Step Mode Modal */}
+      <Modal
+        visible={showGPSStepMode}
+        animationType="slide"
+        onRequestClose={() => setShowGPSStepMode(false)}
+      >
+        <GPSStepFieldMapper
+          onComplete={(points, distance) => {
+            handleManualComplete(points, distance);
+            setShowGPSStepMode(false);
+          }}
+          onCancel={() => setShowGPSStepMode(false)}
+        />
+      </Modal>
+      
+      {/* Continuous Mode Modal */}
+      <Modal
+        visible={showContinuousMode}
+        animationType="slide"
+        onRequestClose={() => setShowContinuousMode(false)}
+      >
+        <ContinuousFieldMapper
+          onComplete={(points, distance) => {
+            handleManualComplete(points, distance);
+            setShowContinuousMode(false);
+          }}
+          onCancel={() => setShowContinuousMode(false)}
+        />
+      </Modal>
     </View>
   );
 };
@@ -545,6 +653,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
+  },
+  button: {
+    flexDirection: 'row',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    marginTop: 10,
+  },
+  manualButton: {
+    backgroundColor: '#2196F3',
+  },
+  hybridButton: {
+    backgroundColor: '#9C27B0',
+  },
+  continuousButton: {
+    backgroundColor: '#FF5722',
   },
   stopButton: {
     flexDirection: 'row',
