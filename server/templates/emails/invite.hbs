@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You're Invited to Join {{familyName}} Family Tree</title>
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
+    <style>
+        /* Reset styles */
+        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        img { -ms-interpolation-mode: bicubic; }
+
+        /* Remove default styling */
+        img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+        table { border-collapse: collapse !important; }
+        body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
+
+        /* Mobile styles */
+        @media screen and (max-width: 600px) {
+            .mobile-hide { display: none !important; }
+            .mobile-center { text-align: center !important; }
+            .container { padding: 0 10px !important; }
+            td[class="logo"] img { margin: 0 auto !important; }
+            table[class="responsive-table"] { width: 100% !important; }
+            td[class="padding"] { padding: 10px 5% 15px 5% !important; }
+        }
+    </style>
+</head>
+<body style="margin: 0 !important; padding: 0 !important; background-color: #f4f4f4;">
+
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td bgcolor="#f4f4f4" align="center" style="padding: 40px 10px 40px 10px;">
+                <table class="responsive-table" border="0" cellpadding="0" cellspacing="0" width="600">
+                    <!-- Header -->
+                    <tr>
+                        <td bgcolor="#ffffff" align="center" style="padding: 40px 20px 20px 20px; border-radius: 10px 10px 0 0;">
+                            <h1 style="font-size: 32px; font-weight: 700; margin: 0; color: #333333; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                                🌳 Pyebwa
+                            </h1>
+                            <p style="font-size: 16px; color: #666666; margin: 10px 0 0 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                                Your Family Tree Platform
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Main Content -->
+                    <tr>
+                        <td bgcolor="#ffffff" align="center" style="padding: 0 20px 20px 20px;">
+                            <table border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <td align="center" style="border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 40px;">
+                                        <h2 style="font-size: 24px; font-weight: 600; color: #ffffff; margin: 0 0 10px 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                                            You're Invited!
+                                        </h2>
+                                        <p style="font-size: 18px; color: #ffffff; margin: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; opacity: 0.95;">
+                                            Join the {{familyName}} Family Tree
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Invitation Details -->
+                    <tr>
+                        <td bgcolor="#ffffff" class="padding" style="padding: 0 40px 30px 40px;">
+                            <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                                <tr>
+                                    <td style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px; color: #333333;">
+                                        <p style="margin: 0 0 20px 0;">
+                                            Hi <strong>{{personName}}</strong>,
+                                        </p>
+                                        <p style="margin: 0 0 20px 0;">
+                                            {{#if inviterName}}
+                                            <strong>{{inviterName}}</strong> has added you to the {{familyName}} family tree on Pyebwa and invited you to claim your profile.
+                                            {{else}}
+                                            You've been added to the {{familyName}} family tree on Pyebwa and invited to claim your profile.
+                                            {{/if}}
+                                        </p>
+                                        
+                                        <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                                            <h3 style="font-size: 18px; margin: 0 0 15px 0; color: #333333;">
+                                                What you can do:
+                                            </h3>
+                                            <ul style="margin: 0; padding-left: 20px; color: #666666;">
+                                                <li style="margin-bottom: 8px;">View and explore your family tree</li>
+                                                <li style="margin-bottom: 8px;">Add photos and videos to your profile</li>
+                                                <li style="margin-bottom: 8px;">Share stories and memories</li>
+                                                <li style="margin-bottom: 8px;">Connect with other family members</li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- CTA Button -->
+                    <tr>
+                        <td bgcolor="#ffffff" align="center" style="padding: 0 40px 40px 40px;">
+                            <table border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <td align="center" style="border-radius: 8px; background-color: #667eea;">
+                                        <a href="{{inviteUrl}}" target="_blank" style="font-size: 18px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 8px; display: inline-block; font-weight: 600;">
+                                            Accept Invitation
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Alternative Link -->
+                    <tr>
+                        <td bgcolor="#ffffff" align="center" style="padding: 0 40px 20px 40px;">
+                            <p style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: #666666; margin: 0;">
+                                Or copy and paste this link in your browser:
+                            </p>
+                            <p style="font-family: 'Courier New', monospace; font-size: 12px; color: #667eea; margin: 10px 0 0 0; word-break: break-all;">
+                                {{inviteUrl}}
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Expiration Notice -->
+                    <tr>
+                        <td bgcolor="#ffffff" align="center" style="padding: 0 40px 40px 40px;">
+                            <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 15px;">
+                                <p style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: #856404; margin: 0;">
+                                    ⏰ This invitation will expire on <strong>{{expiresAt}}</strong>
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td bgcolor="#f8f9fa" align="center" style="padding: 30px 40px; border-radius: 0 0 10px 10px;">
+                            <p style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: #666666; margin: 0 0 10px 0;">
+                                Questions? Contact your family tree administrator or reply to this email.
+                            </p>
+                            <p style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; color: #999999; margin: 0;">
+                                © {{currentYear}} Pyebwa. All rights reserved.
+                            </p>
+                            <p style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; color: #999999; margin: 10px 0 0 0;">
+                                <a href="https://pyebwa.com" style="color: #667eea; text-decoration: none;">pyebwa.com</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>

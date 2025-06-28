@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const admin = require('firebase-admin');
 const notificationService = require('../notification-service');
-const emailService = require('../email-service');
+const emailService = require('../services/email');
 
 // Middleware to verify Firebase ID token
 const verifyToken = async (req, res, next) => {
@@ -346,5 +346,223 @@ async function getAnnouncementRecipients(recipientConfig) {
         return recipients;
     }
 }
+
+// Send family update notifications
+router.post('/family-update', verifyToken, async (req, res) => {
+    try {
+        const { treeId, updateType, updateTitle, updateDescription, targetPersonId } = req.body;
+        const userId = req.user.uid;
+        
+        if (!treeId || !updateType || !updateTitle) {
+            return res.status(400).json({ error: 'Tree ID, update type, and title are required' });
+        }
+        
+        // Verify user has access to this tree
+        const treeDoc = await admin.firestore().collection('familyTrees').doc(treeId).get();
+        if (!treeDoc.exists) {
+            return res.status(404).json({ error: 'Family tree not found' });
+        }
+        
+        const treeData = treeDoc.data();
+        if (treeData.createdBy !== userId && !treeData.collaborators?.includes(userId)) {
+            return res.status(403).json({ error: 'Access denied to this family tree' });
+        }
+        
+        // Get actor information
+        const actorDoc = await admin.firestore().collection('users').doc(userId).get();
+        const actorData = actorDoc.data();
+        const actorName = actorData?.displayName || actorData?.email?.split('@')[0] || 'A family member';
+        
+        // Get collaborators
+        const recipients = new Set();
+        
+        // Add tree owner
+        if (treeData.createdBy !== userId) {
+            recipients.add(treeData.createdBy);
+        }
+        
+        // Add collaborators
+        if (treeData.collaborators) {
+            treeData.collaborators.forEach(collaboratorId => {
+                if (collaboratorId !== userId) {
+                    recipients.add(collaboratorId);
+                }
+            });
+        }
+        
+        // Prepare email data
+        const baseUrl = process.env.APP_URL || 'https://rasin.pyebwa.com';
+        let viewUrl = `${baseUrl}/app/dashboard.html`;
+        
+        if (targetPersonId) {
+            viewUrl = `${baseUrl}/app/member-profile.html?personId=${targetPersonId}`;
+        }
+        
+        const emailsSent = [];
+        const errors = [];
+        
+        // Send emails to all recipients
+        for (const recipientId of recipients) {
+            try {
+                // Get recipient data
+                const recipientDoc = await admin.firestore().collection('users').doc(recipientId).get();
+                if (!recipientDoc.exists) continue;
+                
+                const recipientData = recipientDoc.data();
+                const recipientEmail = recipientData.email;
+                
+                if (!recipientEmail) continue;
+                
+                const recipientName = recipientData.displayName || recipientEmail.split('@')[0];
+                
+                // Send email
+                await emailService.sendFamilyUpdateEmail(recipientEmail, {
+                    recipientName: recipientName,
+                    familyName: treeData.name || 'Family',
+                    updateType: updateType,
+                    updateTitle: updateTitle,
+                    updateDescription: updateDescription,
+                    actorName: actorName,
+                    updateTime: new Date().toLocaleDateString(),
+                    viewUrl: viewUrl,
+                    settingsUrl: `${baseUrl}/app/settings.html`,
+                    unsubscribeUrl: `${baseUrl}/app/settings.html#notifications`
+                });
+                
+                emailsSent.push(recipientEmail);
+                
+            } catch (error) {
+                console.error(`Failed to send email to recipient ${recipientId}:`, error);
+                errors.push({ recipientId, error: error.message });
+            }
+        }
+        
+        // Log the notification
+        await admin.firestore().collection('admin_logs').add({
+            action: 'family_update_notification',
+            userId: userId,
+            treeId: treeId,
+            updateType: updateType,
+            recipientCount: recipients.size,
+            emailsSent: emailsSent.length,
+            timestamp: admin.firestore.FieldValue.serverTimestamp()
+        });
+        
+        res.json({
+            success: true,
+            recipientCount: recipients.size,
+            emailsSent: emailsSent.length,
+            errors: errors.length > 0 ? errors : undefined
+        });
+        
+    } catch (error) {
+        console.error('Error sending family update notifications:', error);
+        res.status(500).json({ error: 'Failed to send notifications' });
+    }
+});
+
+// Send announcement to family tree members
+router.post('/family-announcement', verifyToken, async (req, res) => {
+    try {
+        const { treeId, subject, title, content, actionUrl, actionText } = req.body;
+        const userId = req.user.uid;
+        
+        if (!treeId || !subject || !content) {
+            return res.status(400).json({ error: 'Tree ID, subject, and content are required' });
+        }
+        
+        // Verify user has access to this tree and is admin
+        const treeDoc = await admin.firestore().collection('familyTrees').doc(treeId).get();
+        if (!treeDoc.exists) {
+            return res.status(404).json({ error: 'Family tree not found' });
+        }
+        
+        const treeData = treeDoc.data();
+        if (treeData.createdBy !== userId) {
+            return res.status(403).json({ error: 'Only tree owner can send announcements' });
+        }
+        
+        // Get sender information
+        const senderDoc = await admin.firestore().collection('users').doc(userId).get();
+        const senderData = senderDoc.data();
+        const senderName = senderData?.displayName || senderData?.email?.split('@')[0] || 'Family Admin';
+        
+        // Get all users who have access to this tree
+        const usersSnapshot = await admin.firestore().collection('users')
+            .where('familyTrees', 'array-contains', treeId)
+            .get();
+        
+        const emailsSent = [];
+        const errors = [];
+        
+        // Send announcement to all family members
+        for (const userDoc of usersSnapshot.docs) {
+            try {
+                const userData = userDoc.data();
+                const userEmail = userData.email;
+                
+                if (!userEmail || userDoc.id === userId) continue; // Skip sender
+                
+                const recipientName = userData.displayName || userEmail.split('@')[0];
+                
+                // Send email
+                await emailService.sendAnnouncementEmail(userEmail, {
+                    subject: subject,
+                    recipientName: recipientName,
+                    familyName: treeData.name || 'Family',
+                    announcementTitle: title,
+                    content: content,
+                    actionUrl: actionUrl,
+                    actionText: actionText,
+                    senderName: senderName,
+                    senderRole: 'Family Tree Owner',
+                    unsubscribeUrl: `${process.env.APP_URL || 'https://rasin.pyebwa.com'}/app/settings.html#notifications`
+                });
+                
+                emailsSent.push(userEmail);
+                
+            } catch (error) {
+                console.error(`Failed to send announcement to user ${userDoc.id}:`, error);
+                errors.push({ userId: userDoc.id, error: error.message });
+            }
+        }
+        
+        // Save announcement to database
+        await admin.firestore().collection('announcements').add({
+            treeId: treeId,
+            subject: subject,
+            title: title,
+            content: content,
+            actionUrl: actionUrl,
+            actionText: actionText,
+            sentBy: userId,
+            sentAt: admin.firestore.FieldValue.serverTimestamp(),
+            recipientCount: usersSnapshot.size - 1, // Exclude sender
+            emailsSent: emailsSent.length
+        });
+        
+        // Log the activity
+        await admin.firestore().collection('admin_logs').add({
+            action: 'family_announcement_sent',
+            userId: userId,
+            treeId: treeId,
+            subject: subject,
+            recipientCount: usersSnapshot.size - 1,
+            emailsSent: emailsSent.length,
+            timestamp: admin.firestore.FieldValue.serverTimestamp()
+        });
+        
+        res.json({
+            success: true,
+            recipientCount: usersSnapshot.size - 1,
+            emailsSent: emailsSent.length,
+            errors: errors.length > 0 ? errors : undefined
+        });
+        
+    } catch (error) {
+        console.error('Error sending family announcement:', error);
+        res.status(500).json({ error: 'Failed to send announcement' });
+    }
+});
 
 module.exports = router;

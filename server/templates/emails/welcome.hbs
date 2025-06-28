@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Pyebwa</title>
+    <style>
+        /* Reset styles */
+        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        img { -ms-interpolation-mode: bicubic; }
+        img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+        table { border-collapse: collapse !important; }
+        body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
+
+        @media screen and (max-width: 600px) {
+            .mobile-hide { display: none !important; }
+            .mobile-center { text-align: center !important; }
+            .container { padding: 0 10px !important; }
+            table[class="responsive-table"] { width: 100% !important; }
+            td[class="padding"] { padding: 10px 5% 15px 5% !important; }
+        }
+    </style>
+</head>
+<body style="margin: 0 !important; padding: 0 !important; background-color: #f4f4f4;">
+
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td bgcolor="#f4f4f4" align="center" style="padding: 40px 10px 40px 10px;">
+                <table class="responsive-table" border="0" cellpadding="0" cellspacing="0" width="600">
+                    <!-- Header with gradient -->
+                    <tr>
+                        <td align="center" style="padding: 0;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td bgcolor="#667eea" align="center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 60px 20px; border-radius: 10px 10px 0 0;">
+                                        <h1 style="font-size: 48px; font-weight: 700; margin: 0 0 20px 0; color: #ffffff; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                                            Welcome to Pyebwa! 🎉
+                                        </h1>
+                                        <p style="font-size: 20px; color: #ffffff; margin: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; opacity: 0.95;">
+                                            Your journey into family history starts here
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Main Content -->
+                    <tr>
+                        <td bgcolor="#ffffff" class="padding" style="padding: 40px;">
+                            <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                                <tr>
+                                    <td style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px; color: #333333;">
+                                        <p style="margin: 0 0 20px 0; font-size: 18px;">
+                                            Hi <strong>{{userName}}</strong>,
+                                        </p>
+                                        <p style="margin: 0 0 30px 0;">
+                                            Welcome to Pyebwa! We're thrilled to have you join our community of families preserving their heritage and connecting across generations.
+                                        </p>
+                                        
+                                        <!-- Getting Started Section -->
+                                        <h2 style="font-size: 24px; margin: 0 0 20px 0; color: #333333;">
+                                            🚀 Getting Started
+                                        </h2>
+                                        
+                                        <div style="background-color: #f8f9fa; border-radius: 8px; padding: 25px; margin: 0 0 30px 0;">
+                                            <h3 style="font-size: 18px; margin: 0 0 15px 0; color: #333333;">
+                                                Here's what you can do right now:
+                                            </h3>
+                                            <ol style="margin: 0; padding-left: 20px; color: #666666;">
+                                                <li style="margin-bottom: 10px;">
+                                                    <strong>Create your family tree</strong> - Start by adding yourself and your immediate family
+                                                </li>
+                                                <li style="margin-bottom: 10px;">
+                                                    <strong>Upload photos</strong> - Bring your family history to life with pictures
+                                                </li>
+                                                <li style="margin-bottom: 10px;">
+                                                    <strong>Share stories</strong> - Record memories and anecdotes for future generations
+                                                </li>
+                                                <li style="margin-bottom: 10px;">
+                                                    <strong>Invite family members</strong> - Collaborate to build a complete family tree
+                                                </li>
+                                            </ol>
+                                        </div>
+                                        
+                                        <!-- Quick Tips -->
+                                        <h2 style="font-size: 24px; margin: 0 0 20px 0; color: #333333;">
+                                            💡 Quick Tips
+                                        </h2>
+                                        
+                                        <table border="0" cellspacing="0" cellpadding="0" width="100%" style="margin-bottom: 30px;">
+                                            <tr>
+                                                <td valign="top" style="padding-right: 15px; font-size: 24px;">📸</td>
+                                                <td>
+                                                    <p style="margin: 0 0 15px 0; color: #666666;">
+                                                        <strong>Pro tip:</strong> Start with what you know. Add photos and stories about your parents and grandparents first.
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td valign="top" style="padding-right: 15px; font-size: 24px;">🔒</td>
+                                                <td>
+                                                    <p style="margin: 0 0 15px 0; color: #666666;">
+                                                        <strong>Privacy:</strong> Your family tree is private by default. Only people you invite can see it.
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td valign="top" style="padding-right: 15px; font-size: 24px;">🌍</td>
+                                                <td>
+                                                    <p style="margin: 0; color: #666666;">
+                                                        <strong>Languages:</strong> Pyebwa supports English, French, and Haitian Creole. Change your language in settings.
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- CTA Buttons -->
+                    <tr>
+                        <td bgcolor="#ffffff" align="center" style="padding: 0 40px 40px 40px;">
+                            <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                                <tr>
+                                    <td align="center">
+                                        <table border="0" cellspacing="0" cellpadding="0">
+                                            <tr>
+                                                <td align="center" style="border-radius: 8px; background-color: #667eea;">
+                                                    <a href="{{appUrl}}" target="_blank" style="font-size: 18px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 8px; display: inline-block; font-weight: 600;">
+                                                        Start Building Your Tree
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Support Section -->
+                    <tr>
+                        <td bgcolor="#f8f9fa" align="center" style="padding: 30px 40px; border-radius: 0 0 10px 10px;">
+                            <h3 style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 18px; color: #333333; margin: 0 0 15px 0;">
+                                Need Help?
+                            </h3>
+                            <p style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: #666666; margin: 0 0 15px 0;">
+                                Check out our <a href="{{appUrl}}/help" style="color: #667eea; text-decoration: none;">Help Center</a> or reply to this email
+                            </p>
+                            <p style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; color: #999999; margin: 0;">
+                                © {{currentYear}} Pyebwa. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>
