@@ -3,6 +3,11 @@ const path = require('path');
 const fs = require('fs').promises;
 const handlebars = require('handlebars');
 
+// Register custom Handlebars helpers
+handlebars.registerHelper('equals', function(a, b) {
+    return a === b;
+});
+
 // Initialize SendGrid with API key
 const apiKey = process.env.SENDGRID_API_KEY;
 if (apiKey && !apiKey.includes('your_sendgrid_api_key_here')) {
