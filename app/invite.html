@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Your Family Tree - Pyebwa</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/app/css/app-modern.css?v=3">
+    <link rel="stylesheet" href="/app/css/invite-modal.css?v=1">
+    <link rel="stylesheet" href="/app/css/animations.css?v=1">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .invite-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            overflow: hidden;
+            animation: slideUp 0.5s ease;
+        }
+        
+        .invite-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .invite-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .invite-header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .invite-body {
+            padding: 40px 30px;
+        }
+        
+        .invite-status {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .invite-status.loading .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        .invite-status.error {
+            color: #dc3545;
+        }
+        
+        .invite-status.error .material-icons {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .person-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .person-photo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .person-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .person-photo .material-icons {
+            font-size: 40px;
+            color: #6c757d;
+        }
+        
+        .person-info h2 {
+            margin: 0 0 5px 0;
+            font-size: 1.5rem;
+            color: #333;
+        }
+        
+        .person-info p {
+            margin: 0;
+            color: #666;
+        }
+        
+        .tree-info {
+            background: #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .tree-info h3 {
+            margin: 0 0 5px 0;
+            color: #333;
+        }
+        
+        .tree-info p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .auth-section {
+            text-align: center;
+        }
+        
+        .auth-section h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .auth-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .auth-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        
+        .auth-btn.google {
+            background: white;
+            color: #333;
+            border: 2px solid #ddd;
+        }
+        
+        .auth-btn.google:hover {
+            background: #f8f9fa;
+            border-color: #4285f4;
+        }
+        
+        .auth-btn.email {
+            background: #667eea;
+            color: white;
+        }
+        
+        .auth-btn.email:hover {
+            background: #5a67d8;
+        }
+        
+        .auth-btn.signin {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        
+        .auth-btn.signin:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .divider {
+            margin: 20px 0;
+            text-align: center;
+            color: #999;
+            position: relative;
+        }
+        
+        .divider::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 100%;
+            height: 1px;
+            background: #ddd;
+        }
+        
+        .divider span {
+            background: white;
+            padding: 0 15px;
+            position: relative;
+        }
+        
+        .benefits {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .benefits h4 {
+            margin: 0 0 15px 0;
+            color: #333;
+        }
+        
+        .benefits ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #666;
+        }
+        
+        .benefits li {
+            margin-bottom: 8px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="invite-container">
+        <div class="invite-header">
+            <h1>Welcome to Pyebwa</h1>
+            <p>You're invited to join your family tree</p>
+        </div>
+        
+        <div class="invite-body">
+            <div id="inviteContent" class="invite-status loading">
+                <div class="spinner"></div>
+                <p>Loading invitation details...</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAkBdJC_9OLsd8ktr5oCDH7dAZ1-fGTgqc",
+            authDomain: "pyebwa-f5960.firebaseapp.com",
+            projectId: "pyebwa-f5960",
+            storageBucket: "pyebwa-f5960.appspot.com",
+            messagingSenderId: "1042887343749",
+            appId: "1:1042887343749:web:6b6dc57e19dade3f6413ad",
+            measurementId: "G-1HMSJ5VLYJ"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        
+        // Get invite token from URL
+        const pathParts = window.location.pathname.split('/');
+        const inviteToken = pathParts[pathParts.length - 1];
+        
+        // Check if user is already logged in
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                // User is logged in, try to accept invite
+                await acceptInvite(user.uid);
+            } else {
+                // Load invite details
+                loadInviteDetails();
+            }
+        });
+        
+        async function loadInviteDetails() {
+            const contentDiv = document.getElementById('inviteContent');
+            
+            try {
+                const response = await fetch(`/api/invites/details/${inviteToken}`);
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.error || 'Invalid invitation');
+                }
+                
+                displayInviteDetails(result.invite);
+                
+            } catch (error) {
+                contentDiv.className = 'invite-status error';
+                contentDiv.innerHTML = `
+                    <i class="material-icons">error_outline</i>
+                    <h3>Invalid or Expired Invitation</h3>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+        
+        function displayInviteDetails(invite) {
+            const contentDiv = document.getElementById('inviteContent');
+            contentDiv.className = '';
+            
+            contentDiv.innerHTML = `
+                <div class="person-card">
+                    <div class="person-photo">
+                        <i class="material-icons">person</i>
+                    </div>
+                    <div class="person-info">
+                        <h2>${invite.personName}</h2>
+                        <p>Your profile in the family tree</p>
+                    </div>
+                </div>
+                
+                <div class="tree-info">
+                    <h3>${invite.treeName}</h3>
+                    <p>Family Tree</p>
+                </div>
+                
+                <div class="auth-section">
+                    <h3>Sign in to claim your profile</h3>
+                    
+                    <div class="auth-buttons">
+                        <button class="auth-btn google" onclick="signInWithGoogle()">
+                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20">
+                            Continue with Google
+                        </button>
+                        
+                        <button class="auth-btn email" onclick="signInWithEmail()">
+                            <i class="material-icons">email</i>
+                            Continue with Email
+                        </button>
+                        
+                        <div class="divider">
+                            <span>Already have an account?</span>
+                        </div>
+                        
+                        <a href="/login.html?redirect=/app/invite/${inviteToken}" class="auth-btn signin">
+                            <i class="material-icons">login</i>
+                            Sign In
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="benefits">
+                    <h4>What you can do after joining:</h4>
+                    <ul>
+                        <li>Add photos and videos to your profile</li>
+                        <li>Share stories and memories</li>
+                        <li>View and explore your family tree</li>
+                        <li>Connect with other family members</li>
+                    </ul>
+                </div>
+            `;
+        }
+        
+        async function signInWithGoogle() {
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                const result = await auth.signInWithPopup(provider);
+                await acceptInvite(result.user.uid);
+            } catch (error) {
+                console.error('Google sign-in error:', error);
+                alert('Failed to sign in with Google. Please try again.');
+            }
+        }
+        
+        function signInWithEmail() {
+            // Redirect to registration page with invite token
+            window.location.href = `/app/register.html?invite=${inviteToken}`;
+        }
+        
+        async function acceptInvite(userId) {
+            const contentDiv = document.getElementById('inviteContent');
+            contentDiv.className = 'invite-status loading';
+            contentDiv.innerHTML = `
+                <div class="spinner"></div>
+                <p>Accepting invitation...</p>
+            `;
+            
+            try {
+                const response = await fetch(`/api/invites/accept/${inviteToken}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userId })
+                });
+                
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.error || 'Failed to accept invitation');
+                }
+                
+                // Success! Redirect to the app
+                contentDiv.innerHTML = `
+                    <i class="material-icons" style="color: #28a745; font-size: 48px;">check_circle</i>
+                    <h3>Success!</h3>
+                    <p>Your profile has been linked. Redirecting to your family tree...</p>
+                `;
+                
+                setTimeout(() => {
+                    window.location.href = `/app?tree=${result.treeId}&person=${result.personId}`;
+                }, 2000);
+                
+            } catch (error) {
+                contentDiv.className = 'invite-status error';
+                contentDiv.innerHTML = `
+                    <i class="material-icons">error_outline</i>
+                    <h3>Failed to Accept Invitation</h3>
+                    <p>${error.message}</p>
+                    <button class="auth-btn email" onclick="location.reload()">
+                        Try Again
+                    </button>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -49,6 +49,9 @@
                                     <button class="btn-icon edit-profile" title="Edit">
                                         <i class="material-icons">edit</i>
                                     </button>
+                                    <button class="btn-icon invite-member" title="${t('inviteMember') || 'Invite to claim profile'}">
+                                        <i class="material-icons">person_add</i>
+                                    </button>
                                     <button class="btn-icon privacy-settings" title="${t('documentPrivacy') || 'Document Privacy'}">
                                         <i class="material-icons">lock</i>
                                     </button>
@@ -169,6 +172,9 @@
                 editBtn.addEventListener('click', this.editClickHandler);
             }
             
+            // Invite member button
+            modal.querySelector('.invite-member').addEventListener('click', () => this.inviteMember());
+            
             // Privacy settings button
             modal.querySelector('.privacy-settings').addEventListener('click', () => this.showPrivacySettings());
             
@@ -251,6 +257,35 @@
             // Relationship
             if (member.relationship) {
                 modal.querySelector('.profile-relationship').textContent = t(member.relationship) || member.relationship;
+            }
+            
+            // Show/hide invite button based on whether profile is claimed
+            const inviteBtn = modal.querySelector('.invite-member');
+            if (inviteBtn) {
+                if (member.userId) {
+                    // Profile is claimed - hide invite button and show claimed indicator
+                    inviteBtn.style.display = 'none';
+                    
+                    // Add claimed indicator if not already present
+                    if (!modal.querySelector('.profile-claimed-indicator')) {
+                        const claimedIndicator = document.createElement('div');
+                        claimedIndicator.className = 'profile-claimed-indicator';
+                        claimedIndicator.innerHTML = `
+                            <i class="material-icons">verified_user</i>
+                            <span>${t('profileClaimed') || 'Profile claimed'}</span>
+                        `;
+                        modal.querySelector('.profile-info').appendChild(claimedIndicator);
+                    }
+                } else {
+                    // Profile not claimed - show invite button
+                    inviteBtn.style.display = '';
+                    
+                    // Remove claimed indicator if present
+                    const claimedIndicator = modal.querySelector('.profile-claimed-indicator');
+                    if (claimedIndicator) {
+                        claimedIndicator.remove();
+                    }
+                }
             }
         },
         
@@ -1260,6 +1295,198 @@
         // Print profile
         printProfile() {
             window.print();
+        },
+        
+        // Invite member to claim profile
+        async inviteMember() {
+            if (!this.currentMember) return;
+            
+            try {
+                // Check if member already has a linked user account
+                if (this.currentMember.userId) {
+                    if (window.showInfo) {
+                        window.showInfo(t('memberAlreadyClaimed') || 'This profile has already been claimed by a user');
+                    }
+                    return;
+                }
+                
+                // Show loading
+                if (window.showLoading) {
+                    window.showLoading(t('generatingInvite') || 'Generating invite link...');
+                }
+                
+                // Get current user
+                const user = firebase.auth().currentUser;
+                if (!user) {
+                    throw new Error('User not authenticated');
+                }
+                
+                // Generate invite link via API
+                const idToken = await user.getIdToken();
+                const response = await fetch('/api/invites/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${idToken}`
+                    },
+                    body: JSON.stringify({
+                        treeId: window.currentFamilyTreeId,
+                        personId: this.currentMember.id
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to generate invite');
+                }
+                
+                const result = await response.json();
+                
+                // Hide loading
+                if (window.hideLoading) {
+                    window.hideLoading();
+                }
+                
+                // Show invite modal
+                this.showInviteModal(result);
+                
+            } catch (error) {
+                console.error('Error generating invite:', error);
+                if (window.hideLoading) {
+                    window.hideLoading();
+                }
+                if (window.showError) {
+                    window.showError(error.message || t('errorGeneratingInvite') || 'Failed to generate invite link');
+                }
+            }
+        },
+        
+        // Show invite modal with link and options
+        showInviteModal(inviteData) {
+            const modal = document.createElement('div');
+            modal.className = 'invite-modal-overlay';
+            modal.innerHTML = `
+                <div class="invite-modal">
+                    <div class="invite-modal-header">
+                        <h3>${t('inviteFamilyMember') || 'Invite Family Member'}</h3>
+                        <button class="close-modal" onclick="this.closest('.invite-modal-overlay').remove()">
+                            <i class="material-icons">close</i>
+                        </button>
+                    </div>
+                    <div class="invite-modal-body">
+                        <div class="invite-info">
+                            <p>${t('inviteDescription') || 'Share this link with'} <strong>${inviteData.personName}</strong> ${t('toClaimProfile') || 'to let them claim and manage their profile'}:</p>
+                        </div>
+                        
+                        <div class="invite-link-container">
+                            <input type="text" class="invite-link-input" value="${inviteData.inviteUrl}" readonly>
+                            <button class="btn-icon copy-invite-link" title="${t('copyLink') || 'Copy link'}">
+                                <i class="material-icons">content_copy</i>
+                            </button>
+                        </div>
+                        
+                        <div class="invite-options">
+                            <button class="btn btn-primary share-invite-email" data-email="${this.currentMember.email || ''}">
+                                <i class="material-icons">email</i>
+                                ${t('sendViaEmail') || 'Send via Email'}
+                            </button>
+                            <button class="btn btn-secondary share-invite-whatsapp">
+                                <i class="material-icons">chat</i>
+                                ${t('shareViaWhatsApp') || 'Share via WhatsApp'}
+                            </button>
+                            <button class="btn btn-secondary share-invite-native">
+                                <i class="material-icons">share</i>
+                                ${t('shareOther') || 'Share Other Ways'}
+                            </button>
+                        </div>
+                        
+                        <div class="invite-expiry">
+                            <i class="material-icons">schedule</i>
+                            <span>${t('linkExpiresOn') || 'This link expires on'} ${new Date(inviteData.expiresAt).toLocaleDateString()}</span>
+                        </div>
+                        
+                        <div class="invite-instructions">
+                            <h4>${t('whatHappensNext') || 'What happens next?'}</h4>
+                            <ol>
+                                <li>${t('inviteStep1') || 'The family member clicks the link'}</li>
+                                <li>${t('inviteStep2') || 'They create an account or sign in'}</li>
+                                <li>${t('inviteStep3') || 'They can then add photos, videos, and stories to their profile'}</li>
+                                <li>${t('inviteStep4') || 'They will have access to view and contribute to the family tree'}</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Copy link button
+            modal.querySelector('.copy-invite-link').addEventListener('click', async () => {
+                const input = modal.querySelector('.invite-link-input');
+                input.select();
+                try {
+                    await navigator.clipboard.writeText(input.value);
+                    if (window.showSuccess) {
+                        window.showSuccess(t('linkCopied') || 'Link copied to clipboard!');
+                    }
+                } catch (err) {
+                    document.execCommand('copy');
+                }
+            });
+            
+            // Email share
+            modal.querySelector('.share-invite-email').addEventListener('click', () => {
+                const email = this.currentMember.email || '';
+                const subject = encodeURIComponent(t('inviteEmailSubject') || 'You\'re invited to join our family tree!');
+                const body = encodeURIComponent(
+                    (t('inviteEmailBody') || 'Hi {{name}},\n\nI\'ve added you to our family tree on Pyebwa. Click the link below to claim your profile and add your own photos, videos, and stories:\n\n{{link}}\n\nThis link will expire on {{expiry}}.\n\nLooking forward to seeing your contributions to our family history!')
+                        .replace('{{name}}', inviteData.personName)
+                        .replace('{{link}}', inviteData.inviteUrl)
+                        .replace('{{expiry}}', new Date(inviteData.expiresAt).toLocaleDateString())
+                );
+                window.open(`mailto:${email}?subject=${subject}&body=${body}`);
+            });
+            
+            // WhatsApp share
+            modal.querySelector('.share-invite-whatsapp').addEventListener('click', () => {
+                const text = encodeURIComponent(
+                    (t('inviteWhatsAppText') || 'Hi {{name}}! I\'ve added you to our family tree on Pyebwa. Click here to claim your profile and add your photos and stories: {{link}}')
+                        .replace('{{name}}', inviteData.personName.split(' ')[0])
+                        .replace('{{link}}', inviteData.inviteUrl)
+                );
+                window.open(`https://wa.me/?text=${text}`);
+            });
+            
+            // Native share
+            modal.querySelector('.share-invite-native').addEventListener('click', async () => {
+                if (navigator.share) {
+                    try {
+                        await navigator.share({
+                            title: t('inviteShareTitle') || 'Family Tree Invitation',
+                            text: (t('inviteShareText') || 'Join our family tree on Pyebwa!')
+                                .replace('{{name}}', inviteData.personName),
+                            url: inviteData.inviteUrl
+                        });
+                    } catch (err) {
+                        console.log('Share cancelled or failed:', err);
+                    }
+                } else {
+                    // Fallback - just copy the link
+                    const input = modal.querySelector('.invite-link-input');
+                    input.select();
+                    document.execCommand('copy');
+                    if (window.showSuccess) {
+                        window.showSuccess(t('linkCopied') || 'Link copied to clipboard!');
+                    }
+                }
+            });
+            
+            // Close on background click
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
         },
         
         // Show privacy settings modal

@@ -71,6 +71,11 @@ app.get('/app/admin/', (req, res) => {
     res.sendFile(path.join(__dirname, 'app/admin/index.html'));
 });
 
+// Invite page route - must come before static files
+app.get('/app/invite/:token', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app/invite.html'));
+});
+
 // Serve static files from the app directory
 app.use('/app', express.static(path.join(__dirname, 'app')));
 
@@ -158,6 +163,10 @@ app.use('/api/backup', backupRoutes);
 // System management API routes  
 const systemRoutes = require('./server/api/system');
 app.use('/api/system', systemRoutes);
+
+// Invite API routes
+const inviteRoutes = require('./server/api/invites');
+app.use('/api/invites', inviteRoutes);
 
 // Handle 404s
 app.use((req, res) => {

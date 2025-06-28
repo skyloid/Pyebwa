@@ -1,0 +1,283 @@
+/* Invite Modal Styles */
+.invite-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease;
+}
+
+.invite-modal {
+    background: white;
+    border-radius: 12px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    animation: slideUp 0.3s ease;
+}
+
+.invite-modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.invite-modal-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.invite-modal-header .close-modal {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.invite-modal-header .close-modal:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.invite-modal-body {
+    padding: 24px;
+}
+
+.invite-info {
+    margin-bottom: 24px;
+}
+
+.invite-info p {
+    margin: 0;
+    color: #666;
+    line-height: 1.6;
+}
+
+.invite-info strong {
+    color: #333;
+}
+
+.invite-link-container {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    padding: 16px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.invite-link-input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 14px;
+    background: white;
+}
+
+.copy-invite-link {
+    padding: 12px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.copy-invite-link:hover {
+    background: #0056b3;
+}
+
+.invite-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.invite-options button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s;
+}
+
+.invite-options .btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.invite-options .btn-primary:hover {
+    background: #0056b3;
+}
+
+.invite-options .btn-secondary {
+    background: #f8f9fa;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+.invite-options .btn-secondary:hover {
+    background: #e9ecef;
+}
+
+.invite-expiry {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 6px;
+    color: #856404;
+    margin-bottom: 24px;
+}
+
+.invite-expiry .material-icons {
+    font-size: 20px;
+}
+
+.invite-instructions {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.invite-instructions h4 {
+    margin: 0 0 16px 0;
+    color: #333;
+}
+
+.invite-instructions ol {
+    margin: 0;
+    padding-left: 24px;
+    color: #666;
+}
+
+.invite-instructions li {
+    margin-bottom: 8px;
+    line-height: 1.6;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .invite-modal {
+        background: #1a1a1a;
+        color: #e0e0e0;
+    }
+    
+    .invite-modal-header {
+        border-bottom-color: #333;
+    }
+    
+    .invite-modal-header h3 {
+        color: #e0e0e0;
+    }
+    
+    .invite-info p {
+        color: #b0b0b0;
+    }
+    
+    .invite-info strong {
+        color: #e0e0e0;
+    }
+    
+    .invite-link-container {
+        background-color: #2a2a2a;
+    }
+    
+    .invite-link-input {
+        background: #1a1a1a;
+        border-color: #444;
+        color: #e0e0e0;
+    }
+    
+    .invite-options .btn-secondary {
+        background: #2a2a2a;
+        color: #e0e0e0;
+        border-color: #444;
+    }
+    
+    .invite-options .btn-secondary:hover {
+        background: #333;
+    }
+    
+    .invite-expiry {
+        background: #332900;
+        border-color: #665200;
+        color: #ffd700;
+    }
+    
+    .invite-instructions {
+        background: #2a2a2a;
+    }
+    
+    .invite-instructions h4 {
+        color: #e0e0e0;
+    }
+    
+    .invite-instructions ol {
+        color: #b0b0b0;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .invite-modal {
+        width: 95%;
+        margin: 10px;
+    }
+    
+    .invite-modal-body {
+        padding: 16px;
+    }
+    
+    .invite-link-container {
+        flex-direction: column;
+    }
+    
+    .copy-invite-link {
+        width: 100%;
+    }
+}

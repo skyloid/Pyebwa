@@ -225,6 +225,25 @@
     font-size: 14px;
 }
 
+.profile-claimed-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    padding: 6px 16px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.profile-claimed-indicator .material-icons {
+    font-size: 18px;
+}
+
 .profile-actions {
     display: flex;
     gap: 12px;
