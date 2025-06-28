@@ -270,7 +270,7 @@
             } = options;
             
             try {
-                let query = firebase.firestore().collection('adminActivityLogs');
+                let query = firebase.firestore().collection('admin_logs');
                 
                 // Apply filters
                 if (type) {
@@ -290,7 +290,7 @@
                 
                 // Apply pagination
                 if (offset > 0) {
-                    const prevQuery = firebase.firestore().collection('adminActivityLogs')
+                    const prevQuery = firebase.firestore().collection('admin_logs')
                         .orderBy('timestamp', 'desc')
                         .limit(offset);
                     const prevSnapshot = await prevQuery.get();
@@ -385,7 +385,7 @@
                 const admin = AdminAuthGuard.getCurrentAdmin();
                 if (!admin) return;
                 
-                await firebase.firestore().collection('adminActivityLogs').add({
+                await firebase.firestore().collection('admin_logs').add({
                     action,
                     adminId: admin.uid,
                     adminEmail: admin.email,
@@ -397,6 +397,11 @@
             } catch (error) {
                 console.error('Error logging admin action:', error);
             }
+        },
+        
+        // Log activity (alias for consistency)
+        async logActivity(action, details = {}) {
+            return this.logAdminAction(action, details);
         },
         
         // Batch operations
@@ -471,4 +476,5 @@
     
     // Export for global use
     window.AdminApiClient = AdminApiClient;
+    window.AdminAPI = AdminApiClient; // Alias for easier access
 })();

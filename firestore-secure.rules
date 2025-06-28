@@ -225,6 +225,69 @@ service cloud.firestore {
       allow update, delete: if false;
     }
     
+    // Admin logs collection (used by admin dashboard)
+    match /admin_logs/{logId} {
+      allow read: if isAdmin() || hasRole('superadmin') || hasRole('admin') || hasRole('moderator');
+      allow create: if isAdmin() || hasRole('superadmin') || hasRole('admin') || hasRole('moderator');
+      allow update, delete: if false; // Logs should be immutable
+    }
+    
+    // Content collection (for content management)
+    match /content/{contentId} {
+      // Users can read their own content
+      allow read: if request.auth != null && 
+        (resource.data.userId == request.auth.uid || 
+         isAdmin() || hasRole('superadmin') || hasRole('admin') || hasRole('moderator'));
+      
+      // Users can create content
+      allow create: if request.auth != null && 
+        request.resource.data.userId == request.auth.uid;
+      
+      // Users can update their own content, admins can update any content
+      allow update: if request.auth != null && 
+        (resource.data.userId == request.auth.uid || 
+         isAdmin() || hasRole('superadmin') || hasRole('admin'));
+      
+      // Only admins can delete content
+      allow delete: if isAdmin() || hasRole('superadmin') || hasRole('admin');
+    }
+    
+    // Announcements collection (for admin communications)
+    match /announcements/{announcementId} {
+      // All authenticated users can read published announcements
+      allow read: if request.auth != null && 
+        (resource.data.status == 'published' || 
+         isAdmin() || hasRole('superadmin') || hasRole('admin') || hasRole('moderator'));
+      
+      // Only admins can create announcements
+      allow create: if isAdmin() || hasRole('superadmin') || hasRole('admin');
+      
+      // Only admins can update announcements
+      allow update: if isAdmin() || hasRole('superadmin') || hasRole('admin');
+      
+      // Only superadmins can delete announcements
+      allow delete: if hasRole('superadmin');
+    }
+    
+    // User notifications subcollection
+    match /users/{userId}/notifications/{notificationId} {
+      // Users can read their own notifications
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // System/admins can create notifications
+      allow create: if request.auth != null && 
+        (request.auth.uid == userId || 
+         isAdmin() || hasRole('superadmin') || hasRole('admin'));
+      
+      // Users can update their own notifications (mark as read)
+      allow update: if request.auth != null && 
+        request.auth.uid == userId &&
+        request.resource.data.diff(resource.data).hasOnly(['read', 'readAt']);
+      
+      // Users can delete their own notifications
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+    
     // Default deny all
     match /{document=**} {
       allow read, write: if false;

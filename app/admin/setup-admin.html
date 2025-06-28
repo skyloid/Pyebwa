@@ -139,14 +139,18 @@
     <script>
         // Wait for Firebase to be ready
         window.addEventListener('load', async () => {
-            try {
-                // Sign in anonymously for admin setup (remove this in production)
-                await firebase.auth().signInAnonymously();
-                showStatus('Connected to Firebase', 'success');
-            } catch (error) {
-                console.error('Firebase connection error:', error);
-                showStatus('Failed to connect to Firebase: ' + error.message, 'error');
-            }
+            // Check if user is already authenticated
+            firebase.auth().onAuthStateChanged((user) => {
+                if (user) {
+                    showStatus(`Connected as ${user.email}`, 'success');
+                } else {
+                    showStatus('Please sign in to your account first, then return to this page.', 'error');
+                    // Redirect to main app for authentication
+                    setTimeout(() => {
+                        window.location.href = '/app/';
+                    }, 3000);
+                }
+            });
         });
 
         async function promoteUser() {
@@ -176,7 +180,7 @@
                     role: role,
                     isAdmin: role !== 'user',
                     adminPromotedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    adminPromotedBy: 'setup-script'
+                    adminPromotedBy: 'setup-tool'
                 });
                 
                 showStatus(`Successfully promoted ${email} to ${role}`, 'success');
@@ -248,7 +252,7 @@
                     role: newRole,
                     isAdmin: newRole !== 'user',
                     adminPromotedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    adminPromotedBy: 'setup-script'
+                    adminPromotedBy: 'setup-tool'
                 });
                 
                 showStatus(`Successfully changed ${email} role to ${newRole}`, 'success');

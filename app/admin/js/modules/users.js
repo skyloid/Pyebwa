@@ -339,6 +339,145 @@
             }
         },
         
+        // Show user details modal
+        showDetailsModal(user, additionalData = {}) {
+            const { familyTrees = [] } = additionalData;
+            
+            const modalHtml = `
+                <div class="modal-header">
+                    <h2>User Details</h2>
+                    <button class="modal-close" onclick="UserManagement.closeModal()">
+                        <span class="material-icons">close</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="user-details-full">
+                        <div class="detail-section">
+                            <h3>Basic Information</h3>
+                            <div class="detail-row">
+                                <label>Email:</label>
+                                <span>${this.escapeHtml(user.email)}</span>
+                            </div>
+                            <div class="detail-row">
+                                <label>Display Name:</label>
+                                <span>${this.escapeHtml(user.displayName || 'Not set')}</span>
+                            </div>
+                            <div class="detail-row">
+                                <label>Full Name:</label>
+                                <span>${this.escapeHtml(user.fullName || 'Not set')}</span>
+                            </div>
+                            <div class="detail-row">
+                                <label>User ID:</label>
+                                <span class="monospace">${user.id}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h3>Account Status</h3>
+                            <div class="detail-row">
+                                <label>Role:</label>
+                                <span class="role-badge ${user.role || 'user'}">${user.role || 'user'}</span>
+                            </div>
+                            <div class="detail-row">
+                                <label>Status:</label>
+                                <span class="status-badge ${user.status || 'active'}">${user.status || 'active'}</span>
+                            </div>
+                            <div class="detail-row">
+                                <label>Created:</label>
+                                <span>${this.formatDate(user.createdAt, true)}</span>
+                            </div>
+                            <div class="detail-row">
+                                <label>Last Login:</label>
+                                <span>${user.lastLoginAt ? this.formatDate(user.lastLoginAt, true) : 'Never'}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h3>Additional Information</h3>
+                            <div class="detail-row">
+                                <label>Country:</label>
+                                <span>${this.escapeHtml(user.country || 'Not set')}</span>
+                            </div>
+                            <div class="detail-row">
+                                <label>Language:</label>
+                                <span>${user.language || 'en'}</span>
+                            </div>
+                            <div class="detail-row">
+                                <label>Family Trees:</label>
+                                <span>${familyTrees.length} tree${familyTrees.length !== 1 ? 's' : ''}</span>
+                            </div>
+                        </div>
+                        
+                        ${familyTrees.length > 0 ? `
+                            <div class="detail-section">
+                                <h3>Family Trees</h3>
+                                <div class="trees-list">
+                                    ${familyTrees.map(tree => `
+                                        <div class="tree-item">
+                                            <span class="tree-name">${this.escapeHtml(tree.name || 'Unnamed Tree')}</span>
+                                            <span class="tree-members">${tree.memberCount || 0} members</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="UserManagement.closeModal()">Close</button>
+                    <button class="btn btn-primary" onclick="UserManagement.editUser('${user.id}')">
+                        <span class="material-icons">edit</span>
+                        Edit User
+                    </button>
+                </div>
+            `;
+            
+            this.showModal(modalHtml);
+        },
+        
+        // Show modal
+        showModal(content) {
+            let modal = document.getElementById('userModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'userModal';
+                modal.className = 'admin-modal';
+                document.body.appendChild(modal);
+            }
+            
+            modal.innerHTML = `<div class="modal-content">${content}</div>`;
+            modal.classList.add('active');
+            
+            // Close on background click
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    this.closeModal();
+                }
+            });
+        },
+        
+        // Close modal
+        closeModal() {
+            const modal = document.getElementById('userModal');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => {
+                    modal.remove();
+                }, 300);
+            }
+        },
+        
+        // Edit user (placeholder for now)
+        editUser(userId) {
+            const user = this.users.find(u => u.id === userId);
+            if (!user) return;
+            
+            // For now, just show an alert
+            // In a complete implementation, this would open an edit form
+            showInfo(`Edit functionality for ${user.email} coming soon`);
+            this.closeModal();
+        },
+        
         // Toggle user status
         async toggleUserStatus(userId, currentStatus) {
             const newStatus = currentStatus === 'suspended' ? 'active' : 'suspended';

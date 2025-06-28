@@ -13,6 +13,19 @@
     border-radius: 12px;
     padding: 24px;
     box-shadow: var(--admin-shadow-sm);
+    min-height: 300px;
+    max-height: 400px;
+}
+
+.chart-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: var(--admin-text-muted);
+    font-style: italic;
+    border: 2px dashed var(--admin-border);
+    border-radius: 8px;
 }
 
 .chart-header {
@@ -612,4 +625,262 @@
         align-items: stretch;
         text-align: center;
     }
+}
+
+/* Tree Management Specific */
+.tree-info h4 {
+    margin: 0 0 4px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--admin-text);
+}
+
+.tree-info p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--admin-text-secondary);
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.member-count {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    background: var(--admin-bg);
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.bulk-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    background: var(--admin-info);
+    color: white;
+    border-radius: 8px;
+}
+
+.bulk-actions .selected-count {
+    font-weight: 500;
+}
+
+.bulk-actions button {
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+.tree-details {
+    margin-bottom: 20px;
+}
+
+.detail-row {
+    display: flex;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-row label {
+    flex: 0 0 150px;
+    font-weight: 600;
+    color: var(--admin-text-secondary);
+}
+
+.detail-row span {
+    flex: 1;
+    color: var(--admin-text);
+}
+
+.members-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.member-item {
+    padding: 12px;
+    background: var(--admin-bg);
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.member-item h4 {
+    margin: 0 0 4px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.member-item p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--admin-text-secondary);
+}
+
+.empty-state-content {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-state-content .material-icons {
+    font-size: 72px;
+    color: var(--admin-text-secondary);
+    opacity: 0.3;
+    margin-bottom: 16px;
+}
+
+.empty-state-content h3 {
+    margin: 0 0 8px;
+    font-size: 20px;
+    color: var(--admin-text);
+}
+
+.empty-state-content p {
+    margin: 0;
+    color: var(--admin-text-secondary);
+}
+
+.loading-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.loading-state .spinner {
+    margin-bottom: 16px;
+}
+
+.loading-state p {
+    margin: 0;
+    color: var(--admin-text-secondary);
+}
+
+.btn-danger {
+    background: var(--admin-danger);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #d32f2f;
+}
+
+/* Audit Log Specific */
+.action-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.action-badge.danger {
+    background: rgba(244, 67, 54, 0.1);
+    color: var(--admin-danger);
+}
+
+.action-badge.success {
+    background: rgba(76, 175, 80, 0.1);
+    color: var(--admin-success);
+}
+
+.action-badge.warning {
+    background: rgba(255, 152, 0, 0.1);
+    color: var(--admin-warning);
+}
+
+.action-badge.info {
+    background: rgba(33, 150, 243, 0.1);
+    color: var(--admin-info);
+}
+
+.action-badge.default {
+    background: var(--admin-bg);
+    color: var(--admin-text);
+}
+
+.details-cell {
+    font-size: 13px;
+    color: var(--admin-text-secondary);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.log-details {
+    background: var(--admin-bg);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.log-details-json {
+    background: #282c34;
+    color: #abb2bf;
+    padding: 15px;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.4;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* User Details Modal */
+.user-details-full {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.detail-section {
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.detail-section:last-child {
+    border-bottom: none;
+}
+
+.detail-section h3 {
+    margin: 0 0 15px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--admin-text);
+}
+
+.trees-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.tree-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: var(--admin-bg);
+    border-radius: 6px;
+}
+
+.tree-name {
+    font-weight: 500;
+    color: var(--admin-text);
+}
+
+.tree-members {
+    font-size: 13px;
+    color: var(--admin-text-secondary);
+}
+
+.monospace {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 13px;
 }

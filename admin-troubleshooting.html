@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Troubleshooting Guide</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #f5f6fa;
+            line-height: 1.8;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #00217D;
+            text-align: center;
+        }
+        h2 {
+            color: #00217D;
+            margin-top: 30px;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #00217D;
+        }
+        .step h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .code {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .btn {
+            display: inline-block;
+            background: #00217D;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin: 10px 5px;
+            text-align: center;
+        }
+        .btn:hover {
+            background: #001654;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #ffeeba;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #c3e6cb;
+        }
+        .check-item {
+            margin: 10px 0;
+            padding-left: 25px;
+        }
+        ul {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Admin Troubleshooting Guide</h1>
+        
+        <div class="success">
+            <strong>✅ You've updated your Firestore document!</strong><br>
+            If you're still seeing permission errors, follow these steps:
+        </div>
+        
+        <h2>Common Solutions</h2>
+        
+        <div class="step">
+            <h3>Step 1: Force Token Refresh</h3>
+            <p>Firebase auth tokens are cached. Force a refresh to pick up your new permissions:</p>
+            <div class="code">// Run this in browser console on the admin page
+firebase.auth().currentUser.getIdToken(true).then(() => {
+    console.log('Token refreshed! Reload the page.');
+    location.reload();
+});</div>
+        </div>
+        
+        <div class="step">
+            <h3>Step 2: Clear Browser Cache</h3>
+            <p>Clear all cached data and cookies:</p>
+            <ul>
+                <li><strong>Chrome/Edge:</strong> Ctrl+Shift+Delete (Windows) or Cmd+Shift+Delete (Mac)</li>
+                <li>Select "Cached images and files" and "Cookies and other site data"</li>
+                <li>Choose "All time" for time range</li>
+                <li>Click "Clear data"</li>
+            </ul>
+        </div>
+        
+        <div class="step">
+            <h3>Step 3: Sign Out and Sign In</h3>
+            <p>This ensures you get a fresh authentication session:</p>
+            <ol>
+                <li>Go to the admin dashboard</li>
+                <li>Click your profile dropdown → Logout</li>
+                <li>Sign in again with claude@humanlevel.ai</li>
+                <li>Check if Trees and other sections load</li>
+            </ol>
+        </div>
+        
+        <div class="step">
+            <h3>Step 4: Verify Your Configuration</h3>
+            <p>Use our verification tool to check everything is set correctly:</p>
+            <a href="/verify-admin-status.html" class="btn">Run Verification Tool</a>
+            <p>This will show:</p>
+            <ul>
+                <li>Your current user document fields</li>
+                <li>Actual permission tests</li>
+                <li>Auth token details</li>
+            </ul>
+        </div>
+        
+        <h2>Still Having Issues?</h2>
+        
+        <div class="warning">
+            <strong>Check these common problems:</strong>
+            <div class="check-item">☐ Make sure role is exactly: <code>"superadmin"</code> (string, lowercase)</div>
+            <div class="check-item">☐ Make sure isAdmin is exactly: <code>true</code> (boolean, not string)</div>
+            <div class="check-item">☐ Check if you're signed in with the correct email</div>
+            <div class="check-item">☐ Ensure you saved the changes in Firebase Console</div>
+        </div>
+        
+        <div class="step">
+            <h3>Debug Information</h3>
+            <p>Run this in the browser console to see current state:</p>
+            <div class="code">// Check current user and permissions
+(async () => {
+    const user = firebase.auth().currentUser;
+    console.log('Current user:', user?.email);
+    
+    if (user) {
+        // Get fresh token
+        const token = await user.getIdTokenResult(true);
+        console.log('Token claims:', token.claims);
+        
+        // Check user doc
+        const doc = await firebase.firestore()
+            .collection('users')
+            .doc(user.uid)
+            .get();
+        
+        if (doc.exists) {
+            console.log('User document:', doc.data());
+        } else {
+            console.log('No user document found by UID');
+        }
+    }
+})();</div>
+        </div>
+        
+        <h2>Quick Links</h2>
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="/admin" class="btn">Admin Dashboard</a>
+            <a href="/verify-admin-status.html" class="btn">Verification Tool</a>
+            <a href="https://console.firebase.google.com/project/pyebwa-f5960/firestore/data/~2Fusers" class="btn" target="_blank">Firebase Console</a>
+        </div>
+    </div>
+</body>
+</html>

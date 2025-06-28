@@ -2,6 +2,18 @@ const express = require('express');
 const cors = require('cors');
 const compression = require('compression');
 const path = require('path');
+const { createProxyMiddleware } = require('http-proxy-middleware');
+const { setupAdminEndpoint } = require('./server-admin-setup');
+
+// Initialize Firebase Admin SDK (if not already initialized)
+const admin = require('firebase-admin');
+if (!admin.apps.length) {
+    const serviceAccount = require('./serviceAccountKey.json'); // You need to add this file
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        databaseURL: "https://pyebwa-f5960.firebaseio.com"
+    });
+}
 
 const app = express();
 const PORT = 9111;
@@ -14,7 +26,14 @@ app.use(cors({
 app.use(compression());
 app.use(express.json());
 
-// Admin routes (must come before static middleware)
+// New admin dashboard route (temporarily redirect to old admin)
+app.get('/admin', (req, res) => {
+    // For now, redirect to the existing admin interface
+    // Once React app is working, we can proxy to it
+    res.redirect('/app/admin/');
+});
+
+// Old admin routes (kept for backward compatibility)
 app.get('/app/admin/setup-admin.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'app/admin/setup-admin.html'));
 });
@@ -71,6 +90,40 @@ app.get('/verify-firebase-auth.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'verify-firebase-auth.html'));
 });
 
+// Diagnostic tools
+app.get('/diagnose-admin.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'diagnose-admin.html'));
+});
+
+app.get('/admin-diagnostic.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin-diagnostic.html'));
+});
+
+// Server admin setup page
+app.get('/server-admin-setup.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'server-admin-setup.html'));
+});
+
+// Quick admin fix page
+app.get('/quick-admin-fix.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'quick-admin-fix.html'));
+});
+
+// Test audit log page
+app.get('/test-audit-log.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'test-audit-log.html'));
+});
+
+// Admin status check page
+app.get('/admin-status-check.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin-status-check.html'));
+});
+
+// Verify admin status page
+app.get('/verify-admin-status.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'verify-admin-status.html'));
+});
+
 // Redirect root to /app (preserving query parameters)
 app.get('/', (req, res) => {
     const queryString = req.originalUrl.includes('?') ? req.originalUrl.substring(req.originalUrl.indexOf('?')) : '';
@@ -81,6 +134,13 @@ app.get('/', (req, res) => {
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', message: 'Pyebwa app server is running' });
 });
+
+// Admin setup endpoint (protected)
+app.post('/api/admin/setup', setupAdminEndpoint);
+
+// Notification API routes
+const notificationRoutes = require('./server/api/notifications');
+app.use('/api/notifications', notificationRoutes);
 
 // Handle 404s
 app.use((req, res) => {

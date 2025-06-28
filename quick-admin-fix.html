@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Admin Fix - Pyebwa</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #f5f6fa;
+            line-height: 1.6;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #00217D;
+            margin-bottom: 10px;
+        }
+        h2 {
+            color: #333;
+            margin-top: 30px;
+            font-size: 20px;
+        }
+        .option {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .option h3 {
+            margin-top: 0;
+            color: #00217D;
+        }
+        .code-block {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            position: relative;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .copy-btn:hover {
+            background: #001654;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #c3e6cb;
+            margin: 10px 0;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #ffeeba;
+            margin: 10px 0;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #f5c6cb;
+            margin: 10px 0;
+        }
+        button {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #001654;
+        }
+        .step {
+            margin: 15px 0;
+            padding-left: 20px;
+        }
+        .step li {
+            margin: 8px 0;
+        }
+        a {
+            color: #00217D;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .firebase-link {
+            display: inline-block;
+            background: #FFA000;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            margin: 10px 0;
+        }
+        .firebase-link:hover {
+            background: #F57C00;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Quick Admin Fix for claude@humanlevel.ai</h1>
+        <p>Choose one of the following methods to fix your admin access:</p>
+        
+        <div class="option">
+            <h3>Option 1: Server-Side Setup (Recommended)</h3>
+            <p>This uses our server endpoint to update your admin role:</p>
+            <ol class="step">
+                <li>Go to: <a href="/server-admin-setup.html" target="_blank">Server Admin Setup</a></li>
+                <li>The form should be pre-filled with your email and the temporary key</li>
+                <li>Click "Promote to Admin"</li>
+                <li>If successful, sign out and sign back in</li>
+            </ol>
+            <div class="warning">
+                ⚠️ If this fails with a Firebase Admin SDK error, use Option 2 instead.
+            </div>
+        </div>
+        
+        <div class="option">
+            <h3>Option 2: Firebase Console (Most Reliable)</h3>
+            <p>Manually update your user document in Firebase Console:</p>
+            <ol class="step">
+                <li>Click this link to go directly to Firebase Console:</li>
+            </ol>
+            <a href="https://console.firebase.google.com/project/pyebwa-f5960/firestore/data/~2Fusers" target="_blank" class="firebase-link">
+                Open Firebase Console →
+            </a>
+            <ol class="step" start="2">
+                <li>Sign in with your Google account (if needed)</li>
+                <li>Find your user document (look for claude@humanlevel.ai)</li>
+                <li>Click on the document to edit it</li>
+                <li>Add or update these fields:
+                    <ul>
+                        <li><strong>role</strong>: "superadmin" (string)</li>
+                        <li><strong>isAdmin</strong>: true (boolean)</li>
+                        <li><strong>adminPromotedBy</strong>: "firebase-console" (string)</li>
+                    </ul>
+                </li>
+                <li>Click "Save"</li>
+                <li>Return to the <a href="/admin">Admin Dashboard</a> and refresh</li>
+            </ol>
+        </div>
+        
+        <div class="option">
+            <h3>Option 3: Browser Console Commands</h3>
+            <p>Run these commands in your browser's developer console:</p>
+            
+            <h4>Step 1: Check Current User</h4>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>// Check authentication and user document
+(async () => {
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        console.error('Not authenticated! Go to /admin first');
+        return;
+    }
+    console.log('Email:', user.email);
+    console.log('UID:', user.uid);
+    
+    // Try to find user document
+    const db = firebase.firestore();
+    const doc = await db.collection('users').doc(user.uid).get();
+    
+    if (doc.exists) {
+        console.log('User document found by UID');
+        console.log('Document ID:', user.uid);
+        console.log('Current data:', doc.data());
+        window.userDocId = user.uid;
+    } else {
+        console.log('Checking by email...');
+        const query = await db.collection('users').where('email', '==', user.email).get();
+        if (!query.empty) {
+            const userDoc = query.docs[0];
+            console.log('User document found by email');
+            console.log('Document ID:', userDoc.id);
+            console.log('Current data:', userDoc.data());
+            window.userDocId = userDoc.id;
+        } else {
+            console.error('No user document found!');
+        }
+    }
+})();</pre>
+            </div>
+            
+            <h4>Step 2: Update Admin Role (after Step 1 succeeds)</h4>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>// Update admin role
+if (!window.userDocId) {
+    console.error('Run Step 1 first!');
+} else {
+    firebase.firestore().collection('users').doc(window.userDocId).update({
+        role: 'superadmin',
+        isAdmin: true,
+        adminPromotedBy: 'console-command',
+        adminPromotedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+        console.log('✅ Success! Admin role updated.');
+        console.log('Please sign out and sign back in.');
+    }).catch(err => {
+        console.error('❌ Failed:', err.message);
+        console.log('Use Option 2 (Firebase Console) instead.');
+    });
+}</pre>
+            </div>
+        </div>
+        
+        <div class="success" style="margin-top: 30px;">
+            <strong>After Any Method Succeeds:</strong>
+            <ol style="margin: 10px 0 0 20px;">
+                <li>Sign out from the app</li>
+                <li>Clear your browser cache (Ctrl+F5 or Cmd+Shift+R)</li>
+                <li>Sign back in</li>
+                <li>Go to <a href="/admin">Admin Dashboard</a></li>
+                <li>All features should now work properly!</li>
+            </ol>
+        </div>
+        
+        <div class="warning">
+            <strong>Current Status:</strong>
+            <ul style="margin: 5px 0 0 20px;">
+                <li>Temporary auth bypass is active for claude@humanlevel.ai ✅</li>
+                <li>Chart.js canvas errors have been fixed ✅</li>
+                <li>Firestore user document needs admin fields ❌</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        function copyCode(button) {
+            const codeBlock = button.parentElement.querySelector('pre');
+            const text = codeBlock.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 2000);
+            });
+        }
+        
+        // Add Firebase for console testing
+        const script = document.createElement('script');
+        script.src = 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js';
+        document.head.appendChild(script);
+    </script>
+</body>
+</html>

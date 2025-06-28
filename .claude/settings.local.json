@@ -81,7 +81,10 @@
       "Bash(npm view:*)",
       "Bash(npm ls:*)",
       "Bash(npm info:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(npx tsc:*)",
+      "Bash(pm2 stop:*)",
+      "Bash(pm2 delete:*)"
     ],
     "deny": []
   }

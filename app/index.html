@@ -55,6 +55,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-messaging-compat.js"></script>
 </head>
 <body>
     <!-- App Container -->
@@ -103,6 +104,10 @@
                         <div class="user-dropdown">
                             <a href="#" data-i18n="profile">Pwofil</a>
                             <a href="#" data-i18n="settings">Paramèt</a>
+                            <a href="/admin" id="adminLink" style="display:none;">
+                                <span class="material-icons" style="font-size: 16px; margin-right: 4px;">admin_panel_settings</span>
+                                Admin Dashboard
+                            </a>
                             <hr>
                             <a href="https://pyebwa.com">Home</a>
                             <a href="https://pyebwa.com/about.html">About</a>
@@ -351,6 +356,9 @@
     <script src="/app/js/search-engine.js"></script>
     <script src="/app/js/search-ui.js"></script>
     <script src="/app/js/search-migration.js"></script>
+    
+    <!-- Push Notifications -->
+    <script src="/app/js/push-notifications.js"></script>
     
     <!-- Share modal removed - using pyebwa.com authentication flow -->
 </body>

@@ -1,0 +1,477 @@
+/* Communications Module Styles */
+.comm-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.comm-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.comm-tab:hover {
+    color: var(--text-primary);
+}
+
+.comm-tab.active {
+    color: var(--primary-color);
+}
+
+.comm-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--primary-color);
+}
+
+/* Communication Stats */
+.comm-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Announcements List */
+.announcements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.announcement-card {
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.announcement-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.announcement-card.status-draft {
+    border-left-color: #9E9E9E;
+}
+
+.announcement-card.status-published {
+    border-left-color: #4CAF50;
+}
+
+.announcement-card.status-scheduled {
+    border-left-color: #2196F3;
+}
+
+.announcement-card.status-archived {
+    border-left-color: #607D8B;
+}
+
+.announcement-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.announcement-type,
+.announcement-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.announcement-type .material-icons,
+.announcement-status .material-icons {
+    font-size: 18px;
+}
+
+.announcement-content h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+}
+
+.announcement-content p {
+    margin: 0 0 1rem 0;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.announcement-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.announcement-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.announcement-meta .material-icons {
+    font-size: 16px;
+}
+
+.announcement-stats {
+    display: flex;
+    gap: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.875rem;
+}
+
+.announcement-stats span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--text-secondary);
+}
+
+.announcement-stats .material-icons {
+    font-size: 16px;
+}
+
+.announcement-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 1rem;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-text {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+/* Radio and Checkbox Options */
+.recipient-options,
+.schedule-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.radio-option,
+.checkbox-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.radio-option input[type="radio"],
+.checkbox-option input[type="checkbox"] {
+    cursor: pointer;
+}
+
+/* Recipients List */
+.recipients-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-top: 0.5rem;
+}
+
+.recipient-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.recipient-item:hover {
+    background: var(--bg-secondary);
+}
+
+.recipient-item:last-child {
+    border-bottom: none;
+}
+
+.recipient-item input[type="checkbox"] {
+    margin-right: 0.75rem;
+}
+
+.recipient-info {
+    flex: 1;
+}
+
+.recipient-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.recipient-email {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+/* Modal Actions */
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Large Modal */
+.large-modal {
+    max-width: 800px;
+    width: 90%;
+}
+
+/* Announcement Details */
+.announcement-details {
+    padding: 1rem;
+}
+
+.detail-header {
+    margin-bottom: 2rem;
+}
+
+.detail-header h2 {
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+}
+
+.detail-meta {
+    display: flex;
+    gap: 1rem;
+}
+
+.status-badge,
+.type-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-badge.status-draft {
+    background: #F5F5F5;
+    color: #616161;
+}
+
+.status-badge.status-published {
+    background: #E8F5E9;
+    color: #2E7D32;
+}
+
+.status-badge.status-scheduled {
+    background: #E3F2FD;
+    color: #1565C0;
+}
+
+.status-badge.status-archived {
+    background: #ECEFF1;
+    color: #455A64;
+}
+
+.type-badge {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+}
+
+.detail-content {
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    line-height: 1.8;
+}
+
+.detail-info {
+    margin-bottom: 2rem;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.info-item {
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+}
+
+.info-item label {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.info-item span {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* Announcement Analytics */
+.announcement-analytics {
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+}
+
+.announcement-analytics h3 {
+    margin: 0 0 1.5rem 0;
+    color: var(--text-primary);
+}
+
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.analytics-card {
+    text-align: center;
+    padding: 1.5rem;
+    background: var(--card-bg);
+    border-radius: 8px;
+}
+
+.analytics-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.analytics-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+/* Communication Loader */
+.comm-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    color: var(--text-secondary);
+}
+
+.comm-loader .spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Communication Pagination */
+.comm-pagination {
+    display: flex;
+    justify-content: center;
+    padding: 1.5rem 0;
+}
+
+/* Dark Mode */
+.dark-theme .announcement-card {
+    background: var(--dark-card-bg);
+}
+
+.dark-theme .form-control {
+    background: var(--dark-bg-primary);
+    border-color: var(--dark-border-color);
+}
+
+.dark-theme .recipients-list {
+    border-color: var(--dark-border-color);
+}
+
+.dark-theme .recipient-item {
+    border-color: var(--dark-border-color);
+}
+
+.dark-theme .status-badge.status-draft {
+    background: rgba(158, 158, 158, 0.2);
+}
+
+.dark-theme .status-badge.status-published {
+    background: rgba(76, 175, 80, 0.2);
+}
+
+.dark-theme .status-badge.status-scheduled {
+    background: rgba(33, 150, 243, 0.2);
+}
+
+.dark-theme .status-badge.status-archived {
+    background: rgba(96, 125, 139, 0.2);
+}
+
+.dark-theme .analytics-card {
+    background: var(--dark-card-bg);
+}

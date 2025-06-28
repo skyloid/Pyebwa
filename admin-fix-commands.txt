@@ -1,0 +1,77 @@
+# Admin Fix Commands for claude@humanlevel.ai
+
+## Step 1: Go to the admin dashboard
+Navigate to: https://rasin.pyebwa.com/admin
+
+## Step 2: Open browser console
+Press F12 or right-click and select "Inspect" → "Console"
+
+## Step 3: Run this command to check your current user
+Copy and paste this entire block:
+
+(async () => {
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        console.log('Not authenticated');
+        return;
+    }
+    console.log('Current user:', user.email);
+    console.log('UID:', user.uid);
+    
+    // Check user document
+    const db = firebase.firestore();
+    const doc = await db.collection('users').doc(user.uid).get();
+    
+    if (doc.exists) {
+        console.log('User document exists:');
+        console.log(doc.data());
+    } else {
+        console.log('No user document found by UID, checking by email...');
+        const query = await db.collection('users').where('email', '==', user.email).get();
+        if (!query.empty) {
+            console.log('Found user document by email:');
+            console.log('Document ID:', query.docs[0].id);
+            console.log('Data:', query.docs[0].data());
+        }
+    }
+})();
+
+## Step 4: If you see your user document, note the document ID
+
+## Step 5: Try to update the admin role
+Replace YOUR_DOCUMENT_ID with the actual document ID from step 4:
+
+firebase.firestore().collection('users').doc('YOUR_DOCUMENT_ID').update({
+    role: 'superadmin',
+    isAdmin: true,
+    adminPromotedBy: 'console-fix',
+    adminPromotedAt: firebase.firestore.FieldValue.serverTimestamp()
+}).then(() => {
+    console.log('Success! Refresh the page.');
+}).catch(err => {
+    console.error('Failed:', err.message);
+});
+
+## Step 6: If the update fails with permission error
+
+The security rules are blocking client-side updates. You have two options:
+
+### Option A: Use Firebase Console (Recommended)
+1. Go to: https://console.firebase.google.com/project/pyebwa-f5960/firestore/data/~2Fusers
+2. Find your user document (search for claude@humanlevel.ai)
+3. Add/Edit these fields:
+   - role: "superadmin" (string)
+   - isAdmin: true (boolean)
+   - adminPromotedBy: "firebase-console" (string)
+
+### Option B: Ask the project owner
+The project owner needs to run this command from a secure environment with admin SDK access.
+
+## Step 7: Verify the fix
+After updating via Firebase Console, refresh the admin dashboard.
+The temporary fix in auth-guard.js will detect your admin role and grant access.
+
+## Notes:
+- The temporary auth-guard.js fix is already in place for claude@humanlevel.ai
+- Once your Firestore document has the proper role, all features will work
+- The Canvas errors have been fixed in dashboard.js

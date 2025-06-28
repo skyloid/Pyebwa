@@ -30,7 +30,7 @@ export const createApp = (): Application => {
   app.use(cors({
     origin: process.env.NODE_ENV === 'production' 
       ? process.env.WEB_URL 
-      : ['http://localhost:3000', 'http://localhost:3001'],
+      : ['https://rasin.pyebwa.com', 'http://localhost:3001'],
     credentials: true,
   }));
 

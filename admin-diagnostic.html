@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Diagnostic - Pyebwa</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #f5f6fa;
+            line-height: 1.6;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #00217D;
+            margin-bottom: 10px;
+        }
+        h3 {
+            color: #333;
+            margin-top: 30px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .status {
+            padding: 12px 20px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+        }
+        .success { 
+            background: #d4edda; 
+            color: #155724; 
+            border: 1px solid #c3e6cb;
+        }
+        .error { 
+            background: #f8d7da; 
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info { 
+            background: #d1ecf1; 
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .warning { 
+            background: #fff3cd; 
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        button {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+        button:hover { 
+            background: #001654; 
+        }
+        button:disabled { 
+            background: #ccc; 
+            cursor: not-allowed; 
+        }
+        pre {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            word-break: break-all;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #00217D;
+        }
+        a {
+            color: #00217D;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+    
+    <!-- Only Firebase SDK - no app scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Admin Setup Diagnostic</h1>
+        <p>This standalone tool will help diagnose and fix admin access for the Pyebwa dashboard.</p>
+        <p><strong>Target Email:</strong> claude@humanlevel.ai</p>
+        
+        <div class="step">
+            <h3>Step 1: Initialize Firebase</h3>
+            <button onclick="initializeFirebase()" id="initBtn">Initialize Firebase</button>
+            <div id="initStatus"></div>
+        </div>
+        
+        <div class="step">
+            <h3>Step 2: Check Authentication</h3>
+            <button onclick="checkAuth()" id="authBtn" disabled>Check Authentication</button>
+            <div id="authStatus"></div>
+        </div>
+        
+        <div class="step">
+            <h3>Step 3: Check User Document</h3>
+            <button onclick="checkUserDoc()" id="docBtn" disabled>Check User Document</button>
+            <div id="docStatus"></div>
+        </div>
+        
+        <div class="step">
+            <h3>Step 4: Update Admin Role</h3>
+            <button onclick="attemptUpdate()" id="updateBtn" disabled>Update Admin Role</button>
+            <div id="updateStatus"></div>
+        </div>
+        
+        <div class="step" id="manualSection" style="display:none;">
+            <h3>Manual Solutions</h3>
+            <div id="manualInstructions"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let currentUserId = null;
+        
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const div = document.createElement('div');
+            div.className = 'status ' + type;
+            div.innerHTML = message;
+            element.appendChild(div);
+        }
+        
+        function clearLog(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+        
+        function initializeFirebase() {
+            clearLog('initStatus');
+            
+            try {
+                // Firebase config for pyebwa
+                const firebaseConfig = {
+                    apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
+                    authDomain: "rasin.pyebwa.com",
+                    projectId: "pyebwa-f5960",
+                    storageBucket: "pyebwa-f5960.firebasestorage.app",
+                    messagingSenderId: "1042887343749",
+                    appId: "1:1042887343749:web:c276bf69b6c0895111f3ec",
+                    measurementId: "G-ZX92K1TMM3"
+                };
+                
+                // Initialize Firebase
+                firebase.initializeApp(firebaseConfig);
+                
+                log('initStatus', '✅ Firebase initialized successfully', 'success');
+                log('initStatus', 'Project: ' + firebaseConfig.projectId, 'info');
+                
+                document.getElementById('authBtn').disabled = false;
+                
+            } catch (error) {
+                log('initStatus', '❌ Failed to initialize: ' + error.message, 'error');
+            }
+        }
+        
+        async function checkAuth() {
+            clearLog('authStatus');
+            
+            try {
+                // Get current user
+                const auth = firebase.auth();
+                currentUser = auth.currentUser;
+                
+                if (!currentUser) {
+                    log('authStatus', '⏳ No immediate user, waiting for auth state...', 'warning');
+                    
+                    // Wait for auth state
+                    currentUser = await new Promise((resolve) => {
+                        const unsubscribe = auth.onAuthStateChanged((user) => {
+                            unsubscribe();
+                            resolve(user);
+                        });
+                    });
+                }
+                
+                if (currentUser) {
+                    log('authStatus', '✅ Authenticated as: ' + currentUser.email, 'success');
+                    log('authStatus', 'UID: ' + currentUser.uid, 'info');
+                    
+                    if (currentUser.email !== 'claude@humanlevel.ai') {
+                        log('authStatus', '⚠️ Warning: Not signed in as claude@humanlevel.ai', 'warning');
+                    }
+                    
+                    document.getElementById('docBtn').disabled = false;
+                } else {
+                    log('authStatus', '❌ Not authenticated', 'error');
+                    log('authStatus', '<a href="/app/">Click here to sign in</a>', 'warning');
+                }
+                
+            } catch (error) {
+                log('authStatus', '❌ Auth check failed: ' + error.message, 'error');
+            }
+        }
+        
+        async function checkUserDoc() {
+            clearLog('docStatus');
+            
+            if (!currentUser) {
+                log('docStatus', '❌ Not authenticated', 'error');
+                return;
+            }
+            
+            try {
+                const db = firebase.firestore();
+                
+                // Method 1: Check by UID
+                log('docStatus', '🔍 Checking user document by UID...', 'info');
+                const docRef = db.collection('users').doc(currentUser.uid);
+                const doc = await docRef.get();
+                
+                if (doc.exists) {
+                    currentUserId = currentUser.uid;
+                    log('docStatus', '✅ Found user document by UID', 'success');
+                    displayUserData(doc.data());
+                } else {
+                    log('docStatus', '⚠️ No document by UID, checking by email...', 'warning');
+                    
+                    // Method 2: Query by email
+                    const query = await db.collection('users')
+                        .where('email', '==', currentUser.email)
+                        .get();
+                    
+                    if (!query.empty) {
+                        const userDoc = query.docs[0];
+                        currentUserId = userDoc.id;
+                        log('docStatus', '✅ Found user document by email', 'success');
+                        log('docStatus', 'Document ID: ' + currentUserId, 'info');
+                        displayUserData(userDoc.data());
+                    } else {
+                        log('docStatus', '❌ No user document found!', 'error');
+                        createUserOption();
+                    }
+                }
+                
+                document.getElementById('updateBtn').disabled = false;
+                
+            } catch (error) {
+                log('docStatus', '❌ Error: ' + error.message, 'error');
+            }
+        }
+        
+        function displayUserData(data) {
+            const statusDiv = document.getElementById('docStatus');
+            
+            // Current admin fields
+            const adminInfo = {
+                email: data.email || 'NOT SET',
+                role: data.role || 'NOT SET',
+                isAdmin: data.isAdmin || false,
+                adminPromotedAt: data.adminPromotedAt || 'NOT SET',
+                adminPromotedBy: data.adminPromotedBy || 'NOT SET'
+            };
+            
+            const pre = document.createElement('pre');
+            pre.textContent = JSON.stringify(adminInfo, null, 2);
+            statusDiv.appendChild(pre);
+            
+            // Check admin status
+            if (data.role === 'superadmin' && data.isAdmin === true) {
+                log('docStatus', '✅ Admin role is already set correctly!', 'success');
+            } else {
+                log('docStatus', '⚠️ Admin role needs to be set', 'warning');
+            }
+        }
+        
+        function createUserOption() {
+            log('docStatus', 'Would you like to create a user document?', 'warning');
+            const btn = document.createElement('button');
+            btn.textContent = 'Create User Document';
+            btn.onclick = createUserDocument;
+            document.getElementById('docStatus').appendChild(btn);
+        }
+        
+        async function createUserDocument() {
+            try {
+                const db = firebase.firestore();
+                await db.collection('users').doc(currentUser.uid).set({
+                    email: currentUser.email,
+                    displayName: currentUser.displayName || currentUser.email.split('@')[0],
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    uid: currentUser.uid
+                });
+                
+                currentUserId = currentUser.uid;
+                log('docStatus', '✅ Created user document', 'success');
+                checkUserDoc(); // Re-check to show the new document
+                
+            } catch (error) {
+                log('docStatus', '❌ Failed to create: ' + error.message, 'error');
+            }
+        }
+        
+        async function attemptUpdate() {
+            clearLog('updateStatus');
+            
+            if (!currentUserId) {
+                log('updateStatus', '❌ No user document ID', 'error');
+                return;
+            }
+            
+            try {
+                log('updateStatus', '🔧 Attempting to update admin role...', 'info');
+                
+                const db = firebase.firestore();
+                await db.collection('users').doc(currentUserId).update({
+                    role: 'superadmin',
+                    isAdmin: true,
+                    adminPromotedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    adminPromotedBy: 'setup-tool'
+                });
+                
+                log('updateStatus', '✅ SUCCESS! Admin role has been set!', 'success');
+                log('updateStatus', '🎉 You can now <a href="/admin">access the admin dashboard</a>', 'success');
+                
+            } catch (error) {
+                log('updateStatus', '❌ Update failed: ' + error.message, 'error');
+                
+                if (error.code === 'permission-denied') {
+                    showManualInstructions();
+                }
+            }
+        }
+        
+        function showManualInstructions() {
+            document.getElementById('manualSection').style.display = 'block';
+            const instructions = document.getElementById('manualInstructions');
+            
+            instructions.innerHTML = `
+                <div class="status error">
+                    The automatic update failed due to Firestore security rules. Here are your options:
+                </div>
+                
+                <h4>Option 1: Use the Admin Setup Tool</h4>
+                <div class="code-block">
+                    <a href="/app/admin/setup-admin.html" target="_blank">Open Admin Setup Tool</a>
+                </div>
+                
+                <h4>Option 2: Firebase Console (Recommended)</h4>
+                <ol>
+                    <li>Go to <a href="https://console.firebase.google.com/project/pyebwa-f5960/firestore/data/~2Fusers~2F${currentUserId}" target="_blank">Firebase Console</a></li>
+                    <li>Sign in with your Google account</li>
+                    <li>Find your user document (ID: <code>${currentUserId}</code>)</li>
+                    <li>Add/update these fields:
+                        <ul>
+                            <li><strong>role</strong>: "superadmin" (string)</li>
+                            <li><strong>isAdmin</strong>: true (boolean)</li>
+                            <li><strong>adminPromotedBy</strong>: "setup-tool" (string)</li>
+                        </ul>
+                    </li>
+                    <li>Save the changes</li>
+                </ol>
+                
+                <h4>Option 3: Console Command</h4>
+                <div class="code-block">
+firebase.firestore().collection('users').doc('${currentUserId}').update({role:'superadmin',isAdmin:true,adminPromotedBy:'setup-tool'})
+                </div>
+                
+                <div class="status info">
+                    After updating via any method above, refresh the admin dashboard to see if it works.
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

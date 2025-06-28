@@ -207,25 +207,25 @@ body.dark-theme canvas {
 }
 
 /* Scrollbar dark mode */
-body.dark-theme ::-webkit-scrollbar {
+body.dark-theme::-webkit-scrollbar {
     width: 8px;
 }
 
-body.dark-theme ::-webkit-scrollbar-track {
+body.dark-theme::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.1);
 }
 
-body.dark-theme ::-webkit-scrollbar-thumb {
+body.dark-theme::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.3);
     border-radius: 4px;
 }
 
-body.dark-theme ::-webkit-scrollbar-thumb:hover {
+body.dark-theme::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.5);
 }
 
 /* Selection dark mode */
-body.dark-theme ::selection {
+body.dark-theme::selection {
     background: rgba(0, 33, 125, 0.5);
 }
 

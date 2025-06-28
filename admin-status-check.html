@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Status Check - Pyebwa</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #f5f6fa;
+            line-height: 1.6;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #00217D;
+            margin-bottom: 10px;
+        }
+        .status-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #00217D;
+        }
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .status-item:last-child {
+            border-bottom: none;
+        }
+        .status-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        .status-value {
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .info { color: #17a2b8; }
+        button {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #001654;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .code-block {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .firebase-link {
+            display: inline-block;
+            background: #FFA000;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            margin: 10px 0;
+        }
+        .firebase-link:hover {
+            background: #F57C00;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .loader {
+            text-align: center;
+            padding: 20px;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #00217D;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Admin Status Check</h1>
+        <p>This tool checks your current admin status and helps you fix any issues.</p>
+        
+        <div id="authStatus" class="status-section">
+            <h3>Authentication Status</h3>
+            <div class="loader">
+                <div class="spinner"></div>
+                <p>Checking authentication...</p>
+            </div>
+        </div>
+        
+        <div id="userDocStatus" class="status-section" style="display: none;">
+            <h3>User Document Status</h3>
+            <div class="loader">
+                <div class="spinner"></div>
+                <p>Loading user document...</p>
+            </div>
+        </div>
+        
+        <div id="permissionTests" class="status-section" style="display: none;">
+            <h3>Permission Tests</h3>
+            <div class="loader">
+                <div class="spinner"></div>
+                <p>Testing permissions...</p>
+            </div>
+        </div>
+        
+        <div id="actions" style="display: none;">
+            <h2>Actions Required</h2>
+            <div id="actionContent"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
+            authDomain: "rasin.pyebwa.com",
+            projectId: "pyebwa-f5960",
+            storageBucket: "pyebwa-f5960.firebasestorage.app",
+            messagingSenderId: "1042887343749",
+            appId: "1:1042887343749:web:c276bf69b6c0895111f3ec",
+            measurementId: "G-ZX92K1TMM3"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
+        let currentUser = null;
+        let userDoc = null;
+        let userDocId = null;
+        
+        // Check authentication
+        async function checkAuth() {
+            const authDiv = document.getElementById('authStatus');
+            
+            return new Promise((resolve) => {
+                firebase.auth().onAuthStateChanged(async (user) => {
+                    if (user) {
+                        currentUser = user;
+                        authDiv.innerHTML = `
+                            <h3>Authentication Status</h3>
+                            <div class="status-item">
+                                <span class="status-label">Status:</span>
+                                <span class="status-value success">✅ Authenticated</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Email:</span>
+                                <span class="status-value">${user.email}</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">UID:</span>
+                                <span class="status-value">${user.uid}</span>
+                            </div>
+                        `;
+                        resolve(true);
+                    } else {
+                        authDiv.innerHTML = `
+                            <h3>Authentication Status</h3>
+                            <div class="alert alert-error">
+                                ❌ Not authenticated. Please <a href="/admin">sign in</a> first.
+                            </div>
+                        `;
+                        resolve(false);
+                    }
+                });
+            });
+        }
+        
+        // Check user document
+        async function checkUserDocument() {
+            const docDiv = document.getElementById('userDocStatus');
+            docDiv.style.display = 'block';
+            
+            try {
+                // Try by UID first
+                const docByUid = await db.collection('users').doc(currentUser.uid).get();
+                
+                if (docByUid.exists) {
+                    userDoc = docByUid.data();
+                    userDocId = currentUser.uid;
+                } else {
+                    // Try by email
+                    const queryByEmail = await db.collection('users')
+                        .where('email', '==', currentUser.email)
+                        .get();
+                    
+                    if (!queryByEmail.empty) {
+                        const doc = queryByEmail.docs[0];
+                        userDoc = doc.data();
+                        userDocId = doc.id;
+                    }
+                }
+                
+                if (userDoc) {
+                    const hasAdminRole = userDoc.role === 'superadmin' || userDoc.role === 'admin';
+                    const isAdmin = userDoc.isAdmin === true;
+                    const isFullySetup = hasAdminRole && isAdmin;
+                    
+                    docDiv.innerHTML = `
+                        <h3>User Document Status</h3>
+                        <div class="status-item">
+                            <span class="status-label">Document Found:</span>
+                            <span class="status-value success">✅ Yes</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Document ID:</span>
+                            <span class="status-value">${userDocId}</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Role:</span>
+                            <span class="status-value ${hasAdminRole ? 'success' : 'error'}">
+                                ${userDoc.role || 'NOT SET'} ${hasAdminRole ? '✅' : '❌'}
+                            </span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">isAdmin:</span>
+                            <span class="status-value ${isAdmin ? 'success' : 'error'}">
+                                ${userDoc.isAdmin} ${isAdmin ? '✅' : '❌'}
+                            </span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Overall Status:</span>
+                            <span class="status-value ${isFullySetup ? 'success' : 'error'}">
+                                ${isFullySetup ? '✅ Fully Configured' : '❌ Needs Configuration'}
+                            </span>
+                        </div>
+                    `;
+                    
+                    return isFullySetup;
+                } else {
+                    docDiv.innerHTML = `
+                        <h3>User Document Status</h3>
+                        <div class="alert alert-error">
+                            ❌ No user document found for ${currentUser.email}
+                        </div>
+                    `;
+                    return false;
+                }
+                
+            } catch (error) {
+                docDiv.innerHTML = `
+                    <h3>User Document Status</h3>
+                    <div class="alert alert-error">
+                        ❌ Error checking user document: ${error.message}
+                    </div>
+                `;
+                return false;
+            }
+        }
+        
+        // Test permissions
+        async function testPermissions() {
+            const testDiv = document.getElementById('permissionTests');
+            testDiv.style.display = 'block';
+            
+            const tests = [
+                {
+                    name: 'Read Family Trees',
+                    test: async () => {
+                        const snapshot = await db.collection('familyTrees').limit(1).get();
+                        return true;
+                    }
+                },
+                {
+                    name: 'Read Admin Logs',
+                    test: async () => {
+                        const snapshot = await db.collection('admin_logs').limit(1).get();
+                        return true;
+                    }
+                },
+                {
+                    name: 'Write Admin Logs',
+                    test: async () => {
+                        await db.collection('admin_logs').add({
+                            action: 'permission_test',
+                            adminId: currentUser.uid,
+                            adminEmail: currentUser.email,
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                            details: { test: true }
+                        });
+                        return true;
+                    }
+                }
+            ];
+            
+            let resultsHtml = '<h3>Permission Tests</h3>';
+            let allPassed = true;
+            
+            for (const test of tests) {
+                try {
+                    await test.test();
+                    resultsHtml += `
+                        <div class="status-item">
+                            <span class="status-label">${test.name}:</span>
+                            <span class="status-value success">✅ Passed</span>
+                        </div>
+                    `;
+                } catch (error) {
+                    allPassed = false;
+                    resultsHtml += `
+                        <div class="status-item">
+                            <span class="status-label">${test.name}:</span>
+                            <span class="status-value error">❌ Failed: ${error.code}</span>
+                        </div>
+                    `;
+                }
+            }
+            
+            testDiv.innerHTML = resultsHtml;
+            return allPassed;
+        }
+        
+        // Show actions
+        function showActions(isFullySetup, permissionsPassed) {
+            const actionsDiv = document.getElementById('actions');
+            const contentDiv = document.getElementById('actionContent');
+            
+            if (isFullySetup && permissionsPassed) {
+                contentDiv.innerHTML = `
+                    <div class="alert alert-success">
+                        ✅ Everything is working correctly! You have full admin access.
+                    </div>
+                    <a href="/admin" class="firebase-link">Go to Admin Dashboard</a>
+                `;
+            } else {
+                let fixUrl = `https://console.firebase.google.com/project/pyebwa-f5960/firestore/data/~2Fusers~2F${userDocId || currentUser.uid}`;
+                
+                contentDiv.innerHTML = `
+                    <div class="alert alert-info">
+                        Your user document needs to be updated with admin privileges.
+                    </div>
+                    
+                    <h3>Option 1: Firebase Console (Recommended)</h3>
+                    <p>Update your user document directly in Firebase Console:</p>
+                    <a href="${fixUrl}" target="_blank" class="firebase-link">
+                        Open in Firebase Console →
+                    </a>
+                    <p>Add or update these fields:</p>
+                    <div class="code-block">role: "superadmin"
+isAdmin: true
+adminPromotedBy: "firebase-console"</div>
+                    
+                    <h3>Option 2: Try Automatic Fix</h3>
+                    <button onclick="attemptAutoFix()">Attempt Automatic Fix</button>
+                    <div id="fixResult"></div>
+                `;
+            }
+            
+            actionsDiv.style.display = 'block';
+        }
+        
+        // Attempt automatic fix
+        async function attemptAutoFix() {
+            const resultDiv = document.getElementById('fixResult');
+            resultDiv.innerHTML = '<p>Attempting to update your user document...</p>';
+            
+            try {
+                if (!userDocId) {
+                    // Create new document
+                    await db.collection('users').doc(currentUser.uid).set({
+                        email: currentUser.email,
+                        displayName: currentUser.displayName || currentUser.email.split('@')[0],
+                        role: 'superadmin',
+                        isAdmin: true,
+                        adminPromotedBy: 'auto-fix',
+                        adminPromotedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    resultDiv.innerHTML = '<div class="alert alert-success">✅ User document created! Refresh this page.</div>';
+                } else {
+                    // Update existing
+                    await db.collection('users').doc(userDocId).update({
+                        role: 'superadmin',
+                        isAdmin: true,
+                        adminPromotedBy: 'auto-fix',
+                        adminPromotedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    resultDiv.innerHTML = '<div class="alert alert-success">✅ Admin role updated! Refresh this page.</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-error">
+                        ❌ Automatic fix failed: ${error.message}
+                        <br>Please use the Firebase Console option above.
+                    </div>
+                `;
+            }
+        }
+        
+        // Run checks on load
+        async function runChecks() {
+            const isAuthenticated = await checkAuth();
+            
+            if (isAuthenticated) {
+                const isFullySetup = await checkUserDocument();
+                const permissionsPassed = await testPermissions();
+                showActions(isFullySetup, permissionsPassed);
+            }
+        }
+        
+        // Start checks when page loads
+        window.addEventListener('load', runChecks);
+    </script>
+</body>
+</html>

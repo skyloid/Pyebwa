@@ -3,7 +3,7 @@ import { WalletProvider } from './providers/WalletProvider';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Dashboard } from './screens/Dashboard';
 import { PreserveHeritage } from './screens/PreserveHeritage';
-import { Impact } from './screens/Impact';
+import { AdminDashboard } from './components/Admin/AdminDashboard';
 
 function App() {
   return (
@@ -12,7 +12,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/preserve" element={<PreserveHeritage />} />
-          <Route path="/impact" element={<Impact />} />
+          <Route path="/admin/*" element={<AdminDashboard />} />
         </Routes>
       </Router>
     </WalletProvider>

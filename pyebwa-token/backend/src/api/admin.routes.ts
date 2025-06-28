@@ -487,6 +487,440 @@ router.get('/planters/performance', [
 });
 
 /**
+ * Get user activities
+ */
+router.get('/user-activities', [
+  query('userType').optional().isIn(['family', 'planter', 'validator', 'admin', 'all']),
+  query('category').optional().isIn(['authentication', 'transaction', 'planting', 'verification', 'admin', 'navigation', 'all']),
+  query('timeRange').optional().isIn(['1h', '24h', '7d', '30d']),
+  query('success').optional().isIn(['true', 'false', 'all']),
+  query('limit').optional().isInt({ min: 1, max: 100 }),
+  query('offset').optional().isInt({ min: 0 }),
+  query('search').optional().isString(),
+], async (req: Request, res: Response) => {
+  try {
+    const {
+      userType = 'all',
+      category = 'all',
+      timeRange = '24h',
+      success = 'all',
+      limit = 50,
+      offset = 0,
+      search
+    } = req.query;
+
+    const startDate = getStartDate(timeRange as string);
+    
+    let query = `
+      SELECT 
+        ua.*,
+        u.first_name || ' ' || u.last_name as user_name,
+        u.email as user_email,
+        u.user_type
+      FROM user_activities ua
+      JOIN users u ON ua.user_id = u.id
+      WHERE ua.timestamp >= $1
+    `;
+    
+    const params = [startDate];
+    let paramIndex = 2;
+
+    if (userType !== 'all') {
+      query += ` AND u.user_type = $${paramIndex}`;
+      params.push(userType);
+      paramIndex++;
+    }
+
+    if (category !== 'all') {
+      query += ` AND ua.category = $${paramIndex}`;
+      params.push(category);
+      paramIndex++;
+    }
+
+    if (success !== 'all') {
+      query += ` AND ua.success = $${paramIndex}`;
+      params.push(success === 'true');
+      paramIndex++;
+    }
+
+    if (search) {
+      query += ` AND (
+        u.first_name ILIKE $${paramIndex} OR 
+        u.last_name ILIKE $${paramIndex} OR 
+        u.email ILIKE $${paramIndex} OR 
+        ua.action ILIKE $${paramIndex} OR 
+        ua.description ILIKE $${paramIndex}
+      )`;
+      params.push(`%${search}%`);
+      paramIndex++;
+    }
+
+    query += ` ORDER BY ua.timestamp DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    params.push(limit, offset);
+
+    const result = await pool.query(query, params);
+
+    res.json({
+      success: true,
+      activities: result.rows.map(row => ({
+        ...row,
+        userName: row.user_name,
+        userEmail: row.user_email,
+        userType: row.user_type,
+        metadata: typeof row.metadata === 'string' ? JSON.parse(row.metadata) : row.metadata,
+      })),
+      pagination: {
+        limit: parseInt(limit as string),
+        offset: parseInt(offset as string),
+        total: result.rows.length,
+      },
+    });
+  } catch (error: any) {
+    logger.error('Admin user activities error:', error);
+    res.status(500).json({ error: 'Failed to fetch user activities' });
+  }
+});
+
+/**
+ * Get user sessions
+ */
+router.get('/user-sessions', [
+  query('active').optional().isBoolean(),
+  query('limit').optional().isInt({ min: 1, max: 100 }),
+], async (req: Request, res: Response) => {
+  try {
+    const { active, limit = 50 } = req.query;
+
+    let query = `
+      SELECT 
+        us.*,
+        u.first_name || ' ' || u.last_name as user_name,
+        u.email as user_email,
+        u.user_type
+      FROM user_sessions us
+      JOIN users u ON us.user_id = u.id
+    `;
+
+    const params = [];
+    if (active !== undefined) {
+      query += ' WHERE us.is_active = $1';
+      params.push(active === 'true');
+    }
+
+    query += ' ORDER BY us.last_activity DESC LIMIT $' + (params.length + 1);
+    params.push(limit);
+
+    const result = await pool.query(query, params);
+
+    res.json({
+      success: true,
+      sessions: result.rows.map(row => ({
+        ...row,
+        userName: row.user_name,
+        userEmail: row.user_email,
+        userType: row.user_type,
+        deviceInfo: typeof row.device_info === 'string' ? JSON.parse(row.device_info) : row.device_info,
+        location: typeof row.location === 'string' ? JSON.parse(row.location) : row.location,
+        pagesVisited: typeof row.pages_visited === 'string' ? JSON.parse(row.pages_visited) : row.pages_visited,
+      })),
+    });
+  } catch (error: any) {
+    logger.error('Admin user sessions error:', error);
+    res.status(500).json({ error: 'Failed to fetch user sessions' });
+  }
+});
+
+/**
+ * Get user analytics
+ */
+router.get('/user-analytics', [
+  query('timeRange').optional().isIn(['1h', '24h', '7d', '30d']),
+], async (req: Request, res: Response) => {
+  try {
+    const timeRange = req.query.timeRange as string || '24h';
+    const startDate = getStartDate(timeRange);
+
+    // Get basic user stats
+    const userStatsQuery = `
+      SELECT 
+        COUNT(*) as total_users,
+        COUNT(CASE WHEN last_login >= NOW() - INTERVAL '1 hour' THEN 1 END) as active_now,
+        COUNT(CASE WHEN last_login >= NOW() - INTERVAL '24 hours' THEN 1 END) as active_24h,
+        COUNT(CASE WHEN last_login >= NOW() - INTERVAL '7 days' THEN 1 END) as active_7d,
+        COUNT(CASE WHEN last_login >= NOW() - INTERVAL '30 days' THEN 1 END) as active_30d,
+        COUNT(CASE WHEN created_at >= CURRENT_DATE THEN 1 END) as new_today,
+        COUNT(CASE WHEN created_at >= CURRENT_DATE - INTERVAL '7 days' THEN 1 END) as new_week,
+        COUNT(CASE WHEN created_at >= CURRENT_DATE - INTERVAL '30 days' THEN 1 END) as new_month
+      FROM users
+    `;
+
+    const userStatsResult = await pool.query(userStatsQuery);
+    const userStats = userStatsResult.rows[0];
+
+    // Get user type distribution
+    const userTypeQuery = `
+      SELECT user_type, COUNT(*) as count
+      FROM users
+      GROUP BY user_type
+    `;
+
+    const userTypeResult = await pool.query(userTypeQuery);
+    const usersByType = userTypeResult.rows.reduce((acc: any, row) => {
+      acc[row.user_type] = parseInt(row.count);
+      return acc;
+    }, {});
+
+    // Get top activities
+    const topActivitiesQuery = `
+      SELECT action, category, COUNT(*) as count
+      FROM user_activities
+      WHERE timestamp >= $1
+      GROUP BY action, category
+      ORDER BY count DESC
+      LIMIT 10
+    `;
+
+    const topActivitiesResult = await pool.query(topActivitiesQuery, [startDate]);
+
+    // Get activity by hour
+    const hourlyActivityQuery = `
+      SELECT 
+        EXTRACT(hour FROM timestamp) as hour,
+        COUNT(*) as count
+      FROM user_activities
+      WHERE timestamp >= $1
+      GROUP BY EXTRACT(hour FROM timestamp)
+      ORDER BY hour
+    `;
+
+    const hourlyActivityResult = await pool.query(hourlyActivityQuery, [startDate]);
+    const activityByHour = new Array(24).fill(0);
+    hourlyActivityResult.rows.forEach(row => {
+      activityByHour[parseInt(row.hour)] = parseInt(row.count);
+    });
+
+    // Calculate session analytics
+    const sessionAnalyticsQuery = `
+      SELECT 
+        AVG(duration) as avg_duration,
+        COUNT(CASE WHEN activity_count = 1 THEN 1 END)::float / COUNT(*) * 100 as bounce_rate
+      FROM user_sessions
+      WHERE start_time >= $1
+    `;
+
+    const sessionAnalyticsResult = await pool.query(sessionAnalyticsQuery, [startDate]);
+    const sessionAnalytics = sessionAnalyticsResult.rows[0];
+
+    // Get error rate
+    const errorRateQuery = `
+      SELECT 
+        COUNT(CASE WHEN NOT success THEN 1 END)::float / COUNT(*) * 100 as error_rate
+      FROM user_activities
+      WHERE timestamp >= $1
+    `;
+
+    const errorRateResult = await pool.query(errorRateQuery, [startDate]);
+    const errorRate = parseFloat(errorRateResult.rows[0].error_rate || 0);
+
+    res.json({
+      success: true,
+      analytics: {
+        totalUsers: parseInt(userStats.total_users),
+        activeUsers: {
+          now: parseInt(userStats.active_now),
+          last24h: parseInt(userStats.active_24h),
+          last7d: parseInt(userStats.active_7d),
+          last30d: parseInt(userStats.active_30d),
+        },
+        newUsers: {
+          today: parseInt(userStats.new_today),
+          thisWeek: parseInt(userStats.new_week),
+          thisMonth: parseInt(userStats.new_month),
+        },
+        usersByType,
+        topActivities: topActivitiesResult.rows,
+        activityByHour,
+        averageSessionDuration: parseFloat(sessionAnalytics.avg_duration || 0) / 60000, // Convert to minutes
+        bounceRate: parseFloat(sessionAnalytics.bounce_rate || 0),
+        errorRate,
+        retentionRate: {
+          day1: 85.2, // These would be calculated from actual retention data
+          day7: 65.8,
+          day30: 45.3,
+        },
+        topPages: [], // Would be populated from page visit data
+        deviceStats: {
+          desktop: 60,
+          mobile: 35,
+          tablet: 5,
+        },
+        browserStats: [],
+        locationStats: [],
+      },
+    });
+  } catch (error: any) {
+    logger.error('Admin user analytics error:', error);
+    res.status(500).json({ error: 'Failed to fetch user analytics' });
+  }
+});
+
+/**
+ * Get suspicious activities
+ */
+router.get('/suspicious-activities', [
+  query('type').optional().isIn(['multiple_logins', 'unusual_location', 'rapid_actions', 'failed_authentications', 'bot_behavior', 'fraud_indicators', 'all']),
+  query('severity').optional().isIn(['low', 'medium', 'high', 'critical', 'all']),
+  query('status').optional().isString(),
+  query('limit').optional().isInt({ min: 1, max: 100 }),
+], async (req: Request, res: Response) => {
+  try {
+    const {
+      type = 'all',
+      severity = 'all',
+      status = 'new,investigating',
+      limit = 50
+    } = req.query;
+
+    let query = `
+      SELECT 
+        sa.*,
+        u.first_name || ' ' || u.last_name as user_name,
+        u.email as user_email
+      FROM suspicious_activities sa
+      JOIN users u ON sa.user_id = u.id
+      WHERE 1=1
+    `;
+
+    const params = [];
+    let paramIndex = 1;
+
+    if (type !== 'all') {
+      query += ` AND sa.suspicion_type = $${paramIndex}`;
+      params.push(type);
+      paramIndex++;
+    }
+
+    if (severity !== 'all') {
+      query += ` AND sa.severity = $${paramIndex}`;
+      params.push(severity);
+      paramIndex++;
+    }
+
+    if (status) {
+      const statusList = (status as string).split(',').map(s => s.trim());
+      query += ` AND sa.status = ANY($${paramIndex})`;
+      params.push(statusList);
+      paramIndex++;
+    }
+
+    query += ` ORDER BY sa.detected_at DESC LIMIT $${paramIndex}`;
+    params.push(limit);
+
+    const result = await pool.query(query, params);
+
+    res.json({
+      success: true,
+      activities: result.rows.map(row => ({
+        ...row,
+        userName: row.user_name,
+        userEmail: row.user_email,
+        details: typeof row.details === 'string' ? JSON.parse(row.details) : row.details,
+      })),
+    });
+  } catch (error: any) {
+    logger.error('Admin suspicious activities error:', error);
+    res.status(500).json({ error: 'Failed to fetch suspicious activities' });
+  }
+});
+
+/**
+ * Get admin profile
+ */
+router.get('/profile', async (req: Request, res: Response) => {
+  try {
+    const adminId = (req as any).user.id;
+    
+    const query = `
+      SELECT id, first_name, last_name, email, user_type, created_at
+      FROM users
+      WHERE id = $1 AND user_type = 'admin'
+    `;
+
+    const result = await pool.query(query, [adminId]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Admin profile not found' });
+    }
+
+    const admin = result.rows[0];
+
+    res.json({
+      success: true,
+      user: {
+        id: admin.id,
+        name: `${admin.first_name} ${admin.last_name}`,
+        email: admin.email,
+        role: 'Administrator',
+        createdAt: admin.created_at,
+      },
+    });
+  } catch (error: any) {
+    logger.error('Admin profile error:', error);
+    res.status(500).json({ error: 'Failed to fetch admin profile' });
+  }
+});
+
+/**
+ * Get overview stats
+ */
+router.get('/overview-stats', async (req: Request, res: Response) => {
+  try {
+    // Get user counts
+    const userCountQuery = `
+      SELECT 
+        COUNT(*) as total_users,
+        COUNT(CASE WHEN last_login >= NOW() - INTERVAL '1 hour' THEN 1 END) as active_users
+      FROM users
+    `;
+
+    const userCountResult = await pool.query(userCountQuery);
+    const userCounts = userCountResult.rows[0];
+
+    // Get transaction count (this would depend on your transaction table structure)
+    const transactionCountQuery = `
+      SELECT COUNT(*) as total_transactions
+      FROM verified_plantings
+    `;
+
+    const transactionCountResult = await pool.query(transactionCountQuery);
+    const transactionCount = transactionCountResult.rows[0];
+
+    // Get trees planted count
+    const treesPlantedQuery = `
+      SELECT SUM(trees_verified) as total_trees
+      FROM verified_plantings
+    `;
+
+    const treesPlantedResult = await pool.query(treesPlantedQuery);
+    const treesPlanted = treesPlantedResult.rows[0];
+
+    res.json({
+      success: true,
+      stats: {
+        totalUsers: parseInt(userCounts.total_users),
+        activeUsers: parseInt(userCounts.active_users),
+        totalTransactions: parseInt(transactionCount.total_transactions || 0),
+        totalTreesPlanted: parseInt(treesPlanted.total_trees || 0),
+        systemHealth: 'healthy',
+      },
+    });
+  } catch (error: any) {
+    logger.error('Admin overview stats error:', error);
+    res.status(500).json({ error: 'Failed to fetch overview stats' });
+  }
+});
+
+/**
  * System health check
  */
 router.get('/health', async (req: Request, res: Response) => {

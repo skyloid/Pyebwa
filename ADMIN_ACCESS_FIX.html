@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Access Fix - Final Step</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #f5f6fa;
+            line-height: 1.8;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #00217D;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .status-box {
+            background: #fff3cd;
+            color: #856404;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .solution-box {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #17a2b8;
+        }
+        .success-box {
+            background: #d4edda;
+            color: #155724;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #28a745;
+        }
+        .btn {
+            display: inline-block;
+            background: #00217D;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin: 10px 5px;
+            text-align: center;
+        }
+        .btn:hover {
+            background: #001654;
+        }
+        .btn-orange {
+            background: #FFA000;
+        }
+        .btn-orange:hover {
+            background: #F57C00;
+        }
+        .code {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            border: 1px solid #dee2e6;
+            margin: 15px 0;
+        }
+        .center {
+            text-align: center;
+        }
+        strong {
+            color: #00217D;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Final Step: Enable Admin Access</h1>
+        
+        <div class="status-box">
+            <h2>📋 Current Status</h2>
+            <p>✅ Admin dashboard UI is accessible (temporary bypass active)</p>
+            <p>❌ Cannot load data from Firestore (missing admin privileges)</p>
+            <p><strong>Issue:</strong> Your user document needs admin fields to pass Firestore security rules</p>
+        </div>
+        
+        <div class="solution-box">
+            <h2>🛠️ Quick Solution</h2>
+            <p>You need to add two fields to your Firestore user document:</p>
+            <div class="code">
+role: "superadmin"<br>
+isAdmin: true
+            </div>
+        </div>
+        
+        <h2 class="center">Choose Your Method:</h2>
+        
+        <div class="center">
+            <a href="/admin-status-check.html" class="btn">
+                🔍 Use Status Check Tool
+            </a>
+            <p><em>Automated tool that checks your status and attempts to fix it</em></p>
+        </div>
+        
+        <div class="center" style="margin-top: 30px;">
+            <a href="https://console.firebase.google.com/project/pyebwa-f5960/firestore/data/~2Fusers" target="_blank" class="btn btn-orange">
+                🔥 Open Firebase Console
+            </a>
+            <p><em>Manually add the fields in Firebase Console (most reliable)</em></p>
+        </div>
+        
+        <div class="success-box">
+            <h2>✨ After Fixing</h2>
+            <p>Once you've added the admin fields:</p>
+            <ol>
+                <li>Refresh the admin dashboard</li>
+                <li>All features will work: Trees, Users, Audit Logs</li>
+                <li>No more permission errors</li>
+                <li>Full admin capabilities enabled</li>
+            </ol>
+        </div>
+        
+        <div class="center" style="margin-top: 30px;">
+            <p><strong>Need the detailed guide?</strong></p>
+            <p>Check <code>/ADMIN_SETUP_GUIDE.md</code> for step-by-step instructions</p>
+        </div>
+    </div>
+</body>
+</html>

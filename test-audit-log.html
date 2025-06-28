@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Audit Log</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <h1>Test Audit Log</h1>
+    <button onclick="testAuditLog()">Create Test Audit Log</button>
+    <div id="result"></div>
+    
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
+            authDomain: "rasin.pyebwa.com",
+            projectId: "pyebwa-f5960",
+            storageBucket: "pyebwa-f5960.firebasestorage.app",
+            messagingSenderId: "1042887343749",
+            appId: "1:1042887343749:web:c276bf69b6c0895111f3ec",
+            measurementId: "G-ZX92K1TMM3"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        
+        async function testAuditLog() {
+            const result = document.getElementById('result');
+            
+            try {
+                const user = firebase.auth().currentUser;
+                if (!user) {
+                    result.innerHTML = '<p style="color: red;">Not authenticated. Please sign in first.</p>';
+                    return;
+                }
+                
+                result.innerHTML = '<p>Creating test audit log...</p>';
+                
+                // Create a test audit log entry
+                const db = firebase.firestore();
+                await db.collection('admin_logs').add({
+                    action: 'test_audit_log',
+                    adminId: user.uid,
+                    adminEmail: user.email,
+                    details: {
+                        test: true,
+                        message: 'Testing audit log functionality',
+                        timestamp: new Date().toISOString()
+                    },
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    userAgent: navigator.userAgent
+                });
+                
+                result.innerHTML = '<p style="color: green;">✅ Audit log created successfully! Check the admin dashboard.</p>';
+                
+            } catch (error) {
+                console.error('Error:', error);
+                result.innerHTML = `<p style="color: red;">❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        // Check auth state on load
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                document.getElementById('result').innerHTML = `<p>Signed in as: ${user.email}</p>`;
+            } else {
+                document.getElementById('result').innerHTML = '<p>Not signed in. <a href="/admin">Go to admin dashboard to sign in</a></p>';
+            }
+        });
+    </script>
+</body>
+</html>

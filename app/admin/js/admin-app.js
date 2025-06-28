@@ -72,6 +72,38 @@
             }
         },
         
+        // Initialize tree management
+        initializeTreeManagement() {
+            if (window.TreeManagement && !TreeManagement.initialized) {
+                TreeManagement.init();
+                TreeManagement.initialized = true;
+            }
+        },
+        
+        // Initialize audit module
+        initializeAuditModule() {
+            if (window.AuditModule && !AuditModule.initialized) {
+                AuditModule.init();
+                AuditModule.initialized = true;
+            }
+        },
+        
+        // Initialize content management
+        initializeContentManagement() {
+            if (window.ContentManagement && !ContentManagement.initialized) {
+                ContentManagement.init();
+                ContentManagement.initialized = true;
+            }
+        },
+        
+        // Initialize communications module
+        initializeCommunicationsModule() {
+            if (window.CommunicationsModule && !CommunicationsModule.initialized) {
+                CommunicationsModule.init();
+                CommunicationsModule.initialized = true;
+            }
+        },
+        
         // Setup navigation
         setupNavigation() {
             // Sidebar navigation
@@ -139,16 +171,19 @@
                     this.initializeUserManagement();
                     break;
                 case 'trees':
-                    // Initialize tree management
+                    this.initializeTreeManagement();
                     break;
                 case 'analytics':
                     // Initialize analytics
                     break;
                 case 'content':
-                    // Initialize content management
+                    this.initializeContentManagement();
+                    break;
+                case 'communications':
+                    this.initializeCommunicationsModule();
                     break;
                 case 'audit':
-                    // Initialize audit logs
+                    this.initializeAuditModule();
                     break;
             }
         },

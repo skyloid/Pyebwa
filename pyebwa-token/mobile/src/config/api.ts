@@ -11,7 +11,7 @@ const getApiUrl = () => {
       return 'http://10.0.2.2:5000/api';
     } else if (Platform.OS === 'ios') {
       // iOS simulator
-      return 'http://localhost:5000/api';
+      return 'https://rasin.pyebwa.com/api';
     } else {
       // Physical device - replace with your computer's IP
       // Find your IP: ifconfig (Mac/Linux) or ipconfig (Windows)
@@ -19,7 +19,7 @@ const getApiUrl = () => {
     }
   } else {
     // Production
-    return 'https://api.pyebwa.com/api';
+    return 'https://rasin.pyebwa.com/api';
   }
 };
 

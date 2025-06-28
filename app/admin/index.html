@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="/app/admin/css/admin-base.css?v=1">
     <link rel="stylesheet" href="/app/admin/css/admin-components.css?v=1">
     <link rel="stylesheet" href="/app/admin/css/admin-dark.css?v=1">
+    <link rel="stylesheet" href="/app/admin/css/content.css?v=1">
+    <link rel="stylesheet" href="/app/admin/css/communications.css?v=1">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
@@ -107,6 +109,7 @@
                             <a href="#trees" class="menu-link">
                                 <span class="material-icons">account_tree</span>
                                 <span class="menu-text">Family Trees</span>
+                                <span class="menu-badge" id="treeCount">0</span>
                             </a>
                         </li>
                         <li class="menu-item">
@@ -327,6 +330,421 @@
                     </div>
                 </div>
 
+                <!-- Trees View -->
+                <div id="treesView" class="admin-view" style="display: none;">
+                    <div class="view-header">
+                        <h1>Family Tree Management</h1>
+                        <div class="header-actions">
+                            <div class="bulk-actions" style="display: none;">
+                                <span class="selected-count">0 selected</span>
+                                <button class="btn btn-secondary" id="bulkArchiveTrees">
+                                    <span class="material-icons">archive</span>
+                                    <span>Archive</span>
+                                </button>
+                                <button class="btn btn-danger" id="bulkDeleteTrees">
+                                    <span class="material-icons">delete</span>
+                                    <span>Delete</span>
+                                </button>
+                            </div>
+                            <button class="btn btn-secondary" id="exportTrees">
+                                <span class="material-icons">download</span>
+                                <span>Export</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="filters-section">
+                        <div class="search-box">
+                            <span class="material-icons">search</span>
+                            <input type="text" id="treeSearch" placeholder="Search trees by name or owner...">
+                        </div>
+                        <div class="filter-group">
+                            <select id="treeStatusFilter">
+                                <option value="">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="archived">Archived</option>
+                            </select>
+                            <select id="treeSortFilter">
+                                <option value="createdAt-desc">Newest First</option>
+                                <option value="createdAt-asc">Oldest First</option>
+                                <option value="name-asc">Name (A-Z)</option>
+                                <option value="name-desc">Name (Z-A)</option>
+                                <option value="memberCount-desc">Most Members</option>
+                                <option value="memberCount-asc">Least Members</option>
+                            </select>
+                            <input type="date" id="treeDateFilter" placeholder="Created after...">
+                        </div>
+                    </div>
+
+                    <!-- Trees Table -->
+                    <div class="data-table-container">
+                        <table class="data-table" id="treesTable">
+                            <thead>
+                                <tr>
+                                    <th class="checkbox-col">
+                                        <input type="checkbox" id="selectAllTrees">
+                                    </th>
+                                    <th>Tree Name</th>
+                                    <th>Owner</th>
+                                    <th>Members</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Last Modified</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="treesTableBody">
+                                <!-- Trees will be loaded here -->
+                            </tbody>
+                        </table>
+                        <div class="table-pagination">
+                            <div class="pagination-info">
+                                Showing <span id="treeStart">0</span> to <span id="treeEnd">0</span> of <span id="treeTotal">0</span> trees
+                            </div>
+                            <div class="pagination-controls">
+                                <button class="pagination-btn" id="treePrevPage" disabled>
+                                    <span class="material-icons">chevron_left</span>
+                                </button>
+                                <span class="pagination-current" id="treeCurrentPage">1</span>
+                                <button class="pagination-btn" id="treeNextPage">
+                                    <span class="material-icons">chevron_right</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content View -->
+                <div id="contentView" class="admin-view" style="display: none;">
+                    <div class="view-header">
+                        <h1>Content Management</h1>
+                        <div class="header-actions">
+                            <div class="bulk-actions" id="bulkActions" style="display: none;">
+                                <span class="selected-count" id="selectedCount">0 selected</span>
+                                <button class="btn btn-secondary" id="bulkApprove">
+                                    <span class="material-icons">check_circle</span>
+                                    <span>Approve</span>
+                                </button>
+                                <button class="btn btn-secondary" id="bulkReject">
+                                    <span class="material-icons">cancel</span>
+                                    <span>Reject</span>
+                                </button>
+                                <button class="btn btn-danger" id="bulkDelete">
+                                    <span class="material-icons">delete</span>
+                                    <span>Delete</span>
+                                </button>
+                            </div>
+                            <button class="btn btn-primary" id="uploadContent">
+                                <span class="material-icons">upload</span>
+                                <span>Upload</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Content Tabs -->
+                    <div class="content-tabs">
+                        <button class="content-tab active" data-view="photos">
+                            <span class="material-icons">photo</span>
+                            <span>Photos</span>
+                        </button>
+                        <button class="content-tab" data-view="documents">
+                            <span class="material-icons">description</span>
+                            <span>Documents</span>
+                        </button>
+                        <button class="content-tab" data-view="all">
+                            <span class="material-icons">folder</span>
+                            <span>All Files</span>
+                        </button>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="filters-section">
+                        <div class="search-box">
+                            <span class="material-icons">search</span>
+                            <input type="text" id="contentSearch" placeholder="Search content...">
+                        </div>
+                        <div class="filter-group">
+                            <select id="contentTypeFilter">
+                                <option value="all">All Types</option>
+                                <option value="image">Images</option>
+                                <option value="document">Documents</option>
+                                <option value="video">Videos</option>
+                            </select>
+                            <select id="contentStatusFilter">
+                                <option value="all">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                                <option value="flagged">Flagged</option>
+                            </select>
+                            <select id="contentDateFilter">
+                                <option value="all">All Time</option>
+                                <option value="today">Today</option>
+                                <option value="week">This Week</option>
+                                <option value="month">This Month</option>
+                                <option value="year">This Year</option>
+                            </select>
+                            <input type="text" id="contentUserFilter" placeholder="Filter by user...">
+                        </div>
+                    </div>
+
+                    <!-- Storage Stats -->
+                    <div class="storage-stats">
+                        <div class="stat-box">
+                            <h4>Total Storage</h4>
+                            <p id="totalStorage">0 GB</p>
+                        </div>
+                        <div class="stat-box">
+                            <h4>Total Items</h4>
+                            <p id="totalItems">0</p>
+                        </div>
+                        <div class="stat-box">
+                            <h4>Storage Chart</h4>
+                            <canvas id="storageChart" width="200" height="200"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Content Grid -->
+                    <div class="content-grid" id="contentGrid">
+                        <!-- Content items will be loaded here -->
+                    </div>
+
+                    <!-- Loading -->
+                    <div class="content-loader" id="contentLoader" style="display: none;">
+                        <div class="spinner"></div>
+                        <p>Loading content...</p>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="content-pagination">
+                        <div class="pagination-info" id="contentPaginationInfo">
+                            Showing 0-0 of 0 items
+                        </div>
+                        <div class="pagination-controls" id="contentPagination">
+                            <!-- Pagination buttons will be added here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Audit View -->
+                <div id="auditView" class="admin-view" style="display: none;">
+                    <div class="view-header">
+                        <h1>Audit Logs</h1>
+                        <div class="header-actions">
+                            <button class="btn btn-secondary" id="refreshAuditLogs">
+                                <span class="material-icons">refresh</span>
+                                <span>Refresh</span>
+                            </button>
+                            <button class="btn btn-secondary" id="exportAuditLogs">
+                                <span class="material-icons">download</span>
+                                <span>Export</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="filters-section">
+                        <div class="search-box">
+                            <span class="material-icons">search</span>
+                            <input type="text" id="auditSearch" placeholder="Search logs...">
+                        </div>
+                        <div class="filter-group">
+                            <select id="auditActionFilter">
+                                <option value="">All Actions</option>
+                                <option value="login">Login</option>
+                                <option value="logout">Logout</option>
+                                <option value="user_created">User Created</option>
+                                <option value="user_updated">User Updated</option>
+                                <option value="user_deleted">User Deleted</option>
+                                <option value="role_changed">Role Changed</option>
+                                <option value="tree_deleted">Tree Deleted</option>
+                                <option value="settings_updated">Settings Updated</option>
+                            </select>
+                            <input type="date" id="auditDateFrom" placeholder="From date">
+                            <input type="date" id="auditDateTo" placeholder="To date">
+                        </div>
+                    </div>
+
+                    <!-- Audit Logs Table -->
+                    <div class="data-table-container">
+                        <table class="data-table" id="auditLogsTable">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Admin</th>
+                                    <th>Action</th>
+                                    <th>Target</th>
+                                    <th>Details</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="auditLogsTableBody">
+                                <!-- Logs will be loaded here -->
+                            </tbody>
+                        </table>
+                        <div class="table-pagination">
+                            <div class="pagination-info">
+                                Showing <span id="auditStart">0</span> to <span id="auditEnd">0</span> of <span id="auditTotal">0</span> logs
+                            </div>
+                            <div class="pagination-controls">
+                                <button class="pagination-btn" id="auditPrevPage" disabled>
+                                    <span class="material-icons">chevron_left</span>
+                                </button>
+                                <span class="pagination-current" id="auditCurrentPage">1</span>
+                                <button class="pagination-btn" id="auditNextPage">
+                                    <span class="material-icons">chevron_right</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Communications View -->
+                <div id="communicationsView" class="admin-view" style="display: none;">
+                    <div class="view-header">
+                        <h1>Communications</h1>
+                        <div class="header-actions">
+                            <button class="btn btn-primary" id="createAnnouncement">
+                                <span class="material-icons">add</span>
+                                <span>Create Announcement</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Communication Tabs -->
+                    <div class="comm-tabs">
+                        <button class="comm-tab active" data-view="announcements">
+                            <span class="material-icons">campaign</span>
+                            <span>Announcements</span>
+                        </button>
+                        <button class="comm-tab" data-view="templates">
+                            <span class="material-icons">description</span>
+                            <span>Templates</span>
+                        </button>
+                        <button class="comm-tab" data-view="scheduled">
+                            <span class="material-icons">schedule</span>
+                            <span>Scheduled</span>
+                        </button>
+                        <button class="comm-tab" data-view="analytics">
+                            <span class="material-icons">analytics</span>
+                            <span>Analytics</span>
+                        </button>
+                    </div>
+
+                    <!-- Announcements View -->
+                    <div class="comm-view" data-view="announcements">
+                        <!-- Filters -->
+                        <div class="filters-section">
+                            <div class="search-box">
+                                <span class="material-icons">search</span>
+                                <input type="text" id="commSearch" placeholder="Search announcements...">
+                            </div>
+                            <div class="filter-group">
+                                <select id="commStatusFilter">
+                                    <option value="all">All Status</option>
+                                    <option value="draft">Draft</option>
+                                    <option value="published">Published</option>
+                                    <option value="scheduled">Scheduled</option>
+                                    <option value="archived">Archived</option>
+                                </select>
+                                <select id="commTypeFilter">
+                                    <option value="all">All Types</option>
+                                    <option value="general">General</option>
+                                    <option value="update">Update</option>
+                                    <option value="maintenance">Maintenance</option>
+                                    <option value="feature">Feature</option>
+                                    <option value="security">Security</option>
+                                </select>
+                                <select id="commDateFilter">
+                                    <option value="all">All Time</option>
+                                    <option value="today">Today</option>
+                                    <option value="week">This Week</option>
+                                    <option value="month">This Month</option>
+                                    <option value="year">This Year</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Stats Overview -->
+                        <div class="comm-stats">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <span class="material-icons">send</span>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 class="stat-value" id="totalSent">0</h3>
+                                    <p class="stat-label">Total Sent</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <span class="material-icons">visibility</span>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 class="stat-value" id="totalViews">0</h3>
+                                    <p class="stat-label">Total Views</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <span class="material-icons">trending_up</span>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 class="stat-value" id="avgEngagement">0%</h3>
+                                    <p class="stat-label">Avg Engagement</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Announcements List -->
+                        <div class="announcements-list" id="announcementsList">
+                            <!-- Announcements will be loaded here -->
+                        </div>
+
+                        <!-- Loading -->
+                        <div class="comm-loader" id="commLoader" style="display: none;">
+                            <div class="spinner"></div>
+                            <p>Loading announcements...</p>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="comm-pagination">
+                            <div class="pagination-controls" id="commPagination">
+                                <!-- Pagination buttons will be added here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Templates View -->
+                    <div class="comm-view" data-view="templates" style="display: none;">
+                        <div class="empty-state">
+                            <span class="material-icons">description</span>
+                            <h3>Message Templates</h3>
+                            <p>Create reusable templates for common announcements</p>
+                            <button class="btn btn-primary">Create Template</button>
+                        </div>
+                    </div>
+
+                    <!-- Scheduled View -->
+                    <div class="comm-view" data-view="scheduled" style="display: none;">
+                        <div class="empty-state">
+                            <span class="material-icons">schedule</span>
+                            <h3>Scheduled Messages</h3>
+                            <p>View and manage scheduled announcements</p>
+                        </div>
+                    </div>
+
+                    <!-- Analytics View -->
+                    <div class="comm-view" data-view="analytics" style="display: none;">
+                        <div class="empty-state">
+                            <span class="material-icons">analytics</span>
+                            <h3>Communication Analytics</h3>
+                            <p>Detailed analytics for your announcements</p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Other views will be added here -->
             </main>
         </div>
@@ -349,6 +767,10 @@
     <script src="/app/admin/js/core/api-client.js"></script>
     <script src="/app/admin/js/modules/dashboard.js"></script>
     <script src="/app/admin/js/modules/users.js"></script>
+    <script src="/app/admin/js/modules/trees.js"></script>
+    <script src="/app/admin/js/modules/content.js"></script>
+    <script src="/app/admin/js/modules/communications.js"></script>
+    <script src="/app/admin/js/modules/audit.js"></script>
     <script src="/app/admin/js/admin-app.js"></script>
 </body>
 </html>

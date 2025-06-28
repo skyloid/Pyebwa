@@ -337,6 +337,9 @@ function startAuthRetry() {
             userEmailEl.textContent = user.email;
         }
         
+        // Check if user is admin and show admin link
+        checkAdminStatus(user);
+        
         initializeUserFamilyTree().then(() => {
             hideLoadingState();
             showView('dashboard');
@@ -505,6 +508,9 @@ async function initializeAuth() {
             userEmailEl.textContent = determinedUser.email;
         }
         
+        // Check if user is admin and show admin link
+        checkAdminStatus(determinedUser);
+        
         // Clear auth wait flags
         sessionStorage.removeItem('authWaitSuccess');
         sessionStorage.removeItem('recentLogin');
@@ -610,6 +616,9 @@ async function initializeAuth() {
                 if (userEmailEl) {
                     userEmailEl.textContent = user.email;
                 }
+                
+                // Check if user is admin and show admin link
+                checkAdminStatus(user);
                 
                 // Clear redirect data and cooldown on successful auth
                 sessionStorage.removeItem('pyebwaRedirectData');
@@ -740,6 +749,30 @@ function showError(message) {
     setTimeout(() => {
         errorEl.style.display = 'none';
     }, 5000);
+}
+
+// Check if user is admin and show admin link
+async function checkAdminStatus(user) {
+    try {
+        // List of admin emails - in production, this should come from the database
+        const adminEmails = [
+            'claude@humanlevel.ai',
+            'admin@pyebwa.com'
+        ];
+        
+        const adminLink = document.getElementById('adminLink');
+        if (adminLink) {
+            if (adminEmails.includes(user.email)) {
+                adminLink.style.display = 'flex';
+                adminLink.style.alignItems = 'center';
+                console.log('Admin user detected, showing admin link');
+            } else {
+                adminLink.style.display = 'none';
+            }
+        }
+    } catch (error) {
+        console.error('Error checking admin status:', error);
+    }
 }
 
 // Initialize or get user's family tree

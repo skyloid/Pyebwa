@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Setup Diagnostic - Pyebwa</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #f5f6fa;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #00217D;
+            margin-bottom: 24px;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .warning { background: #fff3cd; color: #856404; }
+        button {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover { background: #001654; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+        .code-block {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+    </style>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Setup Diagnostic Tool</h1>
+        <p>This tool will help diagnose and fix admin access issues for the Pyebwa dashboard.</p>
+        
+        <div class="section">
+            <h3>Step 1: Check Authentication</h3>
+            <button onclick="checkAuth()">Check Current User</button>
+            <div id="authStatus"></div>
+        </div>
+        
+        <div class="section">
+            <h3>Step 2: Check User Document</h3>
+            <button onclick="checkUserDoc()" id="checkDocBtn" disabled>Check User Document</button>
+            <div id="docStatus"></div>
+        </div>
+        
+        <div class="section">
+            <h3>Step 3: Update Admin Role</h3>
+            <button onclick="updateAdminRole()" id="updateBtn" disabled>Update Admin Role</button>
+            <div id="updateStatus"></div>
+        </div>
+        
+        <div class="section">
+            <h3>Step 4: Verify Update</h3>
+            <button onclick="verifyUpdate()" id="verifyBtn" disabled>Verify Admin Access</button>
+            <div id="verifyStatus"></div>
+        </div>
+        
+        <div class="section">
+            <h3>Manual Console Commands</h3>
+            <p>If the buttons above don't work, copy these commands to the browser console:</p>
+            <div id="manualCommands"></div>
+        </div>
+    </div>
+
+    <script src="/app/js/firebase-config.js"></script>
+    <script>
+        let currentUser = null;
+        let currentUserId = null;
+        
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = message;
+            element.appendChild(div);
+        }
+        
+        function clearLog(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+        
+        async function checkAuth() {
+            clearLog('authStatus');
+            
+            try {
+                const user = firebase.auth().currentUser;
+                
+                if (!user) {
+                    log('authStatus', '❌ Not authenticated. Please sign in first.', 'error');
+                    log('authStatus', 'Redirecting to login in 3 seconds...', 'warning');
+                    setTimeout(() => window.location.href = '/app/', 3000);
+                    return;
+                }
+                
+                currentUser = user;
+                log('authStatus', `✅ Authenticated as: ${user.email}`, 'success');
+                log('authStatus', `UID: ${user.uid}`, 'info');
+                
+                document.getElementById('checkDocBtn').disabled = false;
+                
+            } catch (error) {
+                log('authStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkUserDoc() {
+            clearLog('docStatus');
+            
+            if (!currentUser) {
+                log('docStatus', '❌ Not authenticated', 'error');
+                return;
+            }
+            
+            try {
+                // Method 1: Direct lookup by UID
+                log('docStatus', 'Checking by UID...', 'info');
+                const docByUid = await firebase.firestore()
+                    .collection('users')
+                    .doc(currentUser.uid)
+                    .get();
+                
+                if (docByUid.exists) {
+                    currentUserId = currentUser.uid;
+                    log('docStatus', '✅ Found user document by UID', 'success');
+                    displayUserData(docByUid.data());
+                } else {
+                    log('docStatus', '⚠️ No document found by UID, searching by email...', 'warning');
+                    
+                    // Method 2: Query by email
+                    const queryByEmail = await firebase.firestore()
+                        .collection('users')
+                        .where('email', '==', currentUser.email)
+                        .get();
+                    
+                    if (!queryByEmail.empty) {
+                        const doc = queryByEmail.docs[0];
+                        currentUserId = doc.id;
+                        log('docStatus', `✅ Found user document by email (ID: ${currentUserId})`, 'success');
+                        displayUserData(doc.data());
+                    } else {
+                        log('docStatus', '❌ No user document found!', 'error');
+                        log('docStatus', 'Creating user document...', 'warning');
+                        await createUserDocument();
+                    }
+                }
+                
+                document.getElementById('updateBtn').disabled = false;
+                
+            } catch (error) {
+                log('docStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function displayUserData(data) {
+            const info = document.createElement('pre');
+            info.textContent = JSON.stringify({
+                email: data.email,
+                role: data.role || 'NOT SET',
+                isAdmin: data.isAdmin || false,
+                adminPromotedAt: data.adminPromotedAt || 'NOT SET',
+                adminPromotedBy: data.adminPromotedBy || 'NOT SET',
+                createdAt: data.createdAt || 'NOT SET'
+            }, null, 2);
+            document.getElementById('docStatus').appendChild(info);
+        }
+        
+        async function createUserDocument() {
+            try {
+                const userId = currentUser.uid;
+                await firebase.firestore()
+                    .collection('users')
+                    .doc(userId)
+                    .set({
+                        email: currentUser.email,
+                        displayName: currentUser.displayName || currentUser.email.split('@')[0],
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        uid: userId
+                    });
+                
+                currentUserId = userId;
+                log('docStatus', '✅ Created user document', 'success');
+                
+            } catch (error) {
+                log('docStatus', `❌ Failed to create user document: ${error.message}`, 'error');
+            }
+        }
+        
+        async function updateAdminRole() {
+            clearLog('updateStatus');
+            
+            if (!currentUserId) {
+                log('updateStatus', '❌ No user document ID', 'error');
+                return;
+            }
+            
+            try {
+                log('updateStatus', 'Updating admin role...', 'info');
+                
+                await firebase.firestore()
+                    .collection('users')
+                    .doc(currentUserId)
+                    .update({
+                        role: 'superadmin',
+                        isAdmin: true,
+                        adminPromotedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        adminPromotedBy: 'setup-tool'
+                    });
+                
+                log('updateStatus', '✅ Admin role updated successfully!', 'success');
+                document.getElementById('verifyBtn').disabled = false;
+                
+                // Show manual verification
+                showManualCommands();
+                
+            } catch (error) {
+                log('updateStatus', `❌ Update failed: ${error.message}`, 'error');
+                
+                if (error.code === 'permission-denied') {
+                    log('updateStatus', '⚠️ Permission denied. Showing manual commands...', 'warning');
+                    showManualCommands();
+                }
+            }
+        }
+        
+        async function verifyUpdate() {
+            clearLog('verifyStatus');
+            
+            try {
+                const doc = await firebase.firestore()
+                    .collection('users')
+                    .doc(currentUserId)
+                    .get();
+                
+                if (doc.exists) {
+                    const data = doc.data();
+                    if (data.role === 'superadmin' && data.isAdmin === true) {
+                        log('verifyStatus', '✅ Admin role verified successfully!', 'success');
+                        log('verifyStatus', '🎉 You can now access the admin dashboard', 'success');
+                        
+                        setTimeout(() => {
+                            window.location.href = '/admin';
+                        }, 2000);
+                    } else {
+                        log('verifyStatus', '⚠️ Admin role not properly set', 'warning');
+                        displayUserData(data);
+                    }
+                }
+                
+            } catch (error) {
+                log('verifyStatus', `❌ Verification error: ${error.message}`, 'error');
+            }
+        }
+        
+        function showManualCommands() {
+            const commands = document.getElementById('manualCommands');
+            
+            // Command 1: Direct update
+            const cmd1 = document.createElement('div');
+            cmd1.innerHTML = '<h4>Option 1: Direct Update (if you have permission)</h4>';
+            const code1 = document.createElement('div');
+            code1.className = 'code-block';
+            code1.textContent = `firebase.firestore().collection('users').doc('${currentUserId}').update({role: 'superadmin', isAdmin: true, adminPromotedBy: 'setup-tool'})`;
+            cmd1.appendChild(code1);
+            
+            // Command 2: Using Firebase Console
+            const cmd2 = document.createElement('div');
+            cmd2.innerHTML = `
+                <h4>Option 2: Firebase Console (Recommended)</h4>
+                <ol>
+                    <li>Go to <a href="https://console.firebase.google.com/project/pyebwa-f5960/firestore/data/~2Fusers~2F${currentUserId}" target="_blank">Firebase Console</a></li>
+                    <li>Find your user document (ID: ${currentUserId})</li>
+                    <li>Add these fields:
+                        <ul>
+                            <li>role: "superadmin"</li>
+                            <li>isAdmin: true</li>
+                            <li>adminPromotedBy: "setup-tool"</li>
+                        </ul>
+                    </li>
+                </ol>
+            `;
+            
+            commands.appendChild(cmd1);
+            commands.appendChild(cmd2);
+        }
+        
+        // Auto-check auth on load
+        window.addEventListener('load', () => {
+            setTimeout(checkAuth, 1000);
+        });
+    </script>
+</body>
+</html>

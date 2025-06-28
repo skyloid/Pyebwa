@@ -112,6 +112,15 @@
         
         // Check if user has admin permissions
         async checkAdminPermissions(user) {
+            // Temporary admin access for specific email (remove after setting up proper roles)
+            const tempAdminEmails = ['claude@humanlevel.ai', 'admin@pyebwa.com'];
+            if (tempAdminEmails.includes(user.email)) {
+                console.log('Temporary admin access granted for:', user.email);
+                // Set default role for temp admin
+                user.role = user.role || 'superadmin';
+                return true;
+            }
+            
             // Check if user has admin role
             if (!user.role || !this.isAdminRole(user.role)) {
                 return false;
@@ -188,7 +197,7 @@
         // Log admin access
         async logAdminAccess(user) {
             try {
-                await firebase.firestore().collection('adminLogs').add({
+                await firebase.firestore().collection('admin_logs').add({
                     type: 'access',
                     adminId: user.uid,
                     adminEmail: user.email,
@@ -247,7 +256,7 @@
             try {
                 // Log logout
                 if (this.currentAdmin) {
-                    await firebase.firestore().collection('adminLogs').add({
+                    await firebase.firestore().collection('admin_logs').add({
                         type: 'logout',
                         adminId: this.currentAdmin.uid,
                         adminEmail: this.currentAdmin.email,

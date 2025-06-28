@@ -3,6 +3,8 @@ import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import { useProgram } from '../hooks/useProgram';
+import { useUserRole } from '../hooks/useUserRole';
+import { UserProfileMenu } from '../components/UserProfileMenu';
 import { TokenStats } from '../components/TokenStats';
 import { PurchaseTokens } from '../components/PurchaseTokens';
 import { FamilyStats } from '../components/FamilyStats';
@@ -11,6 +13,7 @@ export const Dashboard: React.FC = () => {
   const { publicKey } = useWallet();
   const { connection } = useConnection();
   const program = useProgram();
+  const { userInfo, isAdmin } = useUserRole();
   const [balance, setBalance] = useState<number>(0);
   const [tokenBalance, setTokenBalance] = useState<number>(0);
   const [loading, setLoading] = useState(true);
@@ -65,7 +68,14 @@ export const Dashboard: React.FC = () => {
                 Connecting Heritage to Homeland
               </span>
             </div>
-            <WalletMultiButton />
+            {publicKey ? (
+              <UserProfileMenu 
+                isAdmin={isAdmin} 
+                userName={userInfo?.firstName ? `${userInfo.firstName} ${userInfo.lastName}` : undefined}
+              />
+            ) : (
+              <WalletMultiButton />
+            )}
           </div>
         </div>
       </header>

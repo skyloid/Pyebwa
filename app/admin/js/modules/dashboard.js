@@ -74,6 +74,12 @@
                 const treesSnapshot = await firebase.firestore().collection('familyTrees').get();
                 const totalTrees = treesSnapshot.size;
                 
+                // Update the sidebar tree count badge if exists
+                const treeCountBadge = document.querySelector('.menu-link[href="#trees"] .menu-badge');
+                if (treeCountBadge) {
+                    treeCountBadge.textContent = totalTrees;
+                }
+                
                 // Calculate storage usage (simplified)
                 let storageUsed = 0;
                 // In a real implementation, you'd calculate actual storage usage
@@ -214,49 +220,67 @@
             const ctx = document.getElementById('userGrowthChart');
             if (!ctx) return;
             
-            // Destroy existing chart
-            if (this.charts.userGrowth) {
-                this.charts.userGrowth.destroy();
-            }
-            
-            this.charts.userGrowth = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'New Users',
-                        data: data,
-                        borderColor: '#00217D',
-                        backgroundColor: 'rgba(0, 33, 125, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#00217D',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
+            try {
+                // Destroy existing chart
+                if (this.charts.userGrowth) {
+                    this.charts.userGrowth.destroy();
+                    this.charts.userGrowth = null;
+                }
+                
+                // Validate canvas size
+                const canvas = ctx.getContext('2d').canvas;
+                const container = canvas.parentElement;
+                const maxWidth = Math.min(container.clientWidth || 400, 1000);
+                const maxHeight = Math.min(container.clientHeight || 300, 400);
+                
+                if (maxWidth < 50 || maxHeight < 50) {
+                    console.warn('Canvas container too small, skipping chart render');
+                    return;
+                }
+                
+                // Set reasonable canvas size
+                canvas.style.maxWidth = maxWidth + 'px';
+                canvas.style.maxHeight = maxHeight + 'px';
+                
+                this.charts.userGrowth = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'New Users',
+                            data: data,
+                            borderColor: '#00217D',
+                            backgroundColor: 'rgba(0, 33, 125, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#00217D',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 4
+                        }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            },
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+                        plugins: {
+                            legend: {
+                                display: false
                             }
                         },
-                        x: {
-                            grid: {
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
+                            },
+                            x: {
+                                grid: {
                                 color: 'rgba(0, 0, 0, 0.05)'
                             }
                         }
@@ -265,9 +289,20 @@
                         point: {
                             hoverRadius: 6
                         }
+                    },
+                    onResize: (chart, size) => {
+                        // Prevent excessive sizes
+                        if (size.width > 1000 || size.height > 400) {
+                            chart.resize(Math.min(size.width, 1000), Math.min(size.height, 400));
+                        }
                     }
                 }
             });
+            } catch (error) {
+                console.error('Error rendering user growth chart:', error);
+                // Show fallback content
+                ctx.parentElement.innerHTML = '<div class="chart-error">Chart unavailable</div>';
+            }
         },
         
         // Update activity chart
@@ -326,46 +361,75 @@
             const ctx = document.getElementById('activityChart');
             if (!ctx) return;
             
-            // Destroy existing chart
-            if (this.charts.activity) {
-                this.charts.activity.destroy();
-            }
-            
-            const labels = Object.keys(data);
-            const values = Object.values(data);
-            
-            this.charts.activity = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: values,
-                        backgroundColor: [
-                            '#00217D',
-                            '#D41125',
-                            '#4CAF50',
-                            '#FF9800'
-                        ],
-                        borderWidth: 0,
-                        hoverBorderWidth: 2,
-                        hoverBorderColor: '#fff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                usePointStyle: true,
-                                padding: 20
+            try {
+                // Destroy existing chart
+                if (this.charts.activity) {
+                    this.charts.activity.destroy();
+                    this.charts.activity = null;
+                }
+                
+                // Validate canvas size
+                const canvas = ctx.getContext('2d').canvas;
+                const container = canvas.parentElement;
+                const maxWidth = Math.min(container.clientWidth || 400, 800);
+                const maxHeight = Math.min(container.clientHeight || 300, 600);
+                
+                if (maxWidth < 50 || maxHeight < 50) {
+                    console.warn('Canvas container too small, skipping chart render');
+                    return;
+                }
+                
+                // Set reasonable canvas size
+                canvas.style.maxWidth = maxWidth + 'px';
+                canvas.style.maxHeight = maxHeight + 'px';
+                
+                const labels = Object.keys(data);
+                const values = Object.values(data);
+                
+                this.charts.activity = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: values,
+                            backgroundColor: [
+                                '#00217D',
+                                '#D41125',
+                                '#4CAF50',
+                                '#FF9800'
+                            ],
+                            borderWidth: 0,
+                            hoverBorderWidth: 2,
+                            hoverBorderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 20
+                                }
+                            }
+                        },
+                        cutout: '60%',
+                        onResize: (chart, size) => {
+                            // Prevent excessive sizes
+                            if (size.width > 800 || size.height > 600) {
+                                chart.resize(Math.min(size.width, 800), Math.min(size.height, 600));
                             }
                         }
-                    },
-                    cutout: '60%'
-                }
-            });
+                    }
+                });
+            } catch (error) {
+                console.error('Error rendering activity chart:', error);
+                // Show fallback content
+                ctx.parentElement.innerHTML = '<div class="chart-error">Chart unavailable</div>';
+            }
         },
         
         // Load recent activity

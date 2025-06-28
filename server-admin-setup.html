@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Admin Setup - Pyebwa</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #f5f6fa;
+            line-height: 1.6;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #00217D;
+            margin-bottom: 10px;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border: 1px solid #ffeeba;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        input:focus {
+            outline: none;
+            border-color: #00217D;
+            box-shadow: 0 0 0 3px rgba(0, 33, 125, 0.1);
+        }
+        button {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #001654;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 6px;
+            display: none;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Server-Side Admin Setup</h1>
+        <p>This tool uses server-side Firebase Admin SDK to bypass client-side security restrictions.</p>
+        
+        <div class="warning">
+            <strong>⚠️ Security Warning:</strong> This endpoint requires a secret key. In production, this should be properly secured with authentication.
+        </div>
+        
+        <form id="setupForm">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    value="claude@humanlevel.ai" 
+                    required
+                    placeholder="user@example.com"
+                >
+            </div>
+            
+            <div class="form-group">
+                <label for="secretKey">Secret Key</label>
+                <input 
+                    type="password" 
+                    id="secretKey" 
+                    name="secretKey" 
+                    value="temporary-setup-key-2024" 
+                    required
+                    placeholder="Enter secret key"
+                >
+            </div>
+            
+            <button type="submit" id="submitBtn">Promote to Admin</button>
+        </form>
+        
+        <div id="status" class="status"></div>
+    </div>
+    
+    <script>
+        const form = document.getElementById('setupForm');
+        const statusDiv = document.getElementById('status');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const secretKey = document.getElementById('secretKey').value;
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing...';
+            statusDiv.className = 'status info';
+            statusDiv.innerHTML = '⏳ Setting up admin role...';
+            
+            try {
+                const response = await fetch('/api/admin/setup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, secretKey })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    statusDiv.className = 'status success';
+                    statusDiv.innerHTML = `
+                        ✅ ${result.message}
+                        <br>User ID: ${result.userId}
+                        <br><br>
+                        <strong>Next steps:</strong>
+                        <ol>
+                            <li>Clear your browser cache</li>
+                            <li>Sign out and sign back in</li>
+                            <li><a href="/admin">Go to Admin Dashboard</a></li>
+                        </ol>
+                    `;
+                } else {
+                    throw new Error(result.error || 'Setup failed');
+                }
+                
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `
+                    ❌ Error: ${error.message}
+                    <pre>${JSON.stringify(error, null, 2)}</pre>
+                `;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Promote to Admin';
+            }
+        });
+        
+        // Test endpoint availability
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                console.log('Server health:', data);
+            } catch (error) {
+                console.error('Server may not be running:', error);
+            }
+        });
+    </script>
+</body>
+</html>
