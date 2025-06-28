@@ -1321,6 +1321,39 @@
                     throw new Error('User not authenticated');
                 }
                 
+                // Get family tree ID from various sources
+                let treeId = null;
+                
+                // Try to get from window.app
+                if (window.app && window.app.currentFamilyTreeId) {
+                    treeId = window.app.currentFamilyTreeId;
+                }
+                // Try to get from currentFamilyTreeId
+                else if (window.currentFamilyTreeId) {
+                    treeId = window.currentFamilyTreeId;
+                }
+                // Try to get from URL parameters
+                else {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    treeId = urlParams.get('treeId');
+                }
+                // Try to get from member data if it has treeId
+                if (!treeId && this.currentMember.treeId) {
+                    treeId = this.currentMember.treeId;
+                }
+                // As last resort, try to get user's default tree
+                if (!treeId) {
+                    const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        treeId = userData.lastTreeAccessed || (userData.familyTrees && userData.familyTrees[0]);
+                    }
+                }
+                
+                if (!treeId) {
+                    throw new Error('Could not determine family tree ID');
+                }
+                
                 // Generate invite link via API
                 const idToken = await user.getIdToken();
                 const response = await fetch('/api/invites/generate', {
@@ -1330,7 +1363,7 @@
                         'Authorization': `Bearer ${idToken}`
                     },
                     body: JSON.stringify({
-                        treeId: window.currentFamilyTreeId,
+                        treeId: treeId,
                         personId: this.currentMember.id
                     })
                 });

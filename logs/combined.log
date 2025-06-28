@@ -48,3 +48,15 @@
 2025-06-28T15:40:13: App URL: https://rasin.pyebwa.com/app
 2025-06-28T15:40:13: Health: https://rasin.pyebwa.com/health
 2025-06-28T15:40:13:     
+2025-06-28T15:44:40: Firebase Admin SDK initialized with project ID
+2025-06-28T15:44:40: ✅ SendGrid email service initialized
+2025-06-28T15:44:40: 
+2025-06-28T15:44:40: 🌳 Pyebwa Family Tree App Server
+2025-06-28T15:44:40: ================================
+2025-06-28T15:44:40: Server running on 0.0.0.0:9111
+2025-06-28T15:44:40: Local: http://0.0.0.0:9111
+2025-06-28T15:44:40: External: https://rasin.pyebwa.com
+2025-06-28T15:44:40: 
+2025-06-28T15:44:40: App URL: https://rasin.pyebwa.com/app
+2025-06-28T15:44:40: Health: https://rasin.pyebwa.com/health
+2025-06-28T15:44:40:     
