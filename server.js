@@ -168,6 +168,10 @@ app.use('/api/system', systemRoutes);
 const inviteRoutes = require('./server/api/invites');
 app.use('/api/invites', inviteRoutes);
 
+// Auth API routes
+const authRoutes = require('./server/api/auth');
+app.use('/api/auth', authRoutes);
+
 // Handle 404s
 app.use((req, res) => {
     res.status(404).sendFile(path.join(__dirname, 'app', 'index.html'));

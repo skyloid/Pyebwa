@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{subject}}</title>
+    <style>
+        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+        table { border-collapse: collapse !important; }
+        body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
+
+        @media screen and (max-width: 600px) {
+            .container { padding: 0 10px !important; }
+            table[class="responsive-table"] { width: 100% !important; }
+            td[class="padding"] { padding: 10px 5% 15px 5% !important; }
+        }
+    </style>
+</head>
+<body style="margin: 0 !important; padding: 0 !important; background-color: #f4f4f4;">
+
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td bgcolor="#f4f4f4" align="center" style="padding: 40px 10px 40px 10px;">
+                <table class="responsive-table" border="0" cellpadding="0" cellspacing="0" width="600">
+                    <!-- Header -->
+                    <tr>
+                        <td bgcolor="#ffffff" align="center" style="padding: 40px 20px 20px 20px; border-radius: 10px 10px 0 0;">
+                            <h1 style="font-size: 32px; font-weight: 700; margin: 0; color: #333333; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                                📢 {{familyName}} Family Update
+                            </h1>
+                        </td>
+                    </tr>
+                    
+                    <!-- Main Content -->
+                    <tr>
+                        <td bgcolor="#ffffff" class="padding" style="padding: 20px 40px 40px 40px;">
+                            <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                                <tr>
+                                    <td style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px; color: #333333;">
+                                        {{#if recipientName}}
+                                        <p style="margin: 0 0 20px 0;">
+                                            Dear <strong>{{recipientName}}</strong>,
+                                        </p>
+                                        {{/if}}
+                                        
+                                        {{#if announcementTitle}}
+                                        <h2 style="font-size: 24px; margin: 0 0 20px 0; color: #667eea;">
+                                            {{announcementTitle}}
+                                        </h2>
+                                        {{/if}}
+                                        
+                                        <div style="margin: 0 0 30px 0;">
+                                            {{{content}}}
+                                        </div>
+                                        
+                                        {{#if actionUrl}}
+                                        <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                                            <tr>
+                                                <td align="center">
+                                                    <table border="0" cellspacing="0" cellpadding="0">
+                                                        <tr>
+                                                            <td align="center" style="border-radius: 8px; background-color: #667eea;">
+                                                                <a href="{{actionUrl}}" target="_blank" style="font-size: 18px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 8px; display: inline-block; font-weight: 600;">
+                                                                    {{#if actionText}}{{actionText}}{{else}}View in Pyebwa{{/if}}
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        {{/if}}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Sender Info -->
+                    {{#if senderName}}
+                    <tr>
+                        <td bgcolor="#ffffff" style="padding: 0 40px 40px 40px;">
+                            <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; text-align: center;">
+                                <p style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: #666666; margin: 0;">
+                                    This announcement was sent by <strong>{{senderName}}</strong>
+                                    {{#if senderRole}}<br><span style="font-size: 12px;">{{senderRole}}</span>{{/if}}
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                    {{/if}}
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td bgcolor="#f8f9fa" align="center" style="padding: 30px 40px; border-radius: 0 0 10px 10px;">
+                            <p style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: #666666; margin: 0 0 10px 0;">
+                                You're receiving this because you're a member of the {{familyName}} family tree on Pyebwa.
+                            </p>
+                            <p style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; color: #999999; margin: 0;">
+                                © {{currentYear}} Pyebwa. All rights reserved.
+                            </p>
+                            <p style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; color: #999999; margin: 10px 0 0 0;">
+                                <a href="{{unsubscribeUrl}}" style="color: #999999; text-decoration: underline;">Manage email preferences</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>

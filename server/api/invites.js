@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const admin = require('firebase-admin');
 const crypto = require('crypto');
+const emailService = require('../services/email');
 
 // Initialize Firestore
 const db = admin.firestore();
@@ -92,12 +93,36 @@ router.post('/generate', verifyToken, async (req, res) => {
             timestamp: admin.firestore.FieldValue.serverTimestamp()
         });
         
+        // Send invite email if person has email address
+        if (personData.email) {
+            try {
+                // Get inviter's name
+                const inviterDoc = await db.collection('users').doc(userId).get();
+                const inviterData = inviterDoc.data();
+                const inviterName = inviterData?.displayName || inviterData?.email?.split('@')[0] || 'A family member';
+                
+                await emailService.sendInviteEmail(personData.email, {
+                    personName: inviteData.personName,
+                    familyName: treeData.name || 'Family',
+                    inviterName: inviterName,
+                    inviteUrl: inviteUrl,
+                    expiresAt: inviteData.expiresAt.toDate().toLocaleDateString()
+                });
+                
+                console.log(`Invite email sent to ${personData.email}`);
+            } catch (emailError) {
+                console.error('Failed to send invite email:', emailError);
+                // Don't fail the whole request if email fails
+            }
+        }
+        
         res.json({
             success: true,
             inviteUrl: inviteUrl,
             token: inviteToken,
             expiresAt: inviteData.expiresAt.toDate(),
-            personName: inviteData.personName
+            personName: inviteData.personName,
+            emailSent: !!personData.email
         });
         
     } catch (error) {
