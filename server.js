@@ -142,6 +142,14 @@ app.post('/api/admin/setup', setupAdminEndpoint);
 const notificationRoutes = require('./server/api/notifications');
 app.use('/api/notifications', notificationRoutes);
 
+// Backup API routes
+const backupRoutes = require('./server/api/backup');
+app.use('/api/backup', backupRoutes);
+
+// System management API routes  
+const systemRoutes = require('./server/api/system');
+app.use('/api/system', systemRoutes);
+
 // Handle 404s
 app.use((req, res) => {
     res.status(404).sendFile(path.join(__dirname, 'app', 'index.html'));

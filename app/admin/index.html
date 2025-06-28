@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="/app/admin/css/admin-dark.css?v=1">
     <link rel="stylesheet" href="/app/admin/css/content.css?v=1">
     <link rel="stylesheet" href="/app/admin/css/communications.css?v=1">
+    <link rel="stylesheet" href="/app/admin/css/backup-system.css?v=1">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
@@ -147,6 +148,12 @@
                             <a href="#backup" class="menu-link">
                                 <span class="material-icons">backup</span>
                                 <span class="menu-text">Backup</span>
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="#system" class="menu-link">
+                                <span class="material-icons">build</span>
+                                <span class="menu-text">System</span>
                             </a>
                         </li>
                     </ul>
@@ -745,7 +752,19 @@
                     </div>
                 </div>
 
-                <!-- Other views will be added here -->
+                <!-- Backup View -->
+                <div id="backupView" class="admin-view">
+                    <div id="content">
+                        <!-- Content will be dynamically loaded by backup module -->
+                    </div>
+                </div>
+
+                <!-- System View -->
+                <div id="systemView" class="admin-view">
+                    <div id="content">
+                        <!-- Content will be dynamically loaded by system module -->
+                    </div>
+                </div>
             </main>
         </div>
     </div>
@@ -771,6 +790,8 @@
     <script src="/app/admin/js/modules/content.js"></script>
     <script src="/app/admin/js/modules/communications.js"></script>
     <script src="/app/admin/js/modules/audit.js"></script>
+    <script src="/app/admin/js/modules/backup.js"></script>
+    <script src="/app/admin/js/modules/system.js"></script>
     <script src="/app/admin/js/admin-app.js"></script>
 </body>
 </html>

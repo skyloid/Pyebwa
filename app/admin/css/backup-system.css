@@ -1,0 +1,568 @@
+/* Backup and System Management Styles */
+
+/* Backup Module Styles */
+.backup-container {
+    padding: 20px;
+}
+
+.backup-sections {
+    display: grid;
+    gap: 24px;
+}
+
+.backup-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.backup-option {
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--surface-color);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    margin: 0;
+}
+
+.checkbox-label input[type="checkbox"] {
+    margin: 0;
+}
+
+.backup-format {
+    margin-top: 20px;
+}
+
+.radio-group {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    margin: 0;
+}
+
+.backup-history-list {
+    min-height: 200px;
+}
+
+.backup-history-table {
+    overflow-x: auto;
+}
+
+.schedule-info {
+    padding: 16px;
+    background: var(--surface-color);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+/* System Module Styles */
+.system-container {
+    padding: 20px;
+}
+
+.system-sections {
+    display: grid;
+    gap: 24px;
+}
+
+.system-health-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.health-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.health-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.health-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--primary-color);
+    color: white;
+}
+
+.health-info h3 {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.health-value {
+    margin: 0 0 4px 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.health-value.status-good {
+    color: var(--success-color);
+}
+
+.health-value.status-bad {
+    color: var(--error-color);
+}
+
+.health-label {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* Performance Charts */
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.chart-container {
+    padding: 16px;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.chart-container h3 {
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.chart-container canvas {
+    max-height: 200px !important;
+}
+
+/* Configuration Styles */
+.config-section {
+    margin-bottom: 24px;
+}
+
+.config-section h3 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.env-vars-list,
+.feature-flags-list {
+    display: grid;
+    gap: 8px;
+}
+
+.config-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+}
+
+.config-item strong {
+    min-width: 200px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.sensitive-value {
+    color: var(--text-secondary);
+    font-family: monospace;
+}
+
+.feature-flag {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+}
+
+/* Switch Component */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--primary-color);
+}
+
+input:checked + .slider:before {
+    transform: translateX(20px);
+}
+
+/* Services Grid */
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.service-card {
+    padding: 16px;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.service-card.service-operational {
+    border-left: 4px solid var(--success-color);
+}
+
+.service-card.service-error {
+    border-left: 4px solid var(--error-color);
+}
+
+.service-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.service-header .material-icons {
+    font-size: 20px;
+    color: var(--text-secondary);
+}
+
+.service-header h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.service-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.status-indicator.status-good {
+    background-color: var(--success-color);
+}
+
+.status-indicator.status-bad {
+    background-color: var(--error-color);
+}
+
+.service-details small {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+/* System Logs */
+.system-logs {
+    max-height: 400px;
+    overflow-y: auto;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.log-entry {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color);
+    font-family: monospace;
+    font-size: 12px;
+}
+
+.log-entry:last-child {
+    border-bottom: none;
+}
+
+.log-time {
+    flex-shrink: 0;
+    color: var(--text-secondary);
+    width: 150px;
+}
+
+.log-level {
+    flex-shrink: 0;
+    width: 60px;
+    font-weight: 600;
+}
+
+.log-entry.log-error .log-level {
+    color: var(--error-color);
+}
+
+.log-entry.log-warning .log-level {
+    color: var(--warning-color);
+}
+
+.log-entry.log-info .log-level {
+    color: var(--info-color);
+}
+
+.log-message {
+    flex: 1;
+    color: var(--text-primary);
+}
+
+.log-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* Config Editor */
+.config-editor {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.config-editor-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+}
+
+.config-editor-item input {
+    flex: 1;
+}
+
+.config-editor-item .switch {
+    flex-shrink: 0;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 20px;
+}
+
+.tab-btn {
+    padding: 12px 20px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+.tab-content {
+    position: relative;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+/* Maintenance Mode Styles */
+.maintenance-message {
+    background: var(--warning-color);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+}
+
+/* Rotating animation for loading spinners */
+@keyframes rotating {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.rotating {
+    animation: rotating 1s linear infinite;
+}
+
+/* Badge styles */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.badge-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.badge-secondary {
+    background: var(--text-secondary);
+    color: white;
+}
+
+.badge-success {
+    background: var(--success-color);
+    color: white;
+}
+
+.badge-warning {
+    background: var(--warning-color);
+    color: white;
+}
+
+.badge-danger {
+    background: var(--error-color);
+    color: white;
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+}
+
+.error-message {
+    color: var(--error-color);
+    padding: 16px;
+    background: rgba(var(--error-color-rgb), 0.1);
+    border: 1px solid var(--error-color);
+    border-radius: 6px;
+    margin: 16px 0;
+}
+
+/* Modal improvements for larger content */
+.modal-lg {
+    max-width: 900px;
+}
+
+.modal-lg .modal-content {
+    width: 100%;
+    max-width: 900px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .system-health-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .services-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .backup-options {
+        grid-template-columns: 1fr;
+    }
+    
+    .radio-group {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .log-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .config-editor-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+}

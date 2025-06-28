@@ -288,6 +288,54 @@ service cloud.firestore {
       allow delete: if request.auth != null && request.auth.uid == userId;
     }
     
+    // Backups collection (superadmin only)
+    match /backups/{backupId} {
+      // Only superadmins can read backups
+      allow read: if hasRole('superadmin');
+      
+      // Only system/superadmins can create backups
+      allow create: if hasRole('superadmin');
+      
+      // Only superadmins can update backup metadata
+      allow update: if hasRole('superadmin');
+      
+      // Only superadmins can delete backups
+      allow delete: if hasRole('superadmin');
+    }
+    
+    // System configuration collection
+    match /system_config/{configId} {
+      // Admins can read system config
+      allow read: if isAdmin() || hasRole('superadmin') || hasRole('admin');
+      
+      // Only superadmins can create/update system config
+      allow create, update: if hasRole('superadmin');
+      
+      // Only superadmins can delete system config
+      allow delete: if hasRole('superadmin');
+    }
+    
+    // System logs collection
+    match /system_logs/{logId} {
+      // Admins can read system logs
+      allow read: if isAdmin() || hasRole('superadmin') || hasRole('admin');
+      
+      // System/admins can create logs
+      allow create: if isAdmin() || hasRole('superadmin') || hasRole('admin');
+      
+      // Logs are immutable
+      allow update, delete: if false;
+    }
+    
+    // System health collection (for health checks)
+    match /system_health/{docId} {
+      // Public read for health checks
+      allow read: if true;
+      
+      // Only system can write health data
+      allow write: if false;
+    }
+    
     // Default deny all
     match /{document=**} {
       allow read, write: if false;

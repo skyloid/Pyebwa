@@ -61,6 +61,11 @@
                     title: 'Backup',
                     view: 'backupView',
                     requiresPermission: 'manageBackup'
+                },
+                'system': {
+                    title: 'System Management',
+                    view: 'systemView',
+                    requiresPermission: 'manageSystem'
                 }
             };
         },
@@ -199,6 +204,20 @@
                 case 'audit':
                     // Initialize audit logs when implemented
                     break;
+                
+                case 'backup':
+                    if (window.backupModule && !backupModule.initialized) {
+                        backupModule.init();
+                        backupModule.initialized = true;
+                    }
+                    break;
+                
+                case 'system':
+                    if (window.systemModule && !systemModule.initialized) {
+                        systemModule.init();
+                        systemModule.initialized = true;
+                    }
+                    break;
             }
         },
         
@@ -214,7 +233,7 @@
                 'superadmin': [
                     'viewDashboard', 'manageUsers', 'manageTrees', 'manageContent',
                     'viewAnalytics', 'manageCommunications', 'manageSettings',
-                    'viewAuditLogs', 'manageBackup'
+                    'viewAuditLogs', 'manageBackup', 'manageSystem'
                 ],
                 'admin': [
                     'viewDashboard', 'manageUsers', 'manageTrees', 'manageContent',
