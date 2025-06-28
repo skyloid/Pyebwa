@@ -1,3 +1,6 @@
+// Load environment variables first
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const compression = require('compression');
@@ -8,15 +11,21 @@ const { setupAdminEndpoint } = require('./server-admin-setup');
 // Initialize Firebase Admin SDK (if not already initialized)
 const admin = require('firebase-admin');
 if (!admin.apps.length) {
-    const serviceAccount = require('./serviceAccountKey.json'); // You need to add this file
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        databaseURL: "https://pyebwa-f5960.firebaseio.com"
-    });
+    try {
+        const serviceAccount = require('./serviceAccountKey.json');
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount),
+            databaseURL: process.env.FIREBASE_DATABASE_URL || "https://pyebwa-f5960.firebaseio.com"
+        });
+        console.log('✅ Firebase Admin SDK initialized successfully');
+    } catch (error) {
+        console.error('❌ Firebase Admin SDK initialization failed:', error.message);
+        console.error('Make sure serviceAccountKey.json exists and is valid');
+    }
 }
 
 const app = express();
-const PORT = 9111;
+const PORT = process.env.PORT || 9111;
 
 // Middleware
 app.use(cors({
