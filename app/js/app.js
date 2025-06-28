@@ -787,6 +787,7 @@ async function initializeUserFamilyTree() {
         if (userDoc.exists && userDoc.data().familyTreeId) {
             userFamilyTreeId = userDoc.data().familyTreeId;
             window.userFamilyTreeId = userFamilyTreeId;
+            window.currentFamilyTreeId = userFamilyTreeId; // Also set this for member profile
             console.log('Found existing family tree:', userFamilyTreeId);
         } else {
             console.log('No family tree found, creating new one...');
@@ -816,6 +817,7 @@ async function initializeUserFamilyTree() {
             const treeRef = await db.collection('familyTrees').add(treeData);
             userFamilyTreeId = treeRef.id;
             window.userFamilyTreeId = userFamilyTreeId;
+            window.currentFamilyTreeId = userFamilyTreeId; // Also set this for member profile
             console.log('Created family tree with ID:', userFamilyTreeId);
             
             // Update user document with family tree ID
@@ -898,6 +900,7 @@ async function loadFamilyMembers() {
                 memberIds.add(doc.id);
                 familyMembers.push({
                     id: doc.id,
+                    treeId: userFamilyTreeId, // Add tree ID to each member
                     ...doc.data()
                 });
             }
