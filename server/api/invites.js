@@ -46,9 +46,15 @@ router.post('/generate', verifyToken, async (req, res) => {
             return res.status(403).json({ error: 'Access denied to this family tree' });
         }
         
-        // Get person data
-        const personDoc = await db.collection('familyTrees').doc(treeId)
-            .collection('persons').doc(personId).get();
+        // Get person data - try both 'members' and 'persons' collections
+        let personDoc = await db.collection('familyTrees').doc(treeId)
+            .collection('members').doc(personId).get();
+        
+        if (!personDoc.exists) {
+            // Try persons collection as fallback
+            personDoc = await db.collection('familyTrees').doc(treeId)
+                .collection('persons').doc(personId).get();
+        }
         
         if (!personDoc.exists) {
             return res.status(404).json({ error: 'Person not found' });
@@ -156,8 +162,16 @@ router.get('/details/:token', async (req, res) => {
         
         // Get tree and person details
         const treeDoc = await db.collection('familyTrees').doc(inviteData.treeId).get();
-        const personDoc = await db.collection('familyTrees').doc(inviteData.treeId)
-            .collection('persons').doc(inviteData.personId).get();
+        
+        // Try members collection first
+        let personDoc = await db.collection('familyTrees').doc(inviteData.treeId)
+            .collection('members').doc(inviteData.personId).get();
+        
+        if (!personDoc.exists) {
+            // Try persons collection as fallback
+            personDoc = await db.collection('familyTrees').doc(inviteData.treeId)
+                .collection('persons').doc(inviteData.personId).get();
+        }
         
         if (!treeDoc.exists || !personDoc.exists) {
             return res.status(404).json({ error: 'Family tree or person no longer exists' });
@@ -210,9 +224,17 @@ router.post('/accept/:token', async (req, res) => {
         // Start a batch write
         const batch = db.batch();
         
-        // Update person document to link with user
-        const personRef = db.collection('familyTrees').doc(inviteData.treeId)
-            .collection('persons').doc(inviteData.personId);
+        // Update person document to link with user - check both collections
+        let personRef = db.collection('familyTrees').doc(inviteData.treeId)
+            .collection('members').doc(inviteData.personId);
+        
+        // Check if document exists in members collection
+        const memberDoc = await personRef.get();
+        if (!memberDoc.exists) {
+            // Try persons collection
+            personRef = db.collection('familyTrees').doc(inviteData.treeId)
+                .collection('persons').doc(inviteData.personId);
+        }
         
         batch.update(personRef, {
             userId: userId,
