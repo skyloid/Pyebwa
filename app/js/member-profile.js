@@ -202,6 +202,7 @@
                 }
                 
                 this.currentMember = member;
+                this.currentTreeId = member.treeId || window.currentFamilyTreeId || window.userFamilyTreeId;
                 
                 // Show modal first
                 const modal = document.getElementById('memberProfileModal');
@@ -1321,34 +1322,33 @@
                     throw new Error('User not authenticated');
                 }
                 
-                // Get family tree ID from various sources
-                let treeId = null;
+                // Get family tree ID from stored value
+                let treeId = this.currentTreeId;
                 
-                // Try to get from window.app
-                if (window.app && window.app.currentFamilyTreeId) {
-                    treeId = window.app.currentFamilyTreeId;
+                // Add debug logging
+                console.log('Invite generation - Tree ID sources:');
+                console.log('- this.currentTreeId:', this.currentTreeId);
+                console.log('- member.treeId:', this.currentMember.treeId);
+                console.log('- window.currentFamilyTreeId:', window.currentFamilyTreeId);
+                console.log('- window.userFamilyTreeId:', window.userFamilyTreeId);
+                
+                // Fallback methods if stored ID is not available
+                if (!treeId) {
+                    treeId = this.currentMember.treeId || 
+                             window.currentFamilyTreeId || 
+                             window.userFamilyTreeId;
                 }
-                // Try to get from currentFamilyTreeId
-                else if (window.currentFamilyTreeId) {
-                    treeId = window.currentFamilyTreeId;
-                }
-                // Try to get from URL parameters
-                else {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    treeId = urlParams.get('treeId');
-                }
-                // Try to get from member data if it has treeId
-                if (!treeId && this.currentMember.treeId) {
-                    treeId = this.currentMember.treeId;
-                }
+                
                 // As last resort, try to get user's default tree
                 if (!treeId) {
                     const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
                     if (userDoc.exists) {
                         const userData = userDoc.data();
-                        treeId = userData.lastTreeAccessed || (userData.familyTrees && userData.familyTrees[0]);
+                        treeId = userData.familyTreeId || userData.lastTreeAccessed || (userData.familyTrees && userData.familyTrees[0]);
                     }
                 }
+                
+                console.log('Final tree ID for invite:', treeId);
                 
                 if (!treeId) {
                     throw new Error('Could not determine family tree ID');
