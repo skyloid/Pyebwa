@@ -1,18 +1,20 @@
 module.exports = {
   apps: [{
-    name: 'pyebwa-app',
-    script: './server.js',
+    name: 'pyebwa-server',
+    script: 'server.js',
     instances: 1,
-    autorestart: true,
+    exec_mode: 'fork',
     watch: false,
     max_memory_restart: '1G',
     env: {
       NODE_ENV: 'production',
       PORT: 9111
     },
-    error_file: './logs/error.log',
+    log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+    error_file: './logs/err.log',
     out_file: './logs/out.log',
     log_file: './logs/combined.log',
+    merge_logs: true,
     time: true
   }]
 };
