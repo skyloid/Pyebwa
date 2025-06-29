@@ -26,7 +26,7 @@
         
         // Initialize variables
         let currentSlide = 0;
-        const SLIDE_INTERVAL = 3000; // 3 seconds for faster debugging
+        const SLIDE_INTERVAL = 7000; // 7 seconds
         
         // Make sure only first slide is active initially
         slides.forEach((slide, index) => {
@@ -60,11 +60,7 @@
             slides[currentSlide].classList.add('active');
             slides[currentSlide].style.opacity = '1';
             
-            // Add temporary visual indicator for debugging
-            slides[currentSlide].style.border = '5px solid red';
-            setTimeout(() => {
-                slides[currentSlide].style.border = '';
-            }, 1000);
+            // Visual debugging removed for production
             
             // Hide previous slide after transition starts
             setTimeout(() => {
