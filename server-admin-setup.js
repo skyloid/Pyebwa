@@ -1,23 +1,5 @@
-const admin = require('firebase-admin');
-
-// Initialize Firebase Admin SDK
-// Note: In production, you should use a service account key file
-try {
-    if (!admin.apps.length) {
-        // Try to initialize with project ID only
-        // This will work if running on Google Cloud or with GOOGLE_APPLICATION_CREDENTIALS set
-        admin.initializeApp({
-            projectId: 'pyebwa-f5960',
-            databaseURL: 'https://pyebwa-f5960.firebaseio.com'
-        });
-        console.log('Firebase Admin SDK initialized with project ID');
-    }
-} catch (error) {
-    console.error('Failed to initialize Firebase Admin SDK:', error);
-    console.log('Note: You may need to set up a service account key for this to work properly');
-}
-
-const db = admin.firestore();
+// Use centralized Firebase Admin initialization
+const { admin, db } = require('./server/services/firebase-admin');
 
 // Middleware to setup admin role
 async function setupAdminEndpoint(req, res) {

@@ -8,20 +8,13 @@ const path = require('path');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const { setupAdminEndpoint } = require('./server-admin-setup');
 
-// Initialize Firebase Admin SDK (if not already initialized)
-const admin = require('firebase-admin');
-if (!admin.apps.length) {
-    try {
-        const serviceAccount = require('./serviceAccountKey.json');
-        admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount),
-            databaseURL: process.env.FIREBASE_DATABASE_URL || "https://pyebwa-f5960.firebaseio.com"
-        });
-        console.log('✅ Firebase Admin SDK initialized successfully');
-    } catch (error) {
-        console.error('❌ Firebase Admin SDK initialization failed:', error.message);
-        console.error('Make sure serviceAccountKey.json exists and is valid');
-    }
+// Initialize Firebase Admin SDK through centralized service
+try {
+    require('./server/services/firebase-admin');
+    console.log('✅ Firebase Admin SDK initialized successfully');
+} catch (error) {
+    console.error('❌ Firebase Admin SDK initialization failed:', error.message);
+    console.error('Make sure serviceAccountKey.json exists and is valid');
 }
 
 const app = express();
