@@ -967,7 +967,10 @@ function initializeEventListeners() {
     // Close user menu when clicking outside
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.user-menu')) {
-            document.querySelector('.user-menu').classList.remove('active');
+            const userMenu = document.querySelector('.user-menu');
+            if (userMenu) {
+                userMenu.classList.remove('active');
+            }
         }
     });
     

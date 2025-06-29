@@ -87,9 +87,34 @@
             color: var(--white);
         }
         
-        body.dark-mode .user-menu {
-            background: var(--gray-100);
-            border-color: var(--gray-300);
+        body.dark-mode .user-menu-btn {
+            background: var(--bg-secondary);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        body.dark-mode .user-menu-btn:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--border-hover);
+        }
+        
+        body.dark-mode .user-dropdown {
+            background: var(--bg-secondary);
+            border-color: var(--border-color);
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+        
+        body.dark-mode .user-dropdown a {
+            color: var(--text-primary);
+        }
+        
+        body.dark-mode .user-dropdown a:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        body.dark-mode .user-dropdown hr {
+            border-color: var(--border-color);
         }
         
         body.dark-mode .modal-content {
