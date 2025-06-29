@@ -26,31 +26,53 @@
         
         // Initialize variables
         let currentSlide = 0;
-        const SLIDE_INTERVAL = 7000; // 7 seconds
+        const SLIDE_INTERVAL = 3000; // 3 seconds for faster debugging
         
         // Make sure only first slide is active initially
         slides.forEach((slide, index) => {
             if (index === 0) {
                 slide.classList.add('active');
                 slide.style.opacity = '1';
+                slide.style.zIndex = '10';
+                console.log(`[Slideshow] Initialized slide ${index} as active`);
             } else {
                 slide.classList.remove('active');
                 slide.style.opacity = '0';
+                slide.style.zIndex = '1';
+                console.log(`[Slideshow] Initialized slide ${index} as inactive`);
             }
         });
         
         // Function to show next slide
         function showNextSlide() {
-            // Hide current slide
-            slides[currentSlide].classList.remove('active');
-            slides[currentSlide].style.opacity = '0';
+            const previousSlide = currentSlide;
             
             // Move to next slide
             currentSlide = (currentSlide + 1) % slides.length;
             
+            console.log(`[Slideshow] Transitioning from slide ${previousSlide + 1} to slide ${currentSlide + 1}`);
+            
+            // Set z-index to ensure new slide appears on top
+            slides[currentSlide].style.zIndex = '10';
+            slides[previousSlide].style.zIndex = '5';
+            
             // Show next slide
             slides[currentSlide].classList.add('active');
             slides[currentSlide].style.opacity = '1';
+            
+            // Add temporary visual indicator for debugging
+            slides[currentSlide].style.border = '5px solid red';
+            setTimeout(() => {
+                slides[currentSlide].style.border = '';
+            }, 1000);
+            
+            // Hide previous slide after transition starts
+            setTimeout(() => {
+                slides[previousSlide].classList.remove('active');
+                slides[previousSlide].style.opacity = '0';
+                slides[previousSlide].style.zIndex = '1';
+                console.log(`[Slideshow] Hidden slide ${previousSlide + 1}`);
+            }, 100);
             
             console.log(`[Slideshow] Showing slide ${currentSlide + 1} of ${slides.length}`);
         }
