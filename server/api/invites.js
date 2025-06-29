@@ -1,11 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const admin = require('firebase-admin');
 const crypto = require('crypto');
 const emailService = require('../services/email');
-
-// Initialize Firestore
-const db = admin.firestore();
+const { admin, db } = require('../services/firebase-admin');
 
 // Middleware to verify Firebase ID token
 async function verifyToken(req, res, next) {
@@ -28,6 +25,11 @@ async function verifyToken(req, res, next) {
 // Generate invite link for a family member
 router.post('/generate', verifyToken, async (req, res) => {
     try {
+        console.log('Invite generation request received');
+        console.log('Admin instance:', !!admin);
+        console.log('DB instance:', !!db);
+        console.log('Request body:', req.body);
+        
         const { treeId, personId } = req.body;
         const userId = req.user.uid;
         
@@ -35,14 +37,33 @@ router.post('/generate', verifyToken, async (req, res) => {
             return res.status(400).json({ error: 'Tree ID and Person ID are required' });
         }
         
+        console.log('Accessing Firestore for tree:', treeId);
+        console.log('User ID from token:', userId);
+        
         // Verify user has access to this tree
         const treeDoc = await db.collection('familyTrees').doc(treeId).get();
         if (!treeDoc.exists) {
+            console.log('Tree not found:', treeId);
             return res.status(404).json({ error: 'Family tree not found' });
         }
         
         const treeData = treeDoc.data();
-        if (treeData.createdBy !== userId && !treeData.collaborators?.includes(userId)) {
+        console.log('Full tree document data:', JSON.stringify(treeData, null, 2));
+        
+        // Check access using the correct field names: ownerId and memberIds
+        const isOwner = treeData.ownerId === userId;
+        const isMember = treeData.memberIds?.includes(userId);
+        
+        console.log('Tree data access check:', {
+            ownerId: treeData.ownerId,
+            memberIds: treeData.memberIds,
+            userId: userId,
+            isOwner: isOwner,
+            isMember: isMember
+        });
+        
+        if (!isOwner && !isMember) {
+            console.log('Access denied - user is not owner or member');
             return res.status(403).json({ error: 'Access denied to this family tree' });
         }
         
@@ -242,10 +263,10 @@ router.post('/accept/:token', async (req, res) => {
             claimedViaInvite: true
         });
         
-        // Add user as a collaborator to the tree
+        // Add user as a member to the tree (using memberIds field)
         const treeRef = db.collection('familyTrees').doc(inviteData.treeId);
         batch.update(treeRef, {
-            collaborators: admin.firestore.FieldValue.arrayUnion(userId)
+            memberIds: admin.firestore.FieldValue.arrayUnion(userId)
         });
         
         // Update user document to add this tree
@@ -351,7 +372,8 @@ router.get('/list/:treeId', verifyToken, async (req, res) => {
         }
         
         const treeData = treeDoc.data();
-        if (treeData.createdBy !== userId && !treeData.collaborators?.includes(userId)) {
+        // Check access using the correct field names: ownerId and memberIds
+        if (treeData.ownerId !== userId && !treeData.memberIds?.includes(userId)) {
             // Check if user is admin
             const userDoc = await db.collection('users').doc(userId).get();
             const userData = userDoc.data();

@@ -1,11 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const admin = require('firebase-admin');
 const crypto = require('crypto');
 const emailService = require('../services/email');
-
-// Initialize Firestore
-const db = admin.firestore();
+const { admin, db } = require('../services/firebase-admin');
 
 // Password reset request
 router.post('/password-reset/request', async (req, res) => {

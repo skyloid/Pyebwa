@@ -86,7 +86,10 @@
       "Bash(pm2 stop:*)",
       "Bash(pm2 delete:*)",
       "Bash(pm2 save:*)",
-      "Bash(/home/pyebwa-rasin/htdocs/rasin.pyebwa.com/monitor_server.sh:*)"
+      "Bash(/home/pyebwa-rasin/htdocs/rasin.pyebwa.com/monitor_server.sh:*)",
+      "Bash(pm2 env:*)",
+      "Bash(pm2 flush:*)",
+      "Bash(pm2 kill:*)"
     ],
     "deny": []
   }
