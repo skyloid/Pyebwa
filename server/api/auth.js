@@ -2,7 +2,118 @@ const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
 const emailService = require('../services/email');
+const passwordGenerator = require('../services/passwordGenerator');
 const { admin, db } = require('../services/firebase-admin');
+
+// User signup with auto-generated password
+router.post('/signup', async (req, res) => {
+    try {
+        const { email, fullName } = req.body;
+        
+        // Validate input
+        if (!email || !fullName) {
+            return res.status(400).json({ error: 'Email and full name are required' });
+        }
+        
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: 'Invalid email format' });
+        }
+        
+        // Check if user already exists
+        try {
+            const existingUser = await admin.auth().getUserByEmail(email);
+            if (existingUser) {
+                return res.status(409).json({ error: 'An account with this email already exists' });
+            }
+        } catch (error) {
+            // User doesn't exist, which is what we want
+            if (error.code !== 'auth/user-not-found') {
+                throw error;
+            }
+        }
+        
+        // Generate secure password
+        const password = passwordGenerator.generatePassword();
+        
+        try {
+            // Create Firebase user
+            const userRecord = await admin.auth().createUser({
+                email: email,
+                password: password,
+                displayName: fullName,
+                emailVerified: false
+            });
+            
+            // Create user document in Firestore
+            await db.collection('users').doc(userRecord.uid).set({
+                uid: userRecord.uid,
+                email: userRecord.email,
+                fullName: fullName,
+                displayName: fullName,
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                language: 'en',
+                signupMethod: 'email',
+                passwordGenerated: true
+            });
+            
+            // Log the signup
+            await db.collection('admin_logs').add({
+                action: 'user_signup',
+                userId: userRecord.uid,
+                email: email,
+                method: 'email_with_generated_password',
+                timestamp: admin.firestore.FieldValue.serverTimestamp()
+            });
+            
+            // Send welcome email with password
+            const loginUrl = process.env.APP_URL || 'https://rasin.pyebwa.com';
+            await emailService.sendEmail(email, 'Welcome to Pyebwa Family Tree', 'welcome-with-password', {
+                userName: fullName,
+                password: password,
+                loginUrl: loginUrl + '/login.html',
+                language: 'en'
+            });
+            
+            console.log(`New user created: ${email} with generated password`);
+            
+            res.json({
+                success: true,
+                message: 'Account created successfully. Check your email for login instructions.',
+                userId: userRecord.uid
+            });
+            
+        } catch (error) {
+            console.error('Error creating user:', error);
+            
+            // Clean up if user was partially created
+            try {
+                const partialUser = await admin.auth().getUserByEmail(email);
+                if (partialUser) {
+                    await admin.auth().deleteUser(partialUser.uid);
+                }
+            } catch (cleanupError) {
+                console.error('Cleanup error:', cleanupError);
+            }
+            
+            throw error;
+        }
+        
+    } catch (error) {
+        console.error('Signup error:', error);
+        
+        let errorMessage = 'Failed to create account. Please try again.';
+        if (error.code === 'auth/email-already-in-use') {
+            errorMessage = 'An account with this email already exists.';
+        } else if (error.code === 'auth/invalid-email') {
+            errorMessage = 'Invalid email address.';
+        }
+        
+        res.status(500).json({ error: errorMessage });
+    }
+});
 
 // Password reset request
 router.post('/password-reset/request', async (req, res) => {
@@ -118,18 +229,13 @@ router.post('/password-reset/verify', async (req, res) => {
     }
 });
 
-// Complete password reset
+// Complete password reset - generates new password
 router.post('/password-reset/complete', async (req, res) => {
     try {
-        const { token, newPassword } = req.body;
+        const { token } = req.body;
         
-        if (!token || !newPassword) {
-            return res.status(400).json({ error: 'Token and new password are required' });
-        }
-        
-        // Validate password strength
-        if (newPassword.length < 8) {
-            return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+        if (!token) {
+            return res.status(400).json({ error: 'Reset token is required' });
         }
         
         // Hash the token to look it up
@@ -154,6 +260,9 @@ router.post('/password-reset/complete', async (req, res) => {
             return res.status(410).json({ error: 'Reset token has already been used' });
         }
         
+        // Generate new secure password
+        const newPassword = passwordGenerator.generatePassword();
+        
         // Update user password
         await admin.auth().updateUser(resetData.userId, {
             password: newPassword
@@ -165,16 +274,33 @@ router.post('/password-reset/complete', async (req, res) => {
             usedAt: admin.firestore.FieldValue.serverTimestamp()
         });
         
+        // Get user info for email
+        const userRecord = await admin.auth().getUser(resetData.userId);
+        const userDoc = await db.collection('users').doc(resetData.userId).get();
+        const userData = userDoc.data() || {};
+        
+        // Send email with new password
+        const userName = userRecord.displayName || userData.displayName || userRecord.email.split('@')[0];
+        const loginUrl = process.env.APP_URL || 'https://rasin.pyebwa.com';
+        
+        await emailService.sendEmail(userRecord.email, 'Your New Password', 'password-reset-complete', {
+            userName: userName,
+            password: newPassword,
+            loginUrl: loginUrl + '/login.html',
+            language: userData.language || 'en'
+        });
+        
         // Log the activity
         await db.collection('admin_logs').add({
             action: 'password_reset_completed',
             userId: resetData.userId,
+            method: 'generated_password',
             timestamp: admin.firestore.FieldValue.serverTimestamp()
         });
         
         res.json({
             success: true,
-            message: 'Password has been reset successfully'
+            message: 'Password has been reset successfully. Check your email for the new password.'
         });
         
     } catch (error) {
