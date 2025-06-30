@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Slideshow Test</title>
+    <style>
+        /* Minimal slideshow styles */
+        .slideshow-container {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            overflow: hidden;
+            background: #000;
+        }
+        
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
+        }
+        
+        .slide.active {
+            opacity: 1;
+        }
+        
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Debug info */
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 1000;
+        }
+        
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        .controls button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .controls button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Minimal Slideshow Test</h1>
+    
+    <!-- Debug Info -->
+    <div class="debug-info" id="debugInfo">
+        <div>Current Slide: <span id="currentSlide">1</span></div>
+        <div>Total Slides: <span id="totalSlides">0</span></div>
+        <div>Status: <span id="status">Initializing...</span></div>
+    </div>
+    
+    <!-- Controls -->
+    <div class="controls">
+        <button onclick="prevSlide()">Previous</button>
+        <button onclick="toggleSlideshow()">Start/Stop</button>
+        <button onclick="nextSlide()">Next</button>
+    </div>
+    
+    <!-- Slideshow Container -->
+    <div class="slideshow-container">
+        <div class="slide active">
+            <img src="https://pyebwa.com/images/SlideShow/20140508-094914.jpg" alt="Slide 1">
+        </div>
+        <div class="slide">
+            <img src="https://pyebwa.com/images/SlideShow/5e0a0e49e91b8e0f8379e91e7dee11f9.jpg" alt="Slide 2">
+        </div>
+        <div class="slide">
+            <img src="https://pyebwa.com/images/SlideShow/6e7c0d44bc280212592d6ede168dc4ca.jpg" alt="Slide 3">
+        </div>
+        <div class="slide">
+            <img src="https://pyebwa.com/images/SlideShow/LaCitadelle.jpg" alt="Slide 4">
+        </div>
+    </div>
+    
+    <script>
+        // Minimal slideshow implementation
+        let currentSlideIndex = 0;
+        let slides = [];
+        let isRunning = false;
+        let interval = null;
+        
+        function init() {
+            console.log('[Minimal Slideshow] Initializing...');
+            
+            const container = document.querySelector('.slideshow-container');
+            if (!container) {
+                updateStatus('Error: No container found');
+                return;
+            }
+            
+            slides = container.querySelectorAll('.slide');
+            if (slides.length === 0) {
+                updateStatus('Error: No slides found');
+                return;
+            }
+            
+            document.getElementById('totalSlides').textContent = slides.length;
+            updateStatus('Ready');
+            
+            // Initialize slides
+            slides.forEach((slide, index) => {
+                slide.style.opacity = index === 0 ? '1' : '0';
+                slide.style.zIndex = index === 0 ? '10' : '1';
+            });
+            
+            console.log(`[Minimal Slideshow] Found ${slides.length} slides`);
+            
+            // Check image loading
+            slides.forEach((slide, index) => {
+                const img = slide.querySelector('img');
+                if (img) {
+                    img.onload = () => console.log(`[Minimal Slideshow] Image ${index + 1} loaded`);
+                    img.onerror = () => console.error(`[Minimal Slideshow] Image ${index + 1} failed to load`);
+                }
+            });
+        }
+        
+        function showSlide(index) {
+            if (slides.length === 0) return;
+            
+            // Hide current slide
+            slides[currentSlideIndex].classList.remove('active');
+            slides[currentSlideIndex].style.opacity = '0';
+            slides[currentSlideIndex].style.zIndex = '1';
+            
+            // Update index
+            currentSlideIndex = index;
+            
+            // Show new slide
+            slides[currentSlideIndex].classList.add('active');
+            slides[currentSlideIndex].style.opacity = '1';
+            slides[currentSlideIndex].style.zIndex = '10';
+            
+            // Update debug info
+            document.getElementById('currentSlide').textContent = currentSlideIndex + 1;
+            console.log(`[Minimal Slideshow] Showing slide ${currentSlideIndex + 1}`);
+        }
+        
+        function nextSlide() {
+            const nextIndex = (currentSlideIndex + 1) % slides.length;
+            showSlide(nextIndex);
+        }
+        
+        function prevSlide() {
+            const prevIndex = (currentSlideIndex - 1 + slides.length) % slides.length;
+            showSlide(prevIndex);
+        }
+        
+        function toggleSlideshow() {
+            if (isRunning) {
+                stopSlideshow();
+            } else {
+                startSlideshow();
+            }
+        }
+        
+        function startSlideshow() {
+            if (isRunning) return;
+            
+            isRunning = true;
+            updateStatus('Running');
+            
+            interval = setInterval(nextSlide, 3000);
+            console.log('[Minimal Slideshow] Started');
+        }
+        
+        function stopSlideshow() {
+            if (!isRunning) return;
+            
+            isRunning = false;
+            updateStatus('Stopped');
+            
+            if (interval) {
+                clearInterval(interval);
+                interval = null;
+            }
+            console.log('[Minimal Slideshow] Stopped');
+        }
+        
+        function updateStatus(status) {
+            document.getElementById('status').textContent = status;
+        }
+        
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+        
+        // Auto-start after 2 seconds
+        setTimeout(() => {
+            if (!isRunning) {
+                console.log('[Minimal Slideshow] Auto-starting...');
+                startSlideshow();
+            }
+        }, 2000);
+    </script>
+</body>
+</html>

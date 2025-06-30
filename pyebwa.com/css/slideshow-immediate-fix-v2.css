@@ -1,0 +1,79 @@
+/* IMMEDIATE SLIDESHOW FIX V2 - JavaScript Compatible */
+/* This version works with both CSS animation and JavaScript control */
+
+/* Disable the automatic CSS animation when JavaScript is controlling */
+.slideshow-container:not(.css-only) .slide {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    /* Don't force opacity when JS is active */
+    transition: opacity 2s ease-in-out !important;
+}
+
+/* Fix z-index stacking */
+.slideshow-container .slide {
+    z-index: 1;
+}
+
+.slideshow-container .slide.active {
+    z-index: 10 !important;
+    opacity: 1 !important;
+}
+
+/* Ensure non-active slides are hidden */
+.slideshow-container .slide:not(.active) {
+    opacity: 0 !important;
+    z-index: 1 !important;
+}
+
+/* Pure CSS animation fallback - only when css-only class is added */
+@keyframes fadeSlideshow {
+    0% { opacity: 0; z-index: 1; }
+    3% { opacity: 1; z-index: 10; }
+    17% { opacity: 1; z-index: 10; }
+    20% { opacity: 0; z-index: 1; }
+    100% { opacity: 0; z-index: 1; }
+}
+
+.slideshow-container.css-only .slide {
+    opacity: 0 !important;
+    animation: fadeSlideshow 75s infinite !important;
+}
+
+/* Timing for CSS-only mode (15 slides × 5 seconds = 75s total) */
+.slideshow-container.css-only .slide:nth-child(1) { animation-delay: 0s !important; }
+.slideshow-container.css-only .slide:nth-child(2) { animation-delay: 5s !important; }
+.slideshow-container.css-only .slide:nth-child(3) { animation-delay: 10s !important; }
+.slideshow-container.css-only .slide:nth-child(4) { animation-delay: 15s !important; }
+.slideshow-container.css-only .slide:nth-child(5) { animation-delay: 20s !important; }
+.slideshow-container.css-only .slide:nth-child(6) { animation-delay: 25s !important; }
+.slideshow-container.css-only .slide:nth-child(7) { animation-delay: 30s !important; }
+.slideshow-container.css-only .slide:nth-child(8) { animation-delay: 35s !important; }
+.slideshow-container.css-only .slide:nth-child(9) { animation-delay: 40s !important; }
+.slideshow-container.css-only .slide:nth-child(10) { animation-delay: 45s !important; }
+.slideshow-container.css-only .slide:nth-child(11) { animation-delay: 50s !important; }
+.slideshow-container.css-only .slide:nth-child(12) { animation-delay: 55s !important; }
+.slideshow-container.css-only .slide:nth-child(13) { animation-delay: 60s !important; }
+.slideshow-container.css-only .slide:nth-child(14) { animation-delay: 65s !important; }
+.slideshow-container.css-only .slide:nth-child(15) { animation-delay: 70s !important; }
+
+/* Ensure images fill the slide */
+.slideshow-container .slide img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+}
+
+/* Debug mode - add red border to active slide */
+.slideshow-container.debug .slide.active {
+    border: 5px solid red !important;
+}
+
+/* Force first slide visible on load */
+.slideshow-container .slide:first-child {
+    opacity: 1;
+    z-index: 10;
+}

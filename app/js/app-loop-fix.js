@@ -1,10 +1,19 @@
 // Authentication Loop Fix Script
 // This script diagnoses and fixes authentication loops
 
-console.log('[Auth Loop Fix] Script loaded');
+(function() {
+    'use strict';
+    
+    console.log('[Auth Loop Fix] Script loaded');
 
-// Function to check and fix authentication issues
-function fixAuthLoop() {
+    // Check device type
+    const isTablet = window.DeviceDetection && window.DeviceDetection.isTablet();
+    if (isTablet) {
+        console.log('[Auth Loop Fix] Tablet device detected');
+    }
+
+    // Function to check and fix authentication issues
+    function fixAuthLoop() {
     console.log('[Auth Loop Fix] Checking for authentication issues...');
     
     // 1. Check redirect data
@@ -13,8 +22,10 @@ function fixAuthLoop() {
         const data = JSON.parse(redirectData);
         console.log('[Auth Loop Fix] Redirect data found:', data);
         
-        if (data.count > 2) {
-            console.log('[Auth Loop Fix] Loop detected! Clearing redirect data...');
+        // Tablets get higher threshold
+        const loopThreshold = isTablet ? 4 : 2;
+        if (data.count > loopThreshold) {
+            console.log(`[Auth Loop Fix] Loop detected! (${data.count} > ${loopThreshold}) Clearing redirect data...`);
             sessionStorage.removeItem('pyebwaRedirectData');
         }
     }
@@ -48,8 +59,9 @@ function fixAuthLoop() {
                     const redirectData = sessionStorage.getItem('pyebwaRedirectData');
                     if (redirectData) {
                         const data = JSON.parse(redirectData);
-                        if (data.count > 2) {
-                            console.log('[Auth Loop Fix] Too many redirects, stopping');
+                        const maxRedirects = isTablet ? 4 : 2;
+                        if (data.count > maxRedirects) {
+                            console.log(`[Auth Loop Fix] Too many redirects (${data.count} > ${maxRedirects}), stopping`);
                             return;
                         }
                     }
@@ -92,7 +104,9 @@ function fixAuthLoop() {
         const redirectData = sessionStorage.getItem('pyebwaRedirectData');
         if (redirectData) {
             const data = JSON.parse(redirectData);
-            if (data.count > 1) {
+            // Show button earlier for tablets
+            const showButtonThreshold = isTablet ? 2 : 1;
+            if (data.count > showButtonThreshold) {
                 stopButton.style.display = 'block';
             }
         }
@@ -106,18 +120,20 @@ if (document.readyState === 'loading') {
     fixAuthLoop();
 }
 
-// Export for testing
-window.authLoopFix = {
-    checkRedirectCount: () => {
-        const data = sessionStorage.getItem('pyebwaRedirectData');
-        return data ? JSON.parse(data).count : 0;
-    },
-    clearRedirectData: () => {
-        sessionStorage.removeItem('pyebwaRedirectData');
-        console.log('[Auth Loop Fix] Redirect data cleared');
-    },
-    forceStopLoop: () => {
-        sessionStorage.clear();
-        window.location.href = '/';
-    }
-};
+    // Export for testing
+    window.authLoopFix = {
+        checkRedirectCount: () => {
+            const data = sessionStorage.getItem('pyebwaRedirectData');
+            return data ? JSON.parse(data).count : 0;
+        },
+        clearRedirectData: () => {
+            sessionStorage.removeItem('pyebwaRedirectData');
+            console.log('[Auth Loop Fix] Redirect data cleared');
+        },
+        forceStopLoop: () => {
+            sessionStorage.clear();
+            window.location.href = '/';
+        }
+    };
+
+})(); // End IIFE
