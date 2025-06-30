@@ -358,11 +358,22 @@
             // Update age distribution
             const maxAge = Math.max(...Object.values(stats.ageGroups));
             Object.entries(stats.ageGroups).forEach(([group, count]) => {
-                const ageGroup = widget.querySelector(`.age-group:has(.age-label:contains("${group}"))`);
-                if (ageGroup) {
+                // Find age group by looking for the text content in age labels
+                const ageGroups = widget.querySelectorAll('.age-group');
+                let targetAgeGroup = null;
+                
+                for (const ageGroupEl of ageGroups) {
+                    const ageLabel = ageGroupEl.querySelector('.age-label');
+                    if (ageLabel && ageLabel.textContent.trim() === group) {
+                        targetAgeGroup = ageGroupEl;
+                        break;
+                    }
+                }
+                
+                if (targetAgeGroup) {
                     const percent = maxAge > 0 ? (count / maxAge) * 100 : 0;
-                    ageGroup.querySelector('.age-fill').style.width = `${percent}%`;
-                    ageGroup.querySelector('.age-count').textContent = count;
+                    targetAgeGroup.querySelector('.age-fill').style.width = `${percent}%`;
+                    targetAgeGroup.querySelector('.age-count').textContent = count;
                 }
             });
         },
