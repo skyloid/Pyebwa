@@ -9,7 +9,8 @@ window.currentUser = currentUser;
 window.userFamilyTreeId = null;
 
 // Redirect cooldown configuration
-const REDIRECT_COOLDOWN = 30000; // 30 seconds cooldown between redirects
+// Tablets get longer cooldown to prevent rapid loops
+const REDIRECT_COOLDOWN = window.DeviceDetection && window.DeviceDetection.isTablet() ? 60000 : 30000; // 60s for tablets, 30s for others
 
 function canRedirect() {
     const lastRedirect = parseInt(localStorage.getItem('lastRedirectTime') || '0');
@@ -368,6 +369,15 @@ async function initializeAuth() {
     
     log('=== App initialization started ===');
     
+    // Log device info if available
+    if (window.DeviceDetection) {
+        const deviceInfo = window.DeviceDetection.getDeviceInfo();
+        log(`Device type: ${deviceInfo.type}, Screen: ${deviceInfo.screenWidth}x${deviceInfo.screenHeight}`);
+        
+        // Add device class to body for styling
+        document.body.classList.add(`device-${deviceInfo.type}`);
+    }
+    
     // Show loading state
     showLoadingState();
     
@@ -569,11 +579,15 @@ async function initializeAuth() {
         log('Setting up auth state listener');
         
         // Add timeout to prevent infinite loading
+        // Tablets get longer timeout due to potential slower auth propagation
+        const isTablet = window.DeviceDetection && window.DeviceDetection.isTablet();
+        const authTimeoutDuration = isTablet ? 20000 : 10000; // 20s for tablets, 10s for others
+        
         const authTimeout = setTimeout(() => {
             const loadingView = document.getElementById('loadingView');
             // Check if we're still loading and no user is authenticated
             if (!currentUser && !window.authRetryInProgress && loadingView && loadingView.style.display !== 'none') {
-                log('Auth timeout - no user authenticated after 10 seconds');
+                log(`Auth timeout - no user authenticated after ${authTimeoutDuration/1000} seconds`);
                 log('Loading view display:', loadingView.style.display);
                 log('Recent login flag:', sessionStorage.getItem('recentLogin'));
                 
@@ -585,12 +599,20 @@ async function initializeAuth() {
                 if (recentLogin && timeSinceLogin < 30000) { // Within 30 seconds of login
                     log('Recent login detected, extending timeout');
                     // Give it more time for auth to propagate
+                    // Tablets get even more time
+                    const additionalWait = isTablet ? 10000 : 5000;
                     setTimeout(() => {
                         if (!currentUser) {
                             hideLoadingState();
-                            window.location.href = '/login.html';
+                            // Check cooldown before redirecting
+                            if (canRedirect()) {
+                                window.location.href = '/login.html';
+                            } else {
+                                log('Redirect blocked by cooldown');
+                                showError('Authentication timeout. Please wait before trying again.');
+                            }
                         }
-                    }, 5000); // Additional 5 seconds
+                    }, additionalWait); // Additional wait time
                 } else {
                     hideLoadingState();
                     // Small delay before redirect to ensure loading state is hidden
@@ -599,7 +621,7 @@ async function initializeAuth() {
                     }, 100);
                 }
             }
-        }, 10000); // 10 second initial timeout
+        }, authTimeoutDuration); // Device-specific timeout
         
         // Set auth state listener with proper error handling
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -689,9 +711,31 @@ async function initializeAuth() {
                     startAuthRetry();
                 } else {
                     // Normal case - no recent auth attempt
-                    log('No recent auth - redirecting to login');
+                    log('No recent auth - checking if redirect allowed');
                     hideLoadingState();
-                    window.location.href = '/login.html';
+                    
+                    // Check cooldown before redirecting
+                    if (canRedirect()) {
+                        window.location.href = '/login.html';
+                    } else {
+                        log('Redirect to login blocked by cooldown');
+                        showError('Please wait before trying to access this page again.');
+                        
+                        // Show a login button instead
+                        const container = document.querySelector('.view-container:not(#loadingView)');
+                        if (container) {
+                            container.innerHTML = `
+                                <div style="text-align: center; padding: 40px;">
+                                    <h2>Session Expired</h2>
+                                    <p>Your session has expired. Please wait a moment before logging in again.</p>
+                                    <button onclick="window.location.href='/login.html'" 
+                                            style="margin-top: 20px; padding: 10px 20px; background: #00217D; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                                        Go to Login
+                                    </button>
+                                </div>
+                            `;
+                        }
+                    }
                 }
                 return;
             }
