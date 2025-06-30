@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tablet Loop Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-btn {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        .test-btn:hover {
+            background: #1976D2;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tablet Authentication Loop Test</h1>
+    
+    <div class="status info">
+        <strong>Instructions:</strong> Use these tests to diagnose the tablet login loop issue.
+    </div>
+    
+    <h2>1. Simulate Tablet Environment</h2>
+    <button class="test-btn" onclick="simulateTablet()">Simulate iPad</button>
+    <button class="test-btn" onclick="simulateAndroidTablet()">Simulate Android Tablet</button>
+    <button class="test-btn" onclick="resetEnvironment()">Reset to Normal</button>
+    <div id="deviceStatus"></div>
+    
+    <h2>2. Test Authentication Flow</h2>
+    <button class="test-btn" onclick="testAuthFlow()">Test Auth Flow</button>
+    <button class="test-btn" onclick="simulateLoop()">Simulate Loop</button>
+    <button class="test-btn" onclick="checkLoopDetection()">Check Loop Detection</button>
+    <div id="authStatus"></div>
+    
+    <h2>3. Storage Analysis</h2>
+    <button class="test-btn" onclick="analyzeStorage()">Analyze Storage</button>
+    <button class="test-btn" onclick="clearStorage()">Clear All Storage</button>
+    <div id="storageStatus"></div>
+    
+    <h2>4. Debug Output</h2>
+    <pre id="debugOutput"></pre>
+    
+    <script src="/app/js/device-detection.js"></script>
+    
+    <script>
+        const log = (msg) => {
+            const output = document.getElementById('debugOutput');
+            output.textContent += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
+            output.scrollTop = output.scrollHeight;
+        };
+        
+        // Override user agent for testing
+        let originalUserAgent = navigator.userAgent;
+        
+        function simulateTablet() {
+            // Override navigator.userAgent
+            Object.defineProperty(navigator, 'userAgent', {
+                get: function() { return 'Mozilla/5.0 (iPad; CPU OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1'; },
+                configurable: true
+            });
+            
+            // Force touch support
+            window.ontouchstart = function() {};
+            
+            updateDeviceStatus();
+            log('Simulating iPad environment');
+        }
+        
+        function simulateAndroidTablet() {
+            Object.defineProperty(navigator, 'userAgent', {
+                get: function() { return 'Mozilla/5.0 (Linux; Android 10; SM-T860) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Safari/537.36'; },
+                configurable: true
+            });
+            
+            window.ontouchstart = function() {};
+            
+            updateDeviceStatus();
+            log('Simulating Android tablet environment');
+        }
+        
+        function resetEnvironment() {
+            Object.defineProperty(navigator, 'userAgent', {
+                get: function() { return originalUserAgent; },
+                configurable: true
+            });
+            
+            delete window.ontouchstart;
+            
+            updateDeviceStatus();
+            log('Reset to original environment');
+        }
+        
+        function updateDeviceStatus() {
+            const status = document.getElementById('deviceStatus');
+            const isTablet = window.DeviceDetection && window.DeviceDetection.isTablet();
+            const deviceInfo = window.DeviceDetection ? window.DeviceDetection.getDeviceInfo() : null;
+            
+            status.innerHTML = `
+                <div class="status ${isTablet ? 'warning' : 'info'}">
+                    <strong>Current Device:</strong> ${deviceInfo ? deviceInfo.type : 'Unknown'} 
+                    ${isTablet ? '(TABLET DETECTED)' : ''}
+                </div>
+                <div class="status info">
+                    <strong>User Agent:</strong> ${navigator.userAgent}
+                </div>
+            `;
+        }
+        
+        function testAuthFlow() {
+            log('Testing authentication flow...');
+            
+            // Check current state
+            const authStatus = document.getElementById('authStatus');
+            const redirectData = JSON.parse(sessionStorage.getItem('pyebwaRedirectData') || '{}');
+            const lastRedirect = localStorage.getItem('lastRedirectTime');
+            const recentLogin = sessionStorage.getItem('recentLogin');
+            const loginTime = sessionStorage.getItem('loginTime');
+            
+            authStatus.innerHTML = `
+                <div class="status info">
+                    <strong>Redirect Count:</strong> ${redirectData.count || 0}
+                </div>
+                <div class="status info">
+                    <strong>Last Redirect:</strong> ${lastRedirect ? new Date(parseInt(lastRedirect)).toLocaleString() : 'None'}
+                </div>
+                <div class="status info">
+                    <strong>Recent Login:</strong> ${recentLogin || 'false'}
+                </div>
+                <div class="status info">
+                    <strong>Login Time:</strong> ${loginTime ? new Date(parseInt(loginTime)).toLocaleString() : 'None'}
+                </div>
+            `;
+            
+            // Test redirect logic
+            log('Checking redirect conditions...');
+            const isTablet = window.DeviceDetection && window.DeviceDetection.isTablet();
+            const cooldown = isTablet ? 60000 : 30000;
+            const now = Date.now();
+            const timeSinceRedirect = lastRedirect ? now - parseInt(lastRedirect) : Infinity;
+            
+            if (timeSinceRedirect < cooldown) {
+                log(`COOLDOWN ACTIVE: ${Math.round((cooldown - timeSinceRedirect) / 1000)}s remaining`);
+            } else {
+                log('No cooldown active - redirect would be allowed');
+            }
+        }
+        
+        function simulateLoop() {
+            log('Simulating authentication loop...');
+            
+            // Simulate multiple redirects
+            const redirectData = {
+                count: 5,
+                timestamp: Date.now()
+            };
+            sessionStorage.setItem('pyebwaRedirectData', JSON.stringify(redirectData));
+            
+            // Set loop detection data
+            const loopData = {
+                attempts: [
+                    { time: Date.now() - 5000, from: '/app/', to: '/login.html' },
+                    { time: Date.now() - 3000, from: '/login.html', to: '/app/' },
+                    { time: Date.now() - 1000, from: '/app/', to: '/login.html' }
+                ]
+            };
+            sessionStorage.setItem('tabletLoopData', JSON.stringify(loopData));
+            
+            log('Loop simulation data set');
+            checkLoopDetection();
+        }
+        
+        function checkLoopDetection() {
+            log('Checking loop detection...');
+            
+            const authStatus = document.getElementById('authStatus');
+            const redirectData = JSON.parse(sessionStorage.getItem('pyebwaRedirectData') || '{}');
+            const loopData = JSON.parse(sessionStorage.getItem('tabletLoopData') || '{}');
+            const isTablet = window.DeviceDetection && window.DeviceDetection.isTablet();
+            
+            // Check thresholds
+            const maxRedirects = isTablet ? 4 : 2;
+            const loopDetected = redirectData.count > maxRedirects;
+            
+            authStatus.innerHTML = `
+                <div class="status ${loopDetected ? 'error' : 'success'}">
+                    <strong>Loop Detection:</strong> ${loopDetected ? 'LOOP DETECTED!' : 'No loop detected'}
+                </div>
+                <div class="status info">
+                    <strong>Redirect Count:</strong> ${redirectData.count || 0} / ${maxRedirects} (${isTablet ? 'tablet' : 'desktop'} threshold)
+                </div>
+                <div class="status info">
+                    <strong>Loop Attempts:</strong> ${(loopData.attempts || []).length}
+                </div>
+            `;
+            
+            if (loopDetected) {
+                log('LOOP DETECTED - redirects would be blocked');
+            } else {
+                log('No loop detected - redirects would proceed');
+            }
+        }
+        
+        function analyzeStorage() {
+            log('Analyzing storage...');
+            
+            const storageStatus = document.getElementById('storageStatus');
+            const localStorage_data = {};
+            const sessionStorage_data = {};
+            
+            // Collect localStorage
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.includes('pyebwa') || key.includes('auth') || key.includes('redirect') || key.includes('tablet')) {
+                    localStorage_data[key] = localStorage.getItem(key);
+                }
+            }
+            
+            // Collect sessionStorage
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                if (key.includes('pyebwa') || key.includes('auth') || key.includes('redirect') || key.includes('tablet')) {
+                    sessionStorage_data[key] = sessionStorage.getItem(key);
+                }
+            }
+            
+            storageStatus.innerHTML = `
+                <div class="status info">
+                    <strong>LocalStorage (${Object.keys(localStorage_data).length} relevant items):</strong>
+                    <pre>${JSON.stringify(localStorage_data, null, 2)}</pre>
+                </div>
+                <div class="status info">
+                    <strong>SessionStorage (${Object.keys(sessionStorage_data).length} relevant items):</strong>
+                    <pre>${JSON.stringify(sessionStorage_data, null, 2)}</pre>
+                </div>
+            `;
+            
+            log(`Found ${Object.keys(localStorage_data).length} localStorage items and ${Object.keys(sessionStorage_data).length} sessionStorage items`);
+        }
+        
+        function clearStorage() {
+            if (confirm('Clear all storage data?')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                log('All storage cleared');
+                
+                const storageStatus = document.getElementById('storageStatus');
+                storageStatus.innerHTML = '<div class="status success">All storage cleared</div>';
+            }
+        }
+        
+        // Initialize
+        updateDeviceStatus();
+        log('Tablet loop test page loaded');
+    </script>
+</body>
+</html>

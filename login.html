@@ -509,11 +509,24 @@
         // Check if already logged in
         auth.onAuthStateChanged((user) => {
             if (user) {
+                // Check if we just came from the app (possible loop)
+                const referrer = document.referrer;
+                const fromApp = referrer.includes('/app/');
+                const loopCount = parseInt(sessionStorage.getItem('loginLoopCount') || '0');
+                
+                if (fromApp && loopCount > 0) {
+                    console.warn('[Login] Possible loop detected, not auto-redirecting');
+                    showMessage(messageDiv, `Logged in as ${user.email}. <a href="/app/" style="color: white;">Click here to continue to app</a>`, 'success');
+                    sessionStorage.removeItem('loginLoopCount');
+                    return;
+                }
+                
                 showMessage(messageDiv, `Already logged in as ${user.email}. Redirecting...`, 'success');
                 setTimeout(() => {
                     // Set a flag to indicate recent login
                     sessionStorage.setItem('recentLogin', 'true');
                     sessionStorage.setItem('loginTime', Date.now().toString());
+                    sessionStorage.setItem('loginLoopCount', (loopCount + 1).toString());
                     window.location.href = '/app/';
                 }, 1500);
             }
