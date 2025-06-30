@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Slideshow Test</title>
+    <link rel="stylesheet" href="css/styles.css?v=2345567">
+    <link rel="stylesheet" href="css/slideshow-fallback.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        .test-controls {
+            margin: 20px 0;
+        }
+        
+        .test-controls button {
+            margin: 0 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        
+        #console {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        .hero {
+            position: relative;
+            height: 600px;
+            overflow: hidden;
+            background: #000;
+        }
+    </style>
+</head>
+<body>
+    <h1>Complete Slideshow Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Original Structure (Copy from index.html)</h2>
+        <header class="hero">
+            <div class="slideshow-container">
+                <div class="slide active">
+                    <img src="https://pyebwa.com/images/SlideShow/20140508-094914.jpg" alt="20140508 094914">
+                </div>
+                <div class="slide">
+                    <img src="https://pyebwa.com/images/SlideShow/5e0a0e49e91b8e0f8379e91e7dee11f9.jpg" alt="5E0A0E49E91B8E0F8379E91E7Dee11F9">
+                </div>
+                <div class="slide">
+                    <img src="https://pyebwa.com/images/SlideShow/6e7c0d44bc280212592d6ede168dc4ca.jpg" alt="6E7C0D44Bc280212592D6Ede168Dc4Ca">
+                </div>
+                <div class="slide">
+                    <img src="https://pyebwa.com/images/SlideShow/LaCitadelle.jpg" alt="Lacitadelle">
+                </div>
+            </div>
+            <div class="slideshow-overlay"></div>
+        </header>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Controls</h2>
+        <div class="test-controls">
+            <button onclick="testOriginal()">Test Original Slideshow.js</button>
+            <button onclick="testEnhanced()">Test Enhanced v2</button>
+            <button onclick="testCSS()">Test CSS Fallback</button>
+            <button onclick="checkAPI()">Check API</button>
+        </div>
+        <div id="testStatus"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Console Output</h2>
+        <button onclick="clearConsole()">Clear</button>
+        <div id="console"></div>
+    </div>
+    
+    <script>
+        // Console capture
+        const consoleEl = document.getElementById('console');
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        function logToConsole(msg, type = 'log') {
+            const time = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'warn' ? '⚠️' : '📝';
+            consoleEl.textContent += `[${time}] ${prefix} ${msg}\n`;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            logToConsole(args.join(' '), 'log');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            logToConsole(args.join(' '), 'error');
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            logToConsole(args.join(' '), 'warn');
+        };
+        
+        function clearConsole() {
+            consoleEl.textContent = '';
+        }
+        
+        function updateStatus(msg, type = 'info') {
+            const status = document.getElementById('testStatus');
+            status.className = `status ${type}`;
+            status.textContent = msg;
+        }
+        
+        function testOriginal() {
+            updateStatus('Loading original slideshow.js...', 'info');
+            
+            const script = document.createElement('script');
+            script.src = 'js/slideshow.js';
+            script.onload = () => updateStatus('Original slideshow.js loaded', 'success');
+            script.onerror = () => updateStatus('Failed to load slideshow.js', 'error');
+            document.body.appendChild(script);
+        }
+        
+        function testEnhanced() {
+            updateStatus('Loading enhanced slideshow v2...', 'info');
+            
+            const script = document.createElement('script');
+            script.src = 'js/slideshow-enhanced-v2.js';
+            script.onload = () => updateStatus('Enhanced slideshow v2 loaded', 'success');
+            script.onerror = () => updateStatus('Failed to load enhanced v2', 'error');
+            document.body.appendChild(script);
+        }
+        
+        function testCSS() {
+            updateStatus('Enabling CSS fallback...', 'info');
+            
+            const container = document.querySelector('.slideshow-container');
+            if (container) {
+                container.classList.add('css-fallback');
+                updateStatus('CSS fallback enabled', 'success');
+            } else {
+                updateStatus('No slideshow container found', 'error');
+            }
+        }
+        
+        function checkAPI() {
+            if (window.slideshowAPI) {
+                const state = window.slideshowAPI.getState();
+                updateStatus(`API found! State: ${JSON.stringify(state)}`, 'success');
+                console.log('Slideshow API:', window.slideshowAPI);
+                console.log('State:', state);
+            } else {
+                updateStatus('No slideshow API found', 'error');
+            }
+        }
+        
+        // Log initial state
+        console.log('Slideshow test page loaded');
+        console.log('Looking for slideshow container...');
+        
+        const container = document.querySelector('.slideshow-container');
+        if (container) {
+            const slides = container.querySelectorAll('.slide');
+            console.log(`Found slideshow container with ${slides.length} slides`);
+        } else {
+            console.error('No slideshow container found!');
+        }
+    </script>
+    
+    <!-- Try loading the enhanced slideshow automatically -->
+    <script src="js/slideshow-enhanced-v2.js"></script>
+</body>
+</html>

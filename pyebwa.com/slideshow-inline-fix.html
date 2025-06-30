@@ -1,0 +1,38 @@
+<!-- Add this style block to the <head> section of index.html for immediate fix -->
+<style>
+/* IMMEDIATE INLINE FIX - Fixes z-index and opacity conflicts */
+.slideshow-container .slide {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    transition: opacity 2s ease-in-out, z-index 0s !important;
+}
+
+/* Active slide must be visible */
+.slideshow-container .slide.active {
+    opacity: 1 !important;
+    z-index: 100 !important;
+    display: block !important;
+}
+
+/* Non-active slides must be hidden */
+.slideshow-container .slide:not(.active) {
+    opacity: 0 !important;
+    z-index: 1 !important;
+}
+
+/* Override any animation that forces opacity */
+.slideshow-container .slide {
+    animation: none !important;
+}
+
+/* Ensure images are visible */
+.slideshow-container .slide img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+}
+</style>

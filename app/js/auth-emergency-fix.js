@@ -1,6 +1,12 @@
 // Emergency Authentication Fix - Stops loops immediately
 console.log('[EMERGENCY FIX] Loading auth emergency fix...');
 
+// Check device type
+const isTablet = window.DeviceDetection && window.DeviceDetection.isTablet();
+if (isTablet) {
+    console.log('[EMERGENCY FIX] Tablet device detected - applying tablet-specific thresholds');
+}
+
 // Aggressive loop prevention
 (function() {
     // Skip if we're already handling a loop
@@ -18,8 +24,9 @@ console.log('[EMERGENCY FIX] Loading auth emergency fix...');
     // Get visit count in last 10 seconds
     let visitCount = parseInt(localStorage.getItem(visitCountKey) || '0');
     
-    // Reset count if more than 10 seconds since last visit
-    if (currentTime - lastVisit > 10000) {
+    // Reset count if more than time window since last visit
+    const resetWindow = isTablet ? 15000 : 10000;
+    if (currentTime - lastVisit > resetWindow) {
         visitCount = 0;
     }
     
@@ -27,10 +34,14 @@ console.log('[EMERGENCY FIX] Loading auth emergency fix...');
     visitCount++;
     localStorage.setItem(visitCountKey, visitCount.toString());
     
-    // If more than 3 visits in 10 seconds, we're likely in a loop
-    if (visitCount > 3 && currentTime - lastVisit < 10000) {
+    // If more than X visits in Y seconds, we're likely in a loop
+    // Tablets get higher threshold due to potentially slower auth
+    const visitThreshold = isTablet ? 5 : 3; // 5 for tablets, 3 for others
+    const timeWindow = isTablet ? 15000 : 10000; // 15s for tablets, 10s for others
+    
+    if (visitCount > visitThreshold && currentTime - lastVisit < timeWindow) {
         console.error('[EMERGENCY FIX] LOOP DETECTED! Stopping all redirects...');
-        console.log('[EMERGENCY FIX] Visit count:', visitCount, 'in last 10 seconds');
+        console.log(`[EMERGENCY FIX] Visit count: ${visitCount} in last ${timeWindow/1000} seconds (threshold: ${visitThreshold})`);
         localStorage.setItem(loopKey, 'true');
         window.pyebwaLoopHandling = true;
         
@@ -57,7 +68,8 @@ console.log('[EMERGENCY FIX] Loading auth emergency fix...');
                 <h1 style="color: red;">Authentication Loop Stopped</h1>
                 <p>We've detected and stopped an authentication loop.</p>
                 <p style="background: #fffacd; padding: 10px; border-radius: 5px; margin: 20px 0;">
-                    <strong>Note:</strong> There is a 30-second cooldown between login attempts to prevent loops.
+                    <strong>Note:</strong> There is a ${isTablet ? '60' : '30'}-second cooldown between login attempts to prevent loops.
+                    ${isTablet ? '<br><em>Tablet detected: Extended timeouts are in effect.</em>' : ''}
                 </p>
                 <p>Please choose an option:</p>
                 <button onclick="clearAndRestart()" style="background: green; color: white; padding: 10px 20px; margin: 10px; border: none; border-radius: 5px; cursor: pointer;">
@@ -78,6 +90,8 @@ Last Visit: ${new Date(lastVisit).toLocaleString()}
 Current Time: ${new Date(currentTime).toLocaleString()}
 Time Difference: ${currentTime - lastVisit}ms
 Cooldown Active: ${localStorage.getItem('lastRedirectTime') ? 'Yes' : 'No'}
+Device Type: ${isTablet ? 'Tablet' : 'Desktop/Mobile'}
+Threshold: ${isTablet ? '5 visits in 15s' : '3 visits in 10s'}
                     </pre>
                 </details>
             </div>

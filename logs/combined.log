@@ -201,3 +201,78 @@
 2025-06-29T16:48:12: App URL: https://rasin.pyebwa.com/app
 2025-06-29T16:48:12: Health: https://rasin.pyebwa.com/health
 2025-06-29T16:48:12:     
+2025-06-29T17:02:57: Loading service account from: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/serviceAccountKey.json
+2025-06-29T17:02:57: Firebase Admin SDK initialized with project ID: pyebwa-f5960
+2025-06-29T17:02:57: GOOGLE_APPLICATION_CREDENTIALS set to: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/serviceAccountKey.json
+2025-06-29T17:02:58: ✅ Firebase Admin SDK initialized successfully
+2025-06-29T17:02:58: ✅ SendGrid email service initialized
+2025-06-29T17:02:58: 
+2025-06-29T17:02:58: 🌳 Pyebwa Family Tree App Server
+2025-06-29T17:02:58: ================================
+2025-06-29T17:02:58: Server running on 0.0.0.0:9111
+2025-06-29T17:02:58: Local: http://0.0.0.0:9111
+2025-06-29T17:02:58: External: https://rasin.pyebwa.com
+2025-06-29T17:02:58: 
+2025-06-29T17:02:58: App URL: https://rasin.pyebwa.com/app
+2025-06-29T17:02:58: Health: https://rasin.pyebwa.com/health
+2025-06-29T17:02:58:     
+2025-06-29T22:21:09: Loading service account from: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/serviceAccountKey.json
+2025-06-29T22:21:09: Firebase Admin SDK initialized with project ID: pyebwa-f5960
+2025-06-29T22:21:09: GOOGLE_APPLICATION_CREDENTIALS set to: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/serviceAccountKey.json
+2025-06-29T22:21:09: ✅ Firebase Admin SDK initialized successfully
+2025-06-29T22:21:10: ✅ SendGrid email service initialized
+2025-06-29T22:21:10: 
+2025-06-29T22:21:10: 🌳 Pyebwa Family Tree App Server
+2025-06-29T22:21:10: ================================
+2025-06-29T22:21:10: Server running on 0.0.0.0:9111
+2025-06-29T22:21:10: Local: http://0.0.0.0:9111
+2025-06-29T22:21:10: External: https://rasin.pyebwa.com
+2025-06-29T22:21:10: 
+2025-06-29T22:21:10: App URL: https://rasin.pyebwa.com/app
+2025-06-29T22:21:10: Health: https://rasin.pyebwa.com/health
+2025-06-29T22:21:10:     
+2025-06-29T23:55:07: Loading service account from: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/serviceAccountKey.json
+2025-06-29T23:55:08: Firebase Admin SDK initialized with project ID: pyebwa-f5960
+2025-06-29T23:55:08: GOOGLE_APPLICATION_CREDENTIALS set to: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/serviceAccountKey.json
+2025-06-29T23:55:08: ✅ Firebase Admin SDK initialized successfully
+2025-06-29T23:55:08: ✅ SendGrid email service initialized
+2025-06-29T23:55:08: 
+2025-06-29T23:55:08: 🌳 Pyebwa Family Tree App Server
+2025-06-29T23:55:08: ================================
+2025-06-29T23:55:08: Server running on 0.0.0.0:9111
+2025-06-29T23:55:08: Local: http://0.0.0.0:9111
+2025-06-29T23:55:08: External: https://rasin.pyebwa.com
+2025-06-29T23:55:08: 
+2025-06-29T23:55:08: App URL: https://rasin.pyebwa.com/app
+2025-06-29T23:55:08: Health: https://rasin.pyebwa.com/health
+2025-06-29T23:55:08:     
+2025-06-30T01:15:05: Invite generation request received
+2025-06-30T01:15:05: Admin instance: true
+2025-06-30T01:15:05: DB instance: true
+2025-06-30T01:15:05: Request body: { treeId: 'awx1ioz3T0qbP8xrXbhl', personId: 'VjUuJXZveyviqUuIo7aG' }
+2025-06-30T01:15:05: Accessing Firestore for tree: awx1ioz3T0qbP8xrXbhl
+2025-06-30T01:15:05: User ID from token: 1EpZzW7Nt9RFEN56bAathzThYt03
+2025-06-30T01:15:06: Full tree document data: {
+2025-06-30T01:15:06:   "name": "Claude Jr. Belizaire's Family Tree",
+2025-06-30T01:15:06:   "ownerId": "1EpZzW7Nt9RFEN56bAathzThYt03",
+2025-06-30T01:15:06:   "memberIds": [
+2025-06-30T01:15:06:     "1EpZzW7Nt9RFEN56bAathzThYt03"
+2025-06-30T01:15:06:   ],
+2025-06-30T01:15:06:   "createdAt": {
+2025-06-30T01:15:06:     "_seconds": 1748931932,
+2025-06-30T01:15:06:     "_nanoseconds": 603000000
+2025-06-30T01:15:06:   },
+2025-06-30T01:15:06:   "updatedAt": {
+2025-06-30T01:15:06:     "_seconds": 1748931932,
+2025-06-30T01:15:06:     "_nanoseconds": 603000000
+2025-06-30T01:15:06:   }
+2025-06-30T01:15:06: }
+2025-06-30T01:15:06: Tree data access check: {
+2025-06-30T01:15:06:   ownerId: '1EpZzW7Nt9RFEN56bAathzThYt03',
+2025-06-30T01:15:06:   memberIds: [ '1EpZzW7Nt9RFEN56bAathzThYt03' ],
+2025-06-30T01:15:06:   userId: '1EpZzW7Nt9RFEN56bAathzThYt03',
+2025-06-30T01:15:06:   isOwner: true,
+2025-06-30T01:15:06:   isMember: true
+2025-06-30T01:15:06: }
+2025-06-30T01:15:07: ✅ Email sent successfully to claude.belizaire@humanlevel.ai
+2025-06-30T01:15:07: Invite email sent to claude.belizaire@humanlevel.ai

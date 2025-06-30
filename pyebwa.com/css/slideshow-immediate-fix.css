@@ -1,0 +1,58 @@
+/* IMMEDIATE SLIDESHOW FIX - Pure CSS Animation */
+/* This will make the slideshow work without any JavaScript */
+
+/* Simple fade animation */
+@keyframes fadeSlideshow {
+    0% { opacity: 0; }
+    3% { opacity: 1; }
+    17% { opacity: 1; }
+    20% { opacity: 0; }
+    100% { opacity: 0; }
+}
+
+/* Apply to all slides immediately */
+.slideshow-container .slide {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    opacity: 0 !important;
+    animation: fadeSlideshow 35s infinite !important;
+}
+
+/* Timing for each slide (5 seconds per slide, 7 slides total = 35s) */
+.slideshow-container .slide:nth-child(1) { animation-delay: 0s !important; }
+.slideshow-container .slide:nth-child(2) { animation-delay: 5s !important; }
+.slideshow-container .slide:nth-child(3) { animation-delay: 10s !important; }
+.slideshow-container .slide:nth-child(4) { animation-delay: 15s !important; }
+.slideshow-container .slide:nth-child(5) { animation-delay: 20s !important; }
+.slideshow-container .slide:nth-child(6) { animation-delay: 25s !important; }
+.slideshow-container .slide:nth-child(7) { animation-delay: 30s !important; }
+
+/* For more slides, continue the pattern */
+.slideshow-container .slide:nth-child(8) { animation-delay: 35s !important; }
+.slideshow-container .slide:nth-child(9) { animation-delay: 40s !important; }
+.slideshow-container .slide:nth-child(10) { animation-delay: 45s !important; }
+.slideshow-container .slide:nth-child(11) { animation-delay: 50s !important; }
+.slideshow-container .slide:nth-child(12) { animation-delay: 55s !important; }
+.slideshow-container .slide:nth-child(13) { animation-delay: 60s !important; }
+.slideshow-container .slide:nth-child(14) { animation-delay: 65s !important; }
+.slideshow-container .slide:nth-child(15) { animation-delay: 70s !important; }
+
+/* Ensure images fill the slide */
+.slideshow-container .slide img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
+/* Start with first slide visible */
+.slideshow-container .slide:first-child {
+    opacity: 1 !important;
+}
+
+/* Remove any conflicting styles */
+.slideshow-container .slide.active {
+    /* Let animation handle opacity */
+}

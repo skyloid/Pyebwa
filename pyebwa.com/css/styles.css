@@ -477,6 +477,71 @@ body.dark-mode .theme-icon.moon {
     object-fit: cover;
 }
 
+/* CSS-only slideshow animation fallback */
+@keyframes slideshowFade {
+    0%, 100% { opacity: 0; }
+    2% { opacity: 1; }
+    18% { opacity: 1; }
+    20% { opacity: 0; }
+}
+
+/* Apply animation to slides when CSS fallback is active */
+.slideshow-container.css-fallback .slide {
+    animation: slideshowFade 105s infinite;
+}
+
+/* Stagger animations for up to 15 slides (7 seconds each) */
+.slideshow-container.css-fallback .slide:nth-child(1) { animation-delay: 0s; }
+.slideshow-container.css-fallback .slide:nth-child(2) { animation-delay: 7s; }
+.slideshow-container.css-fallback .slide:nth-child(3) { animation-delay: 14s; }
+.slideshow-container.css-fallback .slide:nth-child(4) { animation-delay: 21s; }
+.slideshow-container.css-fallback .slide:nth-child(5) { animation-delay: 28s; }
+.slideshow-container.css-fallback .slide:nth-child(6) { animation-delay: 35s; }
+.slideshow-container.css-fallback .slide:nth-child(7) { animation-delay: 42s; }
+.slideshow-container.css-fallback .slide:nth-child(8) { animation-delay: 49s; }
+.slideshow-container.css-fallback .slide:nth-child(9) { animation-delay: 56s; }
+.slideshow-container.css-fallback .slide:nth-child(10) { animation-delay: 63s; }
+.slideshow-container.css-fallback .slide:nth-child(11) { animation-delay: 70s; }
+.slideshow-container.css-fallback .slide:nth-child(12) { animation-delay: 77s; }
+.slideshow-container.css-fallback .slide:nth-child(13) { animation-delay: 84s; }
+.slideshow-container.css-fallback .slide:nth-child(14) { animation-delay: 91s; }
+.slideshow-container.css-fallback .slide:nth-child(15) { animation-delay: 98s; }
+
+/* Ensure first slide is visible initially */
+.slideshow-container.css-fallback .slide:first-child {
+    opacity: 1;
+}
+
+/* IMMEDIATE CSS ANIMATION - Works without JavaScript */
+@supports (animation: slideshowFade 1s) {
+    .slideshow-container .slide {
+        animation: slideshowFade 105s infinite;
+    }
+    
+    .slideshow-container .slide:nth-child(1) { animation-delay: 0s; }
+    .slideshow-container .slide:nth-child(2) { animation-delay: 7s; }
+    .slideshow-container .slide:nth-child(3) { animation-delay: 14s; }
+    .slideshow-container .slide:nth-child(4) { animation-delay: 21s; }
+    .slideshow-container .slide:nth-child(5) { animation-delay: 28s; }
+    .slideshow-container .slide:nth-child(6) { animation-delay: 35s; }
+    .slideshow-container .slide:nth-child(7) { animation-delay: 42s; }
+    .slideshow-container .slide:nth-child(8) { animation-delay: 49s; }
+    .slideshow-container .slide:nth-child(9) { animation-delay: 56s; }
+    .slideshow-container .slide:nth-child(10) { animation-delay: 63s; }
+    .slideshow-container .slide:nth-child(11) { animation-delay: 70s; }
+    .slideshow-container .slide:nth-child(12) { animation-delay: 77s; }
+    .slideshow-container .slide:nth-child(13) { animation-delay: 84s; }
+    .slideshow-container .slide:nth-child(14) { animation-delay: 91s; }
+    .slideshow-container .slide:nth-child(15) { animation-delay: 98s; }
+    
+    /* Override for first slide to start visible */
+    .slideshow-container .slide:first-child {
+        animation: slideshowFade 105s infinite;
+        animation-delay: 0s;
+        opacity: 1;
+    }
+}
+
 
 .hero-content .container {
     position: relative;

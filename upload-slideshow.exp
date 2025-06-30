@@ -1,0 +1,101 @@
+#!/usr/bin/expect -f
+# Expect script to upload slideshow files with password authentication
+
+set timeout 30
+set password "z_NlY6|cU*w\[iR92y,qazrf`Lm{iMD@VqrE"
+
+# Upload index.html
+spawn scp -o StrictHostKeyChecking=no -P 65002 pyebwa.com/index.html u316621955@145.223.107.9:/home/u316621955/domains/pyebwa.com/public_html/index.html
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    "100%" {
+        puts "\n✓ index.html uploaded successfully"
+    }
+    timeout {
+        puts "\n✗ Timeout uploading index.html"
+    }
+    eof {
+        puts "\n✓ index.html upload completed"
+    }
+}
+
+# Upload slideshow-immediate-fix.css
+spawn scp -o StrictHostKeyChecking=no -P 65002 pyebwa.com/css/slideshow-immediate-fix.css u316621955@145.223.107.9:/home/u316621955/domains/pyebwa.com/public_html/css/slideshow-immediate-fix.css
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    "100%" {
+        puts "\n✓ slideshow-immediate-fix.css uploaded successfully"
+    }
+    timeout {
+        puts "\n✗ Timeout uploading slideshow-immediate-fix.css"
+    }
+    eof {
+        puts "\n✓ slideshow-immediate-fix.css upload completed"
+    }
+}
+
+# Upload styles.css
+spawn scp -o StrictHostKeyChecking=no -P 65002 pyebwa.com/css/styles.css u316621955@145.223.107.9:/home/u316621955/domains/pyebwa.com/public_html/css/styles.css
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    "100%" {
+        puts "\n✓ styles.css uploaded successfully"
+    }
+    timeout {
+        puts "\n✗ Timeout uploading styles.css"
+    }
+    eof {
+        puts "\n✓ styles.css upload completed"
+    }
+}
+
+# Upload slideshow-fallback.css
+spawn scp -o StrictHostKeyChecking=no -P 65002 pyebwa.com/css/slideshow-fallback.css u316621955@145.223.107.9:/home/u316621955/domains/pyebwa.com/public_html/css/slideshow-fallback.css
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    "100%" {
+        puts "\n✓ slideshow-fallback.css uploaded successfully"
+    }
+    timeout {
+        puts "\n✗ Timeout uploading slideshow-fallback.css"
+    }
+    eof {
+        puts "\n✓ slideshow-fallback.css upload completed"
+    }
+}
+
+# Upload slideshow-enhanced-v2.js
+spawn scp -o StrictHostKeyChecking=no -P 65002 pyebwa.com/js/slideshow-enhanced-v2.js u316621955@145.223.107.9:/home/u316621955/domains/pyebwa.com/public_html/js/slideshow-enhanced-v2.js
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    "100%" {
+        puts "\n✓ slideshow-enhanced-v2.js uploaded successfully"
+    }
+    timeout {
+        puts "\n✗ Timeout uploading slideshow-enhanced-v2.js"
+    }
+    eof {
+        puts "\n✓ slideshow-enhanced-v2.js upload completed"
+    }
+}
+
+puts "\n=========================================="
+puts "Slideshow fix deployment complete!"
+puts "Visit https://pyebwa.com/ to verify"
+puts "Clear browser cache if needed (Ctrl+F5)"
+puts "=========================================="
