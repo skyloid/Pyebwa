@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tablet Auth Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            background: #f0f0f0;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .status {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        pre {
+            background: #333;
+            color: #0f0;
+            padding: 10px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tablet Authentication Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Device Detection Test</h2>
+        <div id="deviceTest"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Firebase Configuration Test</h2>
+        <div id="firebaseTest"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Storage Test</h2>
+        <div id="storageTest"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Redirect Cooldown Test</h2>
+        <div id="cooldownTest"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>5. Auth State Test</h2>
+        <div id="authTest"></div>
+        <button onclick="testAuthFlow()">Test Auth Flow</button>
+        <button onclick="clearAllData()">Clear All Data</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>6. Console Log</h2>
+        <pre id="console"></pre>
+    </div>
+
+    <script src="/app/js/firebase-config.js?v=4"></script>
+    <script src="/app/js/device-detection.js?v=1"></script>
+    
+    <script>
+        const log = (message, type = 'info') => {
+            const console = document.getElementById('console');
+            const time = new Date().toLocaleTimeString();
+            console.innerHTML += `[${time}] ${message}\n`;
+            console.scrollTop = console.scrollHeight;
+        };
+        
+        // Test 1: Device Detection
+        const deviceTest = document.getElementById('deviceTest');
+        if (window.DeviceDetection) {
+            const info = window.DeviceDetection.getDeviceInfo();
+            const isTablet = window.DeviceDetection.isTablet();
+            
+            deviceTest.innerHTML = `
+                <div class="status ${isTablet ? 'warning' : 'info'}">
+                    Device Type: ${info.type} ${isTablet ? '(TABLET DETECTED)' : ''}
+                </div>
+                <div class="status info">
+                    User Agent: ${info.userAgent}
+                </div>
+                <div class="status info">
+                    Screen: ${info.screenWidth} x ${info.screenHeight}
+                </div>
+                <div class="status info">
+                    Touch Support: ${info.touchSupport ? 'Yes' : 'No'}
+                </div>
+            `;
+            log(`Device detection: ${info.type} (tablet: ${isTablet})`);
+        } else {
+            deviceTest.innerHTML = '<div class="status error">Device detection script not loaded!</div>';
+            log('ERROR: Device detection not available', 'error');
+        }
+        
+        // Test 2: Firebase Configuration
+        const firebaseTest = document.getElementById('firebaseTest');
+        if (typeof firebase !== 'undefined') {
+            firebaseTest.innerHTML = `
+                <div class="status success">Firebase loaded successfully</div>
+                <div class="status info">Auth Domain: ${firebase.app().options.authDomain}</div>
+                <div class="status info">Project ID: ${firebase.app().options.projectId}</div>
+            `;
+            log('Firebase loaded successfully');
+            
+            // Check auth
+            if (firebase.auth) {
+                const auth = firebase.auth();
+                auth.onAuthStateChanged((user) => {
+                    const authDiv = document.getElementById('authTest');
+                    if (user) {
+                        authDiv.innerHTML = `
+                            <div class="status success">Authenticated as: ${user.email}</div>
+                            <div class="status info">UID: ${user.uid}</div>
+                        `;
+                        log(`Auth state: Authenticated as ${user.email}`);
+                    } else {
+                        authDiv.innerHTML = '<div class="status warning">Not authenticated</div>';
+                        log('Auth state: Not authenticated');
+                    }
+                });
+            }
+        } else {
+            firebaseTest.innerHTML = '<div class="status error">Firebase not loaded!</div>';
+            log('ERROR: Firebase not loaded', 'error');
+        }
+        
+        // Test 3: Storage
+        const storageTest = document.getElementById('storageTest');
+        try {
+            // Test localStorage
+            localStorage.setItem('test', 'value');
+            const testValue = localStorage.getItem('test');
+            localStorage.removeItem('test');
+            
+            // Test sessionStorage
+            sessionStorage.setItem('test', 'value');
+            const testSession = sessionStorage.getItem('test');
+            sessionStorage.removeItem('test');
+            
+            // Get current values
+            const redirectData = sessionStorage.getItem('pyebwaRedirectData');
+            const lastRedirect = localStorage.getItem('lastRedirectTime');
+            const debugLogs = localStorage.getItem('pyebwaDebugLogs');
+            
+            storageTest.innerHTML = `
+                <div class="status success">Storage is working</div>
+                <div class="status info">Redirect Data: ${redirectData || 'None'}</div>
+                <div class="status info">Last Redirect: ${lastRedirect ? new Date(parseInt(lastRedirect)).toLocaleString() : 'None'}</div>
+                <div class="status info">Debug Logs: ${debugLogs ? JSON.parse(debugLogs).length + ' entries' : 'None'}</div>
+            `;
+            log('Storage test passed');
+        } catch (e) {
+            storageTest.innerHTML = `<div class="status error">Storage error: ${e.message}</div>`;
+            log(`ERROR: Storage test failed - ${e.message}`, 'error');
+        }
+        
+        // Test 4: Cooldown
+        const cooldownTest = document.getElementById('cooldownTest');
+        const lastRedirectTime = parseInt(localStorage.getItem('lastRedirectTime') || '0');
+        const now = Date.now();
+        const isTablet = window.DeviceDetection && window.DeviceDetection.isTablet();
+        const cooldownTime = isTablet ? 60000 : 30000;
+        const timeSinceRedirect = now - lastRedirectTime;
+        const cooldownActive = timeSinceRedirect < cooldownTime;
+        const cooldownRemaining = Math.max(0, cooldownTime - timeSinceRedirect);
+        
+        cooldownTest.innerHTML = `
+            <div class="status ${cooldownActive ? 'warning' : 'success'}">
+                Cooldown: ${cooldownActive ? 'ACTIVE' : 'Inactive'}
+            </div>
+            <div class="status info">
+                Cooldown Duration: ${cooldownTime / 1000}s (${isTablet ? 'tablet' : 'desktop'})
+            </div>
+            <div class="status info">
+                Time Since Last Redirect: ${Math.round(timeSinceRedirect / 1000)}s
+            </div>
+            ${cooldownActive ? `<div class="status warning">Cooldown Remaining: ${Math.round(cooldownRemaining / 1000)}s</div>` : ''}
+        `;
+        log(`Cooldown: ${cooldownActive ? 'active' : 'inactive'} (${Math.round(cooldownRemaining / 1000)}s remaining)`);
+        
+        // Test functions
+        function testAuthFlow() {
+            log('Testing auth flow...');
+            
+            // Simulate redirect
+            const redirectData = JSON.parse(sessionStorage.getItem('pyebwaRedirectData') || '{}');
+            redirectData.count = (redirectData.count || 0) + 1;
+            redirectData.timestamp = Date.now();
+            sessionStorage.setItem('pyebwaRedirectData', JSON.stringify(redirectData));
+            
+            log(`Redirect count: ${redirectData.count}`);
+            
+            // Check if we should block
+            const maxRedirects = isTablet ? 4 : 2;
+            if (redirectData.count > maxRedirects) {
+                log(`LOOP DETECTED! Count ${redirectData.count} > ${maxRedirects}`, 'error');
+                alert('Loop would be detected and blocked!');
+            } else {
+                log('Redirect would proceed normally');
+            }
+            
+            // Update display
+            location.reload();
+        }
+        
+        function clearAllData() {
+            if (confirm('Clear all authentication data?')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                log('All data cleared');
+                location.reload();
+            }
+        }
+        
+        // Monitor for errors
+        window.addEventListener('error', (e) => {
+            log(`ERROR: ${e.message} at ${e.filename}:${e.lineno}`, 'error');
+        });
+        
+        // Check for auth loop indicators
+        const checkLoopIndicators = () => {
+            const indicators = [];
+            
+            // Check redirect count
+            const redirectData = JSON.parse(sessionStorage.getItem('pyebwaRedirectData') || '{}');
+            if (redirectData.count > 0) {
+                indicators.push(`Redirect count: ${redirectData.count}`);
+            }
+            
+            // Check cooldown
+            if (cooldownActive) {
+                indicators.push(`Cooldown active: ${Math.round(cooldownRemaining / 1000)}s remaining`);
+            }
+            
+            // Check recent login flags
+            if (sessionStorage.getItem('recentLogin') === 'true') {
+                indicators.push('Recent login flag set');
+            }
+            
+            // Check auth wait
+            if (sessionStorage.getItem('authWaitSuccess') === 'true') {
+                indicators.push('Auth wait success flag set');
+            }
+            
+            if (indicators.length > 0) {
+                log('Loop indicators found: ' + indicators.join(', '), 'warning');
+            }
+        };
+        
+        checkLoopIndicators();
+    </script>
+</body>
+</html>
