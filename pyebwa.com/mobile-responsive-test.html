@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Responsiveness Test - Pyebwa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .device-info {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .test-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        
+        .good { background: #d4edda; color: #155724; }
+        .warning { background: #fff3cd; color: #856404; }
+        .bad { background: #f8d7da; color: #721c24; }
+        
+        .touch-area {
+            background: #007bff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            margin: 10px 0;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        
+        .touch-area:active {
+            background: #0056b3;
+        }
+        
+        iframe {
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .test-section {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Mobile/Tablet Responsiveness Test</h1>
+        
+        <div class="device-info">
+            <h2>Device Information</h2>
+            <div id="deviceInfo"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>1. Viewport Test</h2>
+            <div id="viewportTest"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>2. Touch Target Test</h2>
+            <p>Tap the areas below - they should be easy to tap on mobile:</p>
+            <div class="touch-area" onclick="testTouch(this, 'Area 1')">Touch Target 1 (44x44px minimum)</div>
+            <div class="touch-area" onclick="testTouch(this, 'Area 2')">Touch Target 2</div>
+            <div id="touchResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>3. Slideshow Mobile Test</h2>
+            <p>Testing how the slideshow appears on mobile:</p>
+            <iframe src="/" height="600" id="slideshowFrame"></iframe>
+            <button onclick="testSlideshow()">Analyze Slideshow</button>
+            <div id="slideshowResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>4. Navigation Menu Test</h2>
+            <button onclick="testNavigation()">Test Mobile Navigation</button>
+            <div id="navResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>5. Performance Test</h2>
+            <button onclick="testPerformance()">Test Mobile Performance</button>
+            <div id="perfResult"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Device detection
+        function getDeviceInfo() {
+            const info = {
+                screenWidth: window.screen.width,
+                screenHeight: window.screen.height,
+                viewportWidth: window.innerWidth,
+                viewportHeight: window.innerHeight,
+                devicePixelRatio: window.devicePixelRatio || 1,
+                userAgent: navigator.userAgent,
+                touchSupport: 'ontouchstart' in window,
+                orientation: window.orientation,
+                isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+                isTablet: /iPad|Android(?!.*Mobile)|Tablet/i.test(navigator.userAgent)
+            };
+            
+            const infoDiv = document.getElementById('deviceInfo');
+            infoDiv.innerHTML = `
+                <div class="status ${info.isMobile || info.isTablet ? 'good' : 'warning'}">
+                    Device Type: ${info.isTablet ? 'Tablet' : info.isMobile ? 'Mobile' : 'Desktop'}
+                </div>
+                <p>Screen: ${info.screenWidth} × ${info.screenHeight}</p>
+                <p>Viewport: ${info.viewportWidth} × ${info.viewportHeight}</p>
+                <p>Pixel Ratio: ${info.devicePixelRatio}</p>
+                <p>Touch Support: ${info.touchSupport ? 'Yes' : 'No'}</p>
+                <p>Orientation: ${info.orientation !== undefined ? info.orientation : 'N/A'}</p>
+            `;
+            
+            return info;
+        }
+        
+        // Viewport test
+        function testViewport() {
+            const viewport = document.querySelector('meta[name="viewport"]');
+            const testDiv = document.getElementById('viewportTest');
+            
+            if (viewport && viewport.content.includes('width=device-width')) {
+                testDiv.innerHTML = '<div class="status good">✓ Viewport meta tag is properly configured</div>';
+            } else {
+                testDiv.innerHTML = '<div class="status bad">✗ Viewport meta tag is missing or misconfigured</div>';
+            }
+            
+            // Test if content fits viewport
+            if (document.body.scrollWidth > window.innerWidth) {
+                testDiv.innerHTML += '<div class="status bad">✗ Content overflows viewport horizontally</div>';
+            } else {
+                testDiv.innerHTML += '<div class="status good">✓ Content fits within viewport</div>';
+            }
+        }
+        
+        // Touch test
+        function testTouch(element, name) {
+            const result = document.getElementById('touchResult');
+            const rect = element.getBoundingClientRect();
+            const size = `${rect.width}×${rect.height}`;
+            
+            if (rect.width >= 44 && rect.height >= 44) {
+                result.innerHTML = `<div class="status good">✓ ${name} touched - Size: ${size}px (Good for mobile)</div>`;
+            } else {
+                result.innerHTML = `<div class="status warning">⚠ ${name} touched - Size: ${size}px (Should be at least 44×44px)</div>`;
+            }
+        }
+        
+        // Slideshow test
+        function testSlideshow() {
+            const result = document.getElementById('slideshowResult');
+            const iframe = document.getElementById('slideshowFrame');
+            
+            try {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                const slideshow = iframeDoc.querySelector('.slideshow-container');
+                const slides = iframeDoc.querySelectorAll('.slide');
+                const images = iframeDoc.querySelectorAll('.slide img');
+                
+                let html = '';
+                
+                if (slideshow) {
+                    const rect = slideshow.getBoundingClientRect();
+                    html += `<div class="status good">✓ Slideshow found - Size: ${rect.width}×${rect.height}px</div>`;
+                    
+                    // Check if slideshow is responsive
+                    if (rect.width <= window.innerWidth) {
+                        html += '<div class="status good">✓ Slideshow fits within viewport</div>';
+                    } else {
+                        html += '<div class="status bad">✗ Slideshow overflows viewport</div>';
+                    }
+                    
+                    // Check image loading
+                    html += `<div class="status info">Found ${images.length} images</div>`;
+                    
+                    // Check performance impact
+                    const totalImageSize = Array.from(images).reduce((sum, img) => {
+                        return sum + (img.naturalWidth * img.naturalHeight * 4 / 1024 / 1024); // Rough estimate in MB
+                    }, 0);
+                    
+                    if (totalImageSize > 10) {
+                        html += `<div class="status warning">⚠ Large image payload: ~${totalImageSize.toFixed(1)}MB</div>`;
+                    }
+                } else {
+                    html += '<div class="status bad">✗ Slideshow not found</div>';
+                }
+                
+                result.innerHTML = html;
+            } catch (e) {
+                result.innerHTML = '<div class="status warning">⚠ Cannot access iframe content (cross-origin)</div>';
+            }
+        }
+        
+        // Navigation test
+        function testNavigation() {
+            const result = document.getElementById('navResult');
+            const info = getDeviceInfo();
+            
+            let html = '';
+            
+            if (info.isMobile || info.isTablet) {
+                html += '<div class="status good">✓ Mobile device detected</div>';
+                html += '<div class="status info">Mobile navigation should be active</div>';
+                html += '<div class="status info">Check for: hamburger menu, touch-friendly links, proper spacing</div>';
+            } else {
+                html += '<div class="status warning">Desktop device - resize window to test mobile nav</div>';
+            }
+            
+            result.innerHTML = html;
+        }
+        
+        // Performance test
+        function testPerformance() {
+            const result = document.getElementById('perfResult');
+            const startTime = performance.now();
+            
+            // Test image loading
+            const images = document.querySelectorAll('img');
+            let loadedImages = 0;
+            let totalSize = 0;
+            
+            images.forEach(img => {
+                if (img.complete && img.naturalHeight !== 0) {
+                    loadedImages++;
+                    totalSize += img.naturalWidth * img.naturalHeight * 4 / 1024 / 1024; // Rough estimate
+                }
+            });
+            
+            const loadTime = performance.now() - startTime;
+            
+            let html = `<div class="status info">Page analysis completed in ${loadTime.toFixed(2)}ms</div>`;
+            html += `<div class="status info">Images: ${loadedImages}/${images.length} loaded</div>`;
+            
+            if (totalSize > 5) {
+                html += `<div class="status warning">⚠ Large image payload: ~${totalSize.toFixed(1)}MB - Consider optimization</div>`;
+            }
+            
+            // Check connection type
+            if (navigator.connection) {
+                const conn = navigator.connection;
+                html += `<div class="status info">Connection: ${conn.effectiveType || 'Unknown'}</div>`;
+                
+                if (conn.effectiveType === '2g' || conn.effectiveType === 'slow-2g') {
+                    html += '<div class="status warning">⚠ Slow connection detected - Performance may be impacted</div>';
+                }
+            }
+            
+            result.innerHTML = html;
+        }
+        
+        // Initialize tests
+        window.onload = function() {
+            getDeviceInfo();
+            testViewport();
+        };
+        
+        // Update on resize
+        window.onresize = function() {
+            getDeviceInfo();
+            testViewport();
+        };
+    </script>
+</body>
+</html>

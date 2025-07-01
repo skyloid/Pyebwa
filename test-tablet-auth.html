@@ -3,18 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tablet Auth Test</title>
+    <title>Enhanced Tablet Auth Test - Pyebwa</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             padding: 20px;
             line-height: 1.6;
+            background: #f5f7fa;
         }
         .test-section {
-            background: #f0f0f0;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 5px;
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #00217D;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #00217D;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
         }
         .status {
             padding: 10px;
@@ -82,12 +95,38 @@
     </div>
     
     <div class="test-section">
-        <h2>6. Console Log</h2>
+        <h2>6. Loop Detection Test</h2>
+        <div id="loopTest"></div>
+        <button onclick="simulateLoop()">Simulate Loop</button>
+        <button onclick="clearLoopData()">Clear Loop Data</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>7. Cross-Domain Test</h2>
+        <div id="crossDomainTest"></div>
+        <button onclick="testCrossDomain()">Test Cross-Domain Auth</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>8. Performance Metrics</h2>
+        <div id="performanceTest"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>9. Automated Test Suite</h2>
+        <div id="automatedTests"></div>
+        <button onclick="runAutomatedTests()">Run All Tests</button>
+        <button onclick="exportTestResults()">Export Results</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>10. Console Log</h2>
         <pre id="console"></pre>
     </div>
 
     <script src="/app/js/firebase-config.js?v=4"></script>
     <script src="/app/js/device-detection.js?v=1"></script>
+    <script src="/tablet-auth-test-suite.js"></script>
     
     <script>
         const log = (message, type = 'info') => {
@@ -279,6 +318,192 @@
         };
         
         checkLoopIndicators();
+        
+        // Additional test functions for new sections
+        
+        // Loop Detection Test
+        function updateLoopTest() {
+            const loopTest = document.getElementById('loopTest');
+            const visitCount = parseInt(localStorage.getItem('pyebwaVisitCount') || '0');
+            const lastVisit = parseInt(localStorage.getItem('pyebwaLastVisit') || '0');
+            const now = Date.now();
+            const threshold = isTablet ? 5 : 3;
+            const timeWindow = isTablet ? 15000 : 10000;
+            const timeSinceLastVisit = now - lastVisit;
+            
+            loopTest.innerHTML = `
+                <div class="status info">Visit Count: ${visitCount}</div>
+                <div class="status info">Threshold: ${threshold} visits in ${timeWindow/1000}s</div>
+                <div class="status info">Time Since Last Visit: ${Math.round(timeSinceLastVisit/1000)}s</div>
+                <div class="status ${visitCount >= threshold ? 'error' : 'success'}">
+                    Loop Status: ${visitCount >= threshold ? 'LOOP DETECTED!' : 'Normal'}
+                </div>
+            `;
+        }
+        
+        function simulateLoop() {
+            log('Simulating rapid visits for loop detection...');
+            const visits = isTablet ? 6 : 4;
+            
+            for (let i = 0; i < visits; i++) {
+                const count = parseInt(localStorage.getItem('pyebwaVisitCount') || '0') + 1;
+                localStorage.setItem('pyebwaVisitCount', count.toString());
+                localStorage.setItem('pyebwaLastVisit', Date.now().toString());
+                log(`Visit ${count} recorded`);
+            }
+            
+            updateLoopTest();
+            log('Loop simulation complete', 'warning');
+        }
+        
+        function clearLoopData() {
+            localStorage.removeItem('pyebwaVisitCount');
+            localStorage.removeItem('pyebwaLastVisit');
+            localStorage.removeItem('pyebwaLoopDetected');
+            log('Loop detection data cleared');
+            updateLoopTest();
+        }
+        
+        // Cross-Domain Test
+        function updateCrossDomainTest() {
+            const crossDomainTest = document.getElementById('crossDomainTest');
+            const currentDomain = window.location.hostname;
+            const authToken = firebase.auth().currentUser ? 'Present' : 'None';
+            
+            crossDomainTest.innerHTML = `
+                <div class="status info">Current Domain: ${currentDomain}</div>
+                <div class="status info">Auth Token: ${authToken}</div>
+                <div class="status info">
+                    Related Domains: rasin.pyebwa.com, pyebwa.com
+                </div>
+            `;
+        }
+        
+        async function testCrossDomain() {
+            log('Testing cross-domain authentication...');
+            
+            if (firebase.auth().currentUser) {
+                try {
+                    const token = await firebase.auth().currentUser.getIdToken();
+                    log('Auth token retrieved successfully');
+                    log(`Token preview: ${token.substring(0, 20)}...`);
+                    
+                    // Test token validity
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    const expiry = new Date(payload.exp * 1000);
+                    log(`Token expires: ${expiry.toLocaleString()}`);
+                } catch (error) {
+                    log(`Token retrieval error: ${error.message}`, 'error');
+                }
+            } else {
+                log('No authenticated user for cross-domain test', 'warning');
+            }
+            
+            updateCrossDomainTest();
+        }
+        
+        // Performance Metrics
+        function updatePerformanceTest() {
+            const performanceTest = document.getElementById('performanceTest');
+            
+            if (window.performance && window.performance.timing) {
+                const timing = window.performance.timing;
+                const pageLoad = timing.loadEventEnd - timing.navigationStart;
+                const domReady = timing.domContentLoadedEventEnd - timing.navigationStart;
+                const redirectTime = timing.redirectEnd - timing.redirectStart;
+                
+                let html = `
+                    <div class="status info">Page Load Time: ${pageLoad}ms</div>
+                    <div class="status info">DOM Ready Time: ${domReady}ms</div>
+                    <div class="status info">Redirect Time: ${redirectTime}ms</div>
+                `;
+                
+                if (window.performance.memory) {
+                    const mem = window.performance.memory;
+                    html += `
+                        <div class="status info">
+                            Memory: ${Math.round(mem.usedJSHeapSize / 1048576)}MB / 
+                            ${Math.round(mem.totalJSHeapSize / 1048576)}MB
+                        </div>
+                    `;
+                }
+                
+                performanceTest.innerHTML = html;
+            } else {
+                performanceTest.innerHTML = '<div class="status warning">Performance API not available</div>';
+            }
+        }
+        
+        // Automated Tests
+        let testSuite = null;
+        let testResults = null;
+        
+        async function runAutomatedTests() {
+            const automatedTests = document.getElementById('automatedTests');
+            automatedTests.innerHTML = '<div class="status warning">Running automated tests...</div>';
+            log('Starting automated test suite...');
+            
+            if (!window.TabletAuthTestSuite) {
+                automatedTests.innerHTML = '<div class="status error">Test suite not loaded!</div>';
+                log('ERROR: TabletAuthTestSuite not available', 'error');
+                return;
+            }
+            
+            try {
+                testSuite = new TabletAuthTestSuite(firebase);
+                testResults = await testSuite.runAll();
+                
+                const { summary } = testResults;
+                automatedTests.innerHTML = `
+                    <div class="status ${summary.failed === 0 ? 'success' : 'error'}">
+                        Total: ${summary.total} | Passed: ${summary.passed} | Failed: ${summary.failed}
+                    </div>
+                    <div class="status info">Duration: ${summary.duration}ms</div>
+                `;
+                
+                // Log failed tests
+                if (summary.failed > 0) {
+                    testResults.results.filter(r => r.status === 'failed').forEach(test => {
+                        log(`FAILED: ${test.name} - ${test.error}`, 'error');
+                    });
+                }
+                
+                log(`Test suite complete: ${summary.passed}/${summary.total} passed`);
+            } catch (error) {
+                automatedTests.innerHTML = `<div class="status error">Test error: ${error.message}</div>`;
+                log(`Test suite error: ${error.message}`, 'error');
+            }
+        }
+        
+        function exportTestResults() {
+            if (!testResults) {
+                alert('No test results to export. Run tests first.');
+                return;
+            }
+            
+            if (testSuite) {
+                testSuite.exportResults();
+                log('Test results exported');
+            }
+        }
+        
+        // Initialize new tests
+        updateLoopTest();
+        updateCrossDomainTest();
+        updatePerformanceTest();
+        
+        // Auto-refresh performance metrics
+        setInterval(updatePerformanceTest, 5000);
+        
+        // Check for tablet-specific scripts
+        if (window.DeviceDetection && window.DeviceDetection.isTablet()) {
+            log('Tablet detected - tablet-specific scripts should be active', 'warning');
+            
+            // Check if tablet debug is loaded
+            if (window.tabletDebugInfo) {
+                log('Tablet debug helper is active');
+            }
+        }
     </script>
 </body>
 </html>
