@@ -1,0 +1,365 @@
+/* Enhanced Mobile Styles for Pyebwa.com */
+
+/* Mobile-First Approach */
+
+/* Touch-friendly tap targets */
+button, 
+a, 
+.btn,
+.touch-target {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Improved slideshow for mobile */
+@media (max-width: 768px) {
+    /* Reduce hero/slideshow height on mobile */
+    .hero {
+        min-height: 400px;
+        max-height: 60vh;
+    }
+    
+    .slideshow-container {
+        height: 100%;
+    }
+    
+    /* Optimize slideshow images for mobile */
+    .slide img {
+        object-fit: cover;
+        object-position: center;
+        /* Use lower quality on mobile to improve performance */
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+    
+    /* Reduce overlay darkness on mobile for better visibility */
+    .slideshow-overlay {
+        background: rgba(0, 0, 0, 0.6);
+    }
+    
+    /* Improve hero content positioning */
+    .hero-content {
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+    }
+    
+    .hero-content .container {
+        width: 100%;
+        max-width: 100%;
+        padding: 0 20px;
+    }
+    
+    /* Logo adjustments */
+    .logo-display {
+        margin-bottom: 20px;
+    }
+    
+    .logo-image {
+        max-height: 80px;
+        width: auto;
+    }
+    
+    /* Typography scaling */
+    .hero-title {
+        font-size: 32px;
+        line-height: 1.2;
+        margin-bottom: 15px;
+    }
+    
+    .hero-subtitle {
+        font-size: 16px;
+        line-height: 1.4;
+        margin-bottom: 25px;
+    }
+    
+    /* CTA button optimization */
+    .btn-cta {
+        font-size: 16px;
+        padding: 14px 32px;
+        width: auto;
+        max-width: 280px;
+    }
+    
+    /* Navigation improvements */
+    .navbar {
+        padding: 10px 0;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+    
+    .nav-brand {
+        flex: 1;
+        max-width: 200px;
+    }
+    
+    .logo-header {
+        height: 35px;
+        width: auto;
+    }
+    
+    .tagline {
+        font-size: 12px;
+        display: none; /* Hide on very small screens */
+    }
+    
+    /* Mobile menu improvements */
+    .mobile-menu-toggle {
+        position: relative;
+        z-index: 1001;
+        padding: 10px;
+        margin-right: -10px; /* Align to edge */
+    }
+    
+    .nav-menu {
+        top: 60px;
+        background: rgba(0, 0, 0, 0.98);
+        max-height: calc(100vh - 60px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .nav-link {
+        padding: 15px 20px;
+        font-size: 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .nav-link:last-child {
+        border-bottom: none;
+    }
+    
+    /* Button groups in mobile menu */
+    .nav-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 20px;
+        width: 100%;
+    }
+    
+    .nav-buttons .btn {
+        width: 100%;
+        justify-content: center;
+        font-size: 16px;
+        padding: 12px 20px;
+    }
+    
+    /* Features section mobile */
+    .features {
+        padding: 40px 20px;
+    }
+    
+    .section-title {
+        font-size: 28px;
+        margin-bottom: 30px;
+    }
+    
+    .features-grid {
+        gap: 25px;
+    }
+    
+    .feature-card {
+        padding: 25px;
+        text-align: center;
+    }
+    
+    .feature-icon {
+        font-size: 48px;
+        margin-bottom: 15px;
+    }
+    
+    /* Footer mobile optimization */
+    .footer {
+        padding: 30px 20px;
+        font-size: 14px;
+    }
+    
+    /* Utility buttons positioning */
+    #themeToggle {
+        position: fixed;
+        bottom: 70px;
+        right: 20px;
+        width: 45px;
+        height: 45px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    
+    .return-to-top {
+        bottom: 20px;
+        right: 20px;
+        width: 45px;
+        height: 45px;
+    }
+    
+    /* Language selector mobile */
+    .language-selector {
+        position: fixed;
+        top: auto;
+        bottom: 130px;
+        right: 20px;
+        flex-direction: column;
+        gap: 2px;
+        padding: 5px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    
+    .lang-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+        width: 100%;
+    }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+    .hero {
+        min-height: 350px;
+        max-height: 50vh;
+    }
+    
+    .hero-title {
+        font-size: 26px;
+    }
+    
+    .hero-subtitle {
+        font-size: 14px;
+    }
+    
+    .logo-image {
+        max-height: 60px;
+    }
+    
+    .btn-cta {
+        font-size: 14px;
+        padding: 12px 24px;
+    }
+    
+    /* Stack language buttons horizontally on very small screens */
+    .language-selector {
+        flex-direction: row;
+        bottom: auto;
+        top: 10px;
+        right: 60px; /* Make room for hamburger menu */
+    }
+    
+    .lang-btn {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+    .hero {
+        min-height: 300px;
+        max-height: 90vh;
+    }
+    
+    .hero-content {
+        padding: 10px;
+    }
+    
+    .hero-title {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+    
+    .hero-subtitle {
+        display: none; /* Hide subtitle in landscape to save space */
+    }
+    
+    .logo-image {
+        max-height: 50px;
+    }
+    
+    /* Move utility buttons to left side in landscape */
+    #themeToggle,
+    .return-to-top {
+        left: 20px;
+        right: auto;
+    }
+    
+    .language-selector {
+        left: 20px;
+        right: auto;
+        bottom: 190px;
+    }
+}
+
+/* Tablet-specific adjustments */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .hero {
+        min-height: 500px;
+    }
+    
+    .hero-title {
+        font-size: 42px;
+    }
+    
+    .hero-subtitle {
+        font-size: 20px;
+    }
+    
+    .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 30px;
+    }
+    
+    /* Show desktop nav on tablets */
+    .mobile-menu-toggle {
+        display: none !important;
+    }
+    
+    .nav-menu {
+        display: flex !important;
+        position: relative;
+        top: auto;
+        background: transparent;
+        flex-direction: row;
+        padding: 0;
+        gap: 20px;
+    }
+    
+    .nav-link {
+        color: var(--gray-800) !important;
+        padding: 8px 16px;
+        font-size: 16px;
+        border: none;
+    }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    /* Ensure sharp images on retina displays */
+    .slide img {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+    /* Disable animations for users who prefer reduced motion */
+    .slide {
+        transition: none !important;
+    }
+    
+    .slideshow-container .slide {
+        animation: none !important;
+    }
+}
+
+/* Performance optimizations for slow connections */
+@media (prefers-reduced-data: reduce) {
+    /* Reduce image quality for users on limited data plans */
+    .slide img {
+        filter: blur(0.5px);
+        image-rendering: -webkit-optimize-contrast;
+    }
+}
