@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tablet Loop Simulation Test - Pyebwa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #00217D;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .simulation-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .simulation-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+            border-bottom: 2px solid #00217D;
+            padding-bottom: 10px;
+        }
+        
+        .status-box {
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        
+        .status-box.normal {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-box.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        
+        .status-box.danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .redirect-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .redirect-item.blocked {
+            border-left-color: #dc3545;
+            background: #ffe0e0;
+        }
+        
+        button {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: background 0.2s;
+        }
+        
+        button:hover {
+            background: #001654;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        button.danger {
+            background: #dc3545;
+        }
+        
+        button.danger:hover {
+            background: #c82333;
+        }
+        
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .metric {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+        }
+        
+        .metric-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #00217D;
+        }
+        
+        .metric-label {
+            font-size: 14px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+        
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            position: relative;
+        }
+        
+        .timeline-time {
+            width: 80px;
+            text-align: right;
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        .timeline-marker {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #007bff;
+            margin: 0 15px;
+            position: relative;
+        }
+        
+        .timeline-marker.success {
+            background: #28a745;
+        }
+        
+        .timeline-marker.blocked {
+            background: #dc3545;
+        }
+        
+        .timeline-content {
+            flex: 1;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .emergency-ui {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border: 3px solid red;
+            padding: 30px;
+            z-index: 99999;
+            text-align: center;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            max-width: 90%;
+            width: 500px;
+        }
+        
+        .emergency-ui h2 {
+            color: red;
+            margin-bottom: 20px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e9ecef;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745 0%, #ffc107 50%, #dc3545 100%);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .control-panel {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        
+        .control-row {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        
+        .control-label {
+            flex: 1;
+            font-weight: 500;
+        }
+        
+        .control-input {
+            padding: 5px 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            width: 100px;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .metrics {
+                grid-template-columns: 1fr;
+            }
+            
+            .timeline-time {
+                width: 60px;
+                font-size: 11px;
+            }
+            
+            button {
+                width: 100%;
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Tablet Loop Simulation Test</h1>
+        
+        <!-- Current Status -->
+        <div class="simulation-section">
+            <h2>Current Status</h2>
+            <div id="currentStatus" class="status-box normal">
+                ✅ System Normal - No loops detected
+            </div>
+            <div class="metrics">
+                <div class="metric">
+                    <div class="metric-value" id="visitCount">0</div>
+                    <div class="metric-label">Visit Count</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="redirectCount">0</div>
+                    <div class="metric-label">Redirects</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="blockedCount">0</div>
+                    <div class="metric-label">Blocked</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="timeWindow">15s</div>
+                    <div class="metric-label">Time Window</div>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="loopProgress" style="width: 0%">0 / 5</div>
+            </div>
+        </div>
+        
+        <!-- Control Panel -->
+        <div class="simulation-section">
+            <h2>Simulation Controls</h2>
+            <div class="control-panel">
+                <div class="control-row">
+                    <span class="control-label">Redirect Speed (ms):</span>
+                    <input type="number" id="redirectSpeed" class="control-input" value="500" min="100" max="5000">
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Number of Redirects:</span>
+                    <input type="number" id="redirectNumber" class="control-input" value="10" min="1" max="50">
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Simulate as Tablet:</span>
+                    <input type="checkbox" id="simulateTablet" checked>
+                </div>
+            </div>
+            <div style="margin-top: 20px;">
+                <button onclick="startSimulation()">▶️ Start Loop Simulation</button>
+                <button onclick="stopSimulation()" class="danger">⏹️ Stop Simulation</button>
+                <button onclick="resetSimulation()">🔄 Reset All</button>
+            </div>
+        </div>
+        
+        <!-- Timeline -->
+        <div class="simulation-section">
+            <h2>Redirect Timeline</h2>
+            <div class="timeline" id="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-time">--:--:--</div>
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">Waiting to start simulation...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Redirect History -->
+        <div class="simulation-section">
+            <h2>Redirect History</h2>
+            <div id="redirectHistory">
+                <div class="redirect-item">No redirects yet</div>
+            </div>
+        </div>
+        
+        <!-- Test Scenarios -->
+        <div class="simulation-section">
+            <h2>Quick Test Scenarios</h2>
+            <button onclick="testNormalFlow()">👍 Normal Flow (No Loop)</button>
+            <button onclick="testSlowLoop()">🐌 Slow Loop</button>
+            <button onclick="testFastLoop()">⚡ Fast Loop</button>
+            <button onclick="testEdgeCase()">🎯 Edge Case (Just Under Threshold)</button>
+            <button onclick="testRealWorldScenario()">🌍 Real World Scenario</button>
+        </div>
+        
+        <!-- Emergency UI Mock -->
+        <div class="emergency-ui" id="emergencyUI">
+            <h2>Authentication Loop Detected</h2>
+            <p>We've detected a login loop on your tablet. This has been stopped to protect your session.</p>
+            <p style="margin: 20px 0;">
+                <strong>Loop Details:</strong><br>
+                <span id="loopDetails">5 redirects in 15 seconds</span>
+            </p>
+            <button onclick="clearEmergencyUI()">Clear Data & Retry</button>
+            <button onclick="hideEmergencyUI()">Close</button>
+        </div>
+    </div>
+    
+    <script>
+        // Simulation state
+        let simulationActive = false;
+        let simulationInterval = null;
+        let redirectHistory = [];
+        let visitCount = 0;
+        let redirectCount = 0;
+        let blockedCount = 0;
+        let startTime = null;
+        
+        // Device detection mock
+        function isTabletMode() {
+            return document.getElementById('simulateTablet').checked;
+        }
+        
+        // Update metrics display
+        function updateMetrics() {
+            document.getElementById('visitCount').textContent = visitCount;
+            document.getElementById('redirectCount').textContent = redirectCount;
+            document.getElementById('blockedCount').textContent = blockedCount;
+            
+            const threshold = isTabletMode() ? 5 : 3;
+            const progress = Math.min(100, (visitCount / threshold) * 100);
+            const progressEl = document.getElementById('loopProgress');
+            progressEl.style.width = `${progress}%`;
+            progressEl.textContent = `${visitCount} / ${threshold}`;
+            
+            // Update status
+            const statusEl = document.getElementById('currentStatus');
+            if (visitCount >= threshold) {
+                statusEl.className = 'status-box danger';
+                statusEl.innerHTML = '❌ LOOP DETECTED - Emergency UI would trigger';
+                showEmergencyUI();
+            } else if (visitCount > threshold / 2) {
+                statusEl.className = 'status-box warning';
+                statusEl.innerHTML = '⚠️ Warning - Approaching loop threshold';
+            } else {
+                statusEl.className = 'status-box normal';
+                statusEl.innerHTML = '✅ System Normal - No loops detected';
+            }
+        }
+        
+        // Add timeline entry
+        function addTimelineEntry(message, type = 'normal') {
+            const timeline = document.getElementById('timeline');
+            const item = document.createElement('div');
+            item.className = 'timeline-item';
+            
+            const time = new Date().toLocaleTimeString();
+            item.innerHTML = `
+                <div class="timeline-time">${time}</div>
+                <div class="timeline-marker ${type}"></div>
+                <div class="timeline-content">${message}</div>
+            `;
+            
+            // Insert at the beginning (newest first)
+            timeline.insertBefore(item, timeline.firstChild);
+            
+            // Keep only last 20 entries
+            while (timeline.children.length > 20) {
+                timeline.removeChild(timeline.lastChild);
+            }
+        }
+        
+        // Add redirect to history
+        function addRedirectToHistory(from, to, blocked = false) {
+            const historyEl = document.getElementById('redirectHistory');
+            const item = document.createElement('div');
+            item.className = `redirect-item ${blocked ? 'blocked' : ''}`;
+            
+            const time = new Date().toLocaleTimeString();
+            item.textContent = `[${time}] ${from} → ${to} ${blocked ? '(BLOCKED)' : ''}`;
+            
+            // Insert at the beginning
+            historyEl.insertBefore(item, historyEl.firstChild);
+            
+            // Store in array
+            redirectHistory.push({
+                time: new Date(),
+                from,
+                to,
+                blocked
+            });
+            
+            // Keep only last 50 entries
+            while (historyEl.children.length > 50) {
+                historyEl.removeChild(historyEl.lastChild);
+            }
+        }
+        
+        // Simulate redirect
+        function simulateRedirect() {
+            if (!simulationActive) return;
+            
+            const pages = ['/login.html', '/app/', '/app/dashboard', '/login.html'];
+            const fromIndex = redirectCount % pages.length;
+            const toIndex = (redirectCount + 1) % pages.length;
+            const from = pages[fromIndex];
+            const to = pages[toIndex];
+            
+            // Check if we're in time window
+            const now = Date.now();
+            const timeWindow = isTabletMode() ? 15000 : 10000;
+            
+            if (!startTime || now - startTime > timeWindow) {
+                // Reset window
+                startTime = now;
+                visitCount = 0;
+                addTimelineEntry('New time window started', 'success');
+            }
+            
+            visitCount++;
+            redirectCount++;
+            
+            // Check if should be blocked
+            const threshold = isTabletMode() ? 5 : 3;
+            const blocked = visitCount > threshold;
+            
+            if (blocked) {
+                blockedCount++;
+                addRedirectToHistory(from, to, true);
+                addTimelineEntry(`Redirect blocked: ${from} → ${to}`, 'blocked');
+            } else {
+                addRedirectToHistory(from, to, false);
+                addTimelineEntry(`Redirect allowed: ${from} → ${to}`, 'success');
+            }
+            
+            updateMetrics();
+            
+            // Check if simulation should continue
+            const maxRedirects = parseInt(document.getElementById('redirectNumber').value);
+            if (redirectCount >= maxRedirects) {
+                stopSimulation();
+                addTimelineEntry('Simulation completed', 'success');
+            }
+        }
+        
+        // Start simulation
+        function startSimulation() {
+            if (simulationActive) return;
+            
+            simulationActive = true;
+            resetSimulation(false);
+            
+            const speed = parseInt(document.getElementById('redirectSpeed').value);
+            addTimelineEntry(`Simulation started (${speed}ms intervals)`, 'success');
+            
+            // Start redirect loop
+            simulationInterval = setInterval(simulateRedirect, speed);
+            
+            // Simulate first redirect immediately
+            simulateRedirect();
+        }
+        
+        // Stop simulation
+        function stopSimulation() {
+            simulationActive = false;
+            if (simulationInterval) {
+                clearInterval(simulationInterval);
+                simulationInterval = null;
+            }
+            addTimelineEntry('Simulation stopped', 'blocked');
+        }
+        
+        // Reset simulation
+        function resetSimulation(addEntry = true) {
+            stopSimulation();
+            visitCount = 0;
+            redirectCount = 0;
+            blockedCount = 0;
+            redirectHistory = [];
+            startTime = null;
+            
+            updateMetrics();
+            
+            document.getElementById('redirectHistory').innerHTML = 
+                '<div class="redirect-item">No redirects yet</div>';
+            
+            if (addEntry) {
+                document.getElementById('timeline').innerHTML = `
+                    <div class="timeline-item">
+                        <div class="timeline-time">--:--:--</div>
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">Simulation reset</div>
+                    </div>
+                `;
+            }
+            
+            hideEmergencyUI();
+        }
+        
+        // Test scenarios
+        function testNormalFlow() {
+            resetSimulation();
+            document.getElementById('redirectSpeed').value = '3000';
+            document.getElementById('redirectNumber').value = '3';
+            startSimulation();
+        }
+        
+        function testSlowLoop() {
+            resetSimulation();
+            document.getElementById('redirectSpeed').value = '2000';
+            document.getElementById('redirectNumber').value = '8';
+            startSimulation();
+        }
+        
+        function testFastLoop() {
+            resetSimulation();
+            document.getElementById('redirectSpeed').value = '200';
+            document.getElementById('redirectNumber').value = '20';
+            startSimulation();
+        }
+        
+        function testEdgeCase() {
+            resetSimulation();
+            const threshold = isTabletMode() ? 5 : 3;
+            document.getElementById('redirectSpeed').value = '1000';
+            document.getElementById('redirectNumber').value = threshold.toString();
+            startSimulation();
+        }
+        
+        function testRealWorldScenario() {
+            resetSimulation();
+            document.getElementById('redirectSpeed').value = '800';
+            document.getElementById('redirectNumber').value = '15';
+            
+            // Simulate with varying speeds
+            let count = 0;
+            const speeds = [500, 300, 1000, 200, 2000, 100, 500, 1500, 300, 200];
+            
+            function nextRedirect() {
+                if (!simulationActive || count >= speeds.length) {
+                    stopSimulation();
+                    return;
+                }
+                
+                simulateRedirect();
+                count++;
+                
+                if (count < speeds.length) {
+                    setTimeout(nextRedirect, speeds[count]);
+                }
+            }
+            
+            simulationActive = true;
+            addTimelineEntry('Real world scenario started (varying speeds)', 'success');
+            nextRedirect();
+        }
+        
+        // Emergency UI functions
+        function showEmergencyUI() {
+            const details = `${visitCount} redirects in ${isTabletMode() ? '15' : '10'} seconds`;
+            document.getElementById('loopDetails').textContent = details;
+            document.getElementById('emergencyUI').style.display = 'block';
+        }
+        
+        function hideEmergencyUI() {
+            document.getElementById('emergencyUI').style.display = 'none';
+        }
+        
+        function clearEmergencyUI() {
+            hideEmergencyUI();
+            resetSimulation();
+            addTimelineEntry('Emergency UI cleared - data reset', 'success');
+        }
+        
+        // Initialize
+        function init() {
+            // Update time window display
+            document.getElementById('timeWindow').textContent = isTabletMode() ? '15s' : '10s';
+            
+            // Update on tablet mode change
+            document.getElementById('simulateTablet').addEventListener('change', () => {
+                document.getElementById('timeWindow').textContent = isTabletMode() ? '15s' : '10s';
+                resetSimulation();
+                addTimelineEntry(`Switched to ${isTabletMode() ? 'Tablet' : 'Desktop'} mode`, 'success');
+            });
+            
+            updateMetrics();
+        }
+        
+        // Start
+        init();
+    </script>
+</body>
+</html>

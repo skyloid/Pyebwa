@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Results Dashboard - Pyebwa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #00217D;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .summary-value {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .summary-label {
+            color: #666;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .success-rate {
+            color: #4CAF50;
+        }
+        
+        .failure-rate {
+            color: #f44336;
+        }
+        
+        .device-matrix {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        th {
+            background: #f5f5f5;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        .status-icon {
+            font-size: 20px;
+            text-align: center;
+        }
+        
+        .status-icon.pass {
+            color: #4CAF50;
+        }
+        
+        .status-icon.fail {
+            color: #f44336;
+        }
+        
+        .status-icon.pending {
+            color: #ff9800;
+        }
+        
+        .test-history {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .history-device {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .device-icon {
+            font-size: 32px;
+        }
+        
+        .history-details {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .test-score {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .filters {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        select, input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        button {
+            padding: 8px 16px;
+            background: #00217D;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        button:hover {
+            background: #001654;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            height: 400px;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 60px;
+            color: #999;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        @media (max-width: 768px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            table {
+                font-size: 14px;
+            }
+            
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Tablet Authentication Test Results</h1>
+        
+        <div class="filters">
+            <select id="deviceFilter">
+                <option value="">All Devices</option>
+                <option value="ipad">iPad</option>
+                <option value="android">Android Tablet</option>
+                <option value="other">Other</option>
+            </select>
+            
+            <select id="timeFilter">
+                <option value="24h">Last 24 Hours</option>
+                <option value="7d">Last 7 Days</option>
+                <option value="30d">Last 30 Days</option>
+                <option value="all">All Time</option>
+            </select>
+            
+            <input type="date" id="dateFrom" placeholder="From">
+            <input type="date" id="dateTo" placeholder="To">
+            
+            <button onclick="applyFilters()">Apply Filters</button>
+            <button onclick="exportData()">Export Data</button>
+        </div>
+        
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-label">Total Tests Run</div>
+                <div class="summary-value" id="totalTests">0</div>
+                <div class="summary-label">Across All Devices</div>
+            </div>
+            
+            <div class="summary-card">
+                <div class="summary-label">Success Rate</div>
+                <div class="summary-value success-rate" id="successRate">0%</div>
+                <div class="summary-label">Passing Tests</div>
+            </div>
+            
+            <div class="summary-card">
+                <div class="summary-label">Devices Tested</div>
+                <div class="summary-value" id="deviceCount">0</div>
+                <div class="summary-label">Unique Devices</div>
+            </div>
+            
+            <div class="summary-card">
+                <div class="summary-label">Active Issues</div>
+                <div class="summary-value failure-rate" id="activeIssues">0</div>
+                <div class="summary-label">Need Attention</div>
+            </div>
+        </div>
+        
+        <div class="device-matrix">
+            <h2>Device Test Matrix</h2>
+            <table id="deviceTable">
+                <thead>
+                    <tr>
+                        <th>Device</th>
+                        <th>OS Version</th>
+                        <th>Browser</th>
+                        <th>Detection</th>
+                        <th>Auth Flow</th>
+                        <th>Loop Prev.</th>
+                        <th>Cooldown</th>
+                        <th>Cross-Domain</th>
+                        <th>Performance</th>
+                        <th>Last Test</th>
+                    </tr>
+                </thead>
+                <tbody id="deviceTableBody">
+                    <tr>
+                        <td colspan="10" class="no-data">No test data available yet</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="chart-container">
+            <h2>Test Results Over Time</h2>
+            <canvas id="resultsChart"></canvas>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4CAF50;"></div>
+                    <span>Passed</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #f44336;"></div>
+                    <span>Failed</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-history">
+            <h2>Recent Test Runs</h2>
+            <div id="historyContainer">
+                <div class="no-data">No recent test runs</div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Sample data structure - in production, this would come from a database
+        let testData = {
+            devices: {},
+            history: [],
+            issues: []
+        };
+        
+        // Load test data from localStorage (in production, this would be an API call)
+        function loadTestData() {
+            const saved = localStorage.getItem('pyebwaTestResults');
+            if (saved) {
+                testData = JSON.parse(saved);
+            }
+            
+            // Process any new test results in URL params
+            const params = new URLSearchParams(window.location.search);
+            const newResult = params.get('result');
+            if (newResult) {
+                try {
+                    const result = JSON.parse(atob(newResult));
+                    addTestResult(result);
+                } catch (e) {
+                    console.error('Invalid test result:', e);
+                }
+            }
+            
+            updateDashboard();
+        }
+        
+        // Add new test result
+        function addTestResult(result) {
+            const deviceKey = `${result.device.type}_${result.browser}`.toLowerCase();
+            
+            // Update device matrix
+            if (!testData.devices[deviceKey]) {
+                testData.devices[deviceKey] = {
+                    device: result.device.type,
+                    os: result.device.userAgent.match(/OS \d+_\d+/i)?.[0] || 'Unknown',
+                    browser: result.browser,
+                    tests: {}
+                };
+            }
+            
+            // Update test results
+            Object.entries(result.results).forEach(([testId, testResult]) => {
+                testData.devices[deviceKey].tests[testId] = {
+                    passed: testResult.passed,
+                    timestamp: result.timestamp
+                };
+            });
+            
+            testData.devices[deviceKey].lastTest = result.timestamp;
+            
+            // Add to history
+            testData.history.unshift({
+                timestamp: result.timestamp,
+                device: result.device,
+                browser: result.browser,
+                summary: result.summary
+            });
+            
+            // Keep only last 100 history items
+            testData.history = testData.history.slice(0, 100);
+            
+            // Check for issues
+            const failedTests = Object.entries(result.results)
+                .filter(([_, r]) => !r.passed)
+                .map(([id, _]) => id);
+                
+            if (failedTests.length > 0) {
+                testData.issues.push({
+                    device: deviceKey,
+                    tests: failedTests,
+                    timestamp: result.timestamp
+                });
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('pyebwaTestResults', JSON.stringify(testData));
+        }
+        
+        // Update dashboard
+        function updateDashboard() {
+            updateSummary();
+            updateDeviceTable();
+            updateHistory();
+            updateChart();
+        }
+        
+        // Update summary cards
+        function updateSummary() {
+            const totalTests = testData.history.length;
+            const totalPassed = testData.history.reduce((sum, h) => sum + h.summary.passed, 0);
+            const totalRun = testData.history.reduce((sum, h) => sum + h.summary.total, 0);
+            const successRate = totalRun > 0 ? Math.round((totalPassed / totalRun) * 100) : 0;
+            const deviceCount = Object.keys(testData.devices).length;
+            const activeIssues = testData.issues.filter(i => {
+                const age = Date.now() - new Date(i.timestamp).getTime();
+                return age < 7 * 24 * 60 * 60 * 1000; // Issues less than 7 days old
+            }).length;
+            
+            document.getElementById('totalTests').textContent = totalTests;
+            document.getElementById('successRate').textContent = successRate + '%';
+            document.getElementById('deviceCount').textContent = deviceCount;
+            document.getElementById('activeIssues').textContent = activeIssues;
+        }
+        
+        // Update device table
+        function updateDeviceTable() {
+            const tbody = document.getElementById('deviceTableBody');
+            
+            if (Object.keys(testData.devices).length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" class="no-data">No test data available yet</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = Object.entries(testData.devices).map(([key, device]) => {
+                const tests = device.tests;
+                
+                return `
+                    <tr>
+                        <td>${device.device}</td>
+                        <td>${device.os}</td>
+                        <td>${device.browser}</td>
+                        <td class="status-icon">${getStatusIcon(tests['device-detection'])}</td>
+                        <td class="status-icon">${getStatusIcon(tests['auth-flow'])}</td>
+                        <td class="status-icon">${getStatusIcon(tests['loop-threshold'])}</td>
+                        <td class="status-icon">${getStatusIcon(tests['cooldown-timing'])}</td>
+                        <td class="status-icon">${getStatusIcon(tests['cross-domain'])}</td>
+                        <td class="status-icon">${getStatusIcon(tests['performance-metrics'])}</td>
+                        <td>${formatDate(device.lastTest)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        // Get status icon
+        function getStatusIcon(test) {
+            if (!test) return '<span class="status-icon pending">⏳</span>';
+            return test.passed ? 
+                '<span class="status-icon pass">✅</span>' : 
+                '<span class="status-icon fail">❌</span>';
+        }
+        
+        // Format date
+        function formatDate(timestamp) {
+            if (!timestamp) return 'Never';
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) return 'Just now';
+            if (diff < 3600000) return Math.floor(diff / 60000) + ' min ago';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + ' hours ago';
+            
+            return date.toLocaleDateString();
+        }
+        
+        // Update history
+        function updateHistory() {
+            const container = document.getElementById('historyContainer');
+            
+            if (testData.history.length === 0) {
+                container.innerHTML = '<div class="no-data">No recent test runs</div>';
+                return;
+            }
+            
+            container.innerHTML = testData.history.slice(0, 10).map(h => {
+                const icon = h.device.type.includes('tablet') ? '📱' : '💻';
+                const score = `${h.summary.passed}/${h.summary.total}`;
+                const scoreClass = h.summary.failed === 0 ? 'success-rate' : 'failure-rate';
+                
+                return `
+                    <div class="history-item">
+                        <div class="history-device">
+                            <span class="device-icon">${icon}</span>
+                            <div>
+                                <div>${h.device.type}</div>
+                                <div style="color: #666; font-size: 12px;">${h.browser}</div>
+                            </div>
+                        </div>
+                        <div class="history-details">
+                            <span class="test-score ${scoreClass}">${score}</span>
+                            <span style="color: #666;">${formatDate(h.timestamp)}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Update chart
+        function updateChart() {
+            const ctx = document.getElementById('resultsChart').getContext('2d');
+            
+            // Group results by day
+            const dailyResults = {};
+            testData.history.forEach(h => {
+                const day = new Date(h.timestamp).toDateString();
+                if (!dailyResults[day]) {
+                    dailyResults[day] = { passed: 0, failed: 0 };
+                }
+                dailyResults[day].passed += h.summary.passed;
+                dailyResults[day].failed += h.summary.failed;
+            });
+            
+            const labels = Object.keys(dailyResults).reverse().slice(-7);
+            const passedData = labels.map(l => dailyResults[l]?.passed || 0);
+            const failedData = labels.map(l => dailyResults[l]?.failed || 0);
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Passed',
+                            data: passedData,
+                            backgroundColor: '#4CAF50'
+                        },
+                        {
+                            label: 'Failed',
+                            data: failedData,
+                            backgroundColor: '#f44336'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Apply filters
+        function applyFilters() {
+            // In production, this would filter the displayed data
+            console.log('Filters applied');
+            updateDashboard();
+        }
+        
+        // Export data
+        function exportData() {
+            const blob = new Blob([JSON.stringify(testData, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `test-results-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        // Initialize
+        loadTestData();
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadTestData, 30000);
+    </script>
+</body>
+</html>

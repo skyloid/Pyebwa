@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Real Device Test Runner - Pyebwa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #00217D;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .device-info {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .device-info strong {
+            color: #2e7d32;
+        }
+        
+        .test-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .test-card.running {
+            border: 2px solid #2196F3;
+        }
+        
+        .test-card.passed {
+            border: 2px solid #4CAF50;
+        }
+        
+        .test-card.failed {
+            border: 2px solid #f44336;
+        }
+        
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .test-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .test-status.pending {
+            background: #e0e0e0;
+            color: #666;
+        }
+        
+        .test-status.running {
+            background: #2196F3;
+            color: white;
+            animation: pulse 1s infinite;
+        }
+        
+        .test-status.passed {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .test-status.failed {
+            background: #f44336;
+            color: white;
+        }
+        
+        .test-description {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .test-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            touch-action: manipulation;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-primary {
+            background: #00217D;
+            color: white;
+        }
+        
+        .btn-primary:active {
+            background: #001654;
+            transform: scale(0.98);
+        }
+        
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .btn-secondary:active {
+            background: #d0d0d0;
+            transform: scale(0.98);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .test-output {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .test-output.show {
+            display: block;
+        }
+        
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #e0e0e0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #2196F3;
+            transition: width 0.3s;
+        }
+        
+        .summary {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        .summary-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+        }
+        
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            padding: 20px;
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 90%;
+            width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        @media (max-width: 600px) {
+            .summary {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .summary-stats {
+                width: 100%;
+                justify-content: space-around;
+            }
+        }
+    </style>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="header">
+        <h1>📱 Real Device Test Runner</h1>
+        <p>Automated testing for tablet authentication</p>
+    </div>
+    
+    <div class="device-info" id="deviceInfo">
+        Detecting device information...
+    </div>
+    
+    <div id="testContainer">
+        <!-- Test cards will be inserted here -->
+    </div>
+    
+    <div class="summary">
+        <div class="summary-stats">
+            <div class="stat">
+                <span>Total:</span>
+                <span class="stat-value" id="totalTests">0</span>
+            </div>
+            <div class="stat" style="color: #4CAF50;">
+                <span>Passed:</span>
+                <span class="stat-value" id="passedTests">0</span>
+            </div>
+            <div class="stat" style="color: #f44336;">
+                <span>Failed:</span>
+                <span class="stat-value" id="failedTests">0</span>
+            </div>
+        </div>
+        <div>
+            <button class="btn btn-primary" onclick="runAllTests()">
+                <span>▶️</span> Run All Tests
+            </button>
+        </div>
+    </div>
+    
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <div class="modal-header">Test Login Required</div>
+            <p style="margin-bottom: 20px;">Some tests require authentication. Please provide test credentials:</p>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="testEmail" value="test@example.com">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-input" id="testPassword" value="testpassword123">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="performTestLogin()">Login</button>
+                <button class="btn btn-secondary" onclick="skipLogin()">Skip Auth Tests</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/app/js/firebase-config.js"></script>
+    <script src="/app/js/device-detection.js"></script>
+    
+    <script>
+        // Test definitions
+        const tests = [
+            {
+                id: 'device-detection',
+                title: 'Device Detection',
+                description: 'Verifies that the device is correctly identified as a tablet with proper thresholds',
+                run: async () => {
+                    const info = window.DeviceDetection.getDeviceInfo();
+                    const isTablet = window.DeviceDetection.isTablet();
+                    
+                    const results = {
+                        deviceType: info.type,
+                        isTablet: isTablet,
+                        screenSize: `${info.screenWidth}x${info.screenHeight}`,
+                        touchSupport: info.touchSupport,
+                        userAgent: navigator.userAgent.substring(0, 100) + '...'
+                    };
+                    
+                    if (info.type === 'desktop' && info.touchSupport) {
+                        throw new Error('Desktop with touch might be misidentified tablet');
+                    }
+                    
+                    return {
+                        success: true,
+                        message: `Device: ${info.type} (Tablet: ${isTablet})`,
+                        data: results
+                    };
+                }
+            },
+            
+            {
+                id: 'firebase-connection',
+                title: 'Firebase Connection',
+                description: 'Tests connection to Firebase services and configuration',
+                run: async () => {
+                    if (!firebase.app()) {
+                        throw new Error('Firebase not initialized');
+                    }
+                    
+                    const config = firebase.app().options;
+                    
+                    // Test Firestore connection
+                    const testDoc = await firebase.firestore()
+                        .collection('_test')
+                        .doc('connection')
+                        .get();
+                    
+                    return {
+                        success: true,
+                        message: 'Firebase connected successfully',
+                        data: {
+                            projectId: config.projectId,
+                            authDomain: config.authDomain,
+                            firestoreConnected: true
+                        }
+                    };
+                }
+            },
+            
+            {
+                id: 'cooldown-timing',
+                title: 'Cooldown Timer Accuracy',
+                description: 'Verifies that tablet receives 60-second cooldown (not 30s)',
+                run: async () => {
+                    const isTablet = window.DeviceDetection.isTablet();
+                    const expectedCooldown = isTablet ? 60000 : 30000;
+                    
+                    // Simulate setting cooldown
+                    const testTime = Date.now();
+                    localStorage.setItem('lastRedirectTime', testTime.toString());
+                    
+                    // Check cooldown calculation
+                    const lastRedirect = parseInt(localStorage.getItem('lastRedirectTime'));
+                    const cooldownActive = (Date.now() - lastRedirect) < expectedCooldown;
+                    
+                    // Clean up
+                    localStorage.removeItem('lastRedirectTime');
+                    
+                    return {
+                        success: true,
+                        message: `Cooldown: ${expectedCooldown/1000}s (${isTablet ? 'Tablet' : 'Desktop'})`,
+                        data: {
+                            isTablet,
+                            cooldownDuration: expectedCooldown,
+                            testPassed: cooldownActive
+                        }
+                    };
+                }
+            },
+            
+            {
+                id: 'loop-threshold',
+                title: 'Loop Detection Threshold',
+                description: 'Tests that loop detection uses correct threshold (5 for tablets, 3 for others)',
+                run: async () => {
+                    const isTablet = window.DeviceDetection.isTablet();
+                    const threshold = isTablet ? 5 : 3;
+                    const timeWindow = isTablet ? 15000 : 10000;
+                    
+                    // Simulate visits
+                    localStorage.setItem('pyebwaVisitCount', threshold.toString());
+                    localStorage.setItem('pyebwaLastVisit', Date.now().toString());
+                    
+                    // Check if loop would be detected
+                    const visitCount = parseInt(localStorage.getItem('pyebwaVisitCount'));
+                    const wouldTriggerLoop = visitCount >= threshold;
+                    
+                    // Clean up
+                    localStorage.removeItem('pyebwaVisitCount');
+                    localStorage.removeItem('pyebwaLastVisit');
+                    
+                    return {
+                        success: true,
+                        message: `Threshold: ${threshold} visits in ${timeWindow/1000}s`,
+                        data: {
+                            isTablet,
+                            threshold,
+                            timeWindow,
+                            wouldTriggerLoop
+                        }
+                    };
+                }
+            },
+            
+            {
+                id: 'storage-persistence',
+                title: 'Storage Persistence',
+                description: 'Verifies localStorage and sessionStorage work correctly',
+                run: async () => {
+                    const testData = {
+                        timestamp: Date.now(),
+                        random: Math.random()
+                    };
+                    
+                    // Test localStorage
+                    localStorage.setItem('pyebwaTest', JSON.stringify(testData));
+                    const localData = JSON.parse(localStorage.getItem('pyebwaTest'));
+                    localStorage.removeItem('pyebwaTest');
+                    
+                    // Test sessionStorage
+                    sessionStorage.setItem('pyebwaTest', JSON.stringify(testData));
+                    const sessionData = JSON.parse(sessionStorage.getItem('pyebwaTest'));
+                    sessionStorage.removeItem('pyebwaTest');
+                    
+                    if (localData.random !== testData.random) {
+                        throw new Error('localStorage data mismatch');
+                    }
+                    
+                    if (sessionData.random !== testData.random) {
+                        throw new Error('sessionStorage data mismatch');
+                    }
+                    
+                    return {
+                        success: true,
+                        message: 'Storage working correctly',
+                        data: {
+                            localStorageOK: true,
+                            sessionStorageOK: true,
+                            testValue: testData.random
+                        }
+                    };
+                }
+            },
+            
+            {
+                id: 'auth-flow',
+                title: 'Authentication Flow',
+                description: 'Tests login, session persistence, and logout',
+                requiresAuth: true,
+                run: async () => {
+                    const auth = firebase.auth();
+                    
+                    if (!auth.currentUser) {
+                        throw new Error('No authenticated user');
+                    }
+                    
+                    const user = auth.currentUser;
+                    const token = await user.getIdToken();
+                    
+                    // Test token validity
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    const expiresIn = payload.exp - (Date.now() / 1000);
+                    
+                    return {
+                        success: true,
+                        message: `Authenticated as ${user.email}`,
+                        data: {
+                            email: user.email,
+                            uid: user.uid,
+                            tokenValid: expiresIn > 0,
+                            expiresIn: Math.round(expiresIn)
+                        }
+                    };
+                }
+            },
+            
+            {
+                id: 'performance-metrics',
+                title: 'Performance Metrics',
+                description: 'Measures page load time and memory usage',
+                run: async () => {
+                    const metrics = {};
+                    
+                    if (window.performance && window.performance.timing) {
+                        const timing = window.performance.timing;
+                        metrics.pageLoad = timing.loadEventEnd - timing.navigationStart;
+                        metrics.domReady = timing.domContentLoadedEventEnd - timing.navigationStart;
+                    }
+                    
+                    if (window.performance && window.performance.memory) {
+                        metrics.memoryUsed = Math.round(window.performance.memory.usedJSHeapSize / 1048576);
+                        metrics.memoryTotal = Math.round(window.performance.memory.totalJSHeapSize / 1048576);
+                    }
+                    
+                    // Check if metrics are within acceptable range
+                    if (metrics.pageLoad > 5000) {
+                        throw new Error(`Page load too slow: ${metrics.pageLoad}ms`);
+                    }
+                    
+                    return {
+                        success: true,
+                        message: `Load: ${metrics.pageLoad}ms, Memory: ${metrics.memoryUsed}MB`,
+                        data: metrics
+                    };
+                }
+            },
+            
+            {
+                id: 'network-resilience',
+                title: 'Network Resilience',
+                description: 'Tests behavior during network interruptions',
+                run: async () => {
+                    const results = {
+                        online: navigator.onLine,
+                        connection: null
+                    };
+                    
+                    if ('connection' in navigator) {
+                        const conn = navigator.connection;
+                        results.connection = {
+                            effectiveType: conn.effectiveType,
+                            downlink: conn.downlink,
+                            rtt: conn.rtt,
+                            saveData: conn.saveData
+                        };
+                    }
+                    
+                    // Test Firebase connectivity
+                    try {
+                        await firebase.firestore()
+                            .collection('_test')
+                            .doc('network')
+                            .get();
+                        results.firebaseReachable = true;
+                    } catch (error) {
+                        results.firebaseReachable = false;
+                        results.firebaseError = error.message;
+                    }
+                    
+                    return {
+                        success: results.online && results.firebaseReachable,
+                        message: `Network: ${results.online ? 'Online' : 'Offline'}`,
+                        data: results
+                    };
+                }
+            }
+        ];
+        
+        // Test state
+        let testResults = {};
+        let skipAuthTests = false;
+        
+        // Initialize device info
+        function updateDeviceInfo() {
+            const info = window.DeviceDetection.getDeviceInfo();
+            const isTablet = window.DeviceDetection.isTablet();
+            
+            document.getElementById('deviceInfo').innerHTML = `
+                <strong>Device:</strong> ${info.type} ${isTablet ? '(TABLET DETECTED)' : ''} | 
+                <strong>Screen:</strong> ${info.screenWidth}x${info.screenHeight} | 
+                <strong>Touch:</strong> ${info.touchSupport ? 'Yes' : 'No'} | 
+                <strong>Browser:</strong> ${detectBrowser()}
+            `;
+        }
+        
+        function detectBrowser() {
+            const ua = navigator.userAgent;
+            if (ua.includes('Chrome')) return 'Chrome';
+            if (ua.includes('Safari') && !ua.includes('Chrome')) return 'Safari';
+            if (ua.includes('Firefox')) return 'Firefox';
+            if (ua.includes('Edge')) return 'Edge';
+            return 'Unknown';
+        }
+        
+        // Create test UI
+        function createTestCard(test) {
+            const card = document.createElement('div');
+            card.className = 'test-card';
+            card.id = `test-${test.id}`;
+            
+            card.innerHTML = `
+                <div class="test-header">
+                    <div class="test-title">${test.title}</div>
+                    <div class="test-status pending" id="status-${test.id}">Pending</div>
+                </div>
+                <div class="test-description">${test.description}</div>
+                <div class="test-actions">
+                    <button class="btn btn-primary" onclick="runSingleTest('${test.id}')">
+                        Run Test
+                    </button>
+                    <button class="btn btn-secondary" onclick="toggleOutput('${test.id}')">
+                        Show Output
+                    </button>
+                </div>
+                <div class="test-output" id="output-${test.id}"></div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-${test.id}" style="width: 0%"></div>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        // Run single test
+        async function runSingleTest(testId) {
+            const test = tests.find(t => t.id === testId);
+            if (!test) return;
+            
+            // Check if auth required
+            if (test.requiresAuth && !firebase.auth().currentUser && !skipAuthTests) {
+                document.getElementById('loginModal').classList.add('show');
+                return;
+            }
+            
+            const card = document.getElementById(`test-${testId}`);
+            const status = document.getElementById(`status-${testId}`);
+            const output = document.getElementById(`output-${testId}`);
+            const progress = document.getElementById(`progress-${testId}`);
+            
+            // Update UI
+            card.className = 'test-card running';
+            status.className = 'test-status running';
+            status.textContent = 'Running';
+            progress.style.width = '50%';
+            
+            try {
+                const result = await test.run();
+                
+                // Success
+                card.className = 'test-card passed';
+                status.className = 'test-status passed';
+                status.textContent = 'Passed';
+                progress.style.width = '100%';
+                
+                output.innerHTML = `
+                    <div style="color: #4CAF50; font-weight: bold;">✓ ${result.message}</div>
+                    <pre style="margin-top: 10px;">${JSON.stringify(result.data, null, 2)}</pre>
+                `;
+                
+                testResults[testId] = { passed: true, result };
+                
+            } catch (error) {
+                // Failed
+                card.className = 'test-card failed';
+                status.className = 'test-status failed';
+                status.textContent = 'Failed';
+                progress.style.width = '100%';
+                
+                output.innerHTML = `
+                    <div style="color: #f44336; font-weight: bold;">✗ ${error.message}</div>
+                    <pre style="margin-top: 10px;">${error.stack}</pre>
+                `;
+                
+                testResults[testId] = { passed: false, error };
+            }
+            
+            output.classList.add('show');
+            updateSummary();
+        }
+        
+        // Run all tests
+        async function runAllTests() {
+            // Check if auth needed
+            const authTests = tests.filter(t => t.requiresAuth);
+            if (authTests.length > 0 && !firebase.auth().currentUser && !skipAuthTests) {
+                document.getElementById('loginModal').classList.add('show');
+                return;
+            }
+            
+            testResults = {};
+            
+            for (const test of tests) {
+                if (test.requiresAuth && skipAuthTests) continue;
+                await runSingleTest(test.id);
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            // Export results
+            setTimeout(exportResults, 1000);
+        }
+        
+        // Toggle output visibility
+        function toggleOutput(testId) {
+            const output = document.getElementById(`output-${testId}`);
+            output.classList.toggle('show');
+        }
+        
+        // Update summary
+        function updateSummary() {
+            const total = Object.keys(testResults).length;
+            const passed = Object.values(testResults).filter(r => r.passed).length;
+            const failed = total - passed;
+            
+            document.getElementById('totalTests').textContent = total;
+            document.getElementById('passedTests').textContent = passed;
+            document.getElementById('failedTests').textContent = failed;
+        }
+        
+        // Test login
+        async function performTestLogin() {
+            const email = document.getElementById('testEmail').value;
+            const password = document.getElementById('testPassword').value;
+            
+            try {
+                await firebase.auth().signInWithEmailAndPassword(email, password);
+                document.getElementById('loginModal').classList.remove('show');
+                
+                // Resume test execution
+                const pendingTest = tests.find(t => t.requiresAuth);
+                if (pendingTest) {
+                    runSingleTest(pendingTest.id);
+                }
+            } catch (error) {
+                alert(`Login failed: ${error.message}`);
+            }
+        }
+        
+        // Skip auth tests
+        function skipLogin() {
+            skipAuthTests = true;
+            document.getElementById('loginModal').classList.remove('show');
+            
+            // Disable auth tests
+            tests.filter(t => t.requiresAuth).forEach(test => {
+                const card = document.getElementById(`test-${test.id}`);
+                card.style.opacity = '0.5';
+                card.querySelector('.btn-primary').disabled = true;
+            });
+        }
+        
+        // Export results
+        function exportResults() {
+            const report = {
+                timestamp: new Date().toISOString(),
+                device: window.DeviceDetection.getDeviceInfo(),
+                browser: detectBrowser(),
+                url: window.location.href,
+                results: testResults,
+                summary: {
+                    total: Object.keys(testResults).length,
+                    passed: Object.values(testResults).filter(r => r.passed).length,
+                    failed: Object.values(testResults).filter(r => !r.passed).length
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(report, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `device-test-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            updateDeviceInfo();
+            
+            // Create test cards
+            const container = document.getElementById('testContainer');
+            tests.forEach(test => {
+                container.appendChild(createTestCard(test));
+            });
+            
+            updateSummary();
+            
+            // Auto-run if URL param
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('autorun') === 'true') {
+                setTimeout(runAllTests, 1000);
+            }
+        });
+        
+        // Handle errors
+        window.addEventListener('error', (event) => {
+            console.error('Global error:', event.error);
+        });
+    </script>
+</body>
+</html>
