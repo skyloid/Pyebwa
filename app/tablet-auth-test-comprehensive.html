@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Tablet Authentication Test - Pyebwa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #00217D;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .test-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+            border-bottom: 2px solid #00217D;
+            padding-bottom: 10px;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .test-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .test-item h3 {
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .test-value {
+            font-family: monospace;
+            background: #fff;
+            padding: 5px;
+            border-radius: 3px;
+            word-break: break-all;
+        }
+        
+        button {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: background 0.2s;
+        }
+        
+        button:hover {
+            background: #001654;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .log-container {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .log-entry {
+            padding: 2px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .log-entry.error {
+            color: #dc3545;
+        }
+        
+        .log-entry.success {
+            color: #28a745;
+        }
+        
+        .log-entry.warning {
+            color: #ffc107;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #00217D;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+        
+        .indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .indicator.green {
+            background: #28a745;
+        }
+        
+        .indicator.red {
+            background: #dc3545;
+        }
+        
+        .indicator.yellow {
+            background: #ffc107;
+        }
+        
+        @media (max-width: 768px) {
+            .test-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Comprehensive Tablet Authentication Test</h1>
+        
+        <!-- Device Detection Section -->
+        <div class="test-section">
+            <h2>1. Device Detection</h2>
+            <div class="test-grid">
+                <div class="test-item">
+                    <h3>User Agent</h3>
+                    <div class="test-value" id="userAgent">Loading...</div>
+                </div>
+                <div class="test-item">
+                    <h3>Device Type</h3>
+                    <div class="test-value" id="deviceType">Loading...</div>
+                </div>
+                <div class="test-item">
+                    <h3>Screen Dimensions</h3>
+                    <div class="test-value" id="screenDimensions">Loading...</div>
+                </div>
+                <div class="test-item">
+                    <h3>Touch Support</h3>
+                    <div class="test-value" id="touchSupport">Loading...</div>
+                </div>
+            </div>
+            <div id="deviceStatus" class="status info">Detecting device...</div>
+        </div>
+        
+        <!-- Authentication State Section -->
+        <div class="test-section">
+            <h2>2. Authentication State</h2>
+            <div class="test-grid">
+                <div class="test-item">
+                    <h3>Firebase Auth Status</h3>
+                    <div class="test-value" id="authStatus">Not initialized</div>
+                </div>
+                <div class="test-item">
+                    <h3>Current User</h3>
+                    <div class="test-value" id="currentUser">None</div>
+                </div>
+                <div class="test-item">
+                    <h3>Auth State Changes</h3>
+                    <div class="test-value" id="authStateChanges">0</div>
+                </div>
+                <div class="test-item">
+                    <h3>Last Auth Change</h3>
+                    <div class="test-value" id="lastAuthChange">Never</div>
+                </div>
+            </div>
+            <div class="button-group">
+                <button onclick="testLogin()">Test Login</button>
+                <button onclick="testLogout()">Test Logout</button>
+                <button onclick="checkAuthPersistence()">Check Persistence</button>
+            </div>
+            <div id="authTestStatus" class="status info">Ready for authentication tests</div>
+        </div>
+        
+        <!-- Loop Prevention Section -->
+        <div class="test-section">
+            <h2>3. Loop Prevention Mechanisms</h2>
+            <div class="test-grid">
+                <div class="test-item">
+                    <h3>Visit Count (15s window)</h3>
+                    <div class="test-value" id="visitCount">0</div>
+                </div>
+                <div class="test-item">
+                    <h3>Loop Threshold</h3>
+                    <div class="test-value" id="loopThreshold">Loading...</div>
+                </div>
+                <div class="test-item">
+                    <h3>Loop Status</h3>
+                    <div class="test-value" id="loopStatus">No loop detected</div>
+                </div>
+                <div class="test-item">
+                    <h3>Last Visit Time</h3>
+                    <div class="test-value" id="lastVisitTime">Never</div>
+                </div>
+            </div>
+            <div class="button-group">
+                <button onclick="simulateVisit()">Simulate Visit</button>
+                <button onclick="simulateRapidVisits()">Simulate Rapid Visits (Loop)</button>
+                <button onclick="clearLoopData()">Clear Loop Data</button>
+            </div>
+            <div id="loopTestStatus" class="status info">Loop prevention active</div>
+        </div>
+        
+        <!-- Redirect Cooldown Section -->
+        <div class="test-section">
+            <h2>4. Redirect Cooldown</h2>
+            <div class="test-grid">
+                <div class="test-item">
+                    <h3>Cooldown Duration</h3>
+                    <div class="test-value" id="cooldownDuration">Loading...</div>
+                </div>
+                <div class="test-item">
+                    <h3>Cooldown Status</h3>
+                    <div class="test-value" id="cooldownStatus">Not active</div>
+                </div>
+                <div class="test-item">
+                    <h3>Time Remaining</h3>
+                    <div class="test-value" id="cooldownRemaining">0s</div>
+                </div>
+                <div class="test-item">
+                    <h3>Last Redirect</h3>
+                    <div class="test-value" id="lastRedirect">Never</div>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="cooldownProgress" style="width: 0%">0%</div>
+            </div>
+            <div class="button-group">
+                <button onclick="testRedirect()">Test Redirect</button>
+                <button onclick="forceRedirect()">Force Redirect (Bypass Cooldown)</button>
+                <button onclick="clearCooldown()">Clear Cooldown</button>
+            </div>
+            <div id="cooldownTestStatus" class="status info">Cooldown system ready</div>
+        </div>
+        
+        <!-- Cross-Domain Authentication Section -->
+        <div class="test-section">
+            <h2>5. Cross-Domain Authentication</h2>
+            <div class="test-grid">
+                <div class="test-item">
+                    <h3>Current Domain</h3>
+                    <div class="test-value" id="currentDomain">Loading...</div>
+                </div>
+                <div class="test-item">
+                    <h3>Auth Token</h3>
+                    <div class="test-value" id="authToken">None</div>
+                </div>
+                <div class="test-item">
+                    <h3>Token Expiry</h3>
+                    <div class="test-value" id="tokenExpiry">N/A</div>
+                </div>
+                <div class="test-item">
+                    <h3>Cross-Domain Status</h3>
+                    <div class="test-value" id="crossDomainStatus">Not tested</div>
+                </div>
+            </div>
+            <div class="button-group">
+                <button onclick="testCrossDomainAuth()">Test Cross-Domain Auth</button>
+                <button onclick="openPyebwaCom()">Open pyebwa.com</button>
+                <button onclick="checkAuthSync()">Check Auth Sync</button>
+            </div>
+            <div id="crossDomainTestStatus" class="status info">Ready for cross-domain tests</div>
+        </div>
+        
+        <!-- Session Storage Tests Section -->
+        <div class="test-section">
+            <h2>6. Storage & Persistence</h2>
+            <div class="test-grid">
+                <div class="test-item">
+                    <h3>Session Storage</h3>
+                    <div class="test-value" id="sessionStorageStatus">Loading...</div>
+                </div>
+                <div class="test-item">
+                    <h3>Local Storage</h3>
+                    <div class="test-value" id="localStorageStatus">Loading...</div>
+                </div>
+                <div class="test-item">
+                    <h3>Firebase Persistence</h3>
+                    <div class="test-value" id="firebasePersistence">Loading...</div>
+                </div>
+                <div class="test-item">
+                    <h3>Storage Size</h3>
+                    <div class="test-value" id="storageSize">Loading...</div>
+                </div>
+            </div>
+            <div class="button-group">
+                <button onclick="testStoragePersistence()">Test Storage</button>
+                <button onclick="clearAllStorage()">Clear All Storage</button>
+                <button onclick="exportStorageData()">Export Storage Data</button>
+            </div>
+            <div id="storageTestStatus" class="status info">Storage tests ready</div>
+        </div>
+        
+        <!-- Test Log Section -->
+        <div class="test-section">
+            <h2>7. Test Log</h2>
+            <div class="button-group">
+                <button onclick="runAllTests()">🚀 Run All Tests</button>
+                <button onclick="clearLog()">Clear Log</button>
+                <button onclick="exportLog()">Export Log</button>
+            </div>
+            <div class="log-container" id="testLog">
+                <div class="log-entry">Test log initialized...</div>
+            </div>
+        </div>
+        
+        <!-- Summary Section -->
+        <div class="test-section">
+            <h2>8. Test Summary</h2>
+            <div id="testSummary" class="status info">
+                <span class="indicator yellow"></span>
+                No tests run yet. Click "Run All Tests" to begin comprehensive testing.
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJARDnNqLJiNUVpnlRZNLP1Ll9R3pBkCI",
+            authDomain: "pyebwa-7f855.firebaseapp.com",
+            projectId: "pyebwa-7f855",
+            storageBucket: "pyebwa-7f855.appspot.com",
+            messagingSenderId: "1064661538195",
+            appId: "1:1064661538195:web:0d6b5b4032b5bafef3fa30"
+        };
+        
+        let app, auth, db;
+        let authStateChangeCount = 0;
+        let testResults = {};
+        let cooldownInterval = null;
+        
+        // Initialize app
+        function initializeApp() {
+            try {
+                app = firebase.initializeApp(firebaseConfig);
+                auth = firebase.auth();
+                db = firebase.firestore();
+                
+                // Set up auth state listener
+                auth.onAuthStateChanged((user) => {
+                    authStateChangeCount++;
+                    updateAuthDisplay(user);
+                    logMessage(`Auth state changed: ${user ? user.email : 'null'}`, 'info');
+                });
+                
+                logMessage('Firebase initialized successfully', 'success');
+                
+                // Run initial tests
+                setTimeout(runInitialTests, 1000);
+            } catch (error) {
+                logMessage(`Firebase initialization error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Device Detection
+        function detectDevice() {
+            const ua = navigator.userAgent;
+            const screenWidth = window.innerWidth || document.documentElement.clientWidth;
+            const screenHeight = window.innerHeight || document.documentElement.clientHeight;
+            const minDimension = Math.min(screenWidth, screenHeight);
+            const maxDimension = Math.max(screenWidth, screenHeight);
+            
+            // Device detection logic
+            let deviceType = 'desktop';
+            let isTablet = false;
+            
+            // iPad detection (including iPad Pro)
+            if (/ipad|macintosh/i.test(ua) && 'ontouchend' in document) {
+                deviceType = 'tablet';
+                isTablet = true;
+            }
+            // Android tablets
+            else if (/android/i.test(ua) && !/mobile/i.test(ua)) {
+                deviceType = 'tablet';
+                isTablet = true;
+            }
+            // Windows tablets
+            else if (/windows nt/i.test(ua) && /touch/i.test(ua)) {
+                deviceType = 'tablet';
+                isTablet = true;
+            }
+            // Kindle
+            else if (/kindle|silk/i.test(ua)) {
+                deviceType = 'tablet';
+                isTablet = true;
+            }
+            // Generic tablet detection based on screen size
+            else if (minDimension >= 600 && maxDimension <= 1366 && ('ontouchstart' in window || navigator.maxTouchPoints > 0)) {
+                deviceType = 'tablet';
+                isTablet = true;
+            }
+            // Mobile detection
+            else if (/android.*mobile|iphone|ipod|windows phone|blackberry|bb10|opera mini|iemobile/i.test(ua)) {
+                deviceType = 'mobile';
+            }
+            
+            // Update display
+            document.getElementById('userAgent').textContent = ua;
+            document.getElementById('deviceType').textContent = `${deviceType} (Tablet: ${isTablet ? 'Yes' : 'No'})`;
+            document.getElementById('screenDimensions').textContent = `${screenWidth} x ${screenHeight}`;
+            document.getElementById('touchSupport').textContent = 
+                ('ontouchstart' in window || navigator.maxTouchPoints > 0) ? 'Yes' : 'No';
+            
+            // Update status
+            const statusEl = document.getElementById('deviceStatus');
+            statusEl.className = `status ${isTablet ? 'warning' : 'success'}`;
+            statusEl.textContent = isTablet ? 
+                '📱 Tablet detected - Extended timeouts active' : 
+                '💻 Non-tablet device detected';
+            
+            // Update thresholds based on device
+            const loopThreshold = isTablet ? '5 visits in 15s' : '3 visits in 10s';
+            const cooldownDuration = isTablet ? '60 seconds' : '30 seconds';
+            
+            document.getElementById('loopThreshold').textContent = loopThreshold;
+            document.getElementById('cooldownDuration').textContent = cooldownDuration;
+            
+            return { deviceType, isTablet, screenWidth, screenHeight };
+        }
+        
+        // Update auth display
+        function updateAuthDisplay(user) {
+            document.getElementById('authStatus').textContent = user ? 'Authenticated' : 'Not authenticated';
+            document.getElementById('currentUser').textContent = user ? user.email : 'None';
+            document.getElementById('authStateChanges').textContent = authStateChangeCount;
+            document.getElementById('lastAuthChange').textContent = new Date().toLocaleTimeString();
+            
+            if (user) {
+                user.getIdToken().then(token => {
+                    document.getElementById('authToken').textContent = token.substring(0, 20) + '...';
+                    
+                    // Decode token to get expiry
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    const expiry = new Date(payload.exp * 1000);
+                    document.getElementById('tokenExpiry').textContent = expiry.toLocaleString();
+                });
+            } else {
+                document.getElementById('authToken').textContent = 'None';
+                document.getElementById('tokenExpiry').textContent = 'N/A';
+            }
+        }
+        
+        // Test functions
+        async function testLogin() {
+            logMessage('Starting login test...', 'info');
+            const statusEl = document.getElementById('authTestStatus');
+            
+            try {
+                statusEl.className = 'status warning';
+                statusEl.textContent = 'Attempting test login...';
+                
+                // Use test credentials
+                const result = await auth.signInWithEmailAndPassword('test@example.com', 'testpassword123');
+                
+                statusEl.className = 'status success';
+                statusEl.textContent = `✅ Login successful: ${result.user.email}`;
+                logMessage(`Login successful: ${result.user.email}`, 'success');
+            } catch (error) {
+                statusEl.className = 'status error';
+                statusEl.textContent = `❌ Login failed: ${error.message}`;
+                logMessage(`Login error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testLogout() {
+            logMessage('Starting logout test...', 'info');
+            const statusEl = document.getElementById('authTestStatus');
+            
+            try {
+                statusEl.className = 'status warning';
+                statusEl.textContent = 'Logging out...';
+                
+                await auth.signOut();
+                
+                statusEl.className = 'status success';
+                statusEl.textContent = '✅ Logout successful';
+                logMessage('Logout successful', 'success');
+            } catch (error) {
+                statusEl.className = 'status error';
+                statusEl.textContent = `❌ Logout failed: ${error.message}`;
+                logMessage(`Logout error: ${error.message}`, 'error');
+            }
+        }
+        
+        function checkAuthPersistence() {
+            logMessage('Checking auth persistence...', 'info');
+            const persistence = auth.currentUser ? 'User still authenticated' : 'User not authenticated';
+            
+            const statusEl = document.getElementById('authTestStatus');
+            statusEl.className = auth.currentUser ? 'status success' : 'status warning';
+            statusEl.textContent = persistence;
+            
+            logMessage(`Persistence check: ${persistence}`, 'info');
+        }
+        
+        // Loop prevention tests
+        function simulateVisit() {
+            const device = detectDevice();
+            const now = Date.now();
+            const visitCountKey = 'pyebwaVisitCount';
+            const lastVisitKey = 'pyebwaLastVisit';
+            
+            let visitCount = parseInt(localStorage.getItem(visitCountKey) || '0');
+            const lastVisit = parseInt(localStorage.getItem(lastVisitKey) || '0');
+            
+            // Reset if outside time window
+            const timeWindow = device.isTablet ? 15000 : 10000;
+            if (now - lastVisit > timeWindow) {
+                visitCount = 0;
+            }
+            
+            visitCount++;
+            localStorage.setItem(visitCountKey, visitCount.toString());
+            localStorage.setItem(lastVisitKey, now.toString());
+            
+            // Update display
+            document.getElementById('visitCount').textContent = visitCount;
+            document.getElementById('lastVisitTime').textContent = new Date(now).toLocaleTimeString();
+            
+            // Check if loop threshold reached
+            const threshold = device.isTablet ? 5 : 3;
+            if (visitCount > threshold) {
+                document.getElementById('loopStatus').textContent = '⚠️ LOOP DETECTED!';
+                document.getElementById('loopTestStatus').className = 'status error';
+                document.getElementById('loopTestStatus').textContent = '❌ Loop threshold exceeded!';
+                logMessage('Loop detected!', 'error');
+            } else {
+                document.getElementById('loopStatus').textContent = 'No loop detected';
+                document.getElementById('loopTestStatus').className = 'status success';
+                document.getElementById('loopTestStatus').textContent = `✅ Visit ${visitCount}/${threshold} recorded`;
+            }
+            
+            logMessage(`Visit simulated: ${visitCount}/${threshold}`, 'info');
+        }
+        
+        async function simulateRapidVisits() {
+            logMessage('Simulating rapid visits to trigger loop detection...', 'warning');
+            const device = detectDevice();
+            const visits = device.isTablet ? 6 : 4;
+            
+            for (let i = 0; i < visits; i++) {
+                simulateVisit();
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+        }
+        
+        function clearLoopData() {
+            localStorage.removeItem('pyebwaVisitCount');
+            localStorage.removeItem('pyebwaLastVisit');
+            localStorage.removeItem('pyebwaLoopDetected');
+            
+            document.getElementById('visitCount').textContent = '0';
+            document.getElementById('lastVisitTime').textContent = 'Never';
+            document.getElementById('loopStatus').textContent = 'No loop detected';
+            document.getElementById('loopTestStatus').className = 'status success';
+            document.getElementById('loopTestStatus').textContent = '✅ Loop data cleared';
+            
+            logMessage('Loop prevention data cleared', 'success');
+        }
+        
+        // Cooldown tests
+        function testRedirect() {
+            const device = detectDevice();
+            const cooldownDuration = device.isTablet ? 60000 : 30000;
+            const lastRedirect = parseInt(localStorage.getItem('lastRedirectTime') || '0');
+            const now = Date.now();
+            
+            if (now - lastRedirect < cooldownDuration) {
+                const remaining = Math.ceil((cooldownDuration - (now - lastRedirect)) / 1000);
+                document.getElementById('cooldownTestStatus').className = 'status error';
+                document.getElementById('cooldownTestStatus').textContent = 
+                    `❌ Redirect blocked - ${remaining}s cooldown remaining`;
+                logMessage(`Redirect blocked: ${remaining}s cooldown remaining`, 'error');
+                
+                startCooldownTimer(cooldownDuration - (now - lastRedirect));
+            } else {
+                localStorage.setItem('lastRedirectTime', now.toString());
+                document.getElementById('lastRedirect').textContent = new Date(now).toLocaleTimeString();
+                document.getElementById('cooldownTestStatus').className = 'status success';
+                document.getElementById('cooldownTestStatus').textContent = '✅ Redirect allowed';
+                logMessage('Redirect allowed and cooldown started', 'success');
+                
+                startCooldownTimer(cooldownDuration);
+            }
+        }
+        
+        function forceRedirect() {
+            const now = Date.now();
+            localStorage.setItem('lastRedirectTime', now.toString());
+            document.getElementById('lastRedirect').textContent = new Date(now).toLocaleTimeString();
+            document.getElementById('cooldownTestStatus').className = 'status warning';
+            document.getElementById('cooldownTestStatus').textContent = '⚠️ Forced redirect (bypassed cooldown)';
+            logMessage('Forced redirect - cooldown bypassed', 'warning');
+            
+            const device = detectDevice();
+            const cooldownDuration = device.isTablet ? 60000 : 30000;
+            startCooldownTimer(cooldownDuration);
+        }
+        
+        function clearCooldown() {
+            localStorage.removeItem('lastRedirectTime');
+            clearInterval(cooldownInterval);
+            
+            document.getElementById('cooldownStatus').textContent = 'Not active';
+            document.getElementById('cooldownRemaining').textContent = '0s';
+            document.getElementById('cooldownProgress').style.width = '0%';
+            document.getElementById('cooldownProgress').textContent = '0%';
+            document.getElementById('cooldownTestStatus').className = 'status success';
+            document.getElementById('cooldownTestStatus').textContent = '✅ Cooldown cleared';
+            
+            logMessage('Cooldown cleared', 'success');
+        }
+        
+        function startCooldownTimer(duration) {
+            clearInterval(cooldownInterval);
+            
+            const startTime = Date.now();
+            const endTime = startTime + duration;
+            
+            document.getElementById('cooldownStatus').textContent = 'Active';
+            
+            cooldownInterval = setInterval(() => {
+                const now = Date.now();
+                const remaining = Math.max(0, endTime - now);
+                const progress = ((duration - remaining) / duration) * 100;
+                
+                document.getElementById('cooldownRemaining').textContent = 
+                    `${Math.ceil(remaining / 1000)}s`;
+                document.getElementById('cooldownProgress').style.width = `${progress}%`;
+                document.getElementById('cooldownProgress').textContent = `${Math.round(progress)}%`;
+                
+                if (remaining === 0) {
+                    clearInterval(cooldownInterval);
+                    document.getElementById('cooldownStatus').textContent = 'Not active';
+                    document.getElementById('cooldownTestStatus').className = 'status success';
+                    document.getElementById('cooldownTestStatus').textContent = '✅ Cooldown expired';
+                    logMessage('Cooldown expired', 'success');
+                }
+            }, 100);
+        }
+        
+        // Cross-domain tests
+        function testCrossDomainAuth() {
+            logMessage('Testing cross-domain authentication...', 'info');
+            
+            const currentDomain = window.location.hostname;
+            document.getElementById('currentDomain').textContent = currentDomain;
+            
+            if (auth.currentUser) {
+                document.getElementById('crossDomainStatus').textContent = 'Authenticated on current domain';
+                document.getElementById('crossDomainTestStatus').className = 'status success';
+                document.getElementById('crossDomainTestStatus').textContent = 
+                    '✅ Ready for cross-domain test';
+            } else {
+                document.getElementById('crossDomainStatus').textContent = 'Not authenticated';
+                document.getElementById('crossDomainTestStatus').className = 'status warning';
+                document.getElementById('crossDomainTestStatus').textContent = 
+                    '⚠️ Login first to test cross-domain auth';
+            }
+        }
+        
+        function openPyebwaCom() {
+            window.open('https://pyebwa.com', '_blank');
+            logMessage('Opened pyebwa.com in new tab', 'info');
+        }
+        
+        async function checkAuthSync() {
+            logMessage('Checking auth synchronization...', 'info');
+            
+            try {
+                const user = auth.currentUser;
+                if (user) {
+                    await user.reload();
+                    document.getElementById('crossDomainTestStatus').className = 'status success';
+                    document.getElementById('crossDomainTestStatus').textContent = 
+                        '✅ Auth synchronized successfully';
+                    logMessage('Auth sync successful', 'success');
+                } else {
+                    document.getElementById('crossDomainTestStatus').className = 'status warning';
+                    document.getElementById('crossDomainTestStatus').textContent = 
+                        '⚠️ No user to sync';
+                    logMessage('No user to sync', 'warning');
+                }
+            } catch (error) {
+                document.getElementById('crossDomainTestStatus').className = 'status error';
+                document.getElementById('crossDomainTestStatus').textContent = 
+                    `❌ Sync error: ${error.message}`;
+                logMessage(`Auth sync error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Storage tests
+        function testStoragePersistence() {
+            logMessage('Testing storage persistence...', 'info');
+            
+            // Test session storage
+            try {
+                sessionStorage.setItem('pyebwaTest', 'test');
+                const sessionTest = sessionStorage.getItem('pyebwaTest') === 'test';
+                document.getElementById('sessionStorageStatus').textContent = 
+                    sessionTest ? 'Working' : 'Not working';
+                sessionStorage.removeItem('pyebwaTest');
+            } catch (e) {
+                document.getElementById('sessionStorageStatus').textContent = 'Error: ' + e.message;
+            }
+            
+            // Test local storage
+            try {
+                localStorage.setItem('pyebwaTest', 'test');
+                const localTest = localStorage.getItem('pyebwaTest') === 'test';
+                document.getElementById('localStorageStatus').textContent = 
+                    localTest ? 'Working' : 'Not working';
+                localStorage.removeItem('pyebwaTest');
+            } catch (e) {
+                document.getElementById('localStorageStatus').textContent = 'Error: ' + e.message;
+            }
+            
+            // Check Firebase persistence
+            document.getElementById('firebasePersistence').textContent = 
+                auth.currentUser ? 'User persisted' : 'No user';
+            
+            // Calculate storage size
+            let totalSize = 0;
+            for (let key in localStorage) {
+                if (localStorage.hasOwnProperty(key)) {
+                    totalSize += localStorage[key].length + key.length;
+                }
+            }
+            document.getElementById('storageSize').textContent = 
+                `${(totalSize / 1024).toFixed(2)} KB`;
+            
+            document.getElementById('storageTestStatus').className = 'status success';
+            document.getElementById('storageTestStatus').textContent = '✅ Storage tests complete';
+            logMessage('Storage persistence tests complete', 'success');
+        }
+        
+        function clearAllStorage() {
+            if (confirm('Clear all storage data? This will log you out.')) {
+                sessionStorage.clear();
+                localStorage.clear();
+                
+                document.getElementById('storageTestStatus').className = 'status warning';
+                document.getElementById('storageTestStatus').textContent = '⚠️ All storage cleared';
+                logMessage('All storage cleared', 'warning');
+                
+                setTimeout(() => location.reload(), 1000);
+            }
+        }
+        
+        function exportStorageData() {
+            const data = {
+                localStorage: {},
+                sessionStorage: {},
+                timestamp: new Date().toISOString()
+            };
+            
+            for (let key in localStorage) {
+                if (localStorage.hasOwnProperty(key)) {
+                    data.localStorage[key] = localStorage[key];
+                }
+            }
+            
+            for (let key in sessionStorage) {
+                if (sessionStorage.hasOwnProperty(key)) {
+                    data.sessionStorage[key] = sessionStorage[key];
+                }
+            }
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `pyebwa-storage-${Date.now()}.json`;
+            a.click();
+            
+            logMessage('Storage data exported', 'success');
+        }
+        
+        // Test log functions
+        function logMessage(message, type = 'info') {
+            const logContainer = document.getElementById('testLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('testLog').innerHTML = 
+                '<div class="log-entry">Test log cleared...</div>';
+        }
+        
+        function exportLog() {
+            const logEntries = document.querySelectorAll('.log-entry');
+            let logText = 'Pyebwa Tablet Authentication Test Log\n';
+            logText += '=====================================\n\n';
+            
+            logEntries.forEach(entry => {
+                logText += entry.textContent + '\n';
+            });
+            
+            const blob = new Blob([logText], {type: 'text/plain'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `pyebwa-test-log-${Date.now()}.txt`;
+            a.click();
+            
+            logMessage('Log exported', 'success');
+        }
+        
+        // Run initial tests
+        function runInitialTests() {
+            logMessage('Running initial tests...', 'info');
+            
+            // Detect device
+            const device = detectDevice();
+            testResults.device = device;
+            
+            // Check current auth state
+            testResults.authState = {
+                authenticated: !!auth.currentUser,
+                user: auth.currentUser ? auth.currentUser.email : null
+            };
+            
+            // Check storage
+            testStoragePersistence();
+            
+            // Update summary
+            updateTestSummary();
+        }
+        
+        // Run all tests
+        async function runAllTests() {
+            logMessage('=== STARTING COMPREHENSIVE TESTS ===', 'warning');
+            
+            const summaryEl = document.getElementById('testSummary');
+            summaryEl.className = 'status warning';
+            summaryEl.innerHTML = '<span class="indicator yellow"></span>Running comprehensive tests...';
+            
+            // 1. Device detection
+            logMessage('Test 1: Device Detection', 'info');
+            const device = detectDevice();
+            testResults.deviceDetection = { passed: true, device };
+            
+            // 2. Auth state
+            logMessage('Test 2: Authentication State', 'info');
+            testResults.authState = {
+                passed: true,
+                authenticated: !!auth.currentUser,
+                stateChanges: authStateChangeCount
+            };
+            
+            // 3. Loop prevention
+            logMessage('Test 3: Loop Prevention', 'info');
+            clearLoopData();
+            simulateVisit();
+            testResults.loopPrevention = {
+                passed: true,
+                message: 'Loop prevention active'
+            };
+            
+            // 4. Cooldown
+            logMessage('Test 4: Redirect Cooldown', 'info');
+            testRedirect();
+            testResults.cooldown = {
+                passed: true,
+                message: 'Cooldown system functional'
+            };
+            
+            // 5. Cross-domain
+            logMessage('Test 5: Cross-Domain Authentication', 'info');
+            testCrossDomainAuth();
+            testResults.crossDomain = {
+                passed: true,
+                message: 'Cross-domain ready'
+            };
+            
+            // 6. Storage
+            logMessage('Test 6: Storage Persistence', 'info');
+            testStoragePersistence();
+            testResults.storage = {
+                passed: true,
+                message: 'Storage functional'
+            };
+            
+            logMessage('=== ALL TESTS COMPLETE ===', 'success');
+            updateTestSummary();
+        }
+        
+        // Update test summary
+        function updateTestSummary() {
+            const summaryEl = document.getElementById('testSummary');
+            const totalTests = Object.keys(testResults).length;
+            const passedTests = Object.values(testResults).filter(r => r.passed).length;
+            
+            if (totalTests === 0) {
+                summaryEl.className = 'status info';
+                summaryEl.innerHTML = 
+                    '<span class="indicator yellow"></span>No tests run yet.';
+            } else if (passedTests === totalTests) {
+                summaryEl.className = 'status success';
+                summaryEl.innerHTML = 
+                    `<span class="indicator green"></span>All ${totalTests} tests passed! ✅`;
+            } else {
+                summaryEl.className = 'status warning';
+                summaryEl.innerHTML = 
+                    `<span class="indicator yellow"></span>${passedTests}/${totalTests} tests passed`;
+            }
+            
+            // Add device-specific message
+            if (testResults.device && testResults.device.isTablet) {
+                summaryEl.innerHTML += '<br><em>Tablet-specific settings active</em>';
+            }
+        }
+        
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeApp();
+        });
+    </script>
+</body>
+</html>

@@ -91,7 +91,10 @@
       "Bash(pm2 flush:*)",
       "Bash(pm2 kill:*)",
       "WebFetch(domain:pyebwa.com)",
-      "Bash(./deploy-slideshow-manual.sh:*)"
+      "Bash(./deploy-slideshow-manual.sh:*)",
+      "Bash(for file in test-tablet-auth.html tablet-auth-test-comprehensive.html tablet-loop-simulation.html js/tablet-auth-test-suite.js js/tablet-debug.js)",
+      "Bash(do echo \"Checking: https://rasin.pyebwa.com/app/$file\")",
+      "Bash(done)"
     ],
     "deny": []
   }
