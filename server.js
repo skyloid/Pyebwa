@@ -28,6 +28,22 @@ app.use(cors({
 app.use(compression());
 app.use(express.json());
 
+// API endpoint for Firebase configuration
+app.get('/api/firebase-config', (req, res) => {
+    // Return Firebase config from environment variables
+    const config = {
+        apiKey: process.env.FIREBASE_API_KEY || "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
+        authDomain: process.env.FIREBASE_AUTH_DOMAIN || "rasin.pyebwa.com",
+        projectId: process.env.FIREBASE_PROJECT_ID || "pyebwa-f5960",
+        storageBucket: process.env.FIREBASE_STORAGE_BUCKET || "pyebwa-f5960.firebasestorage.app",
+        messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || "1042887343749",
+        appId: process.env.FIREBASE_APP_ID || "1:1042887343749:web:c276bf69b6c0895111f3ec",
+        measurementId: process.env.FIREBASE_MEASUREMENT_ID || "G-ZX92K1TMM3"
+    };
+    
+    res.json(config);
+});
+
 // New admin dashboard route (temporarily redirect to old admin)
 app.get('/admin', (req, res) => {
     // For now, redirect to the existing admin interface
@@ -86,6 +102,21 @@ app.get('/sw.js', (req, res) => {
 // Serve login.html
 app.get('/login.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'login.html'));
+});
+
+// Serve signup.html
+app.get('/signup.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'signup.html'));
+});
+
+// Serve standalone signup page (no external scripts)
+app.get('/signup-standalone.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'signup-standalone.html'));
+});
+
+// Serve standalone login page (no external scripts)
+app.get('/login-standalone.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'login-standalone.html'));
 });
 
 // Serve test pages

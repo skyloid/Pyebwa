@@ -276,3 +276,63 @@
 2025-06-30T01:15:06: }
 2025-06-30T01:15:07: ✅ Email sent successfully to claude.belizaire@humanlevel.ai
 2025-06-30T01:15:07: Invite email sent to claude.belizaire@humanlevel.ai
+2025-07-01T23:20:06: Loading service account from: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/serviceAccountKey.json
+2025-07-01T23:20:07: Firebase Admin SDK initialized with project ID: pyebwa-f5960
+2025-07-01T23:20:07: GOOGLE_APPLICATION_CREDENTIALS set to: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/serviceAccountKey.json
+2025-07-01T23:20:07: ✅ Firebase Admin SDK initialized successfully
+2025-07-01T23:20:07: ✅ SendGrid email service initialized
+2025-07-01T23:20:08: 
+2025-07-01T23:20:08: 🌳 Pyebwa Family Tree App Server
+2025-07-01T23:20:08: ================================
+2025-07-01T23:20:08: Server running on 0.0.0.0:9111
+2025-07-01T23:20:08: Local: http://0.0.0.0:9111
+2025-07-01T23:20:08: External: https://rasin.pyebwa.com
+2025-07-01T23:20:08: 
+2025-07-01T23:20:08: App URL: https://rasin.pyebwa.com/app
+2025-07-01T23:20:08: Health: https://rasin.pyebwa.com/health
+2025-07-01T23:20:08:     
+2025-07-02T04:53:06: Loading service account from: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/serviceAccountKey.json
+2025-07-02T04:53:07: Firebase Admin SDK initialized with project ID: pyebwa-f5960
+2025-07-02T04:53:07: GOOGLE_APPLICATION_CREDENTIALS set to: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/serviceAccountKey.json
+2025-07-02T04:53:07: ✅ Firebase Admin SDK initialized successfully
+2025-07-02T04:53:07: ✅ SendGrid email service initialized
+2025-07-02T04:53:07: 
+2025-07-02T04:53:07: 🌳 Pyebwa Family Tree App Server
+2025-07-02T04:53:07: ================================
+2025-07-02T04:53:07: Server running on 0.0.0.0:9111
+2025-07-02T04:53:07: Local: http://0.0.0.0:9111
+2025-07-02T04:53:07: External: https://rasin.pyebwa.com
+2025-07-02T04:53:07: 
+2025-07-02T04:53:07: App URL: https://rasin.pyebwa.com/app
+2025-07-02T04:53:07: Health: https://rasin.pyebwa.com/health
+2025-07-02T04:53:07:     
+2025-07-02T14:23:47: Loading service account from: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/serviceAccountKey.json
+2025-07-02T14:23:47: Firebase Admin SDK initialized with project ID: pyebwa-f5960
+2025-07-02T14:23:47: GOOGLE_APPLICATION_CREDENTIALS set to: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/serviceAccountKey.json
+2025-07-02T14:23:47: ✅ Firebase Admin SDK initialized successfully
+2025-07-02T14:23:48: ✅ SendGrid email service initialized
+2025-07-02T14:23:48: 
+2025-07-02T14:23:48: 🌳 Pyebwa Family Tree App Server
+2025-07-02T14:23:48: ================================
+2025-07-02T14:23:48: Server running on 0.0.0.0:9111
+2025-07-02T14:23:48: Local: http://0.0.0.0:9111
+2025-07-02T14:23:48: External: https://rasin.pyebwa.com
+2025-07-02T14:23:48: 
+2025-07-02T14:23:48: App URL: https://rasin.pyebwa.com/app
+2025-07-02T14:23:48: Health: https://rasin.pyebwa.com/health
+2025-07-02T14:23:48:     
+2025-07-04T07:24:52: Loading service account from: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/serviceAccountKey.json
+2025-07-04T07:24:52: Firebase Admin SDK initialized with project ID: pyebwa-f5960
+2025-07-04T07:24:52: GOOGLE_APPLICATION_CREDENTIALS set to: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/serviceAccountKey.json
+2025-07-04T07:24:53: ✅ Firebase Admin SDK initialized successfully
+2025-07-04T07:24:53: ✅ SendGrid email service initialized
+2025-07-04T07:24:53: 
+2025-07-04T07:24:53: 🌳 Pyebwa Family Tree App Server
+2025-07-04T07:24:53: ================================
+2025-07-04T07:24:53: Server running on 0.0.0.0:9111
+2025-07-04T07:24:53: Local: http://0.0.0.0:9111
+2025-07-04T07:24:53: External: https://rasin.pyebwa.com
+2025-07-04T07:24:53: 
+2025-07-04T07:24:53: App URL: https://rasin.pyebwa.com/app
+2025-07-04T07:24:53: Health: https://rasin.pyebwa.com/health
+2025-07-04T07:24:53:     

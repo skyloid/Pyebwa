@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup Button Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #00217D;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn-primary {
+            background: #00217D;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #001654;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .fix-applied {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Signup Button Fix Applied</h1>
+        
+        <div class="fix-applied">
+            <h3>✅ Fix has been applied to pyebwa.com</h3>
+            <p>The following changes have been made:</p>
+            <ol>
+                <li>Added inline script that directly sets the signup button to redirect to signup.html</li>
+                <li>Removes any conflicting event listeners</li>
+                <li>Applies the fix after page loads to ensure it overrides cached scripts</li>
+                <li>Updated CSS version to force page refresh</li>
+            </ol>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test the Fix</h2>
+            <p>Click the button below to open pyebwa.com in a new tab and test the signup button:</p>
+            <a href="https://pyebwa.com" target="_blank">
+                <button class="btn-primary">Open pyebwa.com in New Tab</button>
+            </a>
+            
+            <div class="status info" style="margin-top: 20px;">
+                <strong>Testing Instructions:</strong>
+                <ol>
+                    <li>Open the browser console (F12) before clicking the signup button</li>
+                    <li>Click the "Sign Up" or "Enskri" button</li>
+                    <li>You should see: "Signup button clicked - redirecting to signup page (fixed)"</li>
+                    <li>You should be redirected to https://rasin.pyebwa.com/signup.html</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>If Still Not Working</h2>
+            <p>Try these steps:</p>
+            <ol>
+                <li><strong>Hard Refresh:</strong> Ctrl+Shift+R (Windows/Linux) or Cmd+Shift+R (Mac)</li>
+                <li><strong>Clear Cache:</strong> Ctrl+Shift+Delete → Clear cached images and files</li>
+                <li><strong>Incognito Mode:</strong> Open in private/incognito window</li>
+                <li><strong>Different Browser:</strong> Try Chrome, Firefox, or Safari</li>
+            </ol>
+        </div>
+        
+        <div class="test-section">
+            <h2>Applied Code</h2>
+            <p>This is the fix that was applied to the index.html:</p>
+            <pre><code>// Ensure signup button works correctly after page loads
+window.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        const signupBtn = document.getElementById('signupBtn');
+        if (signupBtn) {
+            // Remove any existing listeners
+            const newBtn = signupBtn.cloneNode(true);
+            signupBtn.parentNode.replaceChild(newBtn, signupBtn);
+            
+            // Add the correct listener
+            newBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Signup button clicked - redirecting to signup page (fixed)');
+                window.location.href = 'https://rasin.pyebwa.com/signup.html';
+            });
+            console.log('Signup button listener fixed');
+        }
+    }, 100);
+});</code></pre>
+        </div>
+        
+        <div class="test-section">
+            <h2>Direct Links</h2>
+            <p>For comparison, here are direct links:</p>
+            <a href="https://rasin.pyebwa.com/login.html" target="_blank">
+                <button class="btn-primary">Login Page</button>
+            </a>
+            <a href="https://rasin.pyebwa.com/signup.html" target="_blank">
+                <button class="btn-primary">Signup Page</button>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

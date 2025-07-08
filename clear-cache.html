@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Cache - Pyebwa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #00217D;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 10px 10px 0;
+        }
+        button:hover {
+            background: #001654;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Clear Cache & Service Workers</h1>
+        <p>Use this page to clear all cached data and service workers that might be causing redirect issues.</p>
+        
+        <div id="status" class="status"></div>
+        
+        <button onclick="clearEverything()">Clear All Cache & Service Workers</button>
+        <button onclick="checkStatus()">Check Current Status</button>
+        <button onclick="goToSignup()">Go to Signup Page</button>
+        
+        <div id="results"></div>
+    </div>
+    
+    <script>
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+            status.style.display = 'block';
+        }
+        
+        function showResults(html) {
+            document.getElementById('results').innerHTML = html;
+        }
+        
+        async function clearEverything() {
+            showStatus('Clearing cache and service workers...', 'info');
+            let results = '<h3>Clear Results:</h3><pre>';
+            
+            try {
+                // 1. Clear all caches
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    results += `Found ${cacheNames.length} cache(s)\n`;
+                    
+                    for (const cacheName of cacheNames) {
+                        await caches.delete(cacheName);
+                        results += `✓ Deleted cache: ${cacheName}\n`;
+                    }
+                } else {
+                    results += '✗ Caches API not available\n';
+                }
+                
+                // 2. Unregister all service workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    results += `\nFound ${registrations.length} service worker(s)\n`;
+                    
+                    for (const registration of registrations) {
+                        await registration.unregister();
+                        results += `✓ Unregistered: ${registration.scope}\n`;
+                    }
+                } else {
+                    results += '\n✗ Service Worker API not available\n';
+                }
+                
+                // 3. Clear sessionStorage
+                sessionStorage.clear();
+                results += '\n✓ Cleared sessionStorage\n';
+                
+                // 4. Clear localStorage auth data
+                const authKeys = ['pyebwaAuth', 'recentLogin', 'loginTime', 'loginLoopCount', 'justSignedUp', 'onSignupPage'];
+                authKeys.forEach(key => {
+                    if (localStorage.getItem(key)) {
+                        localStorage.removeItem(key);
+                        results += `✓ Removed localStorage: ${key}\n`;
+                    }
+                });
+                
+                results += '</pre>';
+                showResults(results);
+                showStatus('All cache and service workers cleared successfully!', 'success');
+                
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+                results += `\n✗ Error: ${error.message}</pre>`;
+                showResults(results);
+            }
+        }
+        
+        async function checkStatus() {
+            showStatus('Checking current status...', 'info');
+            let results = '<h3>Current Status:</h3><pre>';
+            
+            try {
+                // Check caches
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    results += `Caches (${cacheNames.length}):\n`;
+                    cacheNames.forEach(name => {
+                        results += `  - ${name}\n`;
+                    });
+                } else {
+                    results += 'Caches: Not available\n';
+                }
+                
+                // Check service workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    results += `\nService Workers (${registrations.length}):\n`;
+                    registrations.forEach(reg => {
+                        results += `  - Scope: ${reg.scope}\n`;
+                        results += `    Active: ${reg.active ? 'Yes' : 'No'}\n`;
+                        results += `    Waiting: ${reg.waiting ? 'Yes' : 'No'}\n`;
+                    });
+                } else {
+                    results += '\nService Workers: Not available\n';
+                }
+                
+                // Check session storage
+                results += `\nSessionStorage items: ${sessionStorage.length}\n`;
+                for (let i = 0; i < sessionStorage.length; i++) {
+                    const key = sessionStorage.key(i);
+                    results += `  - ${key}: ${sessionStorage.getItem(key)}\n`;
+                }
+                
+                // Check relevant localStorage
+                results += `\nAuth-related localStorage:\n`;
+                const authKeys = ['pyebwaAuth', 'recentLogin', 'loginTime', 'loginLoopCount', 'justSignedUp', 'onSignupPage'];
+                authKeys.forEach(key => {
+                    const value = localStorage.getItem(key);
+                    if (value) {
+                        results += `  - ${key}: ${value}\n`;
+                    }
+                });
+                
+                results += '</pre>';
+                showResults(results);
+                showStatus('Status check complete', 'success');
+                
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function goToSignup() {
+            // Clear auth-related session storage before going to signup
+            sessionStorage.clear();
+            sessionStorage.setItem('goingToSignup', 'true');
+            window.location.href = '/signup.html';
+        }
+        
+        // Check status on load
+        window.addEventListener('load', () => {
+            checkStatus();
+        });
+    </script>
+</body>
+</html>

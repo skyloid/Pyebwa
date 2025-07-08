@@ -1,7 +1,11 @@
-// Main application logic
-let currentUser = null;
-let userFamilyTreeId = null;
-let familyMembers = [];
+// Check if we're on signup page and should not run app.js logic
+if (window.preventRedirect || window.isSignupPage || sessionStorage.getItem('onSignupPage') === 'true' || window.location.href.includes('signup.html')) {
+    console.log('App.js: Detected signup page, skipping entire app.js execution');
+} else {
+    // Main application logic - only run if NOT on signup page
+    let currentUser = null;
+    let userFamilyTreeId = null;
+    let familyMembers = [];
 
 // Make data globally accessible for PDF export and other modules
 window.familyMembers = familyMembers;
@@ -1693,3 +1697,5 @@ window.debugFirestore = async function() {
     
     console.log('=== END FIRESTORE DEBUG ===');
 };
+
+} // End of else block - app.js protection for signup page

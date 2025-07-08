@@ -1,10 +1,12 @@
 /* Mobile-specific styles for Pyebwa App */
 
-/* Mobile-specific styles - Hidden by default */
-.mobile-nav,
-.mobile-nav-content,
-.mobile-menu-btn {
-    display: none !important;
+/* Hide mobile elements on desktop */
+@media (min-width: 769px) {
+    .mobile-nav,
+    .mobile-nav-content,
+    .mobile-menu-btn {
+        display: none !important;
+    }
 }
 
 /* Only show mobile navigation on mobile devices */
@@ -16,13 +18,12 @@
         width: 100%;
         height: 100%;
         background: rgba(0, 0, 0, 0.5);
-        display: none !important; /* Still hidden by default */
-        z-index: var(--z-modal);
+        display: none; /* Hidden by default, shown when active */
+        z-index: 9999;
         -webkit-tap-highlight-color: transparent;
     }
     
     .mobile-nav-content {
-        display: block !important; /* Allow it to be shown */
         position: absolute;
         top: 0;
         left: 0;
@@ -42,7 +43,7 @@
 @media (max-width: 768px) {
     /* Show mobile navigation */
     .mobile-nav.active {
-        display: block;
+        display: block !important;
     }
     
     .mobile-nav.active .mobile-nav-content {
