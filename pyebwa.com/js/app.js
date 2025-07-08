@@ -113,6 +113,11 @@ function redirectToLogin() {
     window.location.href = 'https://rasin.pyebwa.com/login.html';
 }
 
+function redirectToSignup() {
+    console.log('Redirecting to signup page on rasin.pyebwa.com');
+    window.location.href = 'https://rasin.pyebwa.com/signup.html';
+}
+
 // Event listeners - Redirect to rasin.pyebwa.com/login.html for auth
 if (loginBtn) {
     loginBtn.addEventListener('click', (e) => {
@@ -127,8 +132,8 @@ if (signupBtn) {
     signupBtn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log('Signup button clicked - redirecting to login page');
-        redirectToLogin();
+        console.log('Signup button clicked - redirecting to signup page');
+        redirectToSignup();
     });
 }
 

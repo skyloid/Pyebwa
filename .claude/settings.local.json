@@ -94,7 +94,12 @@
       "Bash(./deploy-slideshow-manual.sh:*)",
       "Bash(for file in test-tablet-auth.html tablet-auth-test-comprehensive.html tablet-loop-simulation.html js/tablet-auth-test-suite.js js/tablet-debug.js)",
       "Bash(do echo \"Checking: https://rasin.pyebwa.com/app/$file\")",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(pm2 show:*)",
+      "Bash(./deploy-signup-fix.sh:*)",
+      "Bash(./deploy-login-fix.sh:*)",
+      "Bash(./deploy-login-fix-simple.sh:*)",
+      "Bash(ping:*)"
     ],
     "deny": []
   }

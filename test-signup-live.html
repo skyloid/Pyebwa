@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Signup Button Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .console {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            height: 400px;
+            overflow-y: auto;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: #00217D;
+            color: white;
+        }
+        .btn-secondary {
+            background: #ddd;
+            color: #333;
+        }
+        .error {
+            color: #ff6b6b;
+        }
+        .success {
+            color: #51cf66;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Live Signup Button Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Fetch and Analyze pyebwa.com</h2>
+        <button class="btn-primary" onclick="fetchAndAnalyze()">Fetch & Analyze</button>
+        <button class="btn-secondary" onclick="clearConsole()">Clear Console</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Test Direct Functions</h2>
+        <button class="btn-primary" onclick="testDirectFunctions()">Test Functions</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Load in iFrame</h2>
+        <button class="btn-primary" onclick="loadInIframe()">Load pyebwa.com</button>
+        <div id="iframeContainer" style="margin-top: 20px;"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Console Output</h2>
+        <div class="console" id="console"></div>
+    </div>
+    
+    <script>
+        const consoleDiv = document.getElementById('console');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? 'error' : type === 'success' ? 'success' : '';
+            consoleDiv.innerHTML += `<span class="${color}">[${timestamp}] ${message}</span>\n`;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+        
+        function clearConsole() {
+            consoleDiv.innerHTML = '';
+            log('Console cleared');
+        }
+        
+        async function fetchAndAnalyze() {
+            log('Fetching pyebwa.com...');
+            
+            try {
+                // Fetch the main page
+                const response = await fetch('https://pyebwa.com');
+                const html = await response.text();
+                
+                log('Page fetched successfully', 'success');
+                
+                // Check for redirectToSignup in inline script
+                const hasInlineRedirect = html.includes('window.redirectToSignup');
+                log(`Inline redirectToSignup found: ${hasInlineRedirect ? 'YES' : 'NO'}`, hasInlineRedirect ? 'success' : 'error');
+                
+                // Check app.js version
+                const appJsMatch = html.match(/app\.js\?v=(\d+)/);
+                if (appJsMatch) {
+                    log(`app.js version: ${appJsMatch[1]}`);
+                } else {
+                    log('app.js version not found', 'error');
+                }
+                
+                // Check for signup button
+                const signupBtnMatch = html.match(/id="signupBtn"[^>]*>([^<]+)</);
+                if (signupBtnMatch) {
+                    log(`Signup button found: "${signupBtnMatch[1]}"`);
+                } else {
+                    log('Signup button not found', 'error');
+                }
+                
+                // Fetch app.js
+                log('\nFetching app.js...');
+                const appJsResponse = await fetch('https://pyebwa.com/js/app.js?v=' + Date.now());
+                const appJs = await appJsResponse.text();
+                
+                // Check for redirectToSignup function
+                const hasRedirectToSignup = appJs.includes('function redirectToSignup');
+                log(`redirectToSignup in app.js: ${hasRedirectToSignup ? 'YES' : 'NO'}`, hasRedirectToSignup ? 'success' : 'error');
+                
+                // Check signup button handler
+                const signupHandlerMatch = appJs.match(/signupBtn[\s\S]*?addEventListener[\s\S]*?{[\s\S]*?redirect(\w+)\(/);
+                if (signupHandlerMatch) {
+                    log(`Signup button calls: redirect${signupHandlerMatch[1]}()`, signupHandlerMatch[1] === 'ToSignup' ? 'success' : 'error');
+                }
+                
+                // Extract relevant code
+                log('\n--- Signup Button Handler Code ---');
+                const signupCode = appJs.match(/if \(signupBtn\)[\s\S]*?}\);[\s\S]*?}/);
+                if (signupCode) {
+                    log(signupCode[0]);
+                }
+                
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function testDirectFunctions() {
+            log('Testing direct function definitions...');
+            
+            // Create a test script
+            const script = document.createElement('script');
+            script.textContent = `
+                // Define the functions
+                function redirectToLogin() {
+                    console.log('redirectToLogin called');
+                    return 'https://rasin.pyebwa.com/login.html';
+                }
+                
+                function redirectToSignup() {
+                    console.log('redirectToSignup called');
+                    return 'https://rasin.pyebwa.com/signup.html';
+                }
+                
+                // Test them
+                window.testResults = {
+                    login: redirectToLogin(),
+                    signup: redirectToSignup()
+                };
+            `;
+            document.head.appendChild(script);
+            
+            if (window.testResults) {
+                log(`Login redirect: ${window.testResults.login}`, 'success');
+                log(`Signup redirect: ${window.testResults.signup}`, 'success');
+            } else {
+                log('Test functions failed', 'error');
+            }
+        }
+        
+        function loadInIframe() {
+            log('Loading pyebwa.com in iframe...');
+            const container = document.getElementById('iframeContainer');
+            container.innerHTML = '<iframe src="https://pyebwa.com" onload="iframeLoaded()"></iframe>';
+        }
+        
+        function iframeLoaded() {
+            log('iFrame loaded - check the signup button behavior', 'success');
+            log('Note: Due to security restrictions, we cannot access the iframe content directly');
+        }
+        
+        // Auto-run on load
+        window.addEventListener('load', () => {
+            log('Test page loaded. Click "Fetch & Analyze" to start.');
+        });
+    </script>
+</body>
+</html>

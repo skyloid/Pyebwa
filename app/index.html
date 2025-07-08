@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="/app/css/mobile.css?v=1">
     <link rel="stylesheet" href="/app/css/desktop.css?v=1">
     <link rel="stylesheet" href="/app/css/mobile-fix.css?v=1">
+    <link rel="stylesheet" href="/app/css/mobile-nav-fix.css?v=2">
     <link rel="stylesheet" href="/app/css/footer.css?v=3">
     <link rel="stylesheet" href="/app/css/family-statistics.css?v=1">
     <link rel="stylesheet" href="/app/css/dark-mode-complete.css?v=1">
@@ -33,17 +34,15 @@
     <style>
         @media (min-width: 769px) {
             .mobile-nav,
-            .mobile-nav-content,
-            .mobile-menu-btn,
-            #mobileNav,
-            #mobileMenuBtn,
-            #mobileMenuClose {
+            .mobile-menu-btn {
                 display: none !important;
-                visibility: hidden !important;
-                opacity: 0 !important;
-                pointer-events: none !important;
-                position: absolute !important;
-                left: -9999px !important;
+            }
+        }
+        
+        /* Ensure mobile nav shows on mobile when active */
+        @media (max-width: 768px) {
+            .mobile-nav.active {
+                display: block !important;
             }
         }
     </style>
@@ -338,7 +337,7 @@
     <script src="/app/js/video-messages.js"></script>
     <script src="/app/js/back-to-top.js"></script>
     <script src="/app/js/theme-toggle.js"></script>
-    <script src="/app/js/mobile-nav-enhanced.js"></script>
+    <script src="/app/js/mobile-nav-simple.js"></script>
     <script src="/app/js/dashboard.js"></script>
     <script src="/app/js/family-statistics.js"></script>
     <script src="/app/js/onboarding.js"></script>

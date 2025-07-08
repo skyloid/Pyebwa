@@ -5,350 +5,173 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mobile Navigation Test - Pyebwa</title>
     <style>
-        /* Reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        /* Variables */
-        :root {
-            --primary-blue: #00217D;
-            --white: #FFFFFF;
-            --gray-800: #1F2937;
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
         body {
-            font-family: Arial, sans-serif;
-            background: #f0f0f0;
-        }
-
-        /* Container */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        /* Navbar */
-        .navbar {
-            padding: 20px 0;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            position: relative;
-            z-index: 100;
-        }
-
-        .navbar .container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* Brand */
-        .nav-brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .logo-header {
-            height: 40px;
-            width: auto;
-        }
-
-        .tagline {
-            font-size: 14px;
-            color: #666;
-            font-style: italic;
-        }
-
-        /* Mobile Menu Toggle - Hidden by default */
-        .mobile-menu-toggle {
-            display: none;
-            background: none;
-            border: none;
-            color: var(--gray-800);
-            font-size: 24px;
-            cursor: pointer;
-            padding: 10px;
-        }
-
-        /* Nav Menu */
-        .nav-menu {
-            display: flex;
-            align-items: center;
-            gap: 30px;
-            flex: 1;
-            justify-content: center;
-        }
-
-        .nav-link {
-            color: var(--gray-800);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-
-        /* Mobile Actions - Hidden by default */
-        .nav-actions-mobile {
-            display: none;
-        }
-
-        /* Desktop Actions */
-        .nav-actions {
-            display: flex;
-            gap: 15px;
-        }
-
-        /* Buttons */
-        .btn {
-            padding: 10px 24px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 500;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-primary {
-            background: var(--primary-blue);
-            color: var(--white);
-        }
-
-        .btn-ghost {
-            background: transparent;
-            color: var(--gray-800);
-            border: 1px solid #ddd;
-        }
-
-        /* Mobile Styles */
-        @media (max-width: 768px) {
-            /* CRITICAL: Show mobile menu toggle */
-            .mobile-menu-toggle {
-                display: block !important;
-                z-index: 1001;
-                position: relative;
-            }
-            
-            /* Hide desktop nav actions */
-            .desktop-only,
-            .nav-actions {
-                display: none !important;
-            }
-            
-            /* CRITICAL: Ensure container stays flex row on mobile */
-            .navbar .container {
-                display: flex !important;
-                flex-direction: row !important;
-                justify-content: space-between !important;
-                align-items: center !important;
-                padding: 0 20px;
-            }
-            
-            /* Mobile nav menu */
-            .nav-menu {
-                display: none;
-                position: fixed;
-                top: 70px;
-                left: 0;
-                right: 0;
-                background: rgba(0, 0, 0, 0.95);
-                flex-direction: column;
-                padding: 20px;
-                gap: 15px;
-                z-index: 1000;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
-            
-            .nav-menu.active {
-                display: flex !important;
-            }
-            
-            .nav-link {
-                color: white !important;
-                text-decoration: none;
-                padding: 10px;
-                font-size: 18px;
-                text-align: center;
-                border-bottom: 1px solid rgba(255,255,255,0.2);
-            }
-            
-            .nav-actions-mobile {
-                display: flex !important;
-                gap: 10px;
-                margin-top: 20px;
-            }
-            
-            .nav-actions-mobile button {
-                flex: 1;
-            }
-
-            /* Ensure brand doesn't take too much space */
-            .nav-brand {
-                flex: 0 1 auto;
-            }
-
-            /* Adjust logo size on mobile */
-            .logo-header {
-                height: 30px;
-            }
-
-            .tagline {
-                display: none; /* Hide tagline on mobile to save space */
-            }
-        }
-
-        /* Test styles */
-        .test-info {
+            margin: 0;
             padding: 20px;
-            background: white;
-            margin: 20px;
+            font-family: Arial, sans-serif;
+        }
+        
+        .test-info {
+            background: #f0f0f0;
+            padding: 20px;
             border-radius: 8px;
-            box-shadow: var(--shadow-md);
+            margin-bottom: 20px;
         }
-
-        .viewport-info {
-            background: #e3f2fd;
-            padding: 10px;
+        
+        .test-button {
+            background: #00217D;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
             border-radius: 4px;
-            margin-bottom: 10px;
+            cursor: pointer;
+            margin: 5px;
         }
-
-        /* Hamburger icon */
-        .hamburger-icon {
-            width: 24px;
-            height: 24px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+        
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            background: #e0e0e0;
+            border-radius: 4px;
         }
-
-        .hamburger-line {
-            width: 100%;
-            height: 3px;
-            background: currentColor;
-            border-radius: 2px;
+        
+        #debugOutput {
+            margin-top: 20px;
+            padding: 10px;
+            background: #333;
+            color: #0f0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            border-radius: 4px;
+            max-height: 400px;
+            overflow-y: auto;
         }
     </style>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <div class="container">
-                <div class="nav-brand">
-                    <img src="https://pyebwa.com/images/Pyebwa.png" alt="Pyebwa" class="logo-header">
-                    <span class="tagline">Rasin Fanmi w</span>
-                </div>
-                <button class="mobile-menu-toggle" id="mobileMenuToggle" onclick="toggleMenu()">
-                    <span class="material-icons">menu</span>
-                </button>
-                <div class="nav-menu" id="navMenu">
-                    <a href="#" class="nav-link">Home</a>
-                    <a href="#" class="nav-link">About</a>
-                    <a href="#" class="nav-link">Our Mission</a>
-                    <a href="#" class="nav-link">Contact</a>
-                    <div class="nav-actions-mobile">
-                        <button class="btn btn-ghost">Konekte</button>
-                        <button class="btn btn-primary">Enskri</button>
-                    </div>
-                </div>
-                <div class="nav-actions desktop-only">
-                    <button class="btn btn-ghost">Konekte</button>
-                    <button class="btn btn-primary">Enskri</button>
-                </div>
-            </div>
-        </nav>
-    </header>
-
     <div class="test-info">
-        <h2>Mobile Navigation Test</h2>
-        <div class="viewport-info">
-            <strong>Viewport Width:</strong> <span id="viewportWidth"></span>px<br>
-            <strong>User Agent:</strong> <span id="userAgent"></span><br>
-            <strong>Is Mobile:</strong> <span id="isMobile"></span>
-        </div>
-        
-        <h3>Test Instructions:</h3>
-        <ol>
-            <li>Resize your browser to &lt; 768px width or use mobile device emulator</li>
-            <li>Check if hamburger menu icon (☰) is visible on the right side</li>
-            <li>Click the hamburger menu to test if menu opens</li>
-            <li>The menu should slide down with navigation links and login/signup buttons</li>
-        </ol>
-
-        <h3>Expected Behavior:</h3>
-        <ul>
-            <li>✓ Hamburger menu visible on mobile (&lt; 768px)</li>
-            <li>✓ Desktop login/signup buttons hidden on mobile</li>
-            <li>✓ Menu opens when hamburger clicked</li>
-            <li>✓ Menu contains all nav links + mobile login/signup buttons</li>
-        </ul>
-
-        <h3>Debug Info:</h3>
-        <p><strong>Menu Toggle Visible:</strong> <span id="menuToggleVisible"></span></p>
-        <p><strong>Nav Menu State:</strong> <span id="navMenuState"></span></p>
-        <p><strong>Container Flex Direction:</strong> <span id="containerFlexDir"></span></p>
+        <h1>Mobile Navigation Test</h1>
+        <p><strong>Screen Width:</strong> <span id="screenWidth"></span></p>
+        <p><strong>Window Width:</strong> <span id="windowWidth"></span></p>
+        <p><strong>Device Type:</strong> <span id="deviceType"></span></p>
+        <p><strong>User Agent:</strong> <span id="userAgent"></span></p>
     </div>
-
+    
+    <h2>Test Actions</h2>
+    <button class="test-button" onclick="testMobileNav()">Test Mobile Nav</button>
+    <button class="test-button" onclick="openMobileNav()">Open Mobile Nav</button>
+    <button class="test-button" onclick="closeMobileNav()">Close Mobile Nav</button>
+    <button class="test-button" onclick="clearDebug()">Clear Debug</button>
+    
+    <div class="status" id="status">Ready to test...</div>
+    
+    <h3>Debug Output</h3>
+    <div id="debugOutput"></div>
+    
     <script>
-        // Update viewport info
-        function updateViewportInfo() {
-            document.getElementById('viewportWidth').textContent = window.innerWidth;
-            document.getElementById('userAgent').textContent = navigator.userAgent.substring(0, 50) + '...';
-            document.getElementById('isMobile').textContent = window.innerWidth <= 768 ? 'Yes' : 'No';
+        // Display device info
+        function updateDeviceInfo() {
+            document.getElementById('screenWidth').textContent = screen.width + 'px';
+            document.getElementById('windowWidth').textContent = window.innerWidth + 'px';
+            document.getElementById('deviceType').textContent = window.innerWidth <= 768 ? 'Mobile' : 'Desktop';
+            document.getElementById('userAgent').textContent = navigator.userAgent;
+        }
+        
+        // Log debug info
+        function debug(message) {
+            const output = document.getElementById('debugOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            output.textContent += `[${timestamp}] ${message}\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        // Clear debug output
+        function clearDebug() {
+            document.getElementById('debugOutput').textContent = '';
+            debug('Debug cleared');
+        }
+        
+        // Test mobile nav functionality
+        function testMobileNav() {
+            debug('Starting mobile nav test...');
             
-            // Debug info
-            const menuToggle = document.getElementById('mobileMenuToggle');
-            const navMenu = document.getElementById('navMenu');
-            const container = document.querySelector('.navbar .container');
-            
-            const menuToggleStyle = window.getComputedStyle(menuToggle);
-            const containerStyle = window.getComputedStyle(container);
-            
-            document.getElementById('menuToggleVisible').textContent = 
-                menuToggleStyle.display !== 'none' ? 'Yes (display: ' + menuToggleStyle.display + ')' : 'No';
-            
-            document.getElementById('navMenuState').textContent = 
-                navMenu.classList.contains('active') ? 'Open' : 'Closed';
+            // Check if we're in app context
+            if (window.parent !== window) {
+                const parentDoc = window.parent.document;
                 
-            document.getElementById('containerFlexDir').textContent = 
-                containerStyle.flexDirection;
-        }
-
-        // Toggle menu function
-        function toggleMenu() {
-            const navMenu = document.getElementById('navMenu');
-            navMenu.classList.toggle('active');
-            console.log('Menu toggled. Active:', navMenu.classList.contains('active'));
-            updateViewportInfo();
-        }
-
-        // Close menu when clicking outside
-        document.addEventListener('click', (e) => {
-            const navMenu = document.getElementById('navMenu');
-            if (!e.target.closest('.navbar') && navMenu.classList.contains('active')) {
-                navMenu.classList.remove('active');
-                updateViewportInfo();
+                // Check for mobile menu button
+                const mobileMenuBtn = parentDoc.getElementById('mobileMenuBtn');
+                if (mobileMenuBtn) {
+                    debug('✓ Mobile menu button found');
+                    debug('  Display: ' + window.getComputedStyle(mobileMenuBtn).display);
+                    debug('  Visibility: ' + window.getComputedStyle(mobileMenuBtn).visibility);
+                    debug('  Position: ' + window.getComputedStyle(mobileMenuBtn).position);
+                } else {
+                    debug('✗ Mobile menu button NOT found');
+                }
+                
+                // Check for mobile nav
+                const mobileNav = parentDoc.getElementById('mobileNav');
+                if (mobileNav) {
+                    debug('✓ Mobile nav found');
+                    debug('  Display: ' + window.getComputedStyle(mobileNav).display);
+                    debug('  Classes: ' + mobileNav.className);
+                } else {
+                    debug('✗ Mobile nav NOT found');
+                }
+                
+                // Check for nav items
+                const navItems = parentDoc.querySelectorAll('.mobile-nav-item');
+                debug(`Found ${navItems.length} mobile nav items`);
+                
+                // Check JavaScript
+                if (window.parent.mobileNavSimple) {
+                    debug('✓ Mobile nav simple script loaded');
+                } else {
+                    debug('✗ Mobile nav simple script NOT loaded');
+                }
+                
+                if (window.parent.mobileNavEnhanced) {
+                    debug('✓ Mobile nav enhanced script loaded');
+                } else {
+                    debug('✗ Mobile nav enhanced script NOT loaded');
+                }
+            } else {
+                debug('Not in app context - open this page in the app iframe');
             }
-        });
-
-        // Initial update
-        updateViewportInfo();
-
-        // Update on resize
-        window.addEventListener('resize', updateViewportInfo);
-
-        // Log initial state
-        console.log('Mobile Navigation Test Loaded');
-        console.log('Window width:', window.innerWidth);
-        console.log('Mobile menu toggle element:', document.getElementById('mobileMenuToggle'));
+            
+            document.getElementById('status').textContent = 'Test complete - check debug output';
+        }
+        
+        // Open mobile nav
+        function openMobileNav() {
+            if (window.parent !== window && window.parent.mobileNavSimple) {
+                window.parent.mobileNavSimple.open();
+                debug('Attempted to open mobile nav');
+                document.getElementById('status').textContent = 'Mobile nav should be open';
+            } else {
+                debug('Cannot open - not in app context or script not loaded');
+            }
+        }
+        
+        // Close mobile nav
+        function closeMobileNav() {
+            if (window.parent !== window && window.parent.mobileNavSimple) {
+                window.parent.mobileNavSimple.close();
+                debug('Attempted to close mobile nav');
+                document.getElementById('status').textContent = 'Mobile nav should be closed';
+            } else {
+                debug('Cannot close - not in app context or script not loaded');
+            }
+        }
+        
+        // Initialize
+        updateDeviceInfo();
+        window.addEventListener('resize', updateDeviceInfo);
+        debug('Mobile nav test page loaded');
+        debug('Window width: ' + window.innerWidth + 'px');
+        debug('Is mobile viewport: ' + (window.innerWidth <= 768));
     </script>
 </body>
 </html>

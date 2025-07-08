@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Signup Redirect</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn-primary {
+            background: #00217D;
+            color: white;
+        }
+        .btn-secondary {
+            background: #ddd;
+            color: #333;
+        }
+        .log {
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 20px;
+            height: 300px;
+            overflow-y: auto;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>Signup Redirect Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Direct JavaScript Test</h2>
+        <p>Testing the redirect functions directly:</p>
+        <button class="btn-primary" onclick="testLoginRedirect()">Test Login Redirect</button>
+        <button class="btn-primary" onclick="testSignupRedirect()">Test Signup Redirect</button>
+        <div id="directTestResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Button Element Test</h2>
+        <p>Testing with actual button elements:</p>
+        <button class="btn-primary" id="testLoginBtn">Login Button</button>
+        <button class="btn-primary" id="testSignupBtn">Signup Button</button>
+        <div id="buttonTestResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Check App.js Version</h2>
+        <button class="btn-secondary" onclick="checkAppJsVersion()">Check Version</button>
+        <div id="versionResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Load and Inspect App.js</h2>
+        <button class="btn-secondary" onclick="loadAndInspectAppJs()">Load & Inspect</button>
+        <div id="inspectResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Console Log</h2>
+        <div class="log" id="consoleLog"></div>
+    </div>
+    
+    <script>
+        // Custom console log
+        const logDiv = document.getElementById('consoleLog');
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.textContent = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        // Override console methods
+        const originalLog = console.log;
+        const originalError = console.error;
+        console.log = function(...args) {
+            log(args.join(' '), 'log');
+            originalLog.apply(console, args);
+        };
+        console.error = function(...args) {
+            log(args.join(' '), 'error');
+            originalError.apply(console, args);
+        };
+        
+        // Test functions
+        function testLoginRedirect() {
+            log('Testing login redirect...');
+            const result = document.getElementById('directTestResult');
+            try {
+                // Instead of redirecting, just show where it would go
+                const url = 'https://rasin.pyebwa.com/login.html';
+                result.innerHTML = `<div class="status success">Login would redirect to: ${url}</div>`;
+                log(`Login redirect URL: ${url}`);
+            } catch (e) {
+                result.innerHTML = `<div class="status error">Error: ${e.message}</div>`;
+                log(`Error: ${e.message}`, 'error');
+            }
+        }
+        
+        function testSignupRedirect() {
+            log('Testing signup redirect...');
+            const result = document.getElementById('directTestResult');
+            try {
+                // Instead of redirecting, just show where it would go
+                const url = 'https://rasin.pyebwa.com/signup.html';
+                result.innerHTML = `<div class="status success">Signup would redirect to: ${url}</div>`;
+                log(`Signup redirect URL: ${url}`);
+            } catch (e) {
+                result.innerHTML = `<div class="status error">Error: ${e.message}</div>`;
+                log(`Error: ${e.message}`, 'error');
+            }
+        }
+        
+        // Button tests
+        document.getElementById('testLoginBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            log('Login button clicked');
+            document.getElementById('buttonTestResult').innerHTML = 
+                '<div class="status success">Login button would redirect to: https://rasin.pyebwa.com/login.html</div>';
+        });
+        
+        document.getElementById('testSignupBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            log('Signup button clicked');
+            document.getElementById('buttonTestResult').innerHTML = 
+                '<div class="status success">Signup button would redirect to: https://rasin.pyebwa.com/signup.html</div>';
+        });
+        
+        // Check app.js version
+        function checkAppJsVersion() {
+            log('Checking app.js version...');
+            const scripts = document.querySelectorAll('script');
+            let found = false;
+            scripts.forEach(script => {
+                if (script.src && script.src.includes('app.js')) {
+                    const version = script.src.match(/v=(\d+)/);
+                    if (version) {
+                        document.getElementById('versionResult').innerHTML = 
+                            `<div class="status success">app.js version: ${version[1]}</div>`;
+                        log(`Found app.js version: ${version[1]}`);
+                        found = true;
+                    }
+                }
+            });
+            if (!found) {
+                // Try loading from pyebwa.com
+                log('Loading app.js from pyebwa.com to check...');
+                fetch('https://pyebwa.com/js/app.js')
+                    .then(response => response.text())
+                    .then(content => {
+                        const hasSignupFunction = content.includes('redirectToSignup');
+                        const signupButtonCode = content.match(/signupBtn.*?addEventListener[\s\S]*?redirect\w+\(\)/);
+                        
+                        let result = '<div class="status">';
+                        result += `<p>Has redirectToSignup function: ${hasSignupFunction ? 'YES' : 'NO'}</p>`;
+                        if (signupButtonCode) {
+                            result += `<p>Signup button code: <pre>${signupButtonCode[0]}</pre></p>`;
+                        }
+                        result += '</div>';
+                        
+                        document.getElementById('versionResult').innerHTML = result;
+                        log(`redirectToSignup exists: ${hasSignupFunction}`);
+                    })
+                    .catch(err => {
+                        log(`Error loading app.js: ${err}`, 'error');
+                    });
+            }
+        }
+        
+        // Load and inspect app.js
+        function loadAndInspectAppJs() {
+            log('Loading and inspecting app.js...');
+            const result = document.getElementById('inspectResult');
+            
+            // Create a temporary script element
+            const script = document.createElement('script');
+            script.src = 'https://pyebwa.com/js/app.js?v=' + Date.now(); // Force fresh load
+            
+            script.onload = () => {
+                log('app.js loaded successfully');
+                
+                // Check if functions exist
+                const hasRedirectToLogin = typeof window.redirectToLogin === 'function';
+                const hasRedirectToSignup = typeof window.redirectToSignup === 'function';
+                
+                let html = '<div class="status">';
+                html += `<p>redirectToLogin exists: ${hasRedirectToLogin ? 'YES' : 'NO'}</p>`;
+                html += `<p>redirectToSignup exists: ${hasRedirectToSignup ? 'YES' : 'NO'}</p>`;
+                
+                // Try to get the actual function code
+                if (hasRedirectToLogin) {
+                    html += `<p>redirectToLogin: <pre>${window.redirectToLogin.toString()}</pre></p>`;
+                }
+                if (hasRedirectToSignup) {
+                    html += `<p>redirectToSignup: <pre>${window.redirectToSignup.toString()}</pre></p>`;
+                }
+                
+                html += '</div>';
+                result.innerHTML = html;
+            };
+            
+            script.onerror = () => {
+                log('Error loading app.js', 'error');
+                result.innerHTML = '<div class="status error">Failed to load app.js</div>';
+            };
+            
+            document.head.appendChild(script);
+        }
+        
+        // Auto-run version check on load
+        window.addEventListener('load', () => {
+            log('Page loaded, running initial checks...');
+            checkAppJsVersion();
+        });
+    </script>
+</body>
+</html>

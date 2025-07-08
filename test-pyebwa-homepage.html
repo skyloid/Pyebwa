@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Pyebwa Homepage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-ghost {
+            background: #f5f5f5;
+            color: #333;
+        }
+        .btn-primary {
+            background: #00217D;
+            color: white;
+        }
+        .test-info {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .console {
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 20px;
+            height: 200px;
+            overflow-y: auto;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Pyebwa Homepage</h1>
+        
+        <div class="test-info">
+            <h3>Testing Signup Button Redirect</h3>
+            <p>This page loads the actual app.js from pyebwa.com to test the button functionality.</p>
+        </div>
+        
+        <div class="nav-buttons">
+            <button class="btn btn-ghost" id="loginBtn">Login</button>
+            <button class="btn btn-primary" id="signupBtn">Sign Up</button>
+        </div>
+        
+        <h3>Console Output:</h3>
+        <div class="console" id="console"></div>
+    </div>
+    
+    <script>
+        // Console override
+        const consoleDiv = document.getElementById('console');
+        const originalLog = console.log;
+        console.log = function(...args) {
+            const entry = document.createElement('div');
+            entry.textContent = `> ${args.join(' ')}`;
+            consoleDiv.appendChild(entry);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            originalLog.apply(console, args);
+        };
+        
+        console.log('Loading app.js from pyebwa.com...');
+    </script>
+    
+    <!-- Load the actual app.js from pyebwa.com with cache buster -->
+    <script src="https://pyebwa.com/js/app.js?v=7&test=<?php echo time(); ?>"></script>
+    
+    <script>
+        // After app.js loads, check what happened
+        setTimeout(() => {
+            console.log('Checking loaded functions...');
+            console.log('redirectToLogin exists:', typeof redirectToLogin === 'function');
+            console.log('redirectToSignup exists:', typeof redirectToSignup === 'function');
+            
+            // Check button event listeners
+            const loginBtn = document.getElementById('loginBtn');
+            const signupBtn = document.getElementById('signupBtn');
+            
+            if (loginBtn) {
+                console.log('Login button found');
+            }
+            if (signupBtn) {
+                console.log('Signup button found');
+            }
+            
+            // Add click handlers to see what happens
+            if (loginBtn) {
+                loginBtn.addEventListener('click', (e) => {
+                    console.log('Login button clicked - preventing actual redirect');
+                    e.preventDefault();
+                    e.stopPropagation();
+                }, true);
+            }
+            
+            if (signupBtn) {
+                signupBtn.addEventListener('click', (e) => {
+                    console.log('Signup button clicked - preventing actual redirect');
+                    e.preventDefault();
+                    e.stopPropagation();
+                }, true);
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

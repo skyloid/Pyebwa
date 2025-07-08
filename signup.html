@@ -3,7 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Sign Up - Pyebwa Family Tree</title>
+    <script>
+        // Set flags immediately to prevent any redirects
+        window.preventRedirect = true;
+        window.isSignupPage = true;
+        sessionStorage.setItem('onSignupPage', 'true');
+        sessionStorage.setItem('preventRedirect', 'true');
+    </script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
@@ -384,6 +394,52 @@
     </div>
     
     <script>
+        // CRITICAL: Prevent any redirects on signup page
+        window.preventRedirect = true;
+        window.isSignupPage = true;
+        
+        // Override window.location.href to prevent redirects
+        const originalLocation = window.location;
+        const originalHref = originalLocation.href;
+        Object.defineProperty(window, 'location', {
+            get: function() {
+                return originalLocation;
+            },
+            set: function(value) {
+                // Block any redirect attempts to login.html
+                if (typeof value === 'string' && value.includes('login.html')) {
+                    console.warn('Blocked redirect to login.html from signup page');
+                    console.trace('Redirect stack trace:');
+                    return;
+                }
+                if (typeof value === 'object' && value.href && value.href.includes('login.html')) {
+                    console.warn('Blocked redirect to login.html from signup page');
+                    console.trace('Redirect stack trace:');
+                    return;
+                }
+                originalLocation.href = value;
+            }
+        });
+        
+        // Also override location.replace and location.assign
+        originalLocation.replace = function(url) {
+            if (url.includes('login.html')) {
+                console.warn('Blocked location.replace to login.html');
+                console.trace('Replace stack trace:');
+                return;
+            }
+            console.log('Allowing replace to:', url);
+        };
+        
+        originalLocation.assign = function(url) {
+            if (url.includes('login.html')) {
+                console.warn('Blocked location.assign to login.html');
+                console.trace('Assign stack trace:');
+                return;
+            }
+            console.log('Allowing assign to:', url);
+        };
+        
         // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
@@ -399,6 +455,42 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
+        
+        // Disable persistence to prevent automatic sign-in attempts
+        auth.setPersistence(firebase.auth.Auth.Persistence.NONE).catch(error => {
+            console.log('Persistence setting error:', error);
+        });
+        
+        // Prevent redirect loops - mark that we're on signup page
+        sessionStorage.setItem('onSignupPage', 'true');
+        sessionStorage.setItem('preventRedirect', 'true');
+        localStorage.setItem('currentPage', 'signup');
+        
+        // Clean up flags when leaving page
+        window.addEventListener('beforeunload', () => {
+            sessionStorage.removeItem('onSignupPage');
+            sessionStorage.removeItem('preventRedirect');
+            localStorage.removeItem('currentPage');
+        });
+        
+        // Debug to see what's triggering redirects
+        console.log('Signup page loaded. Flags set:', {
+            preventRedirect: window.preventRedirect,
+            isSignupPage: window.isSignupPage,
+            onSignupPage: sessionStorage.getItem('onSignupPage'),
+            preventRedirectSession: sessionStorage.getItem('preventRedirect')
+        });
+        
+        // Simple auth check without redirects
+        auth.onAuthStateChanged((user) => {
+            console.log('Auth state changed on signup page:', user ? 'User logged in' : 'No user');
+            if (user) {
+                console.log('User detected on signup page:', user.email);
+                // Just show a message, don't redirect
+                const signoutLink = `<a href="#" onclick="firebase.auth().signOut().then(() => window.location.reload()); return false;" style="color: var(--primary-blue);">Sign out</a>`;
+                showMessage(`You're logged in as ${user.email}. ${signoutLink} to create a new account.`, 'info');
+            }
+        });
         
         // DOM elements
         const signupView = document.getElementById('signupView');
