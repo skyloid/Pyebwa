@@ -99,7 +99,11 @@
       "Bash(./deploy-signup-fix.sh:*)",
       "Bash(./deploy-login-fix.sh:*)",
       "Bash(./deploy-login-fix-simple.sh:*)",
-      "Bash(ping:*)"
+      "Bash(ping:*)",
+      "Bash(git remote add:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(pip install:*)",
+      "Bash(python deploy.py:*)"
     ],
     "deny": []
   }
