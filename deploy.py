@@ -136,7 +136,7 @@ DEPLOYMENT_CONFIGS = {
         'description': 'Deploy main application files',
         'files': [
             ('app/index.html', 'public_html/app/index.html'),
-            ('app/js/app.js', 'public_html/app/js/app.js'),
+            ('app/js/app-unified.js', 'public_html/app/js/app.js'),
             ('app/css/app.css', 'public_html/app/css/app.css'),
         ]
     },
@@ -151,9 +151,9 @@ DEPLOYMENT_CONFIGS = {
     'auth': {
         'description': 'Deploy authentication files',
         'files': [
-            ('app/js/auth-enhanced.js', 'public_html/app/js/auth-enhanced.js'),
-            ('app/js/firebase-config.js', 'public_html/app/js/firebase-config.js'),
-            ('login.html', 'public_html/login.html'),
+            ('app/js/auth-simple.js', 'public_html/app/js/auth-simple.js'),
+            ('app/js/firebase-config-secure.js', 'public_html/app/js/firebase-config-secure.js'),
+            ('login-simple.html', 'public_html/login.html'),
             ('signup.html', 'public_html/signup.html'),
         ]
     },
