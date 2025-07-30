@@ -333,33 +333,40 @@
     </style>
 </head>
 <body>
+    <!-- Language Selector -->
+    <div class="language-selector" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
+        <button class="lang-btn" data-lang="en" style="padding: 8px 12px; margin: 0 2px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px;">EN</button>
+        <button class="lang-btn" data-lang="fr" style="padding: 8px 12px; margin: 0 2px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px;">FR</button>
+        <button class="lang-btn active" data-lang="ht" style="padding: 8px 12px; margin: 0 2px; border: 1px solid #ddd; background: #00217D; color: white; cursor: pointer; border-radius: 4px;">HT</button>
+    </div>
+
     <div class="container">
         <div class="logo">
             <h1>Pyebwa</h1>
-            <p>Your Family Tree</p>
+            <p data-i18n="tagline">Your Family Tree</p>
         </div>
         
         <div id="signupView">
-            <h2>Create Your Account</h2>
-            <p class="subtitle">Start building your family tree today</p>
+            <h2 data-i18n="createAccount">Create Your Account</h2>
+            <p class="subtitle" data-i18n="signupSubtitle">Start building your family tree today</p>
             
             <div id="message" class="message" style="display: none;"></div>
             
             <form id="signupForm">
                 <div class="form-group">
-                    <label for="fullName">Full Name</label>
-                    <input type="text" id="fullName" required placeholder="John Doe" autocomplete="name">
+                    <label for="fullName" data-i18n="fullName">Full Name</label>
+                    <input type="text" id="fullName" required data-i18n-placeholder="fullNamePlaceholder" placeholder="John Doe" autocomplete="name">
                 </div>
                 
                 <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input type="email" id="email" required placeholder="your@email.com" autocomplete="email">
+                    <label for="email" data-i18n="emailAddress">Email Address</label>
+                    <input type="email" id="email" required data-i18n-placeholder="emailPlaceholder" placeholder="your@email.com" autocomplete="email">
                 </div>
                 
                 
                 <button type="submit" class="btn-primary" id="signupBtn">
                     <i class="material-icons">person_add</i>
-                    Create Account
+                    <span data-i18n="createAccount">Create Account</span>
                 </button>
             </form>
             
@@ -367,28 +374,28 @@
                 <div class="benefit">
                     <i class="material-icons">security</i>
                     <div class="benefit-text">
-                        <div class="benefit-title">Secure Password</div>
-                        <div class="benefit-desc">System-generated 16-character secure password</div>
+                        <div class="benefit-title" data-i18n="securePassword">Secure Password</div>
+                        <div class="benefit-desc" data-i18n="securePasswordDesc">System-generated 16-character secure password</div>
                     </div>
                 </div>
                 <div class="benefit">
                     <i class="material-icons">family_restroom</i>
                     <div class="benefit-text">
-                        <div class="benefit-title">Build Your Tree</div>
-                        <div class="benefit-desc">Add unlimited family members</div>
+                        <div class="benefit-title" data-i18n="buildTree">Build Your Tree</div>
+                        <div class="benefit-desc" data-i18n="buildTreeDesc">Add unlimited family members</div>
                     </div>
                 </div>
                 <div class="benefit">
                     <i class="material-icons">photo_library</i>
                     <div class="benefit-text">
-                        <div class="benefit-title">Preserve Memories</div>
-                        <div class="benefit-desc">Store photos and stories</div>
+                        <div class="benefit-title" data-i18n="preserveMemories">Preserve Memories</div>
+                        <div class="benefit-desc" data-i18n="preserveMemoriesDesc">Store photos and stories</div>
                     </div>
                 </div>
             </div>
             
             <div class="links">
-                Already have an account? <a href="/login.html">Sign In</a>
+                <span data-i18n="alreadyHaveAccount">Already have an account?</span> <a href="/login.html" data-i18n="signIn">Sign In</a>
             </div>
         </div>
     </div>
@@ -460,6 +467,182 @@
         auth.setPersistence(firebase.auth.Auth.Persistence.NONE).catch(error => {
             console.log('Persistence setting error:', error);
         });
+        
+        // Translation system for signup page
+        const translations = {
+            en: {
+                tagline: "Your Family Tree",
+                createAccount: "Create Your Account",
+                signupSubtitle: "Start building your family tree today",
+                fullName: "Full Name",
+                fullNamePlaceholder: "John Doe",
+                emailAddress: "Email Address",
+                emailPlaceholder: "your@email.com",
+                securePassword: "Secure Password",
+                securePasswordDesc: "System-generated 16-character secure password",
+                buildTree: "Build Your Tree",
+                buildTreeDesc: "Add unlimited family members",
+                preserveMemories: "Preserve Memories",
+                preserveMemoriesDesc: "Store photos and stories",
+                alreadyHaveAccount: "Already have an account?",
+                signIn: "Sign In",
+                creatingAccount: "Creating Account...",
+                accountCreated: "Account created successfully! Check your email for your secure password and login instructions.",
+                emailSent: "We've sent your password to",
+                signupFailed: "Failed to create account. Please try again.",
+                fillAllFields: "Please fill in all fields.",
+                emailInUse: "Email address is already in use.",
+                invalidEmail: "Invalid email address.",
+                networkError: "Network error. Please check your connection and try again."
+            },
+            fr: {
+                tagline: "Votre Arbre Généalogique",
+                createAccount: "Créer Votre Compte",
+                signupSubtitle: "Commencez à construire votre arbre généalogique aujourd'hui",
+                fullName: "Nom Complet",
+                fullNamePlaceholder: "Jean Dupont",
+                emailAddress: "Adresse Email",
+                emailPlaceholder: "votre@email.com",
+                securePassword: "Mot de Passe Sécurisé",
+                securePasswordDesc: "Mot de passe sécurisé de 16 caractères généré par le système",
+                buildTree: "Construisez Votre Arbre",
+                buildTreeDesc: "Ajoutez un nombre illimité de membres de la famille",
+                preserveMemories: "Préservez les Souvenirs",
+                preserveMemoriesDesc: "Stockez des photos et des histoires",
+                alreadyHaveAccount: "Vous avez déjà un compte?",
+                signIn: "Se Connecter",
+                creatingAccount: "Création du Compte...",
+                accountCreated: "Compte créé avec succès! Vérifiez votre email pour votre mot de passe sécurisé et les instructions de connexion.",
+                emailSent: "Nous avons envoyé votre mot de passe à",
+                signupFailed: "Échec de la création du compte. Veuillez réessayer.",
+                fillAllFields: "Veuillez remplir tous les champs.",
+                emailInUse: "L'adresse email est déjà utilisée.",
+                invalidEmail: "Adresse email invalide.",
+                networkError: "Erreur réseau. Vérifiez votre connexion et réessayez."
+            },
+            ht: {
+                tagline: "Pyebwa Fanmi w",
+                createAccount: "Kreye Kont Ou",
+                signupSubtitle: "Kòmanse bati pyebwa fanmi w jodi a",
+                fullName: "Non Konplè",
+                fullNamePlaceholder: "Jan Doe",
+                emailAddress: "Adres Email",
+                emailPlaceholder: "email@ou.com",
+                securePassword: "Modpas Sekirite",
+                securePasswordDesc: "Modpas sekirite 16 karaktè sistèm nan jenere",
+                buildTree: "Bati Pyebwa w",
+                buildTreeDesc: "Ajoute manm fanmi san limit",
+                preserveMemories: "Prezève Souvni",
+                preserveMemoriesDesc: "Depo foto ak istwa",
+                alreadyHaveAccount: "Ou deja gen yon kont?",
+                signIn: "Konekte",
+                creatingAccount: "K ap Kreye Kont...",
+                accountCreated: "Kont kreye avèk siksè! Gade nan email ou pou modpas sekirite w ak enstriksyon koneksyon yo.",
+                emailSent: "Nou voye modpas ou nan",
+                signupFailed: "Pa kapab kreye kont. Tanpri eseye ankò.",
+                fillAllFields: "Tanpri ranpli tout chan yo.",
+                emailInUse: "Adres email la deja nan sèvis.",
+                invalidEmail: "Adres email pa valab.",
+                networkError: "Erè rezo. Tcheke koneksyon ou epi eseye ankò."
+            }
+        };
+
+        // Handle language parameter from URL and store it
+        const urlParams = new URLSearchParams(window.location.search);
+        const langParam = urlParams.get('lang');
+        let currentLang = 'ht'; // Default to Haitian Creole
+        
+        if (langParam && ['en', 'fr', 'ht'].includes(langParam)) {
+            currentLang = langParam;
+            // Set cookie for cross-domain access
+            const date = new Date();
+            date.setTime(date.getTime() + (365 * 24 * 60 * 60 * 1000)); // 1 year
+            const expires = "expires=" + date.toUTCString();
+            document.cookie = `pyebwa_lang=${langParam};${expires};path=/;SameSite=Lax`;
+            document.cookie = `pyebwa_lang=${langParam};${expires};path=/;domain=.pyebwa.com;SameSite=Lax`;
+            
+            // Also store in localStorage for faster access
+            localStorage.setItem('pyebwaLang', langParam);
+            
+            console.log('[Signup] Language preference stored:', langParam);
+        } else {
+            // Check existing preferences
+            const cookieLang = getCookie('pyebwa_lang');
+            const storedLang = localStorage.getItem('pyebwaLang');
+            if (cookieLang && ['en', 'fr', 'ht'].includes(cookieLang)) {
+                currentLang = cookieLang;
+            } else if (storedLang && ['en', 'fr', 'ht'].includes(storedLang)) {
+                currentLang = storedLang;
+            }
+        }
+
+        // Cookie helper function
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        // Translation function
+        function t(key) {
+            return translations[currentLang][key] || translations['en'][key] || key;
+        }
+
+        // Update page translations
+        function updateTranslations() {
+            // Update text content
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                element.textContent = t(key);
+            });
+            
+            // Update placeholders
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+                const key = element.getAttribute('data-i18n-placeholder');
+                element.placeholder = t(key);
+            });
+            
+            // Update language buttons
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-lang') === currentLang);
+                if (btn.getAttribute('data-lang') === currentLang) {
+                    btn.style.background = '#00217D';
+                    btn.style.color = 'white';
+                } else {
+                    btn.style.background = 'white';
+                    btn.style.color = 'black';
+                }
+            });
+        }
+
+        // Language selector functionality
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const newLang = e.target.getAttribute('data-lang');
+                if (newLang !== currentLang) {
+                    currentLang = newLang;
+                    
+                    // Store preference
+                    const date = new Date();
+                    date.setTime(date.getTime() + (365 * 24 * 60 * 60 * 1000));
+                    const expires = "expires=" + date.toUTCString();
+                    document.cookie = `pyebwa_lang=${newLang};${expires};path=/;SameSite=Lax`;
+                    document.cookie = `pyebwa_lang=${newLang};${expires};path=/;domain=.pyebwa.com;SameSite=Lax`;
+                    localStorage.setItem('pyebwaLang', newLang);
+                    
+                    // Update page
+                    updateTranslations();
+                }
+            });
+        });
+
+        // Initialize translations when page loads
+        document.addEventListener('DOMContentLoaded', updateTranslations);
         
         // Prevent redirect loops - mark that we're on signup page
         sessionStorage.setItem('onSignupPage', 'true');
