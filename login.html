@@ -401,40 +401,47 @@
     </style>
 </head>
 <body>
+    <!-- Language Selector -->
+    <div class="language-selector" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
+        <button class="lang-btn" data-lang="en" style="padding: 8px 12px; margin: 0 2px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px;">EN</button>
+        <button class="lang-btn" data-lang="fr" style="padding: 8px 12px; margin: 0 2px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px;">FR</button>
+        <button class="lang-btn active" data-lang="ht" style="padding: 8px 12px; margin: 0 2px; border: 1px solid #ddd; background: #00217D; color: white; cursor: pointer; border-radius: 4px;">HT</button>
+    </div>
+
     <div class="container">
         <div class="logo">
             <h1>Pyebwa</h1>
-            <p>Your Family Tree</p>
+            <p data-i18n="tagline">Your Family Tree</p>
         </div>
         
         <div id="loginView">
-            <h2>Sign In</h2>
-            <p class="subtitle">Enter your email and password to sign in.</p>
+            <h2 data-i18n="signIn">Sign In</h2>
+            <p class="subtitle" data-i18n="loginSubtitle">Enter your email and password to sign in.</p>
             
             <div id="message" class="message" style="display: none;"></div>
             
             <form id="passwordForm">
                 <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input type="email" id="email" required placeholder="your@email.com" autocomplete="email">
+                    <label for="email" data-i18n="emailAddress">Email Address</label>
+                    <input type="email" id="email" required data-i18n-placeholder="emailPlaceholder" placeholder="your@email.com" autocomplete="email">
                 </div>
                 
                 <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" required placeholder="Enter your password" autocomplete="current-password">
-                    <a href="#" class="forgot-password-link" onclick="showForgotPassword(); return false;">Forgot password?</a>
+                    <label for="password" data-i18n="password">Password</label>
+                    <input type="password" id="password" required data-i18n-placeholder="passwordPlaceholder" placeholder="Enter your password" autocomplete="current-password">
+                    <a href="#" class="forgot-password-link" onclick="showForgotPassword(); return false;" data-i18n="forgotPassword">Forgot password?</a>
                 </div>
                 
                 <button type="submit" class="btn-primary" id="passwordLoginBtn">
                     <i class="material-icons">login</i>
-                    Sign In
+                    <span data-i18n="signIn">Sign In</span>
                 </button>
             </form>
             
             
             <div class="links">
-                Don't have an account? <a href="/signup.html">Sign Up</a><br>
-                <a href="https://pyebwa.com">← Back to Homepage</a>
+                <span data-i18n="noAccount">Don't have an account?</span> <a href="/signup.html" data-i18n="signUp">Sign Up</a><br>
+                <a href="https://pyebwa.com" data-i18n="backToHomepage">← Back to Homepage</a>
             </div>
         </div>
         
@@ -444,23 +451,23 @@
     <div class="modal-overlay" id="forgotPasswordModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Reset Password</h3>
+                <h3 data-i18n="resetPassword">Reset Password</h3>
                 <button class="modal-close" onclick="hideForgotPassword()">&times;</button>
             </div>
             <div class="modal-body">
-                <p>Enter your email address and we'll send you a link to reset your password.</p>
+                <p data-i18n="resetPasswordText">Enter your email address and we'll send you a link to reset your password.</p>
                 
                 <div id="resetMessage" class="message" style="display: none;"></div>
                 
                 <form id="resetPasswordForm">
                     <div class="form-group">
-                        <label for="resetEmail">Email Address</label>
-                        <input type="email" id="resetEmail" required placeholder="your@email.com" autocomplete="email">
+                        <label for="resetEmail" data-i18n="emailAddress">Email Address</label>
+                        <input type="email" id="resetEmail" required data-i18n-placeholder="emailPlaceholder" placeholder="your@email.com" autocomplete="email">
                     </div>
                     
                     <button type="submit" class="btn-primary" id="resetPasswordBtn">
                         <i class="material-icons">mail</i>
-                        Send Reset Link
+                        <span data-i18n="sendResetLink">Send Reset Link</span>
                     </button>
                 </form>
             </div>
@@ -482,6 +489,194 @@
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
+        
+        // Translation system for login page
+        const translations = {
+            en: {
+                tagline: "Your Family Tree",
+                signIn: "Sign In",
+                loginSubtitle: "Enter your email and password to sign in.",
+                emailAddress: "Email Address",
+                emailPlaceholder: "your@email.com",
+                password: "Password",
+                passwordPlaceholder: "Enter your password",
+                forgotPassword: "Forgot password?",
+                noAccount: "Don't have an account?",
+                signUp: "Sign Up",
+                backToHomepage: "← Back to Homepage",
+                resetPassword: "Reset Password",
+                resetPasswordText: "Enter your email address and we'll send you a link to reset your password.",
+                sendResetLink: "Send Reset Link",
+                signingIn: "Signing in...",
+                sendingReset: "Sending...",
+                alreadyLoggedIn: "Already logged in as",
+                redirecting: "Redirecting...",
+                loginSuccess: "Success! Welcome back,",
+                resetLinkSent: "Password reset link sent! Check your email inbox.",
+                loginFailed: "Login failed. Please try again.",
+                userNotFound: "No account found with this email.",
+                wrongPassword: "Incorrect password.",
+                invalidEmail: "Invalid email address.",
+                tooManyRequests: "Too many failed attempts. Try again later.",
+                resetFailed: "Failed to send reset email. Please try again.",
+                networkError: "Network error. Please check your connection and try again."
+            },
+            fr: {
+                tagline: "Votre Arbre Généalogique",
+                signIn: "Se Connecter",
+                loginSubtitle: "Entrez votre email et mot de passe pour vous connecter.",
+                emailAddress: "Adresse Email",
+                emailPlaceholder: "votre@email.com",
+                password: "Mot de Passe",
+                passwordPlaceholder: "Entrez votre mot de passe",
+                forgotPassword: "Mot de passe oublié?",
+                noAccount: "Vous n'avez pas de compte?",
+                signUp: "S'inscrire",
+                backToHomepage: "← Retour à l'Accueil",
+                resetPassword: "Réinitialiser le Mot de Passe",
+                resetPasswordText: "Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.",
+                sendResetLink: "Envoyer le Lien de Réinitialisation",
+                signingIn: "Connexion en cours...",
+                sendingReset: "Envoi en cours...",
+                alreadyLoggedIn: "Déjà connecté en tant que",
+                redirecting: "Redirection...",
+                loginSuccess: "Succès! Bon retour,",
+                resetLinkSent: "Lien de réinitialisation envoyé! Vérifiez votre boîte email.",
+                loginFailed: "Échec de la connexion. Veuillez réessayer.",
+                userNotFound: "Aucun compte trouvé avec cet email.",
+                wrongPassword: "Mot de passe incorrect.",
+                invalidEmail: "Adresse email invalide.",
+                tooManyRequests: "Trop de tentatives échouées. Réessayez plus tard.",
+                resetFailed: "Échec de l'envoi de l'email de réinitialisation. Veuillez réessayer.",
+                networkError: "Erreur réseau. Vérifiez votre connexion et réessayez."
+            },
+            ht: {
+                tagline: "Pyebwa Fanmi w",
+                signIn: "Konekte",
+                loginSubtitle: "Antre email ak modpas ou pou konekte.",
+                emailAddress: "Adres Email",
+                emailPlaceholder: "email@ou.com",
+                password: "Modpas",
+                passwordPlaceholder: "Antre modpas ou",
+                forgotPassword: "Ou bliye modpas ou?",
+                noAccount: "Ou pa gen kont?",
+                signUp: "Enskri",
+                backToHomepage: "← Retounen nan Akèy",
+                resetPassword: "Chanje Modpas",
+                resetPasswordText: "Antre adres email ou epi nou pral voye ou yon lyen pou chanje modpas ou.",
+                sendResetLink: "Voye Lyen Chanjman",
+                signingIn: "K ap konekte...",
+                sendingReset: "K ap voye...",
+                alreadyLoggedIn: "Deja konekte kòm",
+                redirecting: "K ap redirije...",
+                loginSuccess: "Siksè! Byenveni ankò,",
+                resetLinkSent: "Lyen chanjman modpas voye! Gade nan bwat email ou.",
+                loginFailed: "Koneksyon echwe. Tanpri eseye ankò.",
+                userNotFound: "Pa gen kont ak email sa a.",
+                wrongPassword: "Modpas pa kòrèk.",
+                invalidEmail: "Adres email pa valab.",
+                tooManyRequests: "Twòp tantativ echwe. Eseye ankò pi ta.",
+                resetFailed: "Pa kapab voye email chanjman. Tanpri eseye ankò.",
+                networkError: "Erè rezo. Tcheke koneksyon ou epi eseye ankò."
+            }
+        };
+
+        // Handle language parameter from URL and store it
+        const urlParams = new URLSearchParams(window.location.search);
+        const langParam = urlParams.get('lang');
+        let currentLang = 'ht'; // Default to Haitian Creole
+        
+        if (langParam && ['en', 'fr', 'ht'].includes(langParam)) {
+            currentLang = langParam;
+            // Set cookie for cross-domain access
+            const date = new Date();
+            date.setTime(date.getTime() + (365 * 24 * 60 * 60 * 1000)); // 1 year
+            const expires = "expires=" + date.toUTCString();
+            document.cookie = `pyebwa_lang=${langParam};${expires};path=/;SameSite=Lax`;
+            document.cookie = `pyebwa_lang=${langParam};${expires};path=/;domain=.pyebwa.com;SameSite=Lax`;
+            
+            // Also store in localStorage for faster access
+            localStorage.setItem('pyebwaLang', langParam);
+            
+            console.log('[Login] Language preference stored:', langParam);
+        } else {
+            // Check existing preferences
+            const cookieLang = getCookie('pyebwa_lang');
+            const storedLang = localStorage.getItem('pyebwaLang');
+            if (cookieLang && ['en', 'fr', 'ht'].includes(cookieLang)) {
+                currentLang = cookieLang;
+            } else if (storedLang && ['en', 'fr', 'ht'].includes(storedLang)) {
+                currentLang = storedLang;
+            }
+        }
+
+        // Cookie helper function
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        // Translation function
+        function t(key) {
+            return translations[currentLang][key] || translations['en'][key] || key;
+        }
+
+        // Update page translations
+        function updateTranslations() {
+            // Update text content
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                element.textContent = t(key);
+            });
+            
+            // Update placeholders
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+                const key = element.getAttribute('data-i18n-placeholder');
+                element.placeholder = t(key);
+            });
+            
+            // Update language buttons
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-lang') === currentLang);
+                if (btn.getAttribute('data-lang') === currentLang) {
+                    btn.style.background = '#00217D';
+                    btn.style.color = 'white';
+                } else {
+                    btn.style.background = 'white';
+                    btn.style.color = 'black';
+                }
+            });
+        }
+
+        // Language selector functionality
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const newLang = e.target.getAttribute('data-lang');
+                if (newLang !== currentLang) {
+                    currentLang = newLang;
+                    
+                    // Store preference
+                    const date = new Date();
+                    date.setTime(date.getTime() + (365 * 24 * 60 * 60 * 1000));
+                    const expires = "expires=" + date.toUTCString();
+                    document.cookie = `pyebwa_lang=${newLang};${expires};path=/;SameSite=Lax`;
+                    document.cookie = `pyebwa_lang=${newLang};${expires};path=/;domain=.pyebwa.com;SameSite=Lax`;
+                    localStorage.setItem('pyebwaLang', newLang);
+                    
+                    // Update page
+                    updateTranslations();
+                }
+            });
+        });
+
+        // Initialize translations when page loads
+        document.addEventListener('DOMContentLoaded', updateTranslations);
         
         // Clear any stale authentication data that might cause loops
         if (window.location.search.includes('clearAuth=true')) {
@@ -516,12 +711,12 @@
                 
                 if (fromApp && loopCount > 0) {
                     console.warn('[Login] Possible loop detected, not auto-redirecting');
-                    showMessage(messageDiv, `Logged in as ${user.email}. <a href="/app/" style="color: white;">Click here to continue to app</a>`, 'success');
+                    showMessage(messageDiv, `${t('alreadyLoggedIn')} ${user.email}. <a href="/app/" style="color: white;">Click here to continue to app</a>`, 'success');
                     sessionStorage.removeItem('loginLoopCount');
                     return;
                 }
                 
-                showMessage(messageDiv, `Already logged in as ${user.email}. Redirecting...`, 'success');
+                showMessage(messageDiv, `${t('alreadyLoggedIn')} ${user.email}. ${t('redirecting')}`, 'success');
                 setTimeout(() => {
                     // Set a flag to indicate recent login
                     sessionStorage.setItem('recentLogin', 'true');
@@ -541,12 +736,12 @@
             const password = document.getElementById('password').value;
             
             passwordLoginBtn.disabled = true;
-            passwordLoginBtn.innerHTML = '<span class="loading"></span> Signing in...';
+            passwordLoginBtn.innerHTML = `<span class="loading"></span> ${t('signingIn')}`;
             
             try {
                 const result = await auth.signInWithEmailAndPassword(email, password);
                 
-                showMessage(messageDiv, `Success! Welcome back, ${result.user.email}`, 'success');
+                showMessage(messageDiv, `${t('loginSuccess')} ${result.user.email}`, 'success');
                 
                 setTimeout(() => {
                     // Set a flag to indicate recent login
@@ -557,27 +752,30 @@
                 
             } catch (error) {
                 console.error('Login error:', error);
-                let errorMessage = 'Login failed. Please try again.';
+                let errorMessage = t('loginFailed');
                 
                 switch (error.code) {
                     case 'auth/user-not-found':
-                        errorMessage = 'No account found with this email.';
+                        errorMessage = t('userNotFound');
                         break;
                     case 'auth/wrong-password':
-                        errorMessage = 'Incorrect password.';
+                        errorMessage = t('wrongPassword');
                         break;
                     case 'auth/invalid-email':
-                        errorMessage = 'Invalid email address.';
+                        errorMessage = t('invalidEmail');
                         break;
                     case 'auth/too-many-requests':
-                        errorMessage = 'Too many failed attempts. Try again later.';
+                        errorMessage = t('tooManyRequests');
+                        break;
+                    case 'auth/network-request-failed':
+                        errorMessage = t('networkError');
                         break;
                 }
                 
                 showMessage(messageDiv, errorMessage, 'error');
             } finally {
                 passwordLoginBtn.disabled = false;
-                passwordLoginBtn.innerHTML = '<i class="material-icons">login</i> Sign In';
+                passwordLoginBtn.innerHTML = `<i class="material-icons">login</i> ${t('signIn')}`;
             }
         });
         
@@ -631,13 +829,13 @@
             const email = document.getElementById('resetEmail').value.trim();
             
             resetPasswordBtn.disabled = true;
-            resetPasswordBtn.innerHTML = '<span class="loading"></span> Sending...';
+            resetPasswordBtn.innerHTML = `<span class="loading"></span> ${t('sendingReset')}`;
             
             try {
                 await auth.sendPasswordResetEmail(email);
                 
                 // Show success message
-                showMessage(resetMessage, 'Password reset link sent! Check your email inbox.', 'success');
+                showMessage(resetMessage, t('resetLinkSent'), 'success');
                 
                 // Clear the form
                 resetPasswordForm.reset();
@@ -650,13 +848,13 @@
             } catch (error) {
                 console.error('Password reset error:', error);
                 
-                let errorMessage = 'Failed to send reset email. Please try again.';
+                let errorMessage = t('resetFailed');
                 
                 // Handle specific error codes
                 switch (error.code) {
                     case 'auth/user-not-found':
                         // Don't reveal that the user doesn't exist for security
-                        errorMessage = 'If an account exists with this email, you will receive a password reset link.';
+                        errorMessage = t('resetLinkSent');
                         showMessage(resetMessage, errorMessage, 'info');
                         
                         // Still clear form and close modal to maintain consistent behavior
@@ -667,15 +865,15 @@
                         return;
                         
                     case 'auth/invalid-email':
-                        errorMessage = 'Please enter a valid email address.';
+                        errorMessage = t('invalidEmail');
                         break;
                         
                     case 'auth/too-many-requests':
-                        errorMessage = 'Too many requests. Please try again later.';
+                        errorMessage = t('tooManyRequests');
                         break;
                         
                     case 'auth/network-request-failed':
-                        errorMessage = 'Network error. Please check your connection and try again.';
+                        errorMessage = t('networkError');
                         break;
                 }
                 
@@ -683,7 +881,7 @@
                 
             } finally {
                 resetPasswordBtn.disabled = false;
-                resetPasswordBtn.innerHTML = '<i class="material-icons">mail</i> Send Reset Link';
+                resetPasswordBtn.innerHTML = `<i class="material-icons">mail</i> ${t('sendResetLink')}`;
             }
         });
         
