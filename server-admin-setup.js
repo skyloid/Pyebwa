@@ -8,7 +8,10 @@ async function setupAdminEndpoint(req, res) {
         const { email, secretKey } = req.body;
         
         // Basic security - require a secret key
-        if (secretKey !== process.env.ADMIN_SETUP_KEY && secretKey !== 'temporary-setup-key-2024') {
+        if (!process.env.ADMIN_SETUP_KEY) {
+            return res.status(500).json({ error: 'ADMIN_SETUP_KEY not configured' });
+        }
+        if (secretKey !== process.env.ADMIN_SETUP_KEY) {
             return res.status(403).json({ error: 'Invalid secret key' });
         }
         
