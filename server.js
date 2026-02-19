@@ -31,14 +31,20 @@ app.use(express.json());
 // API endpoint for Firebase configuration
 app.get('/api/firebase-config', (req, res) => {
     // Return Firebase config from environment variables
+    const requiredKeys = ['FIREBASE_API_KEY', 'FIREBASE_AUTH_DOMAIN', 'FIREBASE_PROJECT_ID'];
+    const missing = requiredKeys.filter(k => !process.env[k]);
+    if (missing.length > 0) {
+        return res.status(500).json({ error: 'Firebase config not set. Missing: ' + missing.join(', ') });
+    }
+
     const config = {
-        apiKey: process.env.FIREBASE_API_KEY || "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
-        authDomain: process.env.FIREBASE_AUTH_DOMAIN || "rasin.pyebwa.com",
-        projectId: process.env.FIREBASE_PROJECT_ID || "pyebwa-f5960",
-        storageBucket: process.env.FIREBASE_STORAGE_BUCKET || "pyebwa-f5960.firebasestorage.app",
-        messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || "1042887343749",
-        appId: process.env.FIREBASE_APP_ID || "1:1042887343749:web:c276bf69b6c0895111f3ec",
-        measurementId: process.env.FIREBASE_MEASUREMENT_ID || "G-ZX92K1TMM3"
+        apiKey: process.env.FIREBASE_API_KEY,
+        authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+        messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+        appId: process.env.FIREBASE_APP_ID,
+        measurementId: process.env.FIREBASE_MEASUREMENT_ID
     };
     
     res.json(config);
@@ -117,49 +123,6 @@ app.get('/signup-standalone.html', (req, res) => {
 // Serve standalone login page (no external scripts)
 app.get('/login-standalone.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'login-standalone.html'));
-});
-
-// Serve test pages
-app.get('/test-auth-flow-final.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'test-auth-flow-final.html'));
-});
-
-app.get('/verify-firebase-auth.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'verify-firebase-auth.html'));
-});
-
-// Diagnostic tools
-app.get('/diagnose-admin.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'diagnose-admin.html'));
-});
-
-app.get('/admin-diagnostic.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'admin-diagnostic.html'));
-});
-
-// Server admin setup page
-app.get('/server-admin-setup.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'server-admin-setup.html'));
-});
-
-// Quick admin fix page
-app.get('/quick-admin-fix.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'quick-admin-fix.html'));
-});
-
-// Test audit log page
-app.get('/test-audit-log.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'test-audit-log.html'));
-});
-
-// Admin status check page
-app.get('/admin-status-check.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'admin-status-check.html'));
-});
-
-// Verify admin status page
-app.get('/verify-admin-status.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'verify-admin-status.html'));
 });
 
 // Redirect root to /app (preserving query parameters)

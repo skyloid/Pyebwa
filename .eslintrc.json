@@ -1,0 +1,32 @@
+{
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2021": true,
+    "jest": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2021,
+    "sourceType": "module"
+  },
+  "extends": ["eslint:recommended"],
+  "rules": {
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "no-console": "off",
+    "semi": ["error", "always"],
+    "no-undef": "warn"
+  },
+  "globals": {
+    "firebase": "readonly",
+    "auth": "readonly",
+    "db": "readonly",
+    "storage": "readonly",
+    "t": "readonly",
+    "setLanguage": "readonly",
+    "updateTranslations": "readonly",
+    "renderFamilyTree": "readonly",
+    "renderMembersList": "readonly",
+    "loadStories": "readonly",
+    "showExportOptions": "readonly"
+  }
+}

@@ -320,8 +320,12 @@
     <script src="/app/js/tablet-loop-fix.js?v=1"></script>
     <script src="/app/js/tablet-debug.js?v=1"></script>
     <script src="/app/js/cookies.js?v=1"></script>
-    <script src="/app/js/translations.js?v=4"></script>
-    <script src="/app/js/app.js?v=20250130-tablet-fix"></script>
+    <script src="/app/js/translations.js?v=5"></script>
+    <script src="/app/js/language-detection.js?v=1"></script>
+    <script src="/app/js/language-integration.js?v=1"></script>
+    <script src="/app/js/debug-utils.js?v=1"></script>
+    <script src="/app/js/ui-helpers.js?v=1"></script>
+    <script src="/app/js/app.js?v=2"></script>
     <script src="/app/js/tree.js"></script>
     <script src="/app/js/tree-responsive.js"></script>
     <script src="/app/js/tree-controls.js"></script>
@@ -336,7 +340,8 @@
     <script src="/app/js/stories.js"></script>
     <script src="/app/js/video-messages.js"></script>
     <script src="/app/js/back-to-top.js"></script>
-    <script src="/app/js/theme-toggle.js"></script>
+    <!-- Theme toggle moved to end of body for better initialization -->
+    <!-- <script src="/app/js/theme-toggle-fixed.js?v=1"></script> -->
     <script src="/app/js/mobile-nav-simple.js"></script>
     <script src="/app/js/dashboard.js"></script>
     <script src="/app/js/family-statistics.js"></script>
@@ -366,5 +371,8 @@
     <script src="/app/js/push-notifications.js"></script>
     
     <!-- Share modal removed - using pyebwa.com authentication flow -->
+    
+    <!-- Theme Toggle - Load at end of body for proper initialization -->
+    <script src="/app/js/theme-toggle-inline.js?v=2"></script>
 </body>
 </html>
