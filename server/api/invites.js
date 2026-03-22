@@ -25,20 +25,12 @@ async function verifyToken(req, res, next) {
 // Generate invite link for a family member
 router.post('/generate', verifyToken, async (req, res) => {
     try {
-        console.log('Invite generation request received');
-        console.log('Admin instance:', !!admin);
-        console.log('DB instance:', !!db);
-        console.log('Request body:', req.body);
-        
         const { treeId, personId } = req.body;
         const userId = req.user.uid;
-        
+
         if (!treeId || !personId) {
             return res.status(400).json({ error: 'Tree ID and Person ID are required' });
         }
-        
-        console.log('Accessing Firestore for tree:', treeId);
-        console.log('User ID from token:', userId);
         
         // Verify user has access to this tree
         const treeDoc = await db.collection('familyTrees').doc(treeId).get();
@@ -48,22 +40,12 @@ router.post('/generate', verifyToken, async (req, res) => {
         }
         
         const treeData = treeDoc.data();
-        console.log('Full tree document data:', JSON.stringify(treeData, null, 2));
-        
+
         // Check access using the correct field names: ownerId and memberIds
         const isOwner = treeData.ownerId === userId;
         const isMember = treeData.memberIds?.includes(userId);
-        
-        console.log('Tree data access check:', {
-            ownerId: treeData.ownerId,
-            memberIds: treeData.memberIds,
-            userId: userId,
-            isOwner: isOwner,
-            isMember: isMember
-        });
-        
+
         if (!isOwner && !isMember) {
-            console.log('Access denied - user is not owner or member');
             return res.status(403).json({ error: 'Access denied to this family tree' });
         }
         
@@ -110,13 +92,13 @@ router.post('/generate', verifyToken, async (req, res) => {
         const baseUrl = process.env.APP_URL || 'https://rasin.pyebwa.com';
         const inviteUrl = `${baseUrl}/app/invite/${inviteToken}`;
         
-        // Log the activity
+        // Log the activity (hash token for security)
         await db.collection('admin_logs').add({
             action: 'invite_generated',
             userId: userId,
             treeId: treeId,
             personId: personId,
-            inviteToken: inviteToken,
+            inviteTokenHash: crypto.createHash('sha256').update(inviteToken).digest('hex').slice(0, 16),
             timestamp: admin.firestore.FieldValue.serverTimestamp()
         });
         
@@ -136,7 +118,7 @@ router.post('/generate', verifyToken, async (req, res) => {
                     expiresAt: inviteData.expiresAt.toDate().toLocaleDateString()
                 });
                 
-                console.log(`Invite email sent to ${personData.email}`);
+                // Email sent successfully
             } catch (emailError) {
                 console.error('Failed to send invite email:', emailError);
                 // Don't fail the whole request if email fails
@@ -205,9 +187,7 @@ router.get('/details/:token', async (req, res) => {
             success: true,
             invite: {
                 personName: inviteData.personName,
-                personId: inviteData.personId,
                 treeName: treeData.name || 'Family Tree',
-                treeId: inviteData.treeId,
                 expiresAt: inviteData.expiresAt.toDate()
             }
         });
@@ -219,10 +199,10 @@ router.get('/details/:token', async (req, res) => {
 });
 
 // Accept invite and create/link user account
-router.post('/accept/:token', async (req, res) => {
+router.post('/accept/:token', verifyToken, async (req, res) => {
     try {
         const { token } = req.params;
-        const { userId } = req.body; // User ID if already logged in
+        const userId = req.user.uid; // Use authenticated user ID from token
         
         const inviteDoc = await db.collection('invites').doc(token).get();
         
@@ -286,13 +266,13 @@ router.post('/accept/:token', async (req, res) => {
         // Commit all changes
         await batch.commit();
         
-        // Log the activity
+        // Log the activity (hash token for security)
         await db.collection('admin_logs').add({
             action: 'invite_accepted',
             userId: userId,
             treeId: inviteData.treeId,
             personId: inviteData.personId,
-            inviteToken: token,
+            inviteTokenHash: crypto.createHash('sha256').update(token).digest('hex').slice(0, 16),
             timestamp: admin.firestore.FieldValue.serverTimestamp()
         });
         
@@ -325,10 +305,10 @@ router.post('/revoke/:token', verifyToken, async (req, res) => {
         
         // Verify user has permission to revoke
         if (inviteData.createdBy !== userId) {
-            // Check if user is admin
-            const userDoc = await db.collection('users').doc(userId).get();
-            const userData = userDoc.data();
-            if (!userData?.isAdmin) {
+            // Check if user is admin via Firebase Auth custom claims
+            const userRecord = await admin.auth().getUser(userId);
+            const isAdminUser = userRecord.customClaims?.role === 'admin' || userRecord.customClaims?.role === 'superadmin';
+            if (!isAdminUser) {
                 return res.status(403).json({ error: 'Permission denied' });
             }
         }
@@ -344,7 +324,7 @@ router.post('/revoke/:token', verifyToken, async (req, res) => {
         await db.collection('admin_logs').add({
             action: 'invite_revoked',
             userId: userId,
-            inviteToken: token,
+            inviteTokenHash: crypto.createHash('sha256').update(token).digest('hex').slice(0, 16),
             timestamp: admin.firestore.FieldValue.serverTimestamp()
         });
         
@@ -374,10 +354,10 @@ router.get('/list/:treeId', verifyToken, async (req, res) => {
         const treeData = treeDoc.data();
         // Check access using the correct field names: ownerId and memberIds
         if (treeData.ownerId !== userId && !treeData.memberIds?.includes(userId)) {
-            // Check if user is admin
-            const userDoc = await db.collection('users').doc(userId).get();
-            const userData = userDoc.data();
-            if (!userData?.isAdmin) {
+            // Check if user is admin via Firebase Auth custom claims
+            const userRecord = await admin.auth().getUser(userId);
+            const isAdminUser = userRecord.customClaims?.role === 'admin' || userRecord.customClaims?.role === 'superadmin';
+            if (!isAdminUser) {
                 return res.status(403).json({ error: 'Access denied' });
             }
         }
