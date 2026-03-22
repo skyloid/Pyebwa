@@ -194,9 +194,10 @@ service firebase.storage {
     }
     
     function canAccessFamily(familyId) {
-      // This would need to be implemented with a callable function
-      // since storage rules can't directly access Firestore
-      return true; // Simplified for now
+      // Storage rules cannot directly query Firestore.
+      // Deny by default — use Cloud Functions to validate access
+      // before generating signed upload/download URLs.
+      return false;
     }
   }
 }
