@@ -19,6 +19,19 @@ const pageTranslations = {
         twitter: "Twitter",
         instagram: "Instagram",
         
+        // Homepage content
+        heroTitle: "Keep Your Family Story Alive",
+        heroSubtitle: "Create your family tree, share stories, and connect generations",
+        getStarted: "Get Started Now",
+        featuresTitle: "Why Pyebwa?",
+        feature1Title: "Build Your Tree",
+        feature1Desc: "Easily add family members, photos, and important dates",
+        feature2Title: "Share Stories",
+        feature2Desc: "Preserve memories and family stories for future generations",
+        feature3Title: "Connect Family",
+        feature3Desc: "Find and connect with family members everywhere",
+        tagline: "Your Family Roots",
+        
         // About Page
         aboutTitle: "About Pyebwa",
         aboutPageTitle: "About Pyebwa - Your Family Tree Platform",
@@ -183,6 +196,19 @@ const pageTranslations = {
         twitter: "Twitter",
         instagram: "Instagram",
         
+        // Contenu de la page d'accueil
+        heroTitle: "Gardez Vivante l'Histoire de Votre Famille",
+        heroSubtitle: "Créez votre arbre généalogique, partagez des histoires et connectez les générations",
+        getStarted: "Commencer Maintenant",
+        featuresTitle: "Pourquoi Pyebwa?",
+        feature1Title: "Construisez Votre Arbre",
+        feature1Desc: "Ajoutez facilement des membres de la famille, des photos et des dates importantes",
+        feature2Title: "Partagez des Histoires",
+        feature2Desc: "Préservez les souvenirs et les histoires familiales pour les générations futures",
+        feature3Title: "Connectez la Famille",
+        feature3Desc: "Trouvez et connectez-vous avec des membres de la famille partout",
+        tagline: "Vos Racines Familiales",
+        
         // Page À propos
         aboutTitle: "À propos de Pyebwa",
         aboutPageTitle: "À propos de Pyebwa - Votre Plateforme d'Arbre Généalogique",
@@ -346,6 +372,19 @@ const pageTranslations = {
         facebook: "Facebook",
         twitter: "Twitter",
         instagram: "Instagram",
+        
+        // Kontni paj akèy
+        heroTitle: "Kenbe Istwa Fanmi w Vivan",
+        heroSubtitle: "Kreye pyebwa fanmi w, pataje istwa, epi konekte jenerasyon yo",
+        getStarted: "Kòmanse Kounye a",
+        featuresTitle: "Poukisa Pyebwa?",
+        feature1Title: "Bati Pyebwa w",
+        feature1Desc: "Ajoute manm fanmi, foto, ak dat enpòtan yo fasil",
+        feature2Title: "Pataje Istwa",
+        feature2Desc: "Prezève memwa ak istwa fanmi pou jenerasyon k ap vini yo",
+        feature3Title: "Konekte Fanmi",
+        feature3Desc: "Jwenn ak konekte ak fanmi ou toupatou",
+        tagline: "Rasin Fanmi w",
         
         // Paj Konsènan
         aboutTitle: "Konsènan Pyebwa",

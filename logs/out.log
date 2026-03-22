@@ -336,3 +336,59 @@
 2025-07-04T07:24:53: App URL: https://rasin.pyebwa.com/app
 2025-07-04T07:24:53: Health: https://rasin.pyebwa.com/health
 2025-07-04T07:24:53:     
+2025-08-26T18:40:05: Loading service account from: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/serviceAccountKey.json
+2025-08-26T18:40:05: Firebase Admin SDK initialized with project ID: pyebwa-f5960
+2025-08-26T18:40:05: GOOGLE_APPLICATION_CREDENTIALS set to: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/serviceAccountKey.json
+2025-08-26T18:40:06: ✅ Firebase Admin SDK initialized successfully
+2025-08-26T18:40:06: 
+2025-08-26T18:40:06: 🌳 Pyebwa Family Tree App Server
+2025-08-26T18:40:06: ================================
+2025-08-26T18:40:06: Server running on 0.0.0.0:9111
+2025-08-26T18:40:06: Local: http://0.0.0.0:9111
+2025-08-26T18:40:06: External: https://rasin.pyebwa.com
+2025-08-26T18:40:06: 
+2025-08-26T18:40:06: App URL: https://rasin.pyebwa.com/app
+2025-08-26T18:40:06: Health: https://rasin.pyebwa.com/health
+2025-08-26T18:40:06:     
+2025-12-21T04:20:04: Loading service account from: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/serviceAccountKey.json
+2025-12-21T04:20:04: Firebase Admin SDK initialized with project ID: pyebwa-f5960
+2025-12-21T04:20:04: GOOGLE_APPLICATION_CREDENTIALS set to: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/serviceAccountKey.json
+2025-12-21T04:20:04: ✅ Firebase Admin SDK initialized successfully
+2025-12-21T04:20:05: 
+2025-12-21T04:20:05: 🌳 Pyebwa Family Tree App Server
+2025-12-21T04:20:05: ================================
+2025-12-21T04:20:05: Server running on 0.0.0.0:9111
+2025-12-21T04:20:05: Local: http://0.0.0.0:9111
+2025-12-21T04:20:05: External: https://rasin.pyebwa.com
+2025-12-21T04:20:05: 
+2025-12-21T04:20:05: App URL: https://rasin.pyebwa.com/app
+2025-12-21T04:20:05: Health: https://rasin.pyebwa.com/health
+2025-12-21T04:20:05:     
+2025-12-21T22:17:49: Loading service account from: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/serviceAccountKey.json
+2025-12-21T22:17:55: Firebase Admin SDK initialized with project ID: pyebwa-f5960
+2025-12-21T22:17:55: GOOGLE_APPLICATION_CREDENTIALS set to: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/serviceAccountKey.json
+2025-12-21T22:18:20: ✅ Firebase Admin SDK initialized successfully
+2025-12-21T22:18:33: 
+2025-12-21T22:18:33: 🌳 Pyebwa Family Tree App Server
+2025-12-21T22:18:33: ================================
+2025-12-21T22:18:33: Server running on 0.0.0.0:9111
+2025-12-21T22:18:33: Local: http://0.0.0.0:9111
+2025-12-21T22:18:33: External: https://rasin.pyebwa.com
+2025-12-21T22:18:33: 
+2025-12-21T22:18:33: App URL: https://rasin.pyebwa.com/app
+2025-12-21T22:18:33: Health: https://rasin.pyebwa.com/health
+2025-12-21T22:18:33:     
+2026-02-17T05:21:19: Loading service account from: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/serviceAccountKey.json
+2026-02-17T05:21:22: Firebase Admin SDK initialized with project ID: pyebwa-f5960
+2026-02-17T05:21:22: GOOGLE_APPLICATION_CREDENTIALS set to: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/serviceAccountKey.json
+2026-02-17T05:21:40: ✅ Firebase Admin SDK initialized successfully
+2026-02-17T05:21:53: 
+2026-02-17T05:21:53: 🌳 Pyebwa Family Tree App Server
+2026-02-17T05:21:53: ================================
+2026-02-17T05:21:53: Server running on 0.0.0.0:9111
+2026-02-17T05:21:53: Local: http://0.0.0.0:9111
+2026-02-17T05:21:53: External: https://rasin.pyebwa.com
+2026-02-17T05:21:53: 
+2026-02-17T05:21:53: App URL: https://rasin.pyebwa.com/app
+2026-02-17T05:21:53: Health: https://rasin.pyebwa.com/health
+2026-02-17T05:21:53:     

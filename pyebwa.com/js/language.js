@@ -3,15 +3,51 @@
     console.log('Language.js loading...');
     console.log('pageTranslations defined?', typeof pageTranslations !== 'undefined');
     
+    // Cookie helper functions
+    function setCookie(name, value, days = 365) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        const expires = "expires=" + date.toUTCString();
+        document.cookie = `${name}=${value};${expires};path=/;SameSite=Lax`;
+        // Also try to set for parent domain to share across subdomains
+        document.cookie = `${name}=${value};${expires};path=/;domain=.pyebwa.com;SameSite=Lax`;
+    }
+
+    function getCookie(name) {
+        const nameEQ = name + "=";
+        const ca = document.cookie.split(';');
+        for (let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+        }
+        return null;
+    }
+
+    // Browser language detection
+    function detectBrowserLanguage() {
+        const browserLang = navigator.language || navigator.userLanguage || '';
+        const langCode = browserLang.toLowerCase().split('-')[0];
+        
+        // Map browser languages to our supported languages
+        if (langCode === 'en') return 'en';
+        if (langCode === 'fr') return 'fr';
+        if (langCode === 'ht') return 'ht';
+        
+        // Check full language code for specific locales
+        if (browserLang.toLowerCase().includes('ht')) return 'ht';
+        if (browserLang.toLowerCase().includes('fr')) return 'fr';
+        if (browserLang.toLowerCase().includes('en')) return 'en';
+        
+        return null; // No match found
+    }
+    
     // Load page translations if available
     let translations = {};
-    if (typeof pageTranslations !== 'undefined') {
-        translations = pageTranslations;
-        console.log('Using pageTranslations with languages:', Object.keys(pageTranslations));
-    } else {
-        console.log('pageTranslations not found, using fallback translations');
-        // Fallback translations for basic navigation
-        translations = {
+    
+    // Always start with fallback translations
+    console.log('Loading fallback translations...');
+    translations = {
             en: {
                 home: "Home",
                 about: "About",
@@ -43,7 +79,6 @@
                 humanLevelTech: "Technologies Humanitaires"
             }
         };
-    }
 
     // Merge page translations if they exist
     if (typeof pageTranslations !== 'undefined') {
@@ -53,8 +88,40 @@
         });
     }
     
-    // Get current language from localStorage or default to 'ht'
-    let currentLang = localStorage.getItem('language') || 'ht';
+    // Get current language with proper persistence
+    // Priority: cookie > localStorage > browser detection > default (ht)
+    let currentLang = null;
+    
+    // Check cookie first (for cross-session persistence)
+    const cookieLang = getCookie('pyebwa_lang');
+    if (cookieLang && translations[cookieLang]) {
+        currentLang = cookieLang;
+        console.log('Language from cookie:', currentLang);
+    }
+    
+    // Check localStorage (using both old and new keys for compatibility)
+    if (!currentLang) {
+        const storedLang = localStorage.getItem('pyebwaLang') || localStorage.getItem('language');
+        if (storedLang && translations[storedLang]) {
+            currentLang = storedLang;
+            console.log('Language from localStorage:', currentLang);
+        }
+    }
+    
+    // Detect browser language if no preference stored
+    if (!currentLang) {
+        const detectedLang = detectBrowserLanguage();
+        if (detectedLang && translations[detectedLang]) {
+            currentLang = detectedLang;
+            console.log('Language from browser detection:', currentLang);
+        }
+    }
+    
+    // Default to Haitian Creole only if nothing else is found
+    if (!currentLang) {
+        currentLang = 'ht';
+        console.log('Using default language:', currentLang);
+    }
 
     // Update all elements with data-i18n attribute
     function updateLanguage() {
@@ -112,7 +179,14 @@
                     e.target.classList.add('active');
                     // Update language
                     currentLang = e.target.dataset.lang;
-                    localStorage.setItem('language', currentLang);
+                    
+                    // Save to both localStorage keys for compatibility
+                    localStorage.setItem('pyebwaLang', currentLang); // New consistent key
+                    localStorage.setItem('language', currentLang); // Old key for backward compatibility
+                    
+                    // Save to cookie for cross-session persistence
+                    setCookie('pyebwa_lang', currentLang, 365);
+                    
                     window.currentLang = currentLang; // Update global reference
                     console.log('Language changed to:', currentLang);
                     updateLanguage();

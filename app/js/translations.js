@@ -1173,9 +1173,32 @@ const translations = {
     }
 };
 
-// Current language (default to Haitian Creole)
+// Current language - check stored preference first, then browser detection, then default to Haitian Creole
 // Check cookie first for cross-domain persistence
-let currentLanguage = window.getUserPreference ? window.getUserPreference('lang', 'ht') : (localStorage.getItem('pyebwaLang') || 'ht');
+// Note: getUserPreference returns the default value if no preference is stored
+let storedLang = null;
+if (window.getUserPreference) {
+    // Call without default parameter - getUserPreference will return null if not found
+    storedLang = window.getUserPreference('lang');
+}
+if (!storedLang) {
+    // Also check direct localStorage as fallback
+    storedLang = localStorage.getItem('pyebwaLang');
+}
+if (!storedLang) {
+    // Check cookie directly as additional fallback
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'pyebwa_lang' && value) {
+            storedLang = value;
+            break;
+        }
+    }
+}
+
+// Only use 'ht' as default if there's truly no stored preference
+let currentLanguage = storedLang || 'ht';
 window.currentLanguage = currentLanguage;
 
 // Translation function

@@ -11,10 +11,33 @@
     Header set X-Content-Type-Options "nosniff"
     Header set X-Frame-Options "SAMEORIGIN"
     Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    
+    # HSTS (only enable if you have valid SSL certificate)
+    # Header set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
 </IfModule>
+
+# Protect sensitive files
+<FilesMatch "^(\.env|\.git|serviceAccountKey\.json|.*\.log)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Protect sensitive directories
+<DirectoryMatch "^(.*/)?(\.(git|vscode)|node_modules|logs|secure|scripts|server)/">
+    Order allow,deny
+    Deny from all
+</DirectoryMatch>
 
 # Set default index file
 DirectoryIndex index.html
+
+# Service Worker handling
+<FilesMatch "sw\.js|firebase-messaging-sw\.js">
+    Header set Service-Worker-Allowed "/"
+    Header set Cache-Control "no-cache"
+</FilesMatch>
 
 # Prevent directory browsing
 Options -Indexes

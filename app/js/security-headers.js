@@ -11,7 +11,8 @@
                 "'unsafe-inline'", // Will be removed after refactoring inline scripts
                 "https://www.gstatic.com",
                 "https://www.googletagmanager.com",
-                "https://fonts.googleapis.com"
+                "https://fonts.googleapis.com",
+                "https://cdnjs.cloudflare.com" // For QR code library
             ],
             'style-src': [
                 "'self'",
@@ -88,7 +89,7 @@
         setupSecurityMeta() {
             const securityMeta = [
                 { 'http-equiv': 'X-Content-Type-Options', content: 'nosniff' },
-                { 'http-equiv': 'X-Frame-Options', content: 'DENY' },
+                // X-Frame-Options can only be set via HTTP headers, not meta tags
                 { name: 'referrer', content: 'strict-origin-when-cross-origin' }
             ];
             
@@ -232,7 +233,7 @@
             const report = {
                 csp: !!document.querySelector('meta[http-equiv="Content-Security-Policy"]'),
                 xContentType: !!document.querySelector('meta[http-equiv="X-Content-Type-Options"]'),
-                xFrame: !!document.querySelector('meta[http-equiv="X-Frame-Options"]'),
+                xFrame: false, // X-Frame-Options must be set via HTTP headers
                 referrer: !!document.querySelector('meta[name="referrer"]'),
                 inIframe: window.self !== window.top,
                 violations: this.getViolationReport()
