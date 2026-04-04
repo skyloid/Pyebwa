@@ -71,7 +71,9 @@ function renderFamilyTree(viewMode = 'full') {
             const familyName = oldestMember.lastName;
             // Use translation system for family name format
             const familyNameFormat = t('familyNameFormat') || 'The {{name}} Family';
-            const formattedName = familyNameFormat.replace('{{name}}', familyName);
+            // Escape HTML to prevent XSS from family names
+            const escapedName = familyName.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+            const formattedName = familyNameFormat.replace('{{name}}', escapedName);
             familyNameHtml = `<div class="family-name-header">${formattedName}</div>`;
         }
     }

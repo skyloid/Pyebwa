@@ -117,12 +117,14 @@
                 return li;
             }
             
-            // Basic structure
-            nodeDiv.innerHTML = `
-                <div class="node-placeholder">
-                    <div class="member-name">${node.member?.firstName || ''} ${node.member?.lastName || ''}</div>
-                </div>
-            `;
+            // Basic structure — use textContent to prevent XSS
+            const placeholder = document.createElement('div');
+            placeholder.className = 'node-placeholder';
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'member-name';
+            nameDiv.textContent = `${node.member?.firstName || ''} ${node.member?.lastName || ''}`.trim();
+            placeholder.appendChild(nameDiv);
+            nodeDiv.appendChild(placeholder);
             
             li.appendChild(nodeDiv);
             
@@ -171,13 +173,26 @@
             const age = member.birthDate ? 
                 new Date().getFullYear() - new Date(member.birthDate).getFullYear() : '';
             
-            nodeElement.innerHTML = `
-                <img src="${photoUrl}" alt="${member.firstName}" loading="lazy">
-                <div class="member-info">
-                    <div class="member-name">${member.firstName} ${member.lastName}</div>
-                    ${age ? `<div class="member-age">${age} ${t('yearsOld')}</div>` : ''}
-                </div>
-            `;
+            // Use DOM API to prevent XSS from member data
+            nodeElement.textContent = '';
+            const img = document.createElement('img');
+            img.src = photoUrl;
+            img.alt = member.firstName || '';
+            img.loading = 'lazy';
+            nodeElement.appendChild(img);
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'member-info';
+            const nameEl = document.createElement('div');
+            nameEl.className = 'member-name';
+            nameEl.textContent = `${member.firstName} ${member.lastName}`;
+            infoDiv.appendChild(nameEl);
+            if (age) {
+                const ageEl = document.createElement('div');
+                ageEl.className = 'member-age';
+                ageEl.textContent = `${age} ${t('yearsOld')}`;
+                infoDiv.appendChild(ageEl);
+            }
+            nodeElement.appendChild(infoDiv);
             
             nodeElement.classList.remove('simplified');
             nodeElement.onclick = () => window.viewMemberProfile?.(member.id);
@@ -188,12 +203,16 @@
             if (nodeElement.classList.contains('simplified')) return;
             
             const memberName = nodeElement.querySelector('.member-name')?.textContent || '';
-            
-            nodeElement.innerHTML = `
-                <div class="node-placeholder">
-                    <div class="member-name">${memberName}</div>
-                </div>
-            `;
+
+            // Use DOM API to prevent XSS
+            nodeElement.textContent = '';
+            const ph = document.createElement('div');
+            ph.className = 'node-placeholder';
+            const nm = document.createElement('div');
+            nm.className = 'member-name';
+            nm.textContent = memberName;
+            ph.appendChild(nm);
+            nodeElement.appendChild(ph);
             
             nodeElement.classList.add('simplified');
         },

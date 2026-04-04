@@ -1,41 +1,14 @@
 const express = require('express');
-const admin = require('firebase-admin');
 const BackupService = require('../backup-service');
 const path = require('path');
+const { verifySession, requireAdmin, requireSuperAdmin } = require('../db/auth');
+const adminQueries = require('../db/queries/admin');
 
 const router = express.Router();
 const backupService = new BackupService();
 
-// Middleware to verify admin authentication
-async function verifyAdminAuth(req, res, next) {
-    try {
-        const token = req.headers.authorization?.replace('Bearer ', '');
-        if (!token) {
-            return res.status(401).json({ error: 'No authorization token provided' });
-        }
-
-        const decodedToken = await admin.auth().verifyIdToken(token);
-        const user = await admin.firestore().collection('users').doc(decodedToken.uid).get();
-        
-        if (!user.exists) {
-            return res.status(403).json({ error: 'User not found' });
-        }
-
-        const userData = user.data();
-        if (!userData.role || !['superadmin', 'admin', 'moderator'].includes(userData.role)) {
-            return res.status(403).json({ error: 'Insufficient permissions' });
-        }
-
-        req.user = { uid: decodedToken.uid, ...userData };
-        next();
-    } catch (error) {
-        console.error('Auth verification error:', error);
-        res.status(401).json({ error: 'Invalid authorization token' });
-    }
-}
-
 // Create backup
-router.post('/create', verifyAdminAuth, async (req, res) => {
+router.post('/create', verifySession, requireAdmin, async (req, res) => {
     try {
         const { collections, format } = req.body;
 
@@ -43,25 +16,16 @@ router.post('/create', verifyAdminAuth, async (req, res) => {
             return res.status(400).json({ error: 'Collections array is required' });
         }
 
-        const validCollections = ['users', 'familyTrees', 'persons', 'stories', 'events', 'content', 'admin_logs', 'announcements'];
+        const validCollections = ['users', 'family_trees', 'persons', 'invites', 'content', 'admin_logs', 'announcements'];
         const invalidCollections = collections.filter(c => !validCollections.includes(c));
-        
         if (invalidCollections.length > 0) {
             return res.status(400).json({ error: `Invalid collections: ${invalidCollections.join(', ')}` });
         }
 
-        // Log the backup creation
-        await admin.firestore().collection('admin_logs').add({
-            timestamp: admin.firestore.Timestamp.now(),
-            adminId: req.user.uid,
-            adminEmail: req.user.email,
-            action: 'backup_create',
-            details: {
-                collections,
-                format: format || 'json'
-            },
-            ipAddress: req.ip || req.connection.remoteAddress
-        });
+        await adminQueries.logAction('backup_create', req.user.uid, {
+            collections,
+            format: format || 'json'
+        }, req.ip);
 
         const result = await backupService.createBackup(collections, format);
         res.json(result);
@@ -72,7 +36,7 @@ router.post('/create', verifyAdminAuth, async (req, res) => {
 });
 
 // Get backup history
-router.get('/history', verifyAdminAuth, async (req, res) => {
+router.get('/history', verifySession, requireAdmin, async (req, res) => {
     try {
         const history = await backupService.getBackupHistory();
         res.json(history);
@@ -83,20 +47,12 @@ router.get('/history', verifyAdminAuth, async (req, res) => {
 });
 
 // Download backup
-router.get('/download/:backupId', verifyAdminAuth, async (req, res) => {
+router.get('/download/:backupId', verifySession, requireAdmin, async (req, res) => {
     try {
         const { backupId } = req.params;
         const filePath = await backupService.downloadBackup(backupId);
 
-        // Log the download
-        await admin.firestore().collection('admin_logs').add({
-            timestamp: admin.firestore.Timestamp.now(),
-            adminId: req.user.uid,
-            adminEmail: req.user.email,
-            action: 'backup_download',
-            details: { backupId },
-            ipAddress: req.ip || req.connection.remoteAddress
-        });
+        await adminQueries.logAction('backup_download', req.user.uid, { backupId }, req.ip);
 
         const fileName = path.basename(filePath);
         res.download(filePath, fileName);
@@ -107,26 +63,12 @@ router.get('/download/:backupId', verifyAdminAuth, async (req, res) => {
 });
 
 // Delete backup
-router.delete('/delete/:backupId', verifyAdminAuth, async (req, res) => {
+router.delete('/delete/:backupId', verifySession, requireSuperAdmin, async (req, res) => {
     try {
         const { backupId } = req.params;
-
-        // Only superadmins can delete backups
-        if (req.user.role !== 'superadmin') {
-            return res.status(403).json({ error: 'Only superadmins can delete backups' });
-        }
-
         const result = await backupService.deleteBackup(backupId);
 
-        // Log the deletion
-        await admin.firestore().collection('admin_logs').add({
-            timestamp: admin.firestore.Timestamp.now(),
-            adminId: req.user.uid,
-            adminEmail: req.user.email,
-            action: 'backup_delete',
-            details: { backupId },
-            ipAddress: req.ip || req.connection.remoteAddress
-        });
+        await adminQueries.logAction('backup_delete', req.user.uid, { backupId }, req.ip);
 
         res.json(result);
     } catch (error) {
@@ -136,7 +78,7 @@ router.delete('/delete/:backupId', verifyAdminAuth, async (req, res) => {
 });
 
 // Get schedule configuration
-router.get('/schedule', verifyAdminAuth, async (req, res) => {
+router.get('/schedule', verifySession, requireAdmin, async (req, res) => {
     try {
         const config = await backupService.getScheduleConfig();
         res.json(config);
@@ -147,10 +89,9 @@ router.get('/schedule', verifyAdminAuth, async (req, res) => {
 });
 
 // Save schedule configuration
-router.post('/schedule', verifyAdminAuth, async (req, res) => {
+router.post('/schedule', verifySession, requireAdmin, async (req, res) => {
     try {
         const { frequency, time, day, date, retention } = req.body;
-
         if (!frequency || !['disabled', 'daily', 'weekly', 'monthly'].includes(frequency)) {
             return res.status(400).json({ error: 'Invalid frequency' });
         }
@@ -158,15 +99,7 @@ router.post('/schedule', verifyAdminAuth, async (req, res) => {
         const config = { frequency, time, day, date, retention };
         const result = await backupService.saveScheduleConfig(config);
 
-        // Log the schedule change
-        await admin.firestore().collection('admin_logs').add({
-            timestamp: admin.firestore.Timestamp.now(),
-            adminId: req.user.uid,
-            adminEmail: req.user.email,
-            action: 'backup_schedule_update',
-            details: config,
-            ipAddress: req.ip || req.connection.remoteAddress
-        });
+        await adminQueries.logAction('backup_schedule_update', req.user.uid, config, req.ip);
 
         res.json(result);
     } catch (error) {
@@ -176,26 +109,15 @@ router.post('/schedule', verifyAdminAuth, async (req, res) => {
 });
 
 // Cleanup old backups
-router.post('/cleanup', verifyAdminAuth, async (req, res) => {
+router.post('/cleanup', verifySession, requireSuperAdmin, async (req, res) => {
     try {
         const { retentionDays } = req.body;
-
-        // Only superadmins can trigger cleanup
-        if (req.user.role !== 'superadmin') {
-            return res.status(403).json({ error: 'Only superadmins can trigger cleanup' });
-        }
-
         const result = await backupService.cleanupOldBackups(retentionDays || 30);
 
-        // Log the cleanup
-        await admin.firestore().collection('admin_logs').add({
-            timestamp: admin.firestore.Timestamp.now(),
-            adminId: req.user.uid,
-            adminEmail: req.user.email,
-            action: 'backup_cleanup',
-            details: { retentionDays: retentionDays || 30, deleted: result.deleted },
-            ipAddress: req.ip || req.connection.remoteAddress
-        });
+        await adminQueries.logAction('backup_cleanup', req.user.uid, {
+            retentionDays: retentionDays || 30,
+            deleted: result.deleted
+        }, req.ip);
 
         res.json(result);
     } catch (error) {

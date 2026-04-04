@@ -1,6 +1,5 @@
 // Email Service using SendGrid
 const sgMail = require('@sendgrid/mail');
-const admin = require('firebase-admin');
 const handlebars = require('handlebars');
 const fs = require('fs').promises;
 const path = require('path');
@@ -482,51 +481,54 @@ class EmailService {
     // Log email send
     async logEmailSend(announcement, recipientCount, results) {
         try {
+            const { query } = require('./db/pool');
             const successCount = results.filter(r => r.success).reduce((sum, r) => sum + r.count, 0);
             const failureCount = recipientCount - successCount;
-            
-            await admin.firestore().collection('email_logs').add({
-                type: 'announcement',
-                announcementId: announcement.id,
-                announcementTitle: announcement.title,
-                recipientCount: recipientCount,
-                successCount: successCount,
-                failureCount: failureCount,
-                results: results,
-                timestamp: admin.firestore.FieldValue.serverTimestamp()
-            });
-            
+
+            await query(
+                `INSERT INTO admin_logs (action, details) VALUES ($1, $2)`,
+                ['email_send', JSON.stringify({
+                    type: 'announcement',
+                    announcementId: announcement.id,
+                    announcementTitle: announcement.title,
+                    recipientCount,
+                    successCount,
+                    failureCount,
+                    results,
+                    timestamp: new Date().toISOString()
+                })]
+            );
         } catch (error) {
             console.error('Error logging email send:', error);
         }
     }
-    
-    // Get email statistics
+
     async getEmailStats(announcementId) {
         try {
-            const logs = await admin.firestore()
-                .collection('email_logs')
-                .where('announcementId', '==', announcementId)
-                .get();
-            
+            const { query } = require('./db/pool');
+            const result = await query(
+                `SELECT details FROM admin_logs
+                 WHERE action = 'email_send' AND details->>'announcementId' = $1`,
+                [announcementId]
+            );
+
             let totalSent = 0;
             let totalSuccess = 0;
             let totalFailure = 0;
-            
-            logs.forEach(doc => {
-                const data = doc.data();
+
+            for (const row of result.rows) {
+                const data = row.details;
                 totalSent += data.recipientCount || 0;
                 totalSuccess += data.successCount || 0;
                 totalFailure += data.failureCount || 0;
-            });
-            
+            }
+
             return {
                 totalSent,
                 totalSuccess,
                 totalFailure,
                 successRate: totalSent > 0 ? (totalSuccess / totalSent * 100).toFixed(2) : 0
             };
-            
         } catch (error) {
             console.error('Error getting email stats:', error);
             return null;

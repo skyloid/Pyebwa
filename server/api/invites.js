@@ -2,28 +2,16 @@ const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
 const emailService = require('../services/email');
-const { admin, db } = require('../services/firebase-admin');
-
-// Middleware to verify Firebase ID token
-async function verifyToken(req, res, next) {
-    const idToken = req.headers.authorization?.split('Bearer ')[1];
-    
-    if (!idToken) {
-        return res.status(401).json({ error: 'No authorization token provided' });
-    }
-    
-    try {
-        const decodedToken = await admin.auth().verifyIdToken(idToken);
-        req.user = decodedToken;
-        next();
-    } catch (error) {
-        console.error('Token verification error:', error);
-        return res.status(401).json({ error: 'Invalid authorization token' });
-    }
-}
+const { verifySession } = require('../db/auth');
+const treeQueries = require('../db/queries/family-trees');
+const personQueries = require('../db/queries/persons');
+const inviteQueries = require('../db/queries/invites');
+const userQueries = require('../db/queries/users');
+const adminQueries = require('../db/queries/admin');
+const { getClient } = require('../db/pool');
 
 // Generate invite link for a family member
-router.post('/generate', verifyToken, async (req, res) => {
+router.post('/generate', verifySession, async (req, res) => {
     try {
         const { treeId, personId } = req.body;
         const userId = req.user.uid;
@@ -31,308 +19,224 @@ router.post('/generate', verifyToken, async (req, res) => {
         if (!treeId || !personId) {
             return res.status(400).json({ error: 'Tree ID and Person ID are required' });
         }
-        
+
         // Verify user has access to this tree
-        const treeDoc = await db.collection('familyTrees').doc(treeId).get();
-        if (!treeDoc.exists) {
-            console.log('Tree not found:', treeId);
+        const tree = await treeQueries.findById(treeId);
+        if (!tree) {
             return res.status(404).json({ error: 'Family tree not found' });
         }
-        
-        const treeData = treeDoc.data();
 
-        // Check access using the correct field names: ownerId and memberIds
-        const isOwner = treeData.ownerId === userId;
-        const isMember = treeData.memberIds?.includes(userId);
-
-        if (!isOwner && !isMember) {
+        const hasAccess = await treeQueries.hasAccess(treeId, userId);
+        if (!hasAccess) {
             return res.status(403).json({ error: 'Access denied to this family tree' });
         }
-        
-        // Get person data - try both 'members' and 'persons' collections
-        let personDoc = await db.collection('familyTrees').doc(treeId)
-            .collection('members').doc(personId).get();
-        
-        if (!personDoc.exists) {
-            // Try persons collection as fallback
-            personDoc = await db.collection('familyTrees').doc(treeId)
-                .collection('persons').doc(personId).get();
-        }
-        
-        if (!personDoc.exists) {
+
+        // Get person data
+        const person = await personQueries.findById(personId);
+        if (!person || person.family_tree_id !== treeId) {
             return res.status(404).json({ error: 'Person not found' });
         }
-        
-        const personData = personDoc.data();
-        
-        // Generate a unique invite token
+
+        // Generate unique invite token
         const inviteToken = crypto.randomBytes(32).toString('hex');
-        
-        // Create invite document
-        const inviteData = {
+        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+
+        // Create invite
+        const invite = await inviteQueries.create({
             token: inviteToken,
-            treeId: treeId,
-            personId: personId,
-            personName: `${personData.firstName || ''} ${personData.lastName || ''}`.trim(),
-            personEmail: personData.email || null,
-            createdBy: userId,
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-            expiresAt: admin.firestore.Timestamp.fromDate(
-                new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
-            ),
-            status: 'pending',
-            acceptedBy: null,
-            acceptedAt: null
-        };
-        
-        // Save invite to database
-        await db.collection('invites').doc(inviteToken).set(inviteData);
-        
-        // Generate the invite URL
+            tree_id: treeId,
+            person_id: personId,
+            person_name: `${person.first_name || ''} ${person.last_name || ''}`.trim(),
+            person_email: person.email || null,
+            created_by: userId,
+            expires_at: expiresAt
+        });
+
         const baseUrl = process.env.APP_URL || 'https://rasin.pyebwa.com';
         const inviteUrl = `${baseUrl}/app/invite/${inviteToken}`;
-        
-        // Log the activity (hash token for security)
-        await db.collection('admin_logs').add({
-            action: 'invite_generated',
-            userId: userId,
-            treeId: treeId,
-            personId: personId,
-            inviteTokenHash: crypto.createHash('sha256').update(inviteToken).digest('hex').slice(0, 16),
-            timestamp: admin.firestore.FieldValue.serverTimestamp()
-        });
-        
-        // Send invite email if person has email address
-        if (personData.email) {
+
+        // Log activity
+        await adminQueries.logAction('invite_generated', userId, {
+            treeId,
+            personId,
+            inviteTokenHash: crypto.createHash('sha256').update(inviteToken).digest('hex').slice(0, 16)
+        }, req.ip);
+
+        // Send invite email if person has email
+        if (person.email) {
             try {
-                // Get inviter's name
-                const inviterDoc = await db.collection('users').doc(userId).get();
-                const inviterData = inviterDoc.data();
-                const inviterName = inviterData?.displayName || inviterData?.email?.split('@')[0] || 'A family member';
-                
-                await emailService.sendInviteEmail(personData.email, {
-                    personName: inviteData.personName,
-                    familyName: treeData.name || 'Family',
-                    inviterName: inviterName,
-                    inviteUrl: inviteUrl,
-                    expiresAt: inviteData.expiresAt.toDate().toLocaleDateString()
+                const inviter = await userQueries.findById(userId);
+                const inviterName = inviter?.display_name || inviter?.email?.split('@')[0] || 'A family member';
+
+                await emailService.sendInviteEmail(person.email, {
+                    personName: invite.person_name,
+                    familyName: tree.name || 'Family',
+                    inviterName,
+                    inviteUrl,
+                    expiresAt: expiresAt.toLocaleDateString()
                 });
-                
-                // Email sent successfully
             } catch (emailError) {
                 console.error('Failed to send invite email:', emailError);
-                // Don't fail the whole request if email fails
             }
         }
-        
+
         res.json({
             success: true,
-            inviteUrl: inviteUrl,
+            inviteUrl,
             token: inviteToken,
-            expiresAt: inviteData.expiresAt.toDate(),
-            personName: inviteData.personName,
-            emailSent: !!personData.email
+            expiresAt,
+            personName: invite.person_name,
+            emailSent: !!person.email
         });
-        
     } catch (error) {
         console.error('Error generating invite:', error);
         res.status(500).json({ error: 'Failed to generate invite link' });
     }
 });
 
-// Get invite details (public endpoint for invite recipients)
+// Get invite details (public endpoint)
 router.get('/details/:token', async (req, res) => {
     try {
         const { token } = req.params;
-        
-        const inviteDoc = await db.collection('invites').doc(token).get();
-        
-        if (!inviteDoc.exists) {
+        const invite = await inviteQueries.findByToken(token);
+
+        if (!invite) {
             return res.status(404).json({ error: 'Invalid or expired invite link' });
         }
-        
-        const inviteData = inviteDoc.data();
-        
-        // Check if invite is expired
-        if (inviteData.expiresAt.toDate() < new Date()) {
+
+        if (new Date(invite.expires_at) < new Date()) {
             return res.status(410).json({ error: 'This invite link has expired' });
         }
-        
-        // Check if already accepted
-        if (inviteData.status === 'accepted') {
+
+        if (invite.status === 'accepted') {
             return res.status(410).json({ error: 'This invite has already been used' });
         }
-        
-        // Get tree and person details
-        const treeDoc = await db.collection('familyTrees').doc(inviteData.treeId).get();
-        
-        // Try members collection first
-        let personDoc = await db.collection('familyTrees').doc(inviteData.treeId)
-            .collection('members').doc(inviteData.personId).get();
-        
-        if (!personDoc.exists) {
-            // Try persons collection as fallback
-            personDoc = await db.collection('familyTrees').doc(inviteData.treeId)
-                .collection('persons').doc(inviteData.personId).get();
-        }
-        
-        if (!treeDoc.exists || !personDoc.exists) {
+
+        const tree = await treeQueries.findById(invite.tree_id);
+        const person = await personQueries.findById(invite.person_id);
+
+        if (!tree || !person) {
             return res.status(404).json({ error: 'Family tree or person no longer exists' });
         }
-        
-        const treeData = treeDoc.data();
-        const personData = personDoc.data();
-        
+
         res.json({
             success: true,
             invite: {
-                personName: inviteData.personName,
-                treeName: treeData.name || 'Family Tree',
-                expiresAt: inviteData.expiresAt.toDate()
+                personName: invite.person_name,
+                treeName: tree.name || 'Family Tree',
+                expiresAt: invite.expires_at
             }
         });
-        
     } catch (error) {
         console.error('Error getting invite details:', error);
         res.status(500).json({ error: 'Failed to retrieve invite details' });
     }
 });
 
-// Accept invite and create/link user account
-router.post('/accept/:token', verifyToken, async (req, res) => {
+// Accept invite
+router.post('/accept/:token', verifySession, async (req, res) => {
     try {
         const { token } = req.params;
-        const userId = req.user.uid; // Use authenticated user ID from token
-        
-        const inviteDoc = await db.collection('invites').doc(token).get();
-        
-        if (!inviteDoc.exists) {
+        const userId = req.user.uid;
+
+        const invite = await inviteQueries.findByToken(token);
+        if (!invite) {
             return res.status(404).json({ error: 'Invalid or expired invite link' });
         }
-        
-        const inviteData = inviteDoc.data();
-        
-        // Check if invite is expired
-        if (inviteData.expiresAt.toDate() < new Date()) {
+
+        if (new Date(invite.expires_at) < new Date()) {
             return res.status(410).json({ error: 'This invite link has expired' });
         }
-        
-        // Check if already accepted
-        if (inviteData.status === 'accepted') {
+
+        if (invite.status === 'accepted') {
             return res.status(410).json({ error: 'This invite has already been used' });
         }
-        
-        // Start a batch write
-        const batch = db.batch();
-        
-        // Update person document to link with user - check both collections
-        let personRef = db.collection('familyTrees').doc(inviteData.treeId)
-            .collection('members').doc(inviteData.personId);
-        
-        // Check if document exists in members collection
-        const memberDoc = await personRef.get();
-        if (!memberDoc.exists) {
-            // Try persons collection
-            personRef = db.collection('familyTrees').doc(inviteData.treeId)
-                .collection('persons').doc(inviteData.personId);
+
+        // Use transaction for atomicity
+        const client = await getClient();
+        try {
+            await client.query('BEGIN');
+
+            // Link person to user
+            await client.query(
+                `UPDATE persons SET user_id = $1, claimed_at = NOW(), claimed_via_invite = true, updated_at = NOW()
+                 WHERE id = $2`,
+                [userId, invite.person_id]
+            );
+
+            // Add user as tree member
+            await client.query(
+                'INSERT INTO family_tree_members (family_tree_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+                [invite.tree_id, userId]
+            );
+
+            // Update user's primary tree if not set
+            await client.query(
+                `UPDATE users SET primary_family_tree_id = COALESCE(primary_family_tree_id, $1), updated_at = NOW()
+                 WHERE id = $2`,
+                [invite.tree_id, userId]
+            );
+
+            // Accept the invite
+            await client.query(
+                `UPDATE invites SET status = 'accepted', accepted_by = $1, accepted_at = NOW()
+                 WHERE token = $2`,
+                [userId, token]
+            );
+
+            await client.query('COMMIT');
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release();
         }
-        
-        batch.update(personRef, {
-            userId: userId,
-            claimedAt: admin.firestore.FieldValue.serverTimestamp(),
-            claimedViaInvite: true
-        });
-        
-        // Add user as a member to the tree (using memberIds field)
-        const treeRef = db.collection('familyTrees').doc(inviteData.treeId);
-        batch.update(treeRef, {
-            memberIds: admin.firestore.FieldValue.arrayUnion(userId)
-        });
-        
-        // Update user document to add this tree
-        const userRef = db.collection('users').doc(userId);
-        batch.update(userRef, {
-            familyTrees: admin.firestore.FieldValue.arrayUnion(inviteData.treeId),
-            lastTreeAccessed: inviteData.treeId
-        });
-        
-        // Update invite status
-        batch.update(inviteDoc.ref, {
-            status: 'accepted',
-            acceptedBy: userId,
-            acceptedAt: admin.firestore.FieldValue.serverTimestamp()
-        });
-        
-        // Commit all changes
-        await batch.commit();
-        
-        // Log the activity (hash token for security)
-        await db.collection('admin_logs').add({
-            action: 'invite_accepted',
-            userId: userId,
-            treeId: inviteData.treeId,
-            personId: inviteData.personId,
-            inviteTokenHash: crypto.createHash('sha256').update(token).digest('hex').slice(0, 16),
-            timestamp: admin.firestore.FieldValue.serverTimestamp()
-        });
-        
+
+        // Log activity
+        await adminQueries.logAction('invite_accepted', userId, {
+            treeId: invite.tree_id,
+            personId: invite.person_id,
+            inviteTokenHash: crypto.createHash('sha256').update(token).digest('hex').slice(0, 16)
+        }, req.ip);
+
         res.json({
             success: true,
-            treeId: inviteData.treeId,
-            personId: inviteData.personId,
+            treeId: invite.tree_id,
+            personId: invite.person_id,
             message: 'Invite accepted successfully'
         });
-        
     } catch (error) {
         console.error('Error accepting invite:', error);
         res.status(500).json({ error: 'Failed to accept invite' });
     }
 });
 
-// Revoke an invite
-router.post('/revoke/:token', verifyToken, async (req, res) => {
+// Revoke invite
+router.post('/revoke/:token', verifySession, async (req, res) => {
     try {
         const { token } = req.params;
         const userId = req.user.uid;
-        
-        const inviteDoc = await db.collection('invites').doc(token).get();
-        
-        if (!inviteDoc.exists) {
+
+        const invite = await inviteQueries.findByToken(token);
+        if (!invite) {
             return res.status(404).json({ error: 'Invite not found' });
         }
-        
-        const inviteData = inviteDoc.data();
-        
-        // Verify user has permission to revoke
-        if (inviteData.createdBy !== userId) {
-            // Check if user is admin via Firebase Auth custom claims
-            const userRecord = await admin.auth().getUser(userId);
-            const isAdminUser = userRecord.customClaims?.role === 'admin' || userRecord.customClaims?.role === 'superadmin';
-            if (!isAdminUser) {
+
+        // Only creator or admin can revoke
+        if (invite.created_by !== userId) {
+            const user = await userQueries.findById(userId);
+            if (!['admin', 'superadmin'].includes(user?.role)) {
                 return res.status(403).json({ error: 'Permission denied' });
             }
         }
-        
-        // Update invite status
-        await inviteDoc.ref.update({
-            status: 'revoked',
-            revokedBy: userId,
-            revokedAt: admin.firestore.FieldValue.serverTimestamp()
-        });
-        
-        // Log the activity
-        await db.collection('admin_logs').add({
-            action: 'invite_revoked',
-            userId: userId,
-            inviteTokenHash: crypto.createHash('sha256').update(token).digest('hex').slice(0, 16),
-            timestamp: admin.firestore.FieldValue.serverTimestamp()
-        });
-        
-        res.json({
-            success: true,
-            message: 'Invite revoked successfully'
-        });
-        
+
+        await inviteQueries.revoke(token, userId);
+
+        await adminQueries.logAction('invite_revoked', userId, {
+            inviteTokenHash: crypto.createHash('sha256').update(token).digest('hex').slice(0, 16)
+        }, req.ip);
+
+        res.json({ success: true, message: 'Invite revoked successfully' });
     } catch (error) {
         console.error('Error revoking invite:', error);
         res.status(500).json({ error: 'Failed to revoke invite' });
@@ -340,51 +244,21 @@ router.post('/revoke/:token', verifyToken, async (req, res) => {
 });
 
 // List invites for a tree
-router.get('/list/:treeId', verifyToken, async (req, res) => {
+router.get('/list/:treeId', verifySession, async (req, res) => {
     try {
         const { treeId } = req.params;
         const userId = req.user.uid;
-        
-        // Verify user has access to this tree
-        const treeDoc = await db.collection('familyTrees').doc(treeId).get();
-        if (!treeDoc.exists) {
-            return res.status(404).json({ error: 'Family tree not found' });
-        }
-        
-        const treeData = treeDoc.data();
-        // Check access using the correct field names: ownerId and memberIds
-        if (treeData.ownerId !== userId && !treeData.memberIds?.includes(userId)) {
-            // Check if user is admin via Firebase Auth custom claims
-            const userRecord = await admin.auth().getUser(userId);
-            const isAdminUser = userRecord.customClaims?.role === 'admin' || userRecord.customClaims?.role === 'superadmin';
-            if (!isAdminUser) {
+
+        const hasAccess = await treeQueries.hasAccess(treeId, userId);
+        if (!hasAccess) {
+            const user = await userQueries.findById(userId);
+            if (!['admin', 'superadmin'].includes(user?.role)) {
                 return res.status(403).json({ error: 'Access denied' });
             }
         }
-        
-        // Get all invites for this tree
-        const invitesSnapshot = await db.collection('invites')
-            .where('treeId', '==', treeId)
-            .orderBy('createdAt', 'desc')
-            .get();
-        
-        const invites = [];
-        invitesSnapshot.forEach(doc => {
-            const data = doc.data();
-            invites.push({
-                token: doc.id,
-                ...data,
-                createdAt: data.createdAt?.toDate(),
-                expiresAt: data.expiresAt?.toDate(),
-                acceptedAt: data.acceptedAt?.toDate()
-            });
-        });
-        
-        res.json({
-            success: true,
-            invites: invites
-        });
-        
+
+        const invites = await inviteQueries.findByTree(treeId);
+        res.json({ success: true, invites });
     } catch (error) {
         console.error('Error listing invites:', error);
         res.status(500).json({ error: 'Failed to list invites' });

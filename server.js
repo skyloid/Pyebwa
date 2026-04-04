@@ -4,60 +4,56 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const compression = require('compression');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const path = require('path');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const { setupAdminEndpoint } = require('./server-admin-setup');
 
-// Initialize Firebase Admin SDK through centralized service
-try {
-    require('./server/services/firebase-admin');
-    console.log('✅ Firebase Admin SDK initialized successfully');
-} catch (error) {
-    console.error('❌ Firebase Admin SDK initialization failed:', error.message);
-    console.error('Make sure serviceAccountKey.json exists and is valid');
-}
-
 const app = express();
 const PORT = process.env.PORT || 9111;
 
-// Middleware
+// Trust proxy for correct req.ip behind reverse proxy
+app.set('trust proxy', 1);
+
+// Security middleware
+app.use(helmet({
+    contentSecurityPolicy: false // Handled separately
+}));
+
+// Rate limiting
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// CORS
 app.use(cors({
-    origin: ['https://www.pyebwa.com', 'https://pyebwa.com', 'https://secure.pyebwa.com', 'http://localhost:3000'],
+    origin: ['https://www.pyebwa.com', 'https://pyebwa.com', 'https://secure.pyebwa.com', 'https://rasin.pyebwa.com'],
     credentials: true
 }));
 app.use(compression());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
-// API endpoint for Firebase configuration
-app.get('/api/firebase-config', (req, res) => {
-    // Return Firebase config from environment variables
-    const requiredKeys = ['FIREBASE_API_KEY', 'FIREBASE_AUTH_DOMAIN', 'FIREBASE_PROJECT_ID'];
-    const missing = requiredKeys.filter(k => !process.env[k]);
-    if (missing.length > 0) {
-        return res.status(500).json({ error: 'Firebase config not set. Missing: ' + missing.join(', ') });
-    }
+// Legacy /uploads path - photos now stored in Supabase Storage
+// Keep for backward compat if any old URLs exist
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-    const config = {
-        apiKey: process.env.FIREBASE_API_KEY,
-        authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-        messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-        appId: process.env.FIREBASE_APP_ID,
-        measurementId: process.env.FIREBASE_MEASUREMENT_ID
-    };
-    
-    res.json(config);
-});
-
-// New admin dashboard route (temporarily redirect to old admin)
+// Admin dashboard route
 app.get('/admin', (req, res) => {
-    // For now, redirect to the existing admin interface
-    // Once React app is working, we can proxy to it
     res.redirect('/app/admin/');
 });
 
-// Old admin routes (kept for backward compatibility)
+// Admin page routes
 app.get('/app/admin/setup-admin.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'app/admin/setup-admin.html'));
 });
@@ -105,24 +101,25 @@ app.get('/sw.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'sw.js'));
 });
 
-// Serve login.html
+// Serve login/signup pages
 app.get('/login.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'login.html'));
 });
 
-// Serve signup.html
 app.get('/signup.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'signup.html'));
 });
 
-// Serve standalone signup page (no external scripts)
 app.get('/signup-standalone.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'signup-standalone.html'));
 });
 
-// Serve standalone login page (no external scripts)
 app.get('/login-standalone.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'login-standalone.html'));
+});
+
+app.get('/reset-password.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'reset-password.html'));
 });
 
 // Redirect root to /app (preserving query parameters)
@@ -139,35 +136,48 @@ app.get('/health', (req, res) => {
 // Admin setup endpoint (protected)
 app.post('/api/admin/setup', setupAdminEndpoint);
 
-// Notification API routes
+// API routes with rate limiting
 const notificationRoutes = require('./server/api/notifications');
-app.use('/api/notifications', notificationRoutes);
+app.use('/api/notifications', apiLimiter, notificationRoutes);
 
-// Backup API routes
 const backupRoutes = require('./server/api/backup');
-app.use('/api/backup', backupRoutes);
+app.use('/api/backup', apiLimiter, backupRoutes);
 
-// System management API routes  
 const systemRoutes = require('./server/api/system');
-app.use('/api/system', systemRoutes);
+app.use('/api/system', apiLimiter, systemRoutes);
 
-// Invite API routes
 const inviteRoutes = require('./server/api/invites');
-app.use('/api/invites', inviteRoutes);
+app.use('/api/invites', apiLimiter, inviteRoutes);
 
-// Auth API routes
-const authRoutes = require('./server/api/auth');
-app.use('/api/auth', authRoutes);
+// Tree CRUD API
+const treeRoutes = require('./server/api/trees');
+app.use('/api/trees', apiLimiter, treeRoutes);
+
+// File upload API
+const uploadRoutes = require('./server/api/uploads');
+app.use('/api/uploads', apiLimiter, uploadRoutes);
+
+// Auth API routes (use secure auth module with rate limiting)
+const authRoutes = require('./server/api/auth-secure');
+app.use('/api/auth', authLimiter, authRoutes);
+
+// Supabase proxy - forward /supabase/* to local Supabase Kong gateway
+app.use('/supabase', createProxyMiddleware({
+    target: 'http://127.0.0.1:8100',
+    changeOrigin: true,
+    pathRewrite: { '^/supabase': '' },
+    ws: true
+}));
 
 // Handle 404s
 app.use((req, res) => {
     res.status(404).sendFile(path.join(__dirname, 'app', 'index.html'));
 });
 
-// Error handling
+// Error handling - never expose stack traces to client
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ error: 'Something went wrong!' });
+    console.error('Server error:', err.message);
+    res.status(err.status || 500).json({ error: 'An error occurred' });
 });
 
 // Start server
@@ -181,5 +191,7 @@ External: https://rasin.pyebwa.com
 
 App URL: https://rasin.pyebwa.com/app
 Health: https://rasin.pyebwa.com/health
+Database: Supabase PostgreSQL
+Auth: Supabase GoTrue (JWT)
     `);
 });

@@ -14,9 +14,7 @@
         sessionStorage.setItem('onSignupPage', 'true');
         sessionStorage.setItem('preventRedirect', 'true');
     </script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <!-- Firebase removed - using session-based auth -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
@@ -331,6 +329,7 @@
             text-decoration: underline;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <!-- Language Selector -->
@@ -362,8 +361,12 @@
                     <label for="email" data-i18n="emailAddress">Email Address</label>
                     <input type="email" id="email" required data-i18n-placeholder="emailPlaceholder" placeholder="your@email.com" autocomplete="email">
                 </div>
-                
-                
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required placeholder="Min. 8 characters" minlength="8" autocomplete="new-password">
+                </div>
+
                 <button type="submit" class="btn-primary" id="signupBtn">
                     <i class="material-icons">person_add</i>
                     <span data-i18n="createAccount">Create Account</span>
@@ -447,26 +450,7 @@
             console.log('Allowing assign to:', url);
         };
         
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyApTHhm_Ia0sz63YDw2mYXiXp_qED7NdOQ",
-            authDomain: "rasin.pyebwa.com",
-            projectId: "pyebwa-f5960",
-            storageBucket: "pyebwa-f5960.firebasestorage.app",
-            messagingSenderId: "1042887343749",
-            appId: "1:1042887343749:web:c276bf69b6c0895111f3ec",
-            measurementId: "G-ZX92K1TMM3"
-        };
-        
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        
-        // Disable persistence to prevent automatic sign-in attempts
-        auth.setPersistence(firebase.auth.Auth.Persistence.NONE).catch(error => {
-            console.log('Persistence setting error:', error);
-        });
+        // Firebase removed - using session-based auth
         
         // Translation system for signup page
         const translations = {
@@ -664,16 +648,16 @@
             preventRedirectSession: sessionStorage.getItem('preventRedirect')
         });
         
-        // Simple auth check without redirects
-        auth.onAuthStateChanged((user) => {
-            console.log('Auth state changed on signup page:', user ? 'User logged in' : 'No user');
-            if (user) {
-                console.log('User detected on signup page:', user.email);
-                // Just show a message, don't redirect
-                const signoutLink = `<a href="#" onclick="firebase.auth().signOut().then(() => window.location.reload()); return false;" style="color: var(--primary-blue);">Sign out</a>`;
-                showMessage(`You're logged in as ${user.email}. ${signoutLink} to create a new account.`, 'info');
+        // Initialize Supabase
+        const _sb = supabase.createClient(window.location.origin + '/supabase', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzc1MTk5NDM4LCJleHAiOjE5MzI4Nzk0Mzh9.t_O46hoypu8qZjZgiM_GjMkwhDBhwFa-IXRMjnQ5m7o');
+
+        // Check if user is already logged in
+        _sb.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+                const signoutLink = `<a href="#" onclick="_sb.auth.signOut().then(()=>window.location.reload());return false;" style="color: var(--primary-blue);">Sign out</a>`;
+                showMessage(`You're logged in as ${session.user.email}. ${signoutLink} to create a new account.`, 'info');
             }
-        });
+        }).catch(() => {});
         
         // DOM elements
         const signupView = document.getElementById('signupView');
@@ -691,49 +675,36 @@
         // Handle signup form submission
         signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const fullName = document.getElementById('fullName').value.trim();
             const email = document.getElementById('email').value.trim();
-            
-            // Basic validation
-            if (!fullName || !email) {
+            const password = document.getElementById('password').value;
+
+            if (!fullName || !email || !password) {
                 showMessage('Please fill in all fields.', 'error');
                 return;
             }
-            
+            if (password.length < 8) {
+                showMessage('Password must be at least 8 characters.', 'error');
+                return;
+            }
+
             signupBtn.disabled = true;
             signupBtn.innerHTML = '<span class="loading"></span> Creating Account...';
-            
+
             try {
-                // Call server API to create account with generated password
-                const response = await fetch('/api/auth/signup', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        email: email,
-                        fullName: fullName
-                    })
+                const { data, error } = await _sb.auth.signUp({
+                    email,
+                    password,
+                    options: { data: { display_name: fullName, role: 'member' } }
                 });
-                
-                const data = await response.json();
-                
-                if (!response.ok) {
-                    throw new Error(data.error || 'Failed to create account');
-                }
-                
-                showMessage('Account created successfully! Check your email for your secure password and login instructions.', 'success');
-                
-                // Clear form
+                if (error) throw new Error(error.message);
+
+                showMessage('Account created successfully! Redirecting to the app...', 'success');
                 signupForm.reset();
-                
-                // Show additional message
-                setTimeout(() => {
-                    const messageDiv = document.getElementById('message');
-                    messageDiv.innerHTML += '<br><br><i class="material-icons">email</i> We\'ve sent your password to ' + email;
-                }, 1000);
-                
+
+                setTimeout(() => { window.location.href = '/app/'; }, 2000);
+
             } catch (error) {
                 console.error('Signup error:', error);
                 showMessage(error.message || 'Failed to create account. Please try again.', 'error');

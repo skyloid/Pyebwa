@@ -1,12 +1,11 @@
-const admin = require('firebase-admin');
+const { pool, query } = require('./db/pool');
 const fs = require('fs').promises;
 const path = require('path');
 const archiver = require('archiver');
-const { createReadStream, createWriteStream } = require('fs');
+const { createWriteStream } = require('fs');
 
 class BackupService {
     constructor() {
-        this.db = admin.firestore();
         this.backupDir = path.join(__dirname, '../backups');
         this.ensureBackupDir();
     }
@@ -19,79 +18,72 @@ class BackupService {
         }
     }
 
-    async createBackup(collections, format = 'json') {
+    async createBackup(tables, format = 'json') {
         const backupId = `backup_${Date.now()}`;
         const timestamp = new Date();
-        
+
         try {
             const data = {};
             let totalSize = 0;
 
-            // Collect data from selected collections
-            for (const collection of collections) {
-                console.log(`Backing up collection: ${collection}`);
-                const snapshot = await this.db.collection(collection).get();
-                
-                data[collection] = [];
-                snapshot.forEach(doc => {
-                    const docData = { id: doc.id, ...doc.data() };
-                    
-                    // Convert timestamps to ISO strings
-                    this.convertTimestamps(docData);
-                    
-                    data[collection].push(docData);
-                });
-
-                console.log(`Collection ${collection}: ${data[collection].length} documents`);
+            // Collect data from selected tables
+            for (const table of tables) {
+                console.log(`Backing up table: ${table}`);
+                const result = await query(`SELECT * FROM ${table}`);
+                data[table] = result.rows;
+                console.log(`Table ${table}: ${result.rows.length} rows`);
             }
 
             let filePath;
             let fileSize;
 
             if (format === 'json') {
-                // Create JSON backup
                 const jsonData = JSON.stringify(data, null, 2);
                 filePath = path.join(this.backupDir, `${backupId}.json`);
                 await fs.writeFile(filePath, jsonData);
                 fileSize = Buffer.byteLength(jsonData);
             } else {
-                // Create CSV backup (zipped)
                 filePath = await this.createCSVBackup(data, backupId);
                 const stats = await fs.stat(filePath);
                 fileSize = stats.size;
             }
 
-            // Save backup metadata
-            const backupRecord = {
-                id: backupId,
-                created: admin.firestore.Timestamp.fromDate(timestamp),
-                collections,
-                format,
-                size: fileSize,
-                status: 'completed',
-                type: 'manual',
-                filePath
-            };
-
-            await this.db.collection('backups').doc(backupId).set(backupRecord);
+            // Save backup metadata to content table
+            await query(
+                `INSERT INTO content (id, key, value, updated_at) VALUES (gen_random_uuid(), $1, $2, NOW())
+                 ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW()`,
+                [`backup:${backupId}`, JSON.stringify({
+                    id: backupId,
+                    created: timestamp.toISOString(),
+                    tables,
+                    format,
+                    size: fileSize,
+                    status: 'completed',
+                    type: 'manual',
+                    filePath
+                })]
+            );
 
             console.log(`Backup ${backupId} created successfully`);
             return { success: true, backupId, data: format === 'json' ? data : null };
 
         } catch (error) {
             console.error('Error creating backup:', error);
-            
-            // Save failed backup record
-            await this.db.collection('backups').doc(backupId).set({
-                id: backupId,
-                created: admin.firestore.Timestamp.fromDate(timestamp),
-                collections,
-                format,
-                size: 0,
-                status: 'failed',
-                type: 'manual',
-                error: error.message
-            });
+
+            await query(
+                `INSERT INTO content (id, key, value, updated_at) VALUES (gen_random_uuid(), $1, $2, NOW())
+                 ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW()`,
+                [`backup:${backupId}`, JSON.stringify({
+                    id: backupId,
+                    created: timestamp.toISOString(),
+                    tables,
+                    format,
+                    size: 0,
+                    status: 'failed',
+                    type: 'manual',
+                    error: error.message
+                })]
+            );
 
             throw error;
         }
@@ -108,11 +100,10 @@ class BackupService {
 
             archive.pipe(output);
 
-            // Convert each collection to CSV
-            Object.entries(data).forEach(([collection, documents]) => {
-                if (documents.length > 0) {
-                    const csv = this.convertToCSV(documents);
-                    archive.append(csv, { name: `${collection}.csv` });
+            Object.entries(data).forEach(([table, rows]) => {
+                if (rows.length > 0) {
+                    const csv = this.convertToCSV(rows);
+                    archive.append(csv, { name: `${table}.csv` });
                 }
             });
 
@@ -123,7 +114,6 @@ class BackupService {
     convertToCSV(documents) {
         if (documents.length === 0) return '';
 
-        // Get all unique keys from all documents
         const allKeys = new Set();
         documents.forEach(doc => {
             Object.keys(doc).forEach(key => allKeys.add(key));
@@ -135,8 +125,7 @@ class BackupService {
         documents.forEach(doc => {
             const values = headers.map(header => {
                 let value = doc[header];
-                
-                // Handle different data types
+
                 if (value === null || value === undefined) {
                     return '';
                 } else if (typeof value === 'object') {
@@ -153,43 +142,15 @@ class BackupService {
         return csvRows.join('\n');
     }
 
-    convertTimestamps(obj) {
-        Object.keys(obj).forEach(key => {
-            const value = obj[key];
-            if (value && typeof value === 'object') {
-                if (value._seconds !== undefined && value._nanoseconds !== undefined) {
-                    // Firestore timestamp
-                    obj[key] = new Date(value._seconds * 1000 + value._nanoseconds / 1000000).toISOString();
-                } else if (value.seconds !== undefined && value.nanoseconds !== undefined) {
-                    // Another timestamp format
-                    obj[key] = new Date(value.seconds * 1000 + value.nanoseconds / 1000000).toISOString();
-                } else if (Array.isArray(value)) {
-                    value.forEach(item => this.convertTimestamps(item));
-                } else {
-                    this.convertTimestamps(value);
-                }
-            }
-        });
-    }
-
     async getBackupHistory() {
         try {
-            const snapshot = await this.db.collection('backups')
-                .orderBy('created', 'desc')
-                .limit(50)
-                .get();
-
-            const backups = [];
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                backups.push({
-                    id: doc.id,
-                    ...data,
-                    created: data.created.toDate()
-                });
+            const result = await query(
+                `SELECT value FROM content WHERE key LIKE 'backup:%' ORDER BY updated_at DESC LIMIT 50`
+            );
+            return result.rows.map(r => {
+                const data = typeof r.value === 'string' ? JSON.parse(r.value) : r.value;
+                return { ...data, created: new Date(data.created) };
             });
-
-            return backups;
         } catch (error) {
             console.error('Error getting backup history:', error);
             throw error;
@@ -198,16 +159,20 @@ class BackupService {
 
     async downloadBackup(backupId) {
         try {
-            const backupDoc = await this.db.collection('backups').doc(backupId).get();
-            
-            if (!backupDoc.exists) {
+            const result = await query(
+                `SELECT value FROM content WHERE key = $1`,
+                [`backup:${backupId}`]
+            );
+
+            if (result.rows.length === 0) {
                 throw new Error('Backup not found');
             }
 
-            const backup = backupDoc.data();
+            const backup = typeof result.rows[0].value === 'string'
+                ? JSON.parse(result.rows[0].value)
+                : result.rows[0].value;
             const filePath = backup.filePath;
 
-            // Check if file exists
             try {
                 await fs.access(filePath);
                 return filePath;
@@ -222,23 +187,26 @@ class BackupService {
 
     async deleteBackup(backupId) {
         try {
-            const backupDoc = await this.db.collection('backups').doc(backupId).get();
-            
-            if (!backupDoc.exists) {
+            const result = await query(
+                `SELECT value FROM content WHERE key = $1`,
+                [`backup:${backupId}`]
+            );
+
+            if (result.rows.length === 0) {
                 throw new Error('Backup not found');
             }
 
-            const backup = backupDoc.data();
-            
-            // Delete file from disk
+            const backup = typeof result.rows[0].value === 'string'
+                ? JSON.parse(result.rows[0].value)
+                : result.rows[0].value;
+
             try {
                 await fs.unlink(backup.filePath);
             } catch (error) {
                 console.warn('Backup file not found on disk:', error.message);
             }
 
-            // Delete from database
-            await this.db.collection('backups').doc(backupId).delete();
+            await query(`DELETE FROM content WHERE key = $1`, [`backup:${backupId}`]);
 
             console.log(`Backup ${backupId} deleted successfully`);
             return { success: true };
@@ -250,9 +218,11 @@ class BackupService {
 
     async getScheduleConfig() {
         try {
-            const configDoc = await this.db.collection('system_config').doc('backup_schedule').get();
-            
-            if (!configDoc.exists) {
+            const result = await query(
+                `SELECT value FROM content WHERE key = 'backup_schedule'`
+            );
+
+            if (result.rows.length === 0) {
                 return {
                     frequency: 'disabled',
                     time: '02:00',
@@ -262,7 +232,9 @@ class BackupService {
                 };
             }
 
-            return configDoc.data();
+            return typeof result.rows[0].value === 'string'
+                ? JSON.parse(result.rows[0].value)
+                : result.rows[0].value;
         } catch (error) {
             console.error('Error getting schedule config:', error);
             throw error;
@@ -271,12 +243,12 @@ class BackupService {
 
     async saveScheduleConfig(config) {
         try {
-            await this.db.collection('system_config').doc('backup_schedule').set({
-                ...config,
-                updatedAt: admin.firestore.Timestamp.now()
-            });
+            await query(
+                `INSERT INTO content (id, key, value, updated_at) VALUES (gen_random_uuid(), 'backup_schedule', $1, NOW())
+                 ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = NOW()`,
+                [JSON.stringify({ ...config, updatedAt: new Date().toISOString() })]
+            );
 
-            // If backup is enabled, set up the schedule
             if (config.frequency !== 'disabled') {
                 this.setupScheduledBackup(config);
             }
@@ -289,12 +261,7 @@ class BackupService {
     }
 
     setupScheduledBackup(config) {
-        // In a production environment, you would use a job scheduler like node-cron
-        // For now, we'll just log the configuration
         console.log('Scheduled backup configured:', config);
-        
-        // TODO: Implement actual scheduling with node-cron or similar
-        // This would create recurring backups based on the schedule
     }
 
     async cleanupOldBackups(retentionDays = 30) {
@@ -302,32 +269,29 @@ class BackupService {
             const cutoffDate = new Date();
             cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
 
-            const snapshot = await this.db.collection('backups')
-                .where('created', '<', admin.firestore.Timestamp.fromDate(cutoffDate))
-                .get();
+            const result = await query(
+                `SELECT key, value FROM content WHERE key LIKE 'backup:%'`
+            );
 
-            const batch = this.db.batch();
-            const filesToDelete = [];
-
-            snapshot.forEach(doc => {
-                const backup = doc.data();
-                filesToDelete.push(backup.filePath);
-                batch.delete(doc.ref);
-            });
-
-            await batch.commit();
-
-            // Delete files from disk
-            for (const filePath of filesToDelete) {
-                try {
-                    await fs.unlink(filePath);
-                } catch (error) {
-                    console.warn('Error deleting backup file:', filePath, error.message);
+            const toDelete = [];
+            for (const row of result.rows) {
+                const backup = typeof row.value === 'string' ? JSON.parse(row.value) : row.value;
+                if (new Date(backup.created) < cutoffDate) {
+                    toDelete.push({ key: row.key, filePath: backup.filePath });
                 }
             }
 
-            console.log(`Cleaned up ${filesToDelete.length} old backups`);
-            return { deleted: filesToDelete.length };
+            for (const item of toDelete) {
+                try {
+                    await fs.unlink(item.filePath);
+                } catch (error) {
+                    console.warn('Error deleting backup file:', item.filePath, error.message);
+                }
+                await query(`DELETE FROM content WHERE key = $1`, [item.key]);
+            }
+
+            console.log(`Cleaned up ${toDelete.length} old backups`);
+            return { deleted: toDelete.length };
         } catch (error) {
             console.error('Error cleaning up old backups:', error);
             throw error;

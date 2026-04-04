@@ -24,6 +24,10 @@ serviceAccountKey.json
 firebase-adminsdk-*.json
 .firebase/
 
+# Backend environment (pyebwa-token)
+pyebwa-token/backend/.env
+pyebwa-token/backend/.env.*
+
 # IDE
 .idea/
 .vscode/

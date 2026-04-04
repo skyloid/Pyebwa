@@ -30,6 +30,12 @@ class EmailService {
 
     // Load and compile email templates
     async loadTemplate(templateName) {
+        // Whitelist allowed template names to prevent path traversal
+        const allowedTemplates = ['invite', 'welcome', 'password-reset', 'family-update', 'announcement'];
+        if (!allowedTemplates.includes(templateName)) {
+            throw new Error(`Unknown email template: ${templateName}`);
+        }
+
         if (this.templates.has(templateName)) {
             return this.templates.get(templateName);
         }

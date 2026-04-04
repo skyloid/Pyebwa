@@ -55,80 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ==================== AUTH ====================
 
-function startAuthRetry() {
-    if (window.authRetryInProgress) return;
-    window.authRetryInProgress = true;
-    log('Starting auth retry process');
-    showLoadingState('Syncing authentication, please wait...');
-
-    let retryCount = 0;
-    const maxRetries = 15;
-    let authFound = false;
-
-    const onAuthSuccess = (user) => {
-        log(`Authentication successful for ${user.email}`);
-        window.authRetryInProgress = false;
-        sessionStorage.removeItem('recentLogin');
-        currentUser = user;
-        window.currentUser = currentUser;
-        const userEmailEl = document.querySelector('.user-email');
-        if (userEmailEl) userEmailEl.textContent = user.email;
-        checkAdminStatus(user);
-        initializeUserFamilyTree().then(() => {
-            hideLoadingState();
-            showView('dashboard');
-        }).catch(error => {
-            console.error('Error initializing:', error);
-            hideLoadingState();
-            showError('Error loading family tree. Please refresh.');
-        });
-    };
-
-    const retryAuth = async () => {
-        retryCount++;
-        log(`Auth retry attempt ${retryCount}/${maxRetries}`);
-
-        let user = auth.currentUser;
-        if (user) { authFound = true; onAuthSuccess(user); return; }
-
-        try {
-            await auth.currentUser?.reload();
-            user = auth.currentUser;
-            if (user) { authFound = true; onAuthSuccess(user); return; }
-        } catch (e) { /* ignore */ }
-
-        try {
-            await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-            user = auth.currentUser;
-            if (user) { authFound = true; onAuthSuccess(user); return; }
-        } catch (e) { /* ignore */ }
-
-        const waitForAuth = new Promise((resolve) => {
-            const timeout = setTimeout(() => resolve(null), 2000);
-            const unsubscribe = auth.onAuthStateChanged((u) => {
-                if (u) { clearTimeout(timeout); unsubscribe(); resolve(u); }
-            });
-        });
-
-        user = await waitForAuth;
-        if (user) { authFound = true; onAuthSuccess(user); return; }
-
-        if (retryCount < maxRetries && !authFound) {
-            const delay = Math.min(1000 * Math.pow(1.5, retryCount), 5000) + Math.random() * 500;
-            setTimeout(retryAuth, delay);
-        } else if (!authFound) {
-            log('Auth failed after all retries');
-            window.authRetryInProgress = false;
-            sessionStorage.removeItem('recentLogin');
-            hideLoadingState();
-            showError('Authentication sync timeout. Please try logging in again.');
-            setTimeout(() => { window.location.href = '/login.html'; }, 5000);
-        }
-    };
-
-    retryAuth();
-}
-
 async function initializeAuth() {
     log('=== App initialization started ===');
 
@@ -139,44 +65,6 @@ async function initializeAuth() {
     }
 
     showLoadingState();
-
-    // Check for magic link sign-in
-    if (auth.isSignInWithEmailLink(window.location.href)) {
-        let email = window.localStorage.getItem('emailForSignIn');
-        if (!email) email = window.prompt('Please provide your email for confirmation');
-        if (email) {
-            try {
-                const result = await auth.signInWithEmailLink(email, window.location.href);
-                window.localStorage.removeItem('emailForSignIn');
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('newUser') === 'true') {
-                    const pendingUserData = JSON.parse(window.localStorage.getItem('pendingUserData') || '{}');
-                    if (pendingUserData.email === email) {
-                        await db.collection('users').doc(result.user.uid).set({
-                            uid: result.user.uid,
-                            email: result.user.email,
-                            fullName: pendingUserData.fullName || '',
-                            displayName: pendingUserData.fullName || '',
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            language: 'en'
-                        });
-                        if (pendingUserData.fullName) {
-                            await result.user.updateProfile({ displayName: pendingUserData.fullName });
-                        }
-                        showSuccess(`Welcome ${pendingUserData.fullName || email}! Your account has been created.`);
-                        window.localStorage.removeItem('pendingUserData');
-                    }
-                }
-                window.history.replaceState({}, document.title, window.location.pathname);
-            } catch (error) {
-                log(`Magic link sign-in error: ${error.message}`);
-                hideLoadingState();
-                showError('Invalid or expired sign-in link. Please request a new one.');
-                setTimeout(() => { window.location.href = '/login.html'; }, 3000);
-            }
-        }
-    }
 
     // Redirect loop prevention
     const redirectData = JSON.parse(sessionStorage.getItem('pyebwaRedirectData') || '{}');
@@ -190,61 +78,10 @@ async function initializeAuth() {
         return;
     }
 
-    // Wait for auth state to be determined
-    const determinedUser = await new Promise((resolve) => {
-        const unsubscribe = auth.onAuthStateChanged((user) => {
-            unsubscribe();
-            resolve(user);
-        });
-    });
+    // Check Supabase auth session
+    try {
+        const user = await PyebwaAPI.getCurrentUser();
 
-    if (determinedUser) {
-        currentUser = determinedUser;
-        window.currentUser = currentUser;
-        const userEmailEl = document.querySelector('.user-email');
-        if (userEmailEl) userEmailEl.textContent = determinedUser.email;
-        checkAdminStatus(determinedUser);
-        sessionStorage.removeItem('authWaitSuccess');
-        sessionStorage.removeItem('recentLogin');
-        sessionStorage.removeItem('loginTime');
-        try {
-            await initializeUserFamilyTree();
-            hideLoadingState();
-            showView('dashboard');
-            log('App initialized successfully');
-        } catch (error) {
-            log(`Error initializing app: ${error.message}`);
-            hideLoadingState();
-            showError('Error loading your family tree. Please try again.');
-        }
-        return;
-    }
-
-    // Handle auth propagation wait
-    if (sessionStorage.getItem('authWaitSuccess') === 'true') {
-        sessionStorage.removeItem('authWaitSuccess');
-        for (let i = 0; i < 6; i++) {
-            await new Promise(resolve => setTimeout(resolve, 500));
-            if (auth.currentUser) { window.location.reload(); return; }
-        }
-        window.location.href = '/login.html';
-        return;
-    }
-
-    // Setup auth state listener
-    const isTablet = window.DeviceDetection && window.DeviceDetection.isTablet();
-    const authTimeoutDuration = isTablet ? 20000 : 10000;
-
-    const authTimeout = setTimeout(() => {
-        const loadingView = document.getElementById('loadingView');
-        if (!currentUser && !window.authRetryInProgress && loadingView && loadingView.style.display !== 'none') {
-            hideLoadingState();
-            setTimeout(() => { window.location.href = '/login.html'; }, 100);
-        }
-    }, authTimeoutDuration);
-
-    auth.onAuthStateChanged(async (user) => {
-        clearTimeout(authTimeout);
         if (user) {
             currentUser = user;
             window.currentUser = currentUser;
@@ -252,50 +89,48 @@ async function initializeAuth() {
             if (userEmailEl) userEmailEl.textContent = user.email;
             checkAdminStatus(user);
             sessionStorage.removeItem('pyebwaRedirectData');
-            localStorage.removeItem('lastRedirectTime');
+
             try {
                 await initializeUserFamilyTree();
                 hideLoadingState();
-                const needsOnboarding = await window.shouldShowEnhancedOnboarding();
+                const needsOnboarding = typeof window.shouldShowEnhancedOnboarding === 'function' && await window.shouldShowEnhancedOnboarding();
                 if (needsOnboarding) {
                     window.showEnhancedOnboarding();
                 } else if (window.shouldShowOnboarding && window.shouldShowOnboarding()) {
                     window.showOnboarding();
                 }
                 showView('dashboard');
+                log('App initialized successfully');
             } catch (error) {
+                log(`Error initializing app: ${error.message}`);
                 hideLoadingState();
                 showError('Error loading your family tree. Please try again.');
             }
         } else {
-            if (window.authRetryInProgress) return;
-            const recentLogin = sessionStorage.getItem('recentLogin') === 'true';
-            const loginTime = parseInt(sessionStorage.getItem('loginTime') || '0');
-            if (recentLogin && (Date.now() - loginTime) < 60000) {
-                startAuthRetry();
+            // Not authenticated - redirect to login
+            hideLoadingState();
+            if (canRedirect()) {
+                window.location.href = '/login.html';
             } else {
-                hideLoadingState();
-                if (canRedirect()) {
-                    window.location.href = '/login.html';
-                } else {
-                    showError('Please wait before trying to access this page again.');
-                }
+                showError('Please wait before trying to access this page again.');
             }
         }
-    }, (error) => {
+    } catch (error) {
+        log(`Auth check error: ${error.message}`);
         hideLoadingState();
         showError('Authentication error. Please login again.');
-    });
+        setTimeout(() => { window.location.href = '/login.html'; }, 3000);
+    }
 }
 
 // ==================== ADMIN ====================
 
 async function checkAdminStatus(user) {
     try {
-        const adminEmails = ['claude@humanlevel.ai', 'admin@pyebwa.com'];
         const adminLink = document.getElementById('adminLink');
         if (adminLink) {
-            adminLink.style.display = adminEmails.includes(user.email) ? 'flex' : 'none';
+            const isAdmin = user.role === 'admin' || user.role === 'superadmin' || user.role === 'moderator';
+            adminLink.style.display = isAdmin ? 'flex' : 'none';
         }
     } catch (error) {
         console.error('Error checking admin status:', error);
@@ -306,32 +141,19 @@ async function checkAdminStatus(user) {
 
 async function initializeUserFamilyTree() {
     try {
-        const userDoc = await db.collection('users').doc(currentUser.uid).get();
+        // Get user's trees via API
+        const trees = await PyebwaAPI.getTrees();
 
-        if (userDoc.exists && userDoc.data().familyTreeId) {
-            userFamilyTreeId = userDoc.data().familyTreeId;
+        if (trees && trees.length > 0) {
+            userFamilyTreeId = trees[0].id;
         } else {
-            if (!userDoc.exists) {
-                await db.collection('users').doc(currentUser.uid).set({
-                    uid: currentUser.uid,
-                    email: currentUser.email,
-                    displayName: currentUser.displayName || '',
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            }
-            const treeRef = await db.collection('familyTrees').add({
-                name: `${currentUser.displayName || currentUser.email}'s Family Tree`,
-                ownerId: currentUser.uid,
-                memberIds: [currentUser.uid],
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            userFamilyTreeId = treeRef.id;
-            await db.collection('users').doc(currentUser.uid).update({
-                familyTreeId: userFamilyTreeId,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            // Create a default family tree
+            const displayName = currentUser.displayName || currentUser.email;
+            const tree = await PyebwaAPI.createTree(
+                `${displayName}'s Family Tree`,
+                'My family tree'
+            );
+            userFamilyTreeId = tree.id;
         }
 
         window.userFamilyTreeId = userFamilyTreeId;
@@ -348,23 +170,11 @@ async function loadFamilyMembers() {
     if (!userFamilyTreeId) return;
 
     try {
-        let snapshot;
-        try {
-            snapshot = await db.collection('familyTrees').doc(userFamilyTreeId)
-                .collection('members').orderBy('createdAt', 'desc').get();
-        } catch (e) {
-            snapshot = await db.collection('familyTrees').doc(userFamilyTreeId)
-                .collection('members').get();
-        }
-
-        familyMembers = [];
-        const memberIds = new Set();
-        snapshot.forEach(doc => {
-            if (!memberIds.has(doc.id)) {
-                memberIds.add(doc.id);
-                familyMembers.push({ id: doc.id, treeId: userFamilyTreeId, ...doc.data() });
-            }
-        });
+        const result = await PyebwaAPI.getPersons(userFamilyTreeId);
+        familyMembers = (result.persons || []).map(p => ({
+            ...p,
+            treeId: userFamilyTreeId
+        }));
         window.familyMembers = familyMembers;
 
         const activeView = document.querySelector('.nav-item.active')?.getAttribute('data-view') || 'dashboard';
@@ -562,24 +372,24 @@ async function handleAddMember(e) {
             firstName: form.firstName.value,
             lastName: form.lastName.value,
             gender: form.gender.value,
-            birthDate: form.birthDate.value || null,
-            deathDate: form.deathDate.value || null,
+            birth_date: form.birthDate.value || null,
+            death_date: form.deathDate.value || null,
             email: form.email.value || null,
-            biography: form.biography.value || '',
-            relationship: form.relationship.value,
-            relatedTo: form.relatedTo?.value || null,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            biography: form.biography.value || ''
         };
 
-        if (!editingMemberId) {
-            memberData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-            memberData.addedBy = currentUser.uid;
+        // Handle relationships
+        const relationship = form.relationship.value;
+        const relatedTo = form.relatedTo?.value || null;
+        if (relationship && relatedTo) {
+            memberData.relationships = [{ type: relationship, personId: relatedTo }];
         }
 
         const photoFile = form.photo.files[0];
         if (photoFile && userFamilyTreeId) {
             try {
-                memberData.photoUrl = await uploadPhoto(photoFile);
+                const photoUrl = await uploadPhoto(photoFile);
+                memberData.photos = [{ url: photoUrl }];
             } catch (photoError) {
                 console.error('Photo upload failed:', photoError);
             }
@@ -588,13 +398,11 @@ async function handleAddMember(e) {
         let memberId;
         if (editingMemberId) {
             memberId = editingMemberId;
-            await db.collection('familyTrees').doc(userFamilyTreeId)
-                .collection('members').doc(editingMemberId).update(memberData);
+            await PyebwaAPI.updatePerson(userFamilyTreeId, editingMemberId, memberData);
             showSuccess(t('updatedSuccessfully') || 'Updated successfully!');
         } else {
-            const docRef = await db.collection('familyTrees').doc(userFamilyTreeId)
-                .collection('members').add(memberData);
-            memberId = docRef.id;
+            const person = await PyebwaAPI.addPerson(userFamilyTreeId, memberData);
+            memberId = person.id;
             showSuccess(t('savedSuccessfully'));
         }
 
@@ -624,18 +432,12 @@ async function handleAddMember(e) {
 }
 
 async function uploadPhoto(file) {
-    const storageRef = storage.ref();
-    const photoRef = storageRef.child(`familyTrees/${userFamilyTreeId}/photos/${Date.now()}_${file.name}`);
-    const metadata = { customMetadata: { uploadedBy: auth.currentUser.uid } };
-    const snapshot = await photoRef.put(file, metadata);
-    return await snapshot.ref.getDownloadURL();
+    return await PyebwaAPI.uploadPhoto(file, { treeId: userFamilyTreeId });
 }
 
 async function updateFamilyMember(memberId, updateData) {
     if (!userFamilyTreeId || !memberId) throw new Error('Missing family tree ID or member ID');
-    updateData.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
-    await db.collection('familyTrees').doc(userFamilyTreeId)
-        .collection('members').doc(memberId).update(updateData);
+    await PyebwaAPI.updatePerson(userFamilyTreeId, memberId, updateData);
     const memberIndex = familyMembers.findIndex(m => m.id === memberId);
     if (memberIndex !== -1) {
         familyMembers[memberIndex] = { ...familyMembers[memberIndex], ...updateData };
@@ -665,9 +467,7 @@ window.canViewField = function(member, fieldName) {
 async function logout() {
     try {
         showLoadingState('Signing out...');
-        await auth.signOut();
-        localStorage.removeItem('emailForSignIn');
-        localStorage.removeItem('pendingUserData');
+        await PyebwaAPI.logout();
         sessionStorage.clear();
         window.location.href = '/login.html';
     } catch (error) {

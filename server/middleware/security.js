@@ -35,7 +35,6 @@ const helmetConfig = {
             defaultSrc: ["'self'"],
             scriptSrc: [
                 "'self'",
-                "'unsafe-inline'", // Will be replaced with nonces in phase 2
                 "https://www.gstatic.com",
                 "https://apis.google.com",
                 "https://www.google.com",
@@ -45,7 +44,7 @@ const helmetConfig = {
             ],
             styleSrc: [
                 "'self'",
-                "'unsafe-inline'", // Will be replaced with nonces in phase 2
+                "'unsafe-inline'", // Styles often need unsafe-inline; nonces planned
                 "https://fonts.googleapis.com",
                 "https://cdn.jsdelivr.net",
                 "https://cdnjs.cloudflare.com"
@@ -106,8 +105,13 @@ const corsOptions = {
             'https://rasin.pyebwa.com'
         ];
         
-        // Allow requests with no origin (like mobile apps or Postman)
-        if (!origin) return callback(null, true);
+        // Reject requests with no origin in production (prevents CORS bypass)
+        if (!origin) {
+            if (process.env.NODE_ENV === 'production') {
+                return callback(new Error('Origin header required'));
+            }
+            return callback(null, true);
+        }
         
         // Remove localhost from production
         if (process.env.NODE_ENV === 'production' && origin.includes('localhost')) {

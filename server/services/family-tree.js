@@ -1,112 +1,54 @@
-const admin = require('firebase-admin');
+const treeQueries = require('../db/queries/family-trees');
+const personQueries = require('../db/queries/persons');
 
 class FamilyTreeService {
-  static async createFamilyTree(treeData) {
-    if (!treeData.name || treeData.name.trim() === '') {
-      throw new Error('Tree name is required');
+    static async createFamilyTree(treeData) {
+        if (!treeData.name || treeData.name.trim() === '') {
+            throw new Error('Tree name is required');
+        }
+        if (!treeData.ownerId) {
+            throw new Error('Owner ID is required');
+        }
+
+        const tree = await treeQueries.create({
+            name: treeData.name,
+            description: treeData.description || '',
+            owner_id: treeData.ownerId,
+            is_public: false,
+            settings: {
+                allowMemberInvites: true,
+                moderateContent: false
+            }
+        });
+
+        return tree;
     }
-    
-    if (!treeData.ownerId) {
-      throw new Error('Owner ID is required');
+
+    static async addMember(treeId, memberData) {
+        if (!memberData.firstName || memberData.firstName.trim() === '') {
+            throw new Error('First name is required');
+        }
+
+        const person = await personQueries.create({
+            family_tree_id: treeId,
+            first_name: memberData.firstName,
+            last_name: memberData.lastName || '',
+            birth_date: memberData.birthDate || null,
+            biography: memberData.biography || '',
+            photos: memberData.photos || [],
+            relationships: memberData.relationships || []
+        });
+
+        return person;
     }
-    
-    const db = admin.firestore();
-    const treeRef = db.collection('familyTrees').doc();
-    
-    const treeDoc = {
-      id: treeRef.id,
-      name: treeData.name,
-      ownerId: treeData.ownerId,
-      description: treeData.description || '',
-      memberIds: [treeData.ownerId],
-      isPublic: false,
-      settings: {
-        allowMemberInvites: true,
-        moderateContent: false
-      },
-      createdAt: admin.firestore().FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore().FieldValue.serverTimestamp()
-    };
-    
-    await treeRef.set(treeDoc);
-    
-    return {
-      id: treeRef.id,
-      ...treeDoc,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-  }
-  
-  static async addMember(treeId, memberData) {
-    if (!memberData.firstName || memberData.firstName.trim() === '') {
-      throw new Error('First name is required');
+
+    static async hasWritePermission(treeId, userId) {
+        return treeQueries.hasAccess(treeId, userId);
     }
-    
-    const db = admin.firestore();
-    const memberRef = db.collection('familyTrees').doc(treeId).collection('members').doc();
-    
-    const memberDoc = {
-      id: memberRef.id,
-      firstName: memberData.firstName,
-      lastName: memberData.lastName || '',
-      birthDate: memberData.birthDate || null,
-      biography: memberData.biography || '',
-      photos: memberData.photos || [],
-      relationships: memberData.relationships || [],
-      createdAt: admin.firestore().FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore().FieldValue.serverTimestamp()
-    };
-    
-    await memberRef.set(memberDoc);
-    
-    return {
-      id: memberRef.id,
-      ...memberDoc,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-  }
-  
-  static async hasWritePermission(treeId, userId) {
-    const db = admin.firestore();
-    const treeDoc = await db.collection('familyTrees').doc(treeId).get();
-    
-    if (!treeDoc.exists) {
-      return false;
+
+    static async searchMembers(treeId, searchQuery) {
+        return personQueries.search(treeId, searchQuery);
     }
-    
-    const treeData = treeDoc.data();
-    
-    // Owner has full access
-    if (treeData.ownerId === userId) {
-      return true;
-    }
-    
-    // Check if user is a member
-    return treeData.memberIds && treeData.memberIds.includes(userId);
-  }
-  
-  static async searchMembers(treeId, searchQuery) {
-    const db = admin.firestore();
-    const membersRef = db.collection('familyTrees').doc(treeId).collection('members');
-    
-    // Simple search implementation (in production, use Algolia or similar)
-    const snapshot = await membersRef
-      .where('firstName', '>=', searchQuery)
-      .where('firstName', '<=', searchQuery + '\uf8ff')
-      .get();
-    
-    const results = [];
-    snapshot.forEach(doc => {
-      results.push({
-        id: doc.id,
-        ...doc.data()
-      });
-    });
-    
-    return results;
-  }
 }
 
 module.exports = FamilyTreeService;

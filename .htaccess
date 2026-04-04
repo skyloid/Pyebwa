@@ -14,8 +14,8 @@
     Header set Referrer-Policy "strict-origin-when-cross-origin"
     Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
     
-    # HSTS (only enable if you have valid SSL certificate)
-    # Header set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    # HSTS - enforce HTTPS
+    Header set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
 </IfModule>
 
 # Protect sensitive files

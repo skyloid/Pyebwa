@@ -399,13 +399,25 @@
                 return;
             }
             
-            activityList.innerHTML = recentMembers.map(member => `
-                <div class="activity-item">
-                    <span class="material-icons">person_add</span>
-                    <span class="activity-text">Added ${member.firstName} ${member.lastName}</span>
-                    <span class="activity-time">${this.formatRelativeTime(member.createdAt.toDate())}</span>
-                </div>
-            `).join('');
+            // Use DOM API to prevent XSS from member data
+            activityList.textContent = '';
+            recentMembers.forEach(member => {
+                const item = document.createElement('div');
+                item.className = 'activity-item';
+                const icon = document.createElement('span');
+                icon.className = 'material-icons';
+                icon.textContent = 'person_add';
+                const text = document.createElement('span');
+                text.className = 'activity-text';
+                text.textContent = `Added ${member.firstName} ${member.lastName}`;
+                const time = document.createElement('span');
+                time.className = 'activity-time';
+                time.textContent = this.formatRelativeTime(member.createdAt.toDate());
+                item.appendChild(icon);
+                item.appendChild(text);
+                item.appendChild(time);
+                activityList.appendChild(item);
+            });
         },
         
         // Format relative time

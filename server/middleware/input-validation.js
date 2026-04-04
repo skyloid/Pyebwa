@@ -27,7 +27,8 @@ const validationRules = {
         if (value.length > 100) {
             return 'Name must be less than 100 characters';
         }
-        if (!/^[a-zA-Z\s\-']+$/.test(value)) {
+        // Allow Unicode letters (accented chars, Creole, etc.), spaces, hyphens, apostrophes
+        if (!/^[\p{L}\s\-']+$/u.test(value)) {
             return 'Name contains invalid characters';
         }
         return null;
@@ -208,24 +209,10 @@ const validateFileUpload = (type) => {
     };
 };
 
-// SQL injection prevention for raw queries (if any)
-const preventSQLInjection = (value) => {
-    if (typeof value !== 'string') return value;
-    // Basic SQL injection patterns
-    const sqlPatterns = [
-        /(\b)(DELETE|DROP|EXEC(UTE)?|INSERT|SELECT|UNION|UPDATE)(\b)/gi,
-        /(\-\-)|(\;)|(\||\\)/g,
-        /(\')|(\")|(\\x27)|(\\x22)/g
-    ];
-    
-    for (const pattern of sqlPatterns) {
-        if (pattern.test(value)) {
-            throw new Error('Potential SQL injection detected');
-        }
-    }
-    
-    return value;
-};
+// REMOVED: preventSQLInjection — Not applicable to Firestore (NoSQL).
+// The function was blocking legitimate content (e.g. names containing "Select").
+// NoSQL injection is handled by express-mongo-sanitize middleware.
+const preventSQLInjection = (value) => value;
 
 module.exports = {
     validationRules,

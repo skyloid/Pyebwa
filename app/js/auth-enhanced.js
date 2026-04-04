@@ -1,141 +1,127 @@
-// Enhanced Authentication Module
-// Provides additional authentication features and fixes
-
+// Enhanced Authentication Module - Supabase-based
 (function() {
     'use strict';
-    
+
     console.log('[AuthEnhanced] Loading enhanced authentication module');
-    
-    // Check if Firebase is loaded
-    if (!window.firebase || !window.firebase.auth) {
-        console.error('[AuthEnhanced] Firebase not loaded. Retrying in 1 second...');
-        setTimeout(arguments.callee, 1000);
-        return;
-    }
-    
-    const auth = firebase.auth();
-    
-    // Enhanced auth state management
+
     const AuthEnhanced = {
         currentUser: null,
         authStateListeners: [],
-        
-        init() {
-            this.setupAuthStateListener();
-            this.enhanceAuthPersistence();
+
+        async init() {
+            await this.checkSession();
             this.setupErrorHandling();
+            this.setupSupabaseListener();
             console.log('[AuthEnhanced] Enhanced authentication initialized');
         },
-        
-        setupAuthStateListener() {
-            auth.onAuthStateChanged((user) => {
-                this.currentUser = user;
-                
-                if (user) {
-                    console.log('[AuthEnhanced] User authenticated:', user.email);
-                    this.notifyListeners('authenticated', user);
+
+        async checkSession() {
+            try {
+                const client = window.supabaseClient;
+                if (!client) {
+                    this.currentUser = null;
+                    this.notifyListeners('unauthenticated', null);
+                    return;
+                }
+
+                const { data: { session } } = await client.auth.getSession();
+                if (session) {
+                    this.currentUser = {
+                        uid: session.user.id,
+                        email: session.user.email,
+                        displayName: session.user.user_metadata?.display_name || '',
+                        role: session.user.user_metadata?.role || 'member'
+                    };
+                    console.log('[AuthEnhanced] User authenticated:', session.user.email);
+                    this.notifyListeners('authenticated', this.currentUser);
                 } else {
+                    this.currentUser = null;
                     console.log('[AuthEnhanced] User not authenticated');
                     this.notifyListeners('unauthenticated', null);
                 }
+            } catch (error) {
+                console.error('[AuthEnhanced] Session check error:', error);
+                this.currentUser = null;
+                this.notifyListeners('unauthenticated', null);
+            }
+        },
+
+        setupSupabaseListener() {
+            const client = window.supabaseClient;
+            if (!client) return;
+
+            client.auth.onAuthStateChange((event, session) => {
+                if (event === 'SIGNED_OUT') {
+                    this.currentUser = null;
+                    this.notifyListeners('unauthenticated', null);
+                } else if (session) {
+                    this.currentUser = {
+                        uid: session.user.id,
+                        email: session.user.email,
+                        displayName: session.user.user_metadata?.display_name || '',
+                        role: session.user.user_metadata?.role || 'member'
+                    };
+                    this.notifyListeners('authenticated', this.currentUser);
+                }
             });
         },
-        
-        enhanceAuthPersistence() {
-            // Ensure auth persistence is properly set
-            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch((error) => {
-                console.error('[AuthEnhanced] Error setting persistence:', error);
-            });
-        },
-        
+
         setupErrorHandling() {
-            // Global error handler for auth operations
             window.addEventListener('unhandledrejection', (event) => {
-                if (event.reason && event.reason.code && event.reason.code.startsWith('auth/')) {
+                if (event.reason && event.reason.message && event.reason.message.includes('Authentication required')) {
                     console.error('[AuthEnhanced] Auth error caught:', event.reason);
-                    this.handleAuthError(event.reason);
+                    this.handleAuthError('session_expired');
                     event.preventDefault();
                 }
             });
         },
-        
-        handleAuthError(error) {
+
+        handleAuthError(errorCode) {
             const errorMessages = {
-                'auth/network-request-failed': 'Network error. Please check your connection.',
-                'auth/too-many-requests': 'Too many requests. Please try again later.',
-                'auth/user-token-expired': 'Session expired. Please sign in again.',
-                'auth/invalid-email': 'Invalid email address.',
-                'auth/user-disabled': 'This account has been disabled.',
-                'auth/user-not-found': 'User not found.',
-                'auth/wrong-password': 'Incorrect password.'
+                'session_expired': 'Session expired. Please sign in again.',
+                'network_error': 'Network error. Please check your connection.',
+                'invalid_credentials': 'Invalid email or password.',
+                'account_disabled': 'This account has been disabled.'
             };
-            
-            const message = errorMessages[error.code] || 'Authentication error occurred.';
-            this.notifyListeners('error', { code: error.code, message });
+            const message = errorMessages[errorCode] || 'Authentication error occurred.';
+            this.notifyListeners('error', { code: errorCode, message });
         },
-        
+
         addAuthStateListener(callback) {
             this.authStateListeners.push(callback);
-            // Immediately notify with current state
             if (this.currentUser !== undefined) {
                 callback(this.currentUser ? 'authenticated' : 'unauthenticated', this.currentUser);
             }
         },
-        
+
         notifyListeners(event, data) {
             this.authStateListeners.forEach(callback => {
-                try {
-                    callback(event, data);
-                } catch (error) {
+                try { callback(event, data); } catch (error) {
                     console.error('[AuthEnhanced] Error in auth state listener:', error);
                 }
             });
         },
-        
-        // Enhanced sign out with cleanup
+
         async signOut() {
             try {
-                await auth.signOut();
-                // Clear any cached data
-                if (window.localStorage) {
-                    const keysToRemove = [];
-                    for (let i = 0; i < localStorage.length; i++) {
-                        const key = localStorage.key(i);
-                        if (key && (key.startsWith('firebase:') || key.startsWith('user:'))) {
-                            keysToRemove.push(key);
-                        }
-                    }
-                    keysToRemove.forEach(key => localStorage.removeItem(key));
-                }
+                const client = window.supabaseClient;
+                if (client) await client.auth.signOut();
+                this.currentUser = null;
+                this.notifyListeners('unauthenticated', null);
                 console.log('[AuthEnhanced] User signed out successfully');
             } catch (error) {
                 console.error('[AuthEnhanced] Sign out error:', error);
                 throw error;
             }
         },
-        
-        // Get current user with token refresh
+
         async getCurrentUser(forceRefresh = false) {
-            const user = auth.currentUser;
-            if (!user) return null;
-            
-            try {
-                if (forceRefresh) {
-                    await user.getIdToken(true);
-                }
-                return user;
-            } catch (error) {
-                console.error('[AuthEnhanced] Error refreshing token:', error);
-                if (error.code === 'auth/user-token-expired') {
-                    await this.signOut();
-                }
-                return null;
-            }
+            if (!forceRefresh && this.currentUser) return this.currentUser;
+            await this.checkSession();
+            return this.currentUser;
         }
     };
-    
-    // Initialize and expose globally
+
     AuthEnhanced.init();
     window.AuthEnhanced = AuthEnhanced;
-    
 })();

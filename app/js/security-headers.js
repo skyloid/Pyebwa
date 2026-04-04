@@ -8,7 +8,6 @@
             'default-src': ["'self'"],
             'script-src': [
                 "'self'",
-                "'unsafe-inline'", // Will be removed after refactoring inline scripts
                 "https://www.gstatic.com",
                 "https://www.googletagmanager.com",
                 "https://fonts.googleapis.com",
@@ -16,7 +15,7 @@
             ],
             'style-src': [
                 "'self'",
-                "'unsafe-inline'", // For dynamic styles, will implement nonces later
+                "'unsafe-inline'", // Dynamic styles require this; nonces planned
                 "https://fonts.googleapis.com"
             ],
             'img-src': [

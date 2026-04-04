@@ -280,55 +280,37 @@
         </div>
     </div>
     
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-    
+    <!-- Session-based auth (Firebase removed) -->
     <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyAkBdJC_9OLsd8ktr5oCDH7dAZ1-fGTgqc",
-            authDomain: "pyebwa-f5960.firebaseapp.com",
-            projectId: "pyebwa-f5960",
-            storageBucket: "pyebwa-f5960.appspot.com",
-            messagingSenderId: "1042887343749",
-            appId: "1:1042887343749:web:6b6dc57e19dade3f6413ad",
-            measurementId: "G-1HMSJ5VLYJ"
-        };
-        
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        
         // Get invite token from URL
         const pathParts = window.location.pathname.split('/');
         const inviteToken = pathParts[pathParts.length - 1];
-        
-        // Check if user is already logged in
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                // User is logged in, try to accept invite
-                await acceptInvite(user.uid);
-            } else {
-                // Load invite details
-                loadInviteDetails();
-            }
-        });
-        
+
+        // Check if user is already logged in via session
+        fetch('/api/auth/me', { credentials: 'include' })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+                if (data && data.user) {
+                    acceptInvite();
+                } else {
+                    loadInviteDetails();
+                }
+            })
+            .catch(() => loadInviteDetails());
+
         async function loadInviteDetails() {
             const contentDiv = document.getElementById('inviteContent');
-            
+
             try {
                 const response = await fetch(`/api/invites/details/${inviteToken}`);
                 const result = await response.json();
-                
+
                 if (!response.ok) {
                     throw new Error(result.error || 'Invalid invitation');
                 }
-                
+
                 displayInviteDetails(result.invite);
-                
+
             } catch (error) {
                 contentDiv.className = 'invite-status error';
                 contentDiv.innerHTML = `
@@ -338,11 +320,11 @@
                 `;
             }
         }
-        
+
         function displayInviteDetails(invite) {
             const contentDiv = document.getElementById('inviteContent');
             contentDiv.className = '';
-            
+
             contentDiv.innerHTML = `
                 <div class="person-card">
                     <div class="person-photo">
@@ -353,37 +335,32 @@
                         <p>Your profile in the family tree</p>
                     </div>
                 </div>
-                
+
                 <div class="tree-info">
                     <h3>${invite.treeName}</h3>
                     <p>Family Tree</p>
                 </div>
-                
+
                 <div class="auth-section">
                     <h3>Sign in to claim your profile</h3>
-                    
+
                     <div class="auth-buttons">
-                        <button class="auth-btn google" onclick="signInWithGoogle()">
-                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20">
-                            Continue with Google
-                        </button>
-                        
-                        <button class="auth-btn email" onclick="signInWithEmail()">
-                            <i class="material-icons">email</i>
-                            Continue with Email
-                        </button>
-                        
+                        <a href="/signup-standalone.html" class="auth-btn email">
+                            <i class="material-icons">person_add</i>
+                            Create Account
+                        </a>
+
                         <div class="divider">
                             <span>Already have an account?</span>
                         </div>
-                        
-                        <a href="/login.html?redirect=/app/invite/${inviteToken}" class="auth-btn signin">
+
+                        <a href="/login-standalone.html?redirect=/app/invite/${inviteToken}" class="auth-btn signin">
                             <i class="material-icons">login</i>
                             Sign In
                         </a>
                     </div>
                 </div>
-                
+
                 <div class="benefits">
                     <h4>What you can do after joining:</h4>
                     <ul>
@@ -395,57 +372,38 @@
                 </div>
             `;
         }
-        
-        async function signInWithGoogle() {
-            try {
-                const provider = new firebase.auth.GoogleAuthProvider();
-                const result = await auth.signInWithPopup(provider);
-                await acceptInvite(result.user.uid);
-            } catch (error) {
-                console.error('Google sign-in error:', error);
-                alert('Failed to sign in with Google. Please try again.');
-            }
-        }
-        
-        function signInWithEmail() {
-            // Redirect to registration page with invite token
-            window.location.href = `/app/register.html?invite=${inviteToken}`;
-        }
-        
-        async function acceptInvite(userId) {
+
+        async function acceptInvite() {
             const contentDiv = document.getElementById('inviteContent');
             contentDiv.className = 'invite-status loading';
             contentDiv.innerHTML = `
                 <div class="spinner"></div>
                 <p>Accepting invitation...</p>
             `;
-            
+
             try {
                 const response = await fetch(`/api/invites/accept/${inviteToken}`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ userId })
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (!response.ok) {
                     throw new Error(result.error || 'Failed to accept invitation');
                 }
-                
-                // Success! Redirect to the app
+
                 contentDiv.innerHTML = `
                     <i class="material-icons" style="color: #28a745; font-size: 48px;">check_circle</i>
                     <h3>Success!</h3>
                     <p>Your profile has been linked. Redirecting to your family tree...</p>
                 `;
-                
+
                 setTimeout(() => {
                     window.location.href = `/app?tree=${result.treeId}&person=${result.personId}`;
                 }, 2000);
-                
+
             } catch (error) {
                 contentDiv.className = 'invite-status error';
                 contentDiv.innerHTML = `

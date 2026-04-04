@@ -1,6 +1,5 @@
 const winston = require('winston');
 const path = require('path');
-const { getFirestore } = require('firebase-admin/firestore');
 
 // Create winston logger instance
 const logger = winston.createLogger({
@@ -12,31 +11,27 @@ const logger = winston.createLogger({
     ),
     defaultMeta: { service: 'pyebwa-security' },
     transports: [
-        // Console output
         new winston.transports.Console({
             format: winston.format.combine(
                 winston.format.colorize(),
                 winston.format.simple()
             )
         }),
-        // File output for errors
-        new winston.transports.File({ 
-            filename: path.join(__dirname, '../../logs/error.log'), 
+        new winston.transports.File({
+            filename: path.join(__dirname, '../../logs/error.log'),
             level: 'error',
-            maxsize: 5242880, // 5MB
+            maxsize: 5242880,
             maxFiles: 5
         }),
-        // File output for all logs
-        new winston.transports.File({ 
+        new winston.transports.File({
             filename: path.join(__dirname, '../../logs/combined.log'),
-            maxsize: 5242880, // 5MB
+            maxsize: 5242880,
             maxFiles: 5
         }),
-        // Security-specific logs
-        new winston.transports.File({ 
+        new winston.transports.File({
             filename: path.join(__dirname, '../../logs/security.log'),
             level: 'warn',
-            maxsize: 5242880, // 5MB
+            maxsize: 5242880,
             maxFiles: 10
         })
     ]
@@ -63,24 +58,23 @@ const SecurityEvents = {
     CONFIGURATION_CHANGE: 'CONFIGURATION_CHANGE'
 };
 
-// Security logger class
 class SecurityLogger {
     constructor() {
         this.logger = logger;
         this.db = null;
-        this.initializeFirestore();
+        this.initializeDB();
     }
-    
-    async initializeFirestore() {
+
+    async initializeDB() {
         try {
-            this.db = getFirestore();
-            this.auditCollection = this.db.collection('securityAuditLogs');
+            // Lazy-load pool to avoid circular deps during startup
+            const { query } = require('../db/pool');
+            this.query = query;
         } catch (error) {
-            this.logger.error('Failed to initialize Firestore for security logging:', error);
+            this.logger.warn('Database not available for security logging, using file logs only');
         }
     }
-    
-    // Log security event
+
     async logSecurityEvent(eventType, userId, details = {}, severity = 'info') {
         const event = {
             timestamp: new Date().toISOString(),
@@ -92,45 +86,38 @@ class SecurityLogger {
             userAgent: details.userAgent || 'unknown',
             ...this.getEnvironmentInfo()
         };
-        
+
         // Log to Winston
         this.logger.log(severity, `Security Event: ${eventType}`, event);
-        
-        // Log to Firestore for audit trail
-        if (this.db && this.auditCollection) {
+
+        // Log to PostgreSQL
+        if (this.query) {
             try {
-                await this.auditCollection.add(event);
+                await this.query(
+                    'INSERT INTO admin_logs (action, user_id, details, ip_address) VALUES ($1, $2, $3, $4)',
+                    [eventType, userId || 'anonymous', JSON.stringify(details), details.ip || null]
+                );
             } catch (error) {
-                this.logger.error('Failed to write security event to Firestore:', error);
+                this.logger.error('Failed to write security event to database:', error);
             }
         }
-        
-        // Check if event requires immediate alert
+
         if (this.requiresAlert(eventType, severity)) {
             await this.sendSecurityAlert(event);
         }
-        
+
         return event;
     }
-    
-    // Track failed login attempts
+
     async trackFailedLogin(email, ip, reason) {
-        const key = `failed_login:${email}`;
-        // This would integrate with Redis in production
-        // For now, we'll use in-memory tracking
-        
         await this.logSecurityEvent(
             SecurityEvents.LOGIN_FAILED,
             email,
             { ip, reason },
             'warn'
         );
-        
-        // Check if account should be locked
-        // Implementation would check Redis for attempt count
     }
-    
-    // Log successful login
+
     async logSuccessfulLogin(userId, email, ip, userAgent) {
         await this.logSecurityEvent(
             SecurityEvents.LOGIN_SUCCESS,
@@ -139,8 +126,7 @@ class SecurityLogger {
             'info'
         );
     }
-    
-    // Log suspicious activity
+
     async logSuspiciousActivity(userId, activity, details) {
         await this.logSecurityEvent(
             SecurityEvents.SUSPICIOUS_ACTIVITY,
@@ -149,8 +135,7 @@ class SecurityLogger {
             'error'
         );
     }
-    
-    // Log rate limit violations
+
     async logRateLimitExceeded(ip, endpoint, userId = null) {
         await this.logSecurityEvent(
             SecurityEvents.RATE_LIMIT_EXCEEDED,
@@ -159,8 +144,7 @@ class SecurityLogger {
             'warn'
         );
     }
-    
-    // Log unauthorized access attempts
+
     async logUnauthorizedAccess(userId, resource, ip) {
         await this.logSecurityEvent(
             SecurityEvents.UNAUTHORIZED_ACCESS,
@@ -169,50 +153,40 @@ class SecurityLogger {
             'error'
         );
     }
-    
-    // Get security metrics
+
     async getSecurityMetrics(timeRange = '24h') {
-        if (!this.db || !this.auditCollection) {
-            return null;
-        }
-        
-        const now = new Date();
-        const startTime = new Date(now.getTime() - this.parseTimeRange(timeRange));
-        
+        if (!this.query) return null;
+
+        const ms = this.parseTimeRange(timeRange);
+        const since = new Date(Date.now() - ms);
+
         try {
-            const snapshot = await this.auditCollection
-                .where('timestamp', '>=', startTime.toISOString())
-                .get();
-            
-            const events = snapshot.docs.map(doc => doc.data());
-            
-            // Aggregate metrics
+            const result = await this.query(
+                'SELECT action, COUNT(*) as count FROM admin_logs WHERE created_at >= $1 GROUP BY action',
+                [since]
+            );
+
             const metrics = {
-                totalEvents: events.length,
+                totalEvents: 0,
                 byType: {},
-                bySeverity: {},
                 failedLogins: 0,
-                suspiciousActivities: 0,
-                rateLimitations: 0
+                suspiciousActivities: 0
             };
-            
-            events.forEach(event => {
-                metrics.byType[event.eventType] = (metrics.byType[event.eventType] || 0) + 1;
-                metrics.bySeverity[event.severity] = (metrics.bySeverity[event.severity] || 0) + 1;
-                
-                if (event.eventType === SecurityEvents.LOGIN_FAILED) metrics.failedLogins++;
-                if (event.eventType === SecurityEvents.SUSPICIOUS_ACTIVITY) metrics.suspiciousActivities++;
-                if (event.eventType === SecurityEvents.RATE_LIMIT_EXCEEDED) metrics.rateLimitViolations++;
+
+            result.rows.forEach(row => {
+                metrics.byType[row.action] = parseInt(row.count);
+                metrics.totalEvents += parseInt(row.count);
+                if (row.action === SecurityEvents.LOGIN_FAILED) metrics.failedLogins = parseInt(row.count);
+                if (row.action === SecurityEvents.SUSPICIOUS_ACTIVITY) metrics.suspiciousActivities = parseInt(row.count);
             });
-            
+
             return metrics;
         } catch (error) {
             this.logger.error('Failed to get security metrics:', error);
             return null;
         }
     }
-    
-    // Helper methods
+
     getEnvironmentInfo() {
         return {
             nodeEnv: process.env.NODE_ENV,
@@ -220,7 +194,7 @@ class SecurityLogger {
             hostname: require('os').hostname()
         };
     }
-    
+
     requiresAlert(eventType, severity) {
         const alertEvents = [
             SecurityEvents.SUSPICIOUS_ACTIVITY,
@@ -228,41 +202,26 @@ class SecurityLogger {
             SecurityEvents.ACCOUNT_LOCKED,
             SecurityEvents.CONFIGURATION_CHANGE
         ];
-        
         return alertEvents.includes(eventType) || severity === 'error';
     }
-    
+
     async sendSecurityAlert(event) {
-        // In production, this would send to Slack, email, or monitoring service
-        this.logger.error('🚨 SECURITY ALERT:', event);
-        
-        // TODO: Implement actual alerting (SendGrid, Slack, etc.)
+        this.logger.error('SECURITY ALERT:', event);
     }
-    
+
     parseTimeRange(timeRange) {
-        const units = {
-            h: 60 * 60 * 1000,
-            d: 24 * 60 * 60 * 1000,
-            w: 7 * 24 * 60 * 60 * 1000
-        };
-        
+        const units = { h: 3600000, d: 86400000, w: 604800000 };
         const match = timeRange.match(/(\d+)([hdw])/);
-        if (!match) return 24 * 60 * 60 * 1000; // Default 24h
-        
-        const [, num, unit] = match;
-        return parseInt(num) * (units[unit] || units.h);
+        if (!match) return 86400000;
+        return parseInt(match[1]) * (units[match[2]] || units.h);
     }
 }
 
-// Create singleton instance
 const securityLogger = new SecurityLogger();
 
-// Export instance and event types
 module.exports = {
     securityLogger,
     SecurityEvents,
-    
-    // Convenience methods
     logSecurityEvent: (...args) => securityLogger.logSecurityEvent(...args),
     trackFailedLogin: (...args) => securityLogger.trackFailedLogin(...args),
     logSuccessfulLogin: (...args) => securityLogger.logSuccessfulLogin(...args),

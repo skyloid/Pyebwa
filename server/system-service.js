@@ -1,11 +1,10 @@
-const admin = require('firebase-admin');
+const { pool, query } = require('./db/pool');
 const os = require('os');
 const fs = require('fs').promises;
 const path = require('path');
 
 class SystemService {
     constructor() {
-        this.db = admin.firestore();
         this.metrics = {
             cpu: [],
             memory: [],
@@ -36,7 +35,7 @@ class SystemService {
 
     async getServerStatus() {
         const uptime = process.uptime();
-        
+
         return {
             status: 'Online',
             uptime: uptime,
@@ -48,31 +47,29 @@ class SystemService {
 
     async getDatabaseStatus() {
         try {
-            // Test Firestore connection
-            const testDoc = await this.db.collection('system_health').doc('test').get();
-            
-            // Get collection count
-            const collections = ['users', 'familyTrees', 'persons', 'stories', 'content', 'announcements', 'admin_logs'];
-            let totalCollections = 0;
-            
-            for (const collection of collections) {
+            await query('SELECT 1');
+
+            const tables = ['users', 'family_trees', 'persons', 'invites', 'admin_logs', 'announcements', 'content'];
+            let totalTables = 0;
+
+            for (const table of tables) {
                 try {
-                    const snapshot = await this.db.collection(collection).limit(1).get();
-                    if (!snapshot.empty) totalCollections++;
+                    await query(`SELECT 1 FROM ${table} LIMIT 1`);
+                    totalTables++;
                 } catch (error) {
-                    console.warn(`Collection ${collection} not accessible:`, error.message);
+                    // Table might not exist yet
                 }
             }
 
             return {
                 status: 'Connected',
-                collections: totalCollections,
-                type: 'Firestore'
+                tables: totalTables,
+                type: 'PostgreSQL'
             };
         } catch (error) {
             return {
                 status: 'Error',
-                collections: 0,
+                tables: 0,
                 error: error.message
             };
         }
@@ -92,15 +89,12 @@ class SystemService {
     }
 
     async getAPIStatus() {
-        // Get recent API metrics
-        const now = Date.now();
         const recentMetrics = this.metrics.responseTime.slice(-10);
-        const avgResponseTime = recentMetrics.length > 0 
+        const avgResponseTime = recentMetrics.length > 0
             ? Math.round(recentMetrics.reduce((a, b) => a + b, 0) / recentMetrics.length)
             : 0;
 
-        // Calculate requests per minute (approximate)
-        const requestsPerMinute = this.metrics.responseTime.length > 0 
+        const requestsPerMinute = this.metrics.responseTime.length > 0
             ? Math.round(this.metrics.responseTime.length / (process.uptime() / 60))
             : 0;
 
@@ -114,56 +108,47 @@ class SystemService {
     async getServiceStatus() {
         const services = [];
 
-        // Firebase Auth
+        // PostgreSQL
         try {
-            await admin.auth().listUsers(1);
+            await query('SELECT 1');
             services.push({
-                name: 'Firebase Auth',
-                status: 'operational',
-                details: 'Authentication service running'
-            });
-        } catch (error) {
-            services.push({
-                name: 'Firebase Auth',
-                status: 'error',
-                details: error.message
-            });
-        }
-
-        // Firestore
-        try {
-            await this.db.collection('system_health').limit(1).get();
-            services.push({
-                name: 'Firestore',
+                name: 'PostgreSQL',
                 status: 'operational',
                 details: 'Database connection active'
             });
         } catch (error) {
             services.push({
-                name: 'Firestore',
+                name: 'PostgreSQL',
                 status: 'error',
                 details: error.message
             });
         }
 
-        // Cloud Storage
+        // Session Auth
+        services.push({
+            name: 'Session Auth',
+            status: 'operational',
+            details: 'Session-based authentication active'
+        });
+
+        // Local File Storage
         try {
-            const bucket = admin.storage().bucket();
-            await bucket.getMetadata();
+            const uploadsDir = path.join(__dirname, '../uploads');
+            await fs.access(uploadsDir);
             services.push({
-                name: 'Cloud Storage',
+                name: 'File Storage',
                 status: 'operational',
-                details: 'Storage service available'
+                details: 'Local file storage available'
             });
         } catch (error) {
             services.push({
-                name: 'Cloud Storage',
-                status: 'error',
-                details: error.message
+                name: 'File Storage',
+                status: 'not_configured',
+                details: 'Uploads directory not found'
             });
         }
 
-        // SendGrid (check if API key is configured)
+        // SendGrid
         const sendGridKey = process.env.SENDGRID_API_KEY;
         services.push({
             name: 'SendGrid',
@@ -171,21 +156,19 @@ class SystemService {
             details: sendGridKey ? 'Email service configured' : 'API key not configured'
         });
 
-        // FCM (check if configured)
-        const fcmKey = process.env.FCM_SERVER_KEY;
-        services.push({
-            name: 'FCM',
-            status: fcmKey ? 'operational' : 'not_configured',
-            details: fcmKey ? 'Push notification service configured' : 'Server key not configured'
-        });
-
         return services;
     }
 
     async getMaintenanceMode() {
         try {
-            const configDoc = await this.db.collection('system_config').doc('maintenance').get();
-            return configDoc.exists ? configDoc.data().enabled : false;
+            const result = await query(
+                `SELECT value FROM content WHERE key = 'maintenance'`
+            );
+            if (result.rows.length === 0) return false;
+            const data = typeof result.rows[0].value === 'string'
+                ? JSON.parse(result.rows[0].value)
+                : result.rows[0].value;
+            return data.enabled || false;
         } catch (error) {
             console.error('Error checking maintenance mode:', error);
             return false;
@@ -206,11 +189,10 @@ class SystemService {
             case '30d':
                 startTime = now - (30 * 24 * 60 * 60 * 1000);
                 break;
-            default: // 24h
+            default:
                 startTime = now - (24 * 60 * 60 * 1000);
         }
 
-        // Filter metrics by time range
         const filteredIndices = this.metrics.timestamps
             .map((timestamp, index) => timestamp >= startTime ? index : -1)
             .filter(index => index !== -1);
@@ -225,36 +207,30 @@ class SystemService {
     }
 
     startMetricsCollection() {
-        // Collect metrics every minute
         setInterval(() => {
             this.collectMetrics();
-        }, 60000); // 1 minute
+        }, 60000);
 
-        // Clean up old metrics (keep only last 30 days)
         setInterval(() => {
             this.cleanupOldMetrics();
-        }, 3600000); // 1 hour
+        }, 3600000);
     }
 
     collectMetrics() {
         const timestamp = Date.now();
-        
-        // CPU usage (approximation using loadavg)
+
         const loadavg = os.loadavg();
         const cpuUsage = Math.min(100, (loadavg[0] / os.cpus().length) * 100);
 
-        // Memory usage
         const memoryStatus = this.getMemoryStatus();
         const memoryUsageMB = Math.round(memoryStatus.used / 1024 / 1024);
 
-        // Add to metrics arrays
         this.metrics.timestamps.push(timestamp);
         this.metrics.cpu.push(Math.round(cpuUsage));
         this.metrics.memory.push(memoryUsageMB);
-        this.metrics.responseTime.push(0); // Will be updated by API calls
-        this.metrics.errors.push(0); // Will be updated by error tracking
+        this.metrics.responseTime.push(0);
+        this.metrics.errors.push(0);
 
-        // Limit arrays to last 30 days of data (30 * 24 * 60 = 43200 data points)
         const maxDataPoints = 43200;
         if (this.metrics.timestamps.length > maxDataPoints) {
             this.metrics.timestamps = this.metrics.timestamps.slice(-maxDataPoints);
@@ -266,14 +242,12 @@ class SystemService {
     }
 
     recordAPICall(responseTime) {
-        // Update the most recent response time metric
         if (this.metrics.responseTime.length > 0) {
             this.metrics.responseTime[this.metrics.responseTime.length - 1] = responseTime;
         }
     }
 
     recordError() {
-        // Increment the most recent error count
         if (this.metrics.errors.length > 0) {
             this.metrics.errors[this.metrics.errors.length - 1]++;
         }
@@ -281,9 +255,9 @@ class SystemService {
 
     cleanupOldMetrics() {
         const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
-        
+
         const cutoffIndex = this.metrics.timestamps.findIndex(timestamp => timestamp >= thirtyDaysAgo);
-        
+
         if (cutoffIndex > 0) {
             this.metrics.timestamps = this.metrics.timestamps.slice(cutoffIndex);
             this.metrics.cpu = this.metrics.cpu.slice(cutoffIndex);
@@ -295,51 +269,34 @@ class SystemService {
 
     async getSystemLogs() {
         try {
-            // Get logs from Firestore (you might want to implement file-based logging)
-            const snapshot = await this.db.collection('system_logs')
-                .orderBy('timestamp', 'desc')
-                .limit(100)
-                .get();
-
-            const logs = [];
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                logs.push({
-                    id: doc.id,
-                    timestamp: data.timestamp.toDate(),
-                    level: data.level,
-                    message: data.message,
-                    module: data.module
-                });
-            });
-
-            return logs;
+            const result = await query(
+                `SELECT id, action as type, user_id, details, created_at as timestamp
+                 FROM admin_logs ORDER BY created_at DESC LIMIT 100`
+            );
+            return result.rows.map(row => ({
+                id: row.id,
+                timestamp: row.timestamp,
+                level: 'info',
+                message: row.action || row.type,
+                module: 'system',
+                details: row.details
+            }));
         } catch (error) {
             console.error('Error getting system logs:', error);
-            // Return some sample logs if collection doesn't exist
-            return [
-                {
-                    id: '1',
-                    timestamp: new Date(),
-                    level: 'info',
-                    message: 'System started successfully',
-                    module: 'system'
-                }
-            ];
+            return [{
+                id: '1',
+                timestamp: new Date(),
+                level: 'info',
+                message: 'System started successfully',
+                module: 'system'
+            }];
         }
     }
 
     async clearSystemLogs() {
         try {
-            const snapshot = await this.db.collection('system_logs').get();
-            const batch = this.db.batch();
-
-            snapshot.forEach(doc => {
-                batch.delete(doc.ref);
-            });
-
-            await batch.commit();
-            return { success: true, cleared: snapshot.size };
+            const result = await query(`DELETE FROM admin_logs`);
+            return { success: true, cleared: result.rowCount };
         } catch (error) {
             console.error('Error clearing system logs:', error);
             throw error;
@@ -348,26 +305,33 @@ class SystemService {
 
     async getConfiguration() {
         try {
-            // Get environment variables (filtered for security)
             const env = {
                 NODE_ENV: { value: process.env.NODE_ENV, sensitive: false, readonly: true },
                 PORT: { value: process.env.PORT, sensitive: false, readonly: true },
-                FIREBASE_PROJECT_ID: { value: process.env.FIREBASE_PROJECT_ID, sensitive: false, readonly: true },
+                DATABASE_URL: { value: process.env.DATABASE_URL ? '••••••••' : 'Not set', sensitive: true, readonly: true },
                 SENDGRID_API_KEY: { value: process.env.SENDGRID_API_KEY ? '••••••••' : 'Not set', sensitive: true, readonly: false },
-                SENDER_EMAIL: { value: process.env.SENDER_EMAIL, sensitive: false, readonly: false },
-                FCM_SERVER_KEY: { value: process.env.FCM_SERVER_KEY ? '••••••••' : 'Not set', sensitive: true, readonly: false },
-                VAPID_KEY: { value: process.env.VAPID_KEY ? '••••••••' : 'Not set', sensitive: true, readonly: false }
+                SENDER_EMAIL: { value: process.env.SENDER_EMAIL, sensitive: false, readonly: false }
             };
 
-            // Get feature flags
-            const featuresDoc = await this.db.collection('system_config').doc('features').get();
-            const features = featuresDoc.exists ? featuresDoc.data() : {
-                pushNotifications: true,
+            let features = {
                 emailNotifications: true,
                 maintenanceMode: false,
                 backupEnabled: true,
                 auditLogging: true
             };
+
+            try {
+                const result = await query(
+                    `SELECT value FROM content WHERE key = 'features'`
+                );
+                if (result.rows.length > 0) {
+                    features = typeof result.rows[0].value === 'string'
+                        ? JSON.parse(result.rows[0].value)
+                        : result.rows[0].value;
+                }
+            } catch (e) {
+                // Use defaults
+            }
 
             return { env, features };
         } catch (error) {
@@ -378,18 +342,15 @@ class SystemService {
 
     async saveConfiguration(config) {
         try {
-            // Update feature flags
             if (config.features) {
-                await this.db.collection('system_config').doc('features').set({
-                    ...config.features,
-                    updatedAt: admin.firestore.Timestamp.now()
-                });
+                await query(
+                    `INSERT INTO content (id, key, value, updated_at) VALUES (gen_random_uuid(), 'features', $1, NOW())
+                     ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = NOW()`,
+                    [JSON.stringify({ ...config.features, updatedAt: new Date().toISOString() })]
+                );
             }
 
-            // Environment variables would typically be handled differently in production
-            // For security reasons, we don't update env vars through the API in this example
             console.log('Configuration saved:', config);
-
             return { success: true };
         } catch (error) {
             console.error('Error saving configuration:', error);
@@ -404,17 +365,23 @@ class SystemService {
                 message: options.message || 'Site is currently under maintenance',
                 duration: options.duration || 30,
                 allowAdmins: options.allowAdmins !== false,
-                enabledAt: enabled ? admin.firestore.Timestamp.now() : null,
+                enabledAt: enabled ? new Date().toISOString() : null,
                 enabledBy: options.adminId || 'system'
             };
 
-            await this.db.collection('system_config').doc('maintenance').set(config);
+            await query(
+                `INSERT INTO content (id, key, value, updated_at) VALUES (gen_random_uuid(), 'maintenance', $1, NOW())
+                 ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = NOW()`,
+                [JSON.stringify(config)]
+            );
 
-            // Log the maintenance mode change
-            await this.logSystemEvent(
-                enabled ? 'maintenance_enabled' : 'maintenance_disabled',
-                `Maintenance mode ${enabled ? 'enabled' : 'disabled'}`,
-                { adminId: options.adminId }
+            await query(
+                `INSERT INTO admin_logs (action, user_id, details) VALUES ($1, $2, $3)`,
+                [
+                    enabled ? 'maintenance_enabled' : 'maintenance_disabled',
+                    options.adminId || null,
+                    JSON.stringify({ message: `Maintenance mode ${enabled ? 'enabled' : 'disabled'}` })
+                ]
             );
 
             return { success: true };
@@ -426,14 +393,10 @@ class SystemService {
 
     async logSystemEvent(type, message, metadata = {}) {
         try {
-            await this.db.collection('system_logs').add({
-                timestamp: admin.firestore.Timestamp.now(),
-                level: 'info',
-                message,
-                module: 'system',
-                type,
-                metadata
-            });
+            await query(
+                `INSERT INTO admin_logs (action, user_id, details) VALUES ($1, $2, $3)`,
+                [type, metadata.adminId || null, JSON.stringify({ message, ...metadata })]
+            );
         } catch (error) {
             console.error('Error logging system event:', error);
         }
@@ -442,7 +405,7 @@ class SystemService {
     async getHealthCheck() {
         try {
             const status = await this.getSystemStatus();
-            
+
             const health = {
                 status: 'healthy',
                 timestamp: new Date().toISOString(),
@@ -455,7 +418,6 @@ class SystemService {
                 }))
             };
 
-            // Determine overall health
             const hasErrors = status.services.some(s => s.status === 'error');
             if (hasErrors) {
                 health.status = 'degraded';

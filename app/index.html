@@ -50,12 +50,10 @@
     <!-- Cross-domain auth scripts removed - using single-domain auth now -->
     <!-- All authentication handled on same domain at /login/ -->
     
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-messaging-compat.js"></script>
+    <!-- Supabase Auth -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/app/js/supabase-client.js"></script>
+    <script src="/app/js/api-client.js"></script>
 </head>
 <body>
     <!-- App Container -->
@@ -312,7 +310,7 @@
     </footer>
 
     <!-- JavaScript -->
-    <script src="/app/js/firebase-config.js?v=4"></script>
+    <!-- firebase-config.js replaced by supabase-client.js in head -->
     <script src="/app/js/auth-enhanced.js?v=1"></script>
     <script src="/app/js/device-detection.js?v=1"></script>
     <script src="/app/js/auth-emergency-fix.js?v=2"></script>
@@ -352,7 +350,7 @@
     
     <!-- Performance & Optimization Scripts -->
     <script src="/app/js/performance-monitor.js"></script>
-    <script src="/app/js/firebase-optimized.js"></script>
+    <!-- firebase-optimized.js removed - using Supabase -->
     <script src="/app/js/lazy-load.js"></script>
     <script src="/app/js/sw-register.js"></script>
     

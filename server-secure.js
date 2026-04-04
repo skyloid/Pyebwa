@@ -26,18 +26,19 @@ app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Session management with security
-if (process.env.SESSION_SECRET) {
-    app.use(createSecureSession());
-    app.use(sessionTimeout(parseInt(process.env.SESSION_TIMEOUT_MINUTES) || 30));
-    
-    // Enable concurrent session check if configured
-    if (process.env.ENABLE_CONCURRENT_SESSION_CHECK === 'true') {
-        app.use(concurrentSessionCheck);
-    }
-    
-    app.use(deviceFingerprint);
+// Trust proxy for correct req.ip behind reverse proxy
+app.set('trust proxy', 1);
+
+// Session management with security (required)
+app.use(createSecureSession());
+app.use(sessionTimeout(parseInt(process.env.SESSION_TIMEOUT_MINUTES) || 30));
+
+// Enable concurrent session check if configured
+if (process.env.ENABLE_CONCURRENT_SESSION_CHECK === 'true') {
+    app.use(concurrentSessionCheck);
 }
+
+app.use(deviceFingerprint);
 
 // Initialize Firebase Admin SDK through centralized service
 try {
@@ -110,8 +111,8 @@ app.get('/api/csrf-token', (req, res) => {
 // Apply CSRF protection to all state-changing routes
 app.use(csrfProtection.validateToken);
 
-// Auth routes with strict rate limiting
-const authRoutes = require('./server/api/auth');
+// Auth routes with strict rate limiting (use secure auth module)
+const authRoutes = require('./server/api/auth-secure');
 app.use('/api/auth', authLimiter, authRoutes);
 
 // Admin routes with authentication and rate limiting
@@ -188,9 +189,8 @@ app.use((err, req, res, next) => {
     const isDevelopment = process.env.NODE_ENV !== 'production';
     
     res.status(err.status || 500).json({
-        error: isDevelopment ? err.message : 'An error occurred',
-        code: err.code || 'INTERNAL_ERROR',
-        ...(isDevelopment && { stack: err.stack })
+        error: 'An error occurred',
+        code: err.code || 'INTERNAL_ERROR'
     });
 });
 

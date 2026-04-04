@@ -1,49 +1,51 @@
 const session = require('express-session');
-const FirestoreStore = require('firestore-store')(session);
-const { getFirestore } = require('firebase-admin/firestore');
+const pgSession = require('connect-pg-simple')(session);
+const { pool } = require('../db/pool');
 
 // Session security configuration
 const createSecureSession = () => {
-    const db = getFirestore();
-    
+    if (!process.env.SESSION_SECRET) {
+        throw new Error('SESSION_SECRET environment variable is required. Server cannot start without it.');
+    }
+
     return session({
-        store: new FirestoreStore({
-            database: db,
-            collection: 'sessions',
+        store: new pgSession({
+            pool: pool,
+            tableName: 'session',
+            createTableIfMissing: true
         }),
-        name: 'pyebwa_session',
-        secret: process.env.SESSION_SECRET || require('crypto').randomBytes(64).toString('hex'),
+        name: 'pyebwa.sid',
+        secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: false,
         cookie: {
-            secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-            httpOnly: true, // Prevent XSS
-            maxAge: 24 * 60 * 60 * 1000, // 24 hours
-            sameSite: 'strict', // CSRF protection
-            domain: '.pyebwa.com' // Allow across subdomains
+            secure: process.env.NODE_ENV === 'production',
+            httpOnly: true,
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            sameSite: 'lax'
         },
-        rolling: true, // Reset expiry on activity
+        rolling: true,
     });
 };
 
 // Session timeout middleware
 const sessionTimeout = (timeoutMinutes = 30) => {
     return (req, res, next) => {
-        if (req.session && req.session.user) {
+        if (req.session && req.session.userId) {
             const now = Date.now();
             const lastActivity = req.session.lastActivity || now;
             const timeSinceActivity = now - lastActivity;
-            
+
             if (timeSinceActivity > timeoutMinutes * 60 * 1000) {
                 req.session.destroy((err) => {
                     if (err) console.error('Session destruction error:', err);
                 });
-                return res.status(401).json({ 
+                return res.status(401).json({
                     error: 'Session expired',
                     code: 'SESSION_TIMEOUT'
                 });
             }
-            
+
             req.session.lastActivity = now;
         }
         next();
@@ -52,35 +54,23 @@ const sessionTimeout = (timeoutMinutes = 30) => {
 
 // Concurrent session detection
 const concurrentSessionCheck = async (req, res, next) => {
-    if (req.session && req.session.user) {
-        const userId = req.session.user.uid;
+    if (req.session && req.session.userId) {
+        const userId = req.session.userId;
         const sessionId = req.sessionID;
-        
+
         try {
-            const db = getFirestore();
-            const userSessionRef = db.collection('userSessions').doc(userId);
-            const doc = await userSessionRef.get();
-            
-            if (doc.exists) {
-                const data = doc.data();
-                if (data.activeSessionId && data.activeSessionId !== sessionId) {
-                    // Another session is active
-                    req.session.destroy();
-                    return res.status(401).json({
-                        error: 'Another session is active',
-                        code: 'CONCURRENT_SESSION'
-                    });
-                }
+            // Check if another session is active for this user
+            const result = await pool.query(
+                `SELECT sess FROM session
+                 WHERE sess->>'userId' = $1 AND sid != $2
+                 AND expire > NOW()`,
+                [userId, sessionId]
+            );
+
+            if (result.rows.length > 0) {
+                // Multiple sessions exist - allow but log
+                console.log(`Multiple active sessions for user ${userId}`);
             }
-            
-            // Update active session
-            await userSessionRef.set({
-                activeSessionId: sessionId,
-                lastActive: new Date(),
-                userAgent: req.headers['user-agent'],
-                ip: req.ip
-            }, { merge: true });
-            
         } catch (error) {
             console.error('Concurrent session check error:', error);
         }
@@ -90,23 +80,20 @@ const concurrentSessionCheck = async (req, res, next) => {
 
 // Device fingerprinting
 const deviceFingerprint = (req, res, next) => {
-    if (req.session && req.session.user) {
+    if (req.session && req.session.userId) {
         const fingerprint = {
             userAgent: req.headers['user-agent'],
             acceptLanguage: req.headers['accept-language'],
             acceptEncoding: req.headers['accept-encoding'],
             ip: req.ip
         };
-        
+
         if (!req.session.deviceFingerprint) {
             req.session.deviceFingerprint = Buffer.from(JSON.stringify(fingerprint)).toString('base64');
         } else {
-            // Verify fingerprint hasn't changed significantly
             const currentFingerprint = Buffer.from(JSON.stringify(fingerprint)).toString('base64');
             if (currentFingerprint !== req.session.deviceFingerprint) {
-                // Log suspicious activity
-                console.warn('Device fingerprint mismatch for user:', req.session.user.uid);
-                // Could implement additional verification here
+                console.warn('Device fingerprint mismatch for user:', req.session.userId);
             }
         }
     }
@@ -121,11 +108,11 @@ const csrfProtection = {
         }
         return req.session.csrfToken;
     },
-    
+
     validateToken: (req, res, next) => {
         if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
             const token = req.headers['x-csrf-token'] || req.body._csrf;
-            
+
             if (!token || token !== req.session.csrfToken) {
                 return res.status(403).json({
                     error: 'Invalid CSRF token',
