@@ -18,76 +18,71 @@ function getCookie(name) {
     return null;
 }
 
-// Debug: Log when script loads
-console.log('App.js loaded - Modal functionality removed, translation system removed to avoid conflicts');
+// Get current language preference
+function getCurrentLang() {
+    return getCookie('pyebwa_lang') || localStorage.getItem('pyebwaLang') || 'ht';
+}
 
-// App functionality without conflicting translation system
+// App functionality
 document.addEventListener('DOMContentLoaded', function() {
-    // Cache DOM elements
-    const loginBtn = document.getElementById('loginBtn');
-    const signupBtn = document.getElementById('signupBtn');
-    const ctaBtn = document.getElementById('ctaBtn');
-    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-    const mobileNav = document.querySelector('.mobile-nav');
+    var loginBtn = document.getElementById('loginBtn');
+    var signupBtn = document.getElementById('signupBtn');
+    var ctaBtn = document.getElementById('ctaBtn');
+    var mobileMenuBtn = document.getElementById('mobileMenuBtn') || document.getElementById('mobileMenuToggle');
+    var mobileNav = document.querySelector('.mobile-nav') || document.querySelector('.nav-menu');
 
-    // Login button - redirect to rasin.pyebwa.com with language preference
+    // Login button - append language param to href
     if (loginBtn) {
-        loginBtn.addEventListener('click', function() {
-            // Get current language from cookie or localStorage
-            const currentLang = getCookie('pyebwa_lang') || localStorage.getItem('pyebwaLang') || 'ht';
-            window.location.href = `https://rasin.pyebwa.com/login.html?lang=${currentLang}`;
+        loginBtn.addEventListener('click', function(e) {
+            var lang = getCurrentLang();
+            var baseUrl = loginBtn.getAttribute('href') || 'https://rasin.pyebwa.com/login-standalone.html';
+            var separator = baseUrl.indexOf('?') === -1 ? '?' : '&';
+            window.location.href = baseUrl + separator + 'lang=' + lang;
+            e.preventDefault();
         });
     }
 
-    // Signup button - redirect to rasin.pyebwa.com with language preference
+    // Signup button - append language param to href
     if (signupBtn) {
-        signupBtn.addEventListener('click', function() {
-            // Get current language from cookie or localStorage
-            const currentLang = getCookie('pyebwa_lang') || localStorage.getItem('pyebwaLang') || 'ht';
-            window.location.href = `https://rasin.pyebwa.com/signup.html?lang=${currentLang}`;
+        signupBtn.addEventListener('click', function(e) {
+            var lang = getCurrentLang();
+            var baseUrl = signupBtn.getAttribute('href') || 'https://rasin.pyebwa.com/signup-standalone.html';
+            var separator = baseUrl.indexOf('?') === -1 ? '?' : '&';
+            window.location.href = baseUrl + separator + 'lang=' + lang;
+            e.preventDefault();
         });
     }
 
-    // CTA button - redirect to rasin.pyebwa.com signup with language preference
+    // CTA button - append language param to href
     if (ctaBtn) {
-        ctaBtn.addEventListener('click', function() {
-            // Get current language from cookie or localStorage
-            const currentLang = getCookie('pyebwa_lang') || localStorage.getItem('pyebwaLang') || 'ht';
-            window.location.href = `https://rasin.pyebwa.com/signup.html?lang=${currentLang}`;
+        ctaBtn.addEventListener('click', function(e) {
+            var lang = getCurrentLang();
+            var baseUrl = ctaBtn.getAttribute('href') || 'https://rasin.pyebwa.com/signup-standalone.html';
+            var separator = baseUrl.indexOf('?') === -1 ? '?' : '&';
+            window.location.href = baseUrl + separator + 'lang=' + lang;
+            e.preventDefault();
         });
     }
-    
+
     // Mobile menu functionality
     if (mobileMenuBtn && mobileNav) {
         mobileMenuBtn.addEventListener('click', function() {
             mobileNav.classList.toggle('active');
-            mobileMenuBtn.querySelector('.material-icons').textContent = 
-                mobileNav.classList.contains('active') ? 'close' : 'menu';
-        });
-    }
-    
-    // Theme toggle functionality
-    const themeToggle = document.getElementById('themeToggle');
-    if (themeToggle) {
-        themeToggle.addEventListener('click', function() {
-            document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            
-            // Update icon
-            const icon = themeToggle.querySelector('.material-icons');
+            var icon = mobileMenuBtn.querySelector('.material-icons');
             if (icon) {
-                icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+                icon.textContent = mobileNav.classList.contains('active') ? 'close' : 'menu';
             }
         });
     }
+
+    // Theme toggle handled by inline script in HTML — no duplicate listener needed
 });
 
 // Smooth scroll for anchor links
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
+document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+    anchor.addEventListener('click', function(e) {
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
+        var target = document.querySelector(this.getAttribute('href'));
         if (target) {
             target.scrollIntoView({
                 behavior: 'smooth',
@@ -98,9 +93,9 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 });
 
 // Add active class to current navigation item
-const currentLocation = location.pathname;
-const navLinks = document.querySelectorAll('.nav-link');
-navLinks.forEach(link => {
+var currentLocation = location.pathname;
+var navLinks = document.querySelectorAll('.nav-link');
+navLinks.forEach(function(link) {
     if (link.getAttribute('href') === currentLocation) {
         link.classList.add('active');
     }
