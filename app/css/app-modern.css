@@ -13,7 +13,7 @@
     --primary-moss: #2D6A4F;
     --accent-brown: #6B4F3A;
     --accent-sand: #DAD7CD;
-    --accent-cream: #F5F3EF;
+    --accent-cream: #FDFCFA;
 
     /* Legacy aliases — map old names to new palette */
     --primary-red: #2D6A4F;
@@ -83,6 +83,7 @@
 body.dark-mode {
     --white: #0B1410;
     --black: #DAD7CD;
+    --accent-cream: #142018;
     --gray-50: #0B1410;
     --gray-100: #101C17;
     --gray-200: #1A2B23;
@@ -306,7 +307,7 @@ body.dark-mode .app-header {
 }
 
 .lang-btn.active {
-    background: white;
+    background: var(--white);
     color: var(--primary-blue);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
@@ -478,7 +479,7 @@ body.dark-mode .header-theme-toggle:hover {
 }
 
 .btn-secondary {
-    background: white;
+    background: var(--white);
     color: var(--gray-700);
     border: 2px solid var(--gray-200);
     box-shadow: var(--shadow-sm);
@@ -549,7 +550,7 @@ body.dark-mode .header-theme-toggle:hover {
 
 .view-header h2 {
     font-size: 32px;
-    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-red) 100%);
+    background: linear-gradient(135deg, var(--primary-green) 0%, var(--accent-brown) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -557,7 +558,7 @@ body.dark-mode .header-theme-toggle:hover {
 
 /* Modern Cards */
 .card {
-    background: white;
+    background: var(--accent-cream);
     border-radius: var(--border-radius-lg);
     box-shadow: var(--shadow-md);
     transition: all var(--transition-base);
@@ -602,7 +603,7 @@ body.dark-mode .card {
 }
 
 .member-card {
-    background: white;
+    background: var(--accent-cream);
     border-radius: var(--border-radius-lg);
     overflow: hidden;
     box-shadow: var(--shadow-md);
@@ -711,13 +712,13 @@ body.dark-mode .card {
 
 .search-box input:hover {
     border-color: var(--gray-300);
-    background: white;
+    background: var(--white);
 }
 
 .search-box input:focus {
     outline: none;
     border-color: var(--primary-blue);
-    background: white;
+    background: var(--white);
     box-shadow: 0 0 0 4px rgba(0, 33, 125, 0.1);
 }
 
@@ -755,7 +756,7 @@ input:hover,
 select:hover,
 textarea:hover {
     border-color: var(--gray-300);
-    background: white;
+    background: var(--white);
 }
 
 input:focus,
@@ -763,14 +764,14 @@ select:focus,
 textarea:focus {
     outline: none;
     border-color: var(--primary-blue);
-    background: white;
+    background: var(--white);
     box-shadow: 0 0 0 4px rgba(0, 33, 125, 0.1);
 }
 
 /* File Input */
 input[type="file"] {
     padding: 8px 12px;
-    background: white;
+    background: var(--white);
 }
 
 /* Form Row */
@@ -821,7 +822,7 @@ input[type="file"] {
 }
 
 .modal-content {
-    background: white;
+    background: var(--white);
     border-radius: var(--border-radius-xl);
     width: 100%;
     max-width: 600px;
@@ -896,7 +897,7 @@ body.dark-mode .modal-content {
     bottom: 32px;
     left: 50%;
     transform: translateX(-50%) translateY(100px);
-    background: white;
+    background: var(--white);
     color: var(--gray-900);
     padding: 16px 24px 16px 20px;
     border-radius: var(--border-radius);
@@ -1093,7 +1094,7 @@ body.dark-mode .toast-notification {
     position: fixed;
     top: 96px;
     right: 32px;
-    background: white;
+    background: var(--white);
     color: var(--gray-700);
     width: 56px;
     height: 56px;
@@ -1240,7 +1241,7 @@ body.dark-mode .theme-toggle {
     }
     
     body {
-        background: white;
+        background: var(--white);
         color: black;
     }
     

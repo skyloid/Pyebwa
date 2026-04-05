@@ -48,8 +48,11 @@ window.addEventListener('pyebwaAuthSuccess', (event) => {
 document.addEventListener('DOMContentLoaded', () => {
     initializeAuth();
     initializeEventListeners();
-    const savedLang = localStorage.getItem('pyebwaLang') || 'ht';
-    setLanguage(savedLang);
+    const supportedLangs = ['en', 'fr', 'ht'];
+    const saved = localStorage.getItem('pyebwaLang');
+    const browserLang = (navigator.language || '').split('-')[0].toLowerCase();
+    const lang = saved || (supportedLangs.includes(browserLang) ? browserLang : 'en');
+    setLanguage(lang);
     updateTranslations();
 });
 
@@ -192,6 +195,8 @@ async function loadFamilyMembers() {
             photoUrl: p.photo_url || p.photoUrl || (p.photos && p.photos.length > 0 ? (p.photos.find(ph => ph.isProfile) || p.photos[0]).url : null),
             photos: p.photos || [],
             relationships: p.relationships || [],
+            relationship: p.relationship || ((p.relationships && p.relationships[0]) ? p.relationships[0].type : null),
+            relatedTo: p.relatedTo || ((p.relationships && p.relationships[0]) ? p.relationships[0].personId : null),
             phone: p.phone || null,
             userId: p.user_id || p.userId || null,
             createdAt: p.created_at || p.createdAt || null,

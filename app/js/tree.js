@@ -90,7 +90,15 @@ function renderFamilyTree(viewMode = 'full') {
     // Initialize tree controls if available
     if (window.pyebwaTreeControls) {
         setTimeout(() => {
-            window.pyebwaTreeControls.centerTree();
+            // Refresh element references after tree is rendered
+            var tc = window.pyebwaTreeControls;
+            var treeContainer = document.getElementById('treeContainer');
+            if (tc.elements && treeContainer) {
+                tc.elements.treeContainer = treeContainer;
+                tc.elements.treeWrapper = treeContainer.querySelector('.tree-wrapper');
+                tc.elements.tree = treeContainer.querySelector('.tree');
+            }
+            tc.centerTree();
         }, 100);
     }
 }

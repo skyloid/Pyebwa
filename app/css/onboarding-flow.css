@@ -330,7 +330,7 @@
 }
 
 .tree-node {
-    background: white;
+    background: var(--accent-cream, #FDFCFA);
     border: 2px solid var(--gray-200);
     border-radius: 12px;
     padding: 16px;

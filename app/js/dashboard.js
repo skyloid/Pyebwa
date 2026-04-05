@@ -193,7 +193,7 @@ function createDashboard() {
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: linear-gradient(135deg, rgba(0,33,125,0.7) 0%, rgba(212,17,37,0.5) 100%);
+                background: linear-gradient(135deg, rgba(27,67,50,0.75) 0%, rgba(45,106,79,0.6) 50%, rgba(107,79,58,0.5) 100%);
             "></div>
             <div style="position: relative; z-index: 2; padding: 40px;">
                 <h2 style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); margin-bottom: 15px;">${t('welcomeBack') || 'Welcome back'}, ${currentUser?.displayName || currentUser?.email || 'User'}!</h2>

@@ -179,11 +179,11 @@
 }
 
 .chart-bar.male {
-    background: linear-gradient(to top, #2196f3, #64b5f6);
+    background: linear-gradient(to top, #00209F, #2040B8);
 }
 
 .chart-bar.female {
-    background: linear-gradient(to top, #e91e63, #f06292);
+    background: linear-gradient(to top, #D21034, #E04058);
 }
 
 .chart-bar .bar-label {
@@ -212,11 +212,11 @@
 }
 
 .legend-color.male {
-    background: #2196f3;
+    background: #00209F;
 }
 
 .legend-color.female {
-    background: #e91e63;
+    background: #D21034;
 }
 
 .legend-percent {

@@ -3,16 +3,21 @@
     padding: 20px;
     overflow: auto;
     min-height: 400px;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Family name header */
+/* Family name header — the trunk/roots at the bottom */
 .family-name-header {
     text-align: center;
-    font-size: 56px;
-    font-weight: 700;
-    color: #2D7F3E; /* Forest green color for tree theme */
-    margin-bottom: 40px;
-    padding: 30px 20px;
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--accent-brown, #6B4F3A);
+    margin-top: 20px;
+    margin-bottom: 0;
+    padding: 30px 20px 40px;
+    order: 1;
+    position: relative;
     text-transform: uppercase;
     letter-spacing: 3px;
     font-family: 'Montserrat', sans-serif;
@@ -86,7 +91,7 @@
 
 .tree-node {
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
     align-items: center;
     position: relative;
 }
@@ -96,19 +101,21 @@
     display: flex;
     gap: 20px;
     position: relative;
-    margin-bottom: 40px;
+    margin-top: 50px;
 }
 
-/* Connect spouses */
+/* Connect spouses — vine between partners */
 .tree-members::after {
     content: '';
     position: absolute;
     top: 50%;
     left: calc(50% - 40px);
     right: calc(50% - 40px);
-    height: 2px;
-    background: var(--gray-300);
+    height: 3px;
+    background: var(--accent-brown, #6B4F3A);
+    border-radius: 2px;
     z-index: -1;
+    opacity: 0.5;
 }
 
 .tree-members:has(.member-card:only-child)::after {
@@ -150,11 +157,11 @@
 }
 
 .member-card.male {
-    border-color: #3B82F6;
+    border-color: #00209F;
 }
 
 .member-card.female {
-    border-color: #EC4899;
+    border-color: #D21034;
 }
 
 .member-photo {
@@ -189,54 +196,90 @@
     color: var(--gray-500);
 }
 
-/* Children container */
+/* Children container — branches growing upward */
 .tree-children {
     display: flex;
-    gap: 40px;
+    gap: 48px;
     position: relative;
-    padding-top: 40px;
+    padding-bottom: 60px;
 }
 
-/* Vertical line from parent to children */
+/* Trunk — vertical line from parent down to branch point */
 .tree-node:has(.tree-children) > .tree-members::before {
     content: '';
     position: absolute;
-    bottom: -40px;
+    top: -50px;
     left: 50%;
-    width: 2px;
-    height: 40px;
-    background: var(--gray-300);
+    width: 4px;
+    height: 50px;
+    background: linear-gradient(to top, var(--accent-brown, #6B4F3A), var(--primary-moss, #2D6A4F));
+    border-radius: 2px;
     transform: translateX(-50%);
+    opacity: 0.7;
 }
 
-/* Horizontal line connecting children */
+/* Horizontal branch connecting children */
 .tree-children::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 20px;
-    right: 20px;
-    height: 2px;
-    background: var(--gray-300);
+    bottom: 20px;
+    left: 40px;
+    right: 40px;
+    height: 3px;
+    background: var(--accent-brown, #6B4F3A);
+    border-radius: 2px;
+    opacity: 0.5;
 }
 
-/* Vertical lines to each child */
+/* Individual child branch */
 .tree-child {
     position: relative;
 }
 
+/* Curved branch from horizontal to each child */
 .tree-child::before {
     content: '';
     position: absolute;
-    top: -40px;
+    bottom: -40px;
     left: 50%;
-    width: 2px;
-    height: 40px;
-    background: var(--gray-300);
+    width: 3px;
+    height: 42px;
+    background: linear-gradient(to bottom, transparent, var(--accent-brown, #6B4F3A));
+    border-radius: 2px;
     transform: translateX(-50%);
+    opacity: 0.6;
 }
 
-/* Single child - no horizontal line */
+/* Curved elbows — left children curve left, right children curve right */
+.tree-child:first-child:not(:only-child)::after {
+    content: '';
+    position: absolute;
+    bottom: -22px;
+    left: 50%;
+    width: 24px;
+    height: 24px;
+    border: 3px solid var(--accent-brown, #6B4F3A);
+    border-top: none;
+    border-right: none;
+    border-radius: 0 0 0 16px;
+    opacity: 0.5;
+}
+
+.tree-child:last-child:not(:only-child)::after {
+    content: '';
+    position: absolute;
+    bottom: -22px;
+    right: 50%;
+    width: 24px;
+    height: 24px;
+    border: 3px solid var(--accent-brown, #6B4F3A);
+    border-top: none;
+    border-left: none;
+    border-radius: 0 0 16px 0;
+    opacity: 0.5;
+}
+
+/* Single child — no horizontal branch needed */
 .tree-children:has(.tree-child:only-child)::before {
     display: none;
 }

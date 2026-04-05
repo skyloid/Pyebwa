@@ -2,16 +2,16 @@
 
 /* Tree Container */
 .tree-container {
-    background: white;
+    background: var(--white);
     border-radius: var(--border-radius-xl);
     padding: 40px;
     box-shadow: var(--shadow-lg);
     overflow: auto;
     min-height: 500px;
     position: relative;
-    background-image: 
-        radial-gradient(circle at 20% 80%, rgba(45, 106, 79, 0.02) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(27, 67, 50, 0.02) 0%, transparent 50%);
+    background-image:
+        radial-gradient(circle at 20% 80%, rgba(45, 106, 79, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(27, 67, 50, 0.03) 0%, transparent 50%);
 }
 
 body.dark-mode .tree-container {
@@ -47,10 +47,10 @@ body.dark-mode .tree-container {
     position: relative;
 }
 
-/* Tree Node */
+/* Tree Node — inverted: elders at bottom (root), children grow upward */
 .tree-node {
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
     align-items: center;
     position: relative;
 }
@@ -85,9 +85,10 @@ body.dark-mode .tree-container {
 .tree-node .member-card {
     width: 160px;
     padding: 16px;
-    background: white;
+    background: var(--accent-cream, #FDFCFA);
     border-radius: var(--border-radius-lg);
     box-shadow: var(--shadow-md);
+    border: 1px solid var(--gray-200);
     cursor: pointer;
     transition: all var(--transition-base);
     position: relative;
@@ -100,9 +101,9 @@ body.dark-mode .tree-container {
     position: absolute;
     inset: -2px;
     border-radius: var(--border-radius-lg);
-    background: linear-gradient(135deg, 
-        var(--primary-blue) 0%, 
-        var(--primary-red) 100%);
+    background: linear-gradient(135deg,
+        var(--primary-green, #1B4332) 0%,
+        var(--accent-brown, #6B4F3A) 100%);
     opacity: 0;
     z-index: -1;
     transition: opacity var(--transition-base);
@@ -117,13 +118,13 @@ body.dark-mode .tree-container {
     opacity: 0.1;
 }
 
-/* Gender-based Card Styling */
+/* Gender-based Card Styling — Haitian flag colors */
 .tree-node .member-card.male {
-    border: 2px solid var(--primary-blue);
+    border: 2px solid #00209F;
 }
 
 .tree-node .member-card.female {
-    border: 2px solid var(--primary-red);
+    border: 2px solid #D21034;
 }
 
 .tree-node .member-card.unknown {
@@ -172,36 +173,40 @@ body.dark-mode .tree-container {
     font-weight: 500;
 }
 
-/* Children Container */
+/* Children Container — branches grow upward */
 .tree-children {
     display: flex;
-    gap: 40px;
+    gap: 48px;
     justify-content: center;
     position: relative;
-    margin-top: 80px;
+    margin-bottom: 60px;
 }
 
-/* Vertical Line from Parents to Children */
+/* Trunk from branch point down to parent */
 .tree-children::before {
     content: '';
     position: absolute;
-    top: -80px;
+    bottom: -60px;
     left: 50%;
-    width: 2px;
-    height: 40px;
-    background: var(--gray-300);
+    width: 4px;
+    height: 60px;
+    background: linear-gradient(to bottom, transparent, var(--accent-brown, #6B4F3A));
+    border-radius: 2px;
     transform: translateX(-50%);
+    opacity: 0.7;
 }
 
-/* Horizontal Line Connecting Children */
+/* Horizontal branch connecting children */
 .tree-children::after {
     content: '';
     position: absolute;
-    top: -40px;
-    left: 20px;
-    right: 20px;
-    height: 2px;
-    background: var(--gray-300);
+    bottom: -30px;
+    left: 40px;
+    right: 40px;
+    height: 3px;
+    background: var(--accent-brown, #6B4F3A);
+    border-radius: 2px;
+    opacity: 0.5;
 }
 
 /* Individual Child Wrapper */
@@ -209,16 +214,18 @@ body.dark-mode .tree-container {
     position: relative;
 }
 
-/* Vertical Line from Horizontal to Each Child */
+/* Branch from horizontal bar up to each child */
 .tree-child::before {
     content: '';
     position: absolute;
-    top: -40px;
+    bottom: -30px;
     left: 50%;
-    width: 2px;
-    height: 40px;
-    background: var(--gray-300);
+    width: 3px;
+    height: 32px;
+    background: linear-gradient(to bottom, transparent, var(--accent-brown, #6B4F3A));
+    border-radius: 2px;
     transform: translateX(-50%);
+    opacity: 0.6;
 }
 
 /* Single Child - No Horizontal Line */
@@ -257,7 +264,7 @@ body.dark-mode .tree-container {
 }
 
 .tree-control-btn {
-    background: white;
+    background: var(--white);
     border: 2px solid var(--gray-200);
     color: var(--gray-700);
     width: 40px;
@@ -469,7 +476,7 @@ body.dark-mode .tree-stats {
     .tree-container {
         box-shadow: none;
         border: 1px solid #ddd;
-        background: white;
+        background: var(--white);
     }
     
     .tree-controls,

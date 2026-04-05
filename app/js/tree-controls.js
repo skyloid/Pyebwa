@@ -147,27 +147,30 @@
         
         // Attach event listeners
         attachEventListeners() {
-            // Zoom controls
-            document.querySelector('.zoom-in')?.addEventListener('click', () => this.zoom(this.state.zoomStep));
-            document.querySelector('.zoom-out')?.addEventListener('click', () => this.zoom(-this.state.zoomStep));
-            document.querySelector('.zoom-reset')?.addEventListener('click', () => this.resetZoom());
-            
+            var ctrl = this.elements.controls;
+            if (!ctrl) return;
+
+            // Zoom controls — scoped to controls container
+            ctrl.querySelector('.zoom-in')?.addEventListener('click', () => this.zoom(this.state.zoomStep));
+            ctrl.querySelector('.zoom-out')?.addEventListener('click', () => this.zoom(-this.state.zoomStep));
+            ctrl.querySelector('.zoom-reset')?.addEventListener('click', () => this.resetZoom());
+
             // Zoom slider
             this.setupZoomSlider();
-            
+
             // View mode controls
-            document.querySelectorAll('.view-mode').forEach(btn => {
+            ctrl.querySelectorAll('.view-mode').forEach(btn => {
                 btn.addEventListener('click', () => this.changeViewMode(btn.dataset.mode));
             });
-            
+
             // Action controls
-            document.querySelector('.fullscreen')?.addEventListener('click', () => this.toggleFullscreen());
-            document.querySelector('.print')?.addEventListener('click', () => this.printTree());
-            document.querySelector('.export')?.addEventListener('click', () => this.showExportOptions());
+            ctrl.querySelector('.fullscreen')?.addEventListener('click', () => this.toggleFullscreen());
+            ctrl.querySelector('.print')?.addEventListener('click', () => this.printTree());
+            ctrl.querySelector('.export')?.addEventListener('click', () => this.showExportOptions());
             
             // Tree search
-            const searchInput = document.querySelector('.tree-search-input');
-            const searchBtn = document.querySelector('.tree-search-btn');
+            const searchInput = ctrl.querySelector('.tree-search-input');
+            const searchBtn = ctrl.querySelector('.tree-search-btn');
             
             searchInput?.addEventListener('input', this.debounce(() => this.searchInTree(), 300));
             searchBtn?.addEventListener('click', () => this.searchInTree());
@@ -259,7 +262,7 @@
             if (!wrapper) return;
             
             wrapper.style.transform = `scale(${this.state.zoom / 100})`;
-            wrapper.style.transformOrigin = 'center top';
+            wrapper.style.transformOrigin = 'center bottom';
             this.elements.zoomValue.textContent = `${this.state.zoom}%`;
             
             // Update zoom slider position
