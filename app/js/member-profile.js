@@ -630,8 +630,8 @@
                 return;
             }
             
-            // Include main photo in gallery
-            const allPhotos = member.photoUrl ? [{url: member.photoUrl, caption: 'Profile Photo', isMain: true}, ...photos] : photos;
+            // Mark profile photo in the array
+            const allPhotos = photos.map(p => p.isProfile ? { ...p, isMain: true } : p);
             
             console.log('All photos for display:', allPhotos.length);
             console.log('Photos array:', allPhotos);
@@ -658,18 +658,14 @@
                     </div>
                     <div class="photo-gallery">
                         ${allPhotos.map((photo, index) => {
-                            // Calculate the actual index in the photos array (excluding main photo)
-                            const actualIndex = photo.isMain ? -1 : (member.photoUrl ? index - 1 : index);
                             return `
                                 <div class="gallery-item" onclick="pyebwaMemberProfile.viewPhoto(${index})">
                                     <img src="${photo.url}" alt="${photo.caption || ''}">
                                     ${photo.isMain ? '<span class="photo-badge">Main</span>' : ''}
-                                    ${photo.caption ? `<div class="photo-caption">${photo.caption}</div>` : ''}
-                                    ${!photo.isMain ? `
-                                        <button class="photo-delete-btn" onclick="event.stopPropagation(); pyebwaMemberProfile.deletePhoto(${actualIndex})" title="${t('deletePhoto') || 'Delete photo'}">
-                                            <i class="material-icons">delete</i>
-                                        </button>
-                                    ` : ''}
+                                    ${photo.caption && !photo.isMain ? `<div class="photo-caption">${photo.caption}</div>` : ''}
+                                    <button class="photo-delete-btn" onclick="event.stopPropagation(); pyebwaMemberProfile.deletePhoto(${index})" title="${t('deletePhoto') || 'Delete photo'}">
+                                        <i class="material-icons">close</i>
+                                    </button>
                                 </div>
                             `;
                         }).join('')}
@@ -1853,18 +1849,186 @@
             }
         },
         
-        // Add photo placeholder
+        // Add photo to gallery
         addPhoto() {
-            if (window.showSuccess) {
-                window.showSuccess('Photo upload coming soon!');
-            }
+            const member = this.currentMember;
+            if (!member) return;
+
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = () => {
+                const file = input.files[0];
+                if (!file) return;
+                this._showCropModal(file, member, 'gallery');
+            };
+            input.click();
         },
         
-        // Edit photo placeholder
+        // Edit profile photo with crop & zoom
         editPhoto() {
-            if (window.showSuccess) {
-                window.showSuccess('Photo editor coming soon!');
+            const member = this.currentMember;
+            if (!member) return;
+
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = () => {
+                const file = input.files[0];
+                if (!file) return;
+                this._showCropModal(file, member);
+            };
+            input.click();
+        },
+
+        _showCropModal(file, member, mode) {
+            mode = mode || 'profile';
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => this._renderCropUI(img, member, mode);
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        },
+
+        _renderCropUI(img, member, mode) {
+            mode = mode || 'profile';
+            const isProfile = mode === 'profile';
+            let zoom = 1;
+            let panX = 0, panY = 0;
+            let dragging = false, lastX = 0, lastY = 0;
+            const cropSize = 320;
+            const borderRadius = isProfile ? '50%' : '12px';
+            const title = isProfile ? 'Crop Profile Photo' : 'Crop Photo';
+            const exportSize = isProfile ? 512 : 1024;
+
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;';
+            overlay.innerHTML = `
+                <div style="color:#fff;font-size:18px;margin-bottom:16px;font-weight:600;">${title}</div>
+                <div style="position:relative;width:${cropSize}px;height:${cropSize}px;border-radius:${borderRadius};overflow:hidden;border:3px solid rgba(255,255,255,0.5);background:#111;">
+                    <canvas id="cropCanvas" width="${cropSize}" height="${cropSize}" style="width:${cropSize}px;height:${cropSize}px;cursor:grab;display:block;"></canvas>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;margin-top:20px;color:#fff;">
+                    <span class="material-icons" style="font-size:18px;opacity:0.7;">remove</span>
+                    <input type="range" id="cropZoom" min="100" max="400" value="100" style="width:220px;accent-color:#2D6A4F;">
+                    <span class="material-icons" style="font-size:18px;opacity:0.7;">add</span>
+                </div>
+                <div style="color:rgba(255,255,255,0.5);font-size:13px;margin-top:8px;">Drag to reposition &bull; Scroll to zoom</div>
+                <div style="display:flex;gap:12px;margin-top:20px;">
+                    <button id="cropCancel" style="padding:10px 28px;border-radius:8px;border:1px solid rgba(255,255,255,0.25);background:transparent;color:#fff;cursor:pointer;font-size:15px;">Cancel</button>
+                    <button id="cropSave" style="padding:10px 28px;border-radius:8px;border:none;background:#2D6A4F;color:#fff;cursor:pointer;font-size:15px;font-weight:600;">Save</button>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            const canvas = overlay.querySelector('#cropCanvas');
+            const ctx = canvas.getContext('2d');
+            const slider = overlay.querySelector('#cropZoom');
+
+            function draw() {
+                ctx.clearRect(0, 0, cropSize, cropSize);
+                var w = img.width * zoom;
+                var h = img.height * zoom;
+                var x = (cropSize - w) / 2 + panX;
+                var y = (cropSize - h) / 2 + panY;
+                ctx.drawImage(img, x, y, w, h);
             }
+
+            // Fit to cover
+            var fitScale = cropSize / Math.min(img.width, img.height);
+            zoom = fitScale;
+            slider.min = Math.round(fitScale * 100);
+            slider.max = Math.round(fitScale * 400);
+            slider.value = Math.round(fitScale * 100);
+            draw();
+
+            slider.addEventListener('input', function() { zoom = parseInt(slider.value) / 100; draw(); });
+
+            // Mouse pan
+            canvas.addEventListener('mousedown', function(e) { dragging = true; lastX = e.clientX; lastY = e.clientY; canvas.style.cursor = 'grabbing'; });
+            var onMove = function(e) { if (!dragging) return; panX += e.clientX - lastX; panY += e.clientY - lastY; lastX = e.clientX; lastY = e.clientY; draw(); };
+            var onUp = function() { dragging = false; canvas.style.cursor = 'grab'; };
+            window.addEventListener('mousemove', onMove);
+            window.addEventListener('mouseup', onUp);
+
+            // Touch pan
+            canvas.addEventListener('touchstart', function(e) { dragging = true; lastX = e.touches[0].clientX; lastY = e.touches[0].clientY; }, { passive: true });
+            canvas.addEventListener('touchmove', function(e) { if (!dragging) return; panX += e.touches[0].clientX - lastX; panY += e.touches[0].clientY - lastY; lastX = e.touches[0].clientX; lastY = e.touches[0].clientY; draw(); }, { passive: true });
+            canvas.addEventListener('touchend', function() { dragging = false; });
+
+            // Scroll zoom
+            canvas.addEventListener('wheel', function(e) {
+                e.preventDefault();
+                var delta = e.deltaY > 0 ? -0.05 : 0.05;
+                var minZ = parseInt(slider.min) / 100, maxZ = parseInt(slider.max) / 100;
+                zoom = Math.max(minZ, Math.min(maxZ, zoom + delta));
+                slider.value = Math.round(zoom * 100);
+                draw();
+            });
+
+            overlay.querySelector('#cropCancel').addEventListener('click', function() {
+                window.removeEventListener('mousemove', onMove);
+                window.removeEventListener('mouseup', onUp);
+                overlay.remove();
+            });
+
+            var self = this;
+            overlay.querySelector('#cropSave').addEventListener('click', async function() {
+                var saveBtn = overlay.querySelector('#cropSave');
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Saving...';
+
+                try {
+                    var exportCanvas = document.createElement('canvas');
+                    exportCanvas.width = exportSize;
+                    exportCanvas.height = exportSize;
+                    var ectx = exportCanvas.getContext('2d');
+                    var ratio = exportSize / cropSize;
+                    var w = img.width * zoom;
+                    var h = img.height * zoom;
+                    var x = ((cropSize - w) / 2 + panX) * ratio;
+                    var y = ((cropSize - h) / 2 + panY) * ratio;
+                    ectx.drawImage(img, x, y, w * ratio, h * ratio);
+
+                    var blob = await new Promise(function(resolve) { exportCanvas.toBlob(resolve, 'image/jpeg', 0.9); });
+                    var croppedFile = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
+
+                    var treeId = member.treeId || window.userFamilyTreeId;
+                    var photoUrl = await PyebwaAPI.uploadPhoto(croppedFile, {
+                        treeId: treeId,
+                        personId: member.id,
+                        type: isProfile ? 'profile' : 'gallery'
+                    });
+
+                    if (isProfile) {
+                        // Save as profile photo (isProfile flag in photos array)
+                        await window.updateFamilyMember(member.id, { photoUrl: photoUrl });
+                        member.photoUrl = photoUrl;
+                        var profileImg = document.querySelector('.profile-photo');
+                        if (profileImg) profileImg.src = photoUrl;
+                    } else {
+                        // Add to gallery
+                        var photos = member.photos ? member.photos.slice() : [];
+                        photos.push({ url: photoUrl, caption: '', uploadedAt: new Date().toISOString() });
+                        await window.updateFamilyMember(member.id, { photos: photos });
+                        member.photos = photos;
+                        var galleryContainer = document.getElementById('gallery-tab');
+                        if (galleryContainer) self.loadGallery(galleryContainer);
+                    }
+
+                    if (window.showSuccess) window.showSuccess(isProfile ? 'Profile photo updated!' : 'Photo added!');
+                    window.removeEventListener('mousemove', onMove);
+                    window.removeEventListener('mouseup', onUp);
+                    overlay.remove();
+                } catch (error) {
+                    console.error('Crop save error:', error);
+                    if (window.showError) window.showError('Failed to save: ' + error.message);
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'Save';
+                }
+            });
         },
         
         // Add document placeholder
@@ -2473,49 +2637,86 @@
         
         // View photo in lightbox
         viewPhoto(index) {
-            if (window.pyebwaPhotoGallery) {
-                window.pyebwaPhotoGallery.viewPhotoInLightbox(index);
+            const member = this.currentMember;
+            if (!member) return;
+
+            const allPhotos = member.photoUrl
+                ? [{ url: member.photoUrl, caption: 'Profile Photo' }, ...(member.photos || [])]
+                : (member.photos || []);
+
+            if (!allPhotos[index]) return;
+
+            // Remove existing lightbox
+            const existing = document.querySelector('.photo-lightbox');
+            if (existing) existing.remove();
+
+            let currentIndex = index;
+
+            function render() {
+                const photo = allPhotos[currentIndex];
+                const lightbox = document.createElement('div');
+                lightbox.className = 'photo-lightbox active';
+                lightbox.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;';
+                lightbox.innerHTML = `
+                    <button style="position:absolute;top:16px;right:16px;background:none;border:none;color:#fff;font-size:32px;cursor:pointer;z-index:10;" onclick="this.parentElement.remove()">
+                        <span class="material-icons" style="font-size:32px;">close</span>
+                    </button>
+                    ${allPhotos.length > 1 ? `
+                        <button style="position:absolute;left:16px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:50%;width:48px;height:48px;cursor:pointer;display:flex;align-items:center;justify-content:center;" id="lb-prev">
+                            <span class="material-icons">chevron_left</span>
+                        </button>
+                        <button style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:50%;width:48px;height:48px;cursor:pointer;display:flex;align-items:center;justify-content:center;" id="lb-next">
+                            <span class="material-icons">chevron_right</span>
+                        </button>
+                    ` : ''}
+                    <img src="${photo.url}" style="max-width:90vw;max-height:85vh;object-fit:contain;border-radius:4px;" alt="${photo.caption || ''}">
+                    <div style="position:absolute;bottom:16px;color:#fff;font-size:14px;opacity:0.7;">${currentIndex + 1} / ${allPhotos.length}</div>
+                `;
+                document.body.appendChild(lightbox);
+
+                lightbox.addEventListener('click', function(e) { if (e.target === lightbox) lightbox.remove(); });
+                var prev = lightbox.querySelector('#lb-prev');
+                var next = lightbox.querySelector('#lb-next');
+                if (prev) prev.addEventListener('click', function() { lightbox.remove(); currentIndex = (currentIndex - 1 + allPhotos.length) % allPhotos.length; render(); });
+                if (next) next.addEventListener('click', function() { lightbox.remove(); currentIndex = (currentIndex + 1) % allPhotos.length; render(); });
+                document.addEventListener('keydown', function handler(e) {
+                    if (e.key === 'Escape') { lightbox.remove(); document.removeEventListener('keydown', handler); }
+                    if (e.key === 'ArrowLeft' && prev) { prev.click(); }
+                    if (e.key === 'ArrowRight' && next) { next.click(); }
+                });
             }
+            render();
         },
         
         // Delete photo from gallery
         async deletePhoto(index) {
-            const photos = this.currentMember.photos || [];
-            const photoToDelete = photos[index];
-            
-            if (!photoToDelete) {
-                console.error('Photo not found at index:', index);
-                return;
-            }
-            
-            // Confirm deletion
             if (!confirm(t('confirmDeletePhoto') || 'Are you sure you want to delete this photo?')) {
                 return;
             }
-            
+
             try {
-                // Delete from Firebase Storage
-                if (photoToDelete.url) {
-                    const storage = firebase.storage();
-                    const storageRef = storage.refFromURL(photoToDelete.url);
-                    await storageRef.delete();
+                const photos = this.currentMember.photos || [];
+                if (!photos[index]) {
+                    console.error('Photo not found at index:', index);
+                    return;
                 }
-                
-                // Remove from photos array
+
+                const wasProfile = photos[index].isProfile;
                 photos.splice(index, 1);
-                
-                // Update member in Firestore
-                await window.updateFamilyMember(this.currentMember.id, {
-                    photos: photos
-                });
-                
-                // Update local member data
+
+                await window.updateFamilyMember(this.currentMember.id, { photos: photos });
                 this.currentMember.photos = photos;
-                
+
+                // Update photoUrl if we deleted the profile photo
+                if (wasProfile) {
+                    const newProfile = photos.find(p => p.isProfile);
+                    this.currentMember.photoUrl = newProfile ? newProfile.url : (photos.length > 0 ? photos[0].url : null);
+                }
+
                 // Refresh gallery
                 const galleryContainer = document.getElementById('gallery-tab');
-                this.loadGallery(galleryContainer);
-                
+                if (galleryContainer) this.loadGallery(galleryContainer);
+
                 if (window.showSuccess) {
                     window.showSuccess(t('photoDeleted') || 'Photo deleted successfully');
                 }

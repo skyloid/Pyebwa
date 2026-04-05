@@ -195,7 +195,7 @@
 }
 
 .social-connect-btn:hover {
-    background: #001654;
+    background: #122E22;
     transform: translateY(-1px);
 }
 
@@ -278,7 +278,7 @@
 .social-username-input:focus {
     outline: none;
     border-color: var(--primary-blue);
-    box-shadow: 0 0 0 3px rgba(0, 33, 125, 0.1);
+    box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.1);
 }
 
 .social-connect-buttons {

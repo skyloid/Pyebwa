@@ -84,7 +84,7 @@
     
     .mobile-tree-node.selected {
         border-color: var(--accent-yellow);
-        box-shadow: 0 0 0 2px rgba(212, 17, 37, 0.2);
+        box-shadow: 0 0 0 2px rgba(45, 106, 79, 0.2);
         transform: scale(1.05);
         z-index: 10;
     }
@@ -396,7 +396,7 @@
     .mobile-tree-search-input:focus {
         outline: none;
         border-color: var(--primary-blue);
-        box-shadow: 0 0 0 3px rgba(0, 33, 125, 0.1);
+        box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.1);
     }
     
     .mobile-tree-search-icon {

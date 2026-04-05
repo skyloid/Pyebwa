@@ -189,7 +189,7 @@ async function loadFamilyMembers() {
             gender: p.gender || null,
             email: p.email || null,
             biography: p.biography || '',
-            photoUrl: p.photo_url || p.photoUrl || (p.photos && p.photos.length > 0 ? p.photos[0].url : null),
+            photoUrl: p.photo_url || p.photoUrl || (p.photos && p.photos.length > 0 ? (p.photos.find(ph => ph.isProfile) || p.photos[0]).url : null),
             photos: p.photos || [],
             relationships: p.relationships || [],
             phone: p.phone || null,

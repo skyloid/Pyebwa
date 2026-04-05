@@ -249,6 +249,18 @@ router.put('/:id/persons/:pid', async (req, res) => {
             }
         }
 
+        // Handle photoUrl — store as first entry in photos array with isProfile flag
+        if (req.body.photoUrl !== undefined) {
+            const currentPhotos = existing.photos || [];
+            // Remove old profile photo entry
+            const filtered = currentPhotos.filter(p => !p.isProfile);
+            if (req.body.photoUrl) {
+                // Add new profile photo at the front
+                filtered.unshift({ url: req.body.photoUrl, isProfile: true, caption: 'Profile Photo' });
+            }
+            updateData.photos = filtered;
+        }
+
         const person = await personQueries.update(pid, updateData);
         res.json({ success: true, person });
     } catch (error) {

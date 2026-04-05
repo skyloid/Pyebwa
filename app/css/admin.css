@@ -36,7 +36,7 @@
     width: 50px;
     height: 50px;
     border: 3px solid #f3f3f3;
-    border-top: 3px solid #D41125;
+    border-top: 3px solid #2D6A4F;
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin: 0 auto 20px;
@@ -68,7 +68,7 @@
 
 .admin-logo h1 {
     font-size: 20px;
-    color: #D41125;
+    color: #2D6A4F;
     margin: 0;
     font-weight: 700;
 }
@@ -98,8 +98,8 @@
 }
 
 .nav-link.active {
-    color: #D41125;
-    border-bottom-color: #D41125;
+    color: #2D6A4F;
+    border-bottom-color: #2D6A4F;
 }
 
 .nav-link .material-icons {
@@ -189,7 +189,7 @@
 .stat-icon {
     width: 60px;
     height: 60px;
-    background: rgba(212, 17, 37, 0.1);
+    background: rgba(45, 106, 79, 0.1);
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -198,7 +198,7 @@
 
 .stat-icon .material-icons {
     font-size: 28px;
-    color: #D41125;
+    color: #2D6A4F;
 }
 
 .stat-content h3 {
@@ -345,12 +345,12 @@
 }
 
 .btn-primary {
-    background: #D41125;
+    background: #2D6A4F;
     color: white;
 }
 
 .btn-primary:hover {
-    background: #B00E20;
+    background: #245740;
     transform: translateY(-1px);
 }
 
@@ -517,9 +517,9 @@
 }
 
 .pagination-btn.active {
-    background: #D41125;
+    background: #2D6A4F;
     color: white;
-    border-color: #D41125;
+    border-color: #2D6A4F;
 }
 
 .pagination-btn:disabled {

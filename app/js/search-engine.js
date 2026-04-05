@@ -116,17 +116,13 @@
                 lastUpdated: firebase.firestore.Timestamp.now()
             };
             
+            // Search index stored locally — Firestore no longer used
             try {
-                await firebase.firestore()
-                    .collection('familyTrees')
-                    .doc(treeId)
-                    .collection('searchIndex')
-                    .doc(member.id)
-                    .set(searchDoc);
-                    
-                console.log(`Search index updated for ${member.firstName} ${member.lastName}`);
+                if (this.searchIndex) {
+                    this.searchIndex.set(member.id, searchDoc);
+                }
             } catch (error) {
-                console.error('Error updating search index:', error);
+                // ignore
             }
         },
         

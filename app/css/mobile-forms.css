@@ -46,7 +46,7 @@
     .mobile-form-group.error .mobile-textarea,
     .mobile-form-group.error .mobile-select {
         border-color: var(--accent-red);
-        box-shadow: 0 0 0 3px rgba(212, 17, 37, 0.1);
+        box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1);
     }
     
     .mobile-form-group.success .mobile-input,
@@ -91,7 +91,7 @@
     .mobile-input:focus {
         outline: none;
         border-color: var(--primary-blue);
-        box-shadow: 0 0 0 3px rgba(0, 33, 125, 0.1);
+        box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.1);
         background: var(--gray-50);
     }
     
@@ -176,7 +176,7 @@
     .mobile-select:focus {
         outline: none;
         border-color: var(--primary-blue);
-        box-shadow: 0 0 0 3px rgba(0, 33, 125, 0.1);
+        box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.1);
     }
     
     /* Mobile Checkbox and Radio */
@@ -333,7 +333,7 @@
     .mobile-file-upload:hover,
     .mobile-file-upload.dragover {
         border-color: var(--primary-blue);
-        background: rgba(0, 33, 125, 0.05);
+        background: rgba(27, 67, 50, 0.05);
     }
     
     .mobile-file-upload input[type="file"] {

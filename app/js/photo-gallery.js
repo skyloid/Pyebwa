@@ -11,15 +11,8 @@
             this.setupPhotoUpload();
         },
         
-        // Setup photo upload handlers
-        setupPhotoUpload() {
-            // Override the addPhoto method in member profile
-            if (window.pyebwaMemberProfile) {
-                window.pyebwaMemberProfile.addPhoto = () => this.showPhotoUploadModal();
-                window.pyebwaMemberProfile.editPhoto = () => this.showPhotoEditModal();
-                window.pyebwaMemberProfile.viewPhoto = (index) => this.viewPhotoInLightbox(index);
-            }
-        },
+        // Photo upload/edit/view now handled by member-profile.js directly
+        setupPhotoUpload() {},
         
         // Show photo upload modal
         showPhotoUploadModal() {
@@ -247,62 +240,15 @@
         
         // Upload photo to Firebase Storage
         async uploadPhotoToStorage(file) {
-            if (!window.firebase || !this.currentMemberId) {
-                throw new Error('Firebase not initialized or member not selected');
+            if (!this.currentMemberId || !window.userFamilyTreeId) {
+                throw new Error('Member or family tree not selected');
             }
-            
-            if (!window.userFamilyTreeId) {
-                throw new Error('No family tree ID available');
-            }
-            
-            if (!window.currentUser?.uid) {
-                throw new Error('User not authenticated');
-            }
-            
-            console.log('Uploading photo with:', {
-                familyTreeId: window.userFamilyTreeId,
-                memberId: this.currentMemberId,
-                userId: window.currentUser.uid,
-                fileName: file.name,
-                fileSize: file.size,
-                fileType: file.type
+
+            return await PyebwaAPI.uploadPhoto(file, {
+                treeId: window.userFamilyTreeId,
+                personId: this.currentMemberId,
+                type: 'gallery'
             });
-            
-            const storage = firebase.storage();
-            const timestamp = Date.now();
-            // Clean filename to match security rules pattern: ^[a-zA-Z0-9_-]+\.(jpg|jpeg|png|gif|webp)$
-            const cleanFileName = file.name.replace(/[^a-zA-Z0-9_\-\.]/g, '_');
-            const fileName = `familyTrees/${window.userFamilyTreeId}/photos/${this.currentMemberId}_${timestamp}_${cleanFileName}`;
-            const storageRef = storage.ref(fileName);
-            
-            console.log('Storage path:', fileName);
-            
-            // Upload file with metadata
-            const metadata = {
-                contentType: file.type,
-                uploadedBy: window.currentUser.uid,  // Required by security rules at top level
-                customMetadata: {
-                    uploadedBy: window.currentUser.uid,
-                    uploadedAt: new Date().toISOString(),
-                    memberID: this.currentMemberId,
-                    familyTreeId: window.userFamilyTreeId
-                }
-            };
-            
-            try {
-                const snapshot = await storageRef.put(file, metadata);
-                const downloadURL = await snapshot.ref.getDownloadURL();
-                console.log('Upload successful, download URL:', downloadURL);
-                return downloadURL;
-            } catch (error) {
-                console.error('Storage upload error:', error);
-                console.error('Error details:', {
-                    code: error.code,
-                    message: error.message,
-                    serverResponse: error.serverResponse
-                });
-                throw error;
-            }
         },
         
         // Add multiple photos to member document in a single update
@@ -841,42 +787,36 @@
         async updateProfilePhoto() {
             const modal = document.querySelector('.photo-edit-modal');
             const file = modal?.selectedFile;
-            
+
             if (!file || !this.currentMemberId) return;
-            
+
             const saveBtn = modal.querySelector('.btn-primary:last-child');
             saveBtn.disabled = true;
             saveBtn.innerHTML = '<i class="material-icons rotating">sync</i> Uploading...';
-            
+
             try {
-                // Upload new photo
-                const photoUrl = await this.uploadPhotoToStorage(file);
-                
-                // Update member document
-                await firebase.firestore()
-                    .collection('familyTrees')
-                    .doc(window.userFamilyTreeId)
-                    .collection('members')
-                    .doc(this.currentMemberId)
-                    .update({
-                        photoUrl: photoUrl
-                    });
-                
-                // Update local cache
+                const photoUrl = await PyebwaAPI.uploadPhoto(file, {
+                    treeId: window.userFamilyTreeId,
+                    personId: this.currentMemberId,
+                    type: 'profile'
+                });
+
+                await window.updateFamilyMember(this.currentMemberId, { photoUrl: photoUrl });
+
                 const member = window.familyMembers.find(m => m.id === this.currentMemberId);
                 if (member) {
                     member.photoUrl = photoUrl;
                 }
-                
-                // Update profile display
-                document.querySelector('.profile-photo').src = photoUrl;
-                
+
+                const profileImg = document.querySelector('.profile-photo');
+                if (profileImg) profileImg.src = photoUrl;
+
                 if (window.showSuccess) {
                     window.showSuccess('Profile photo updated successfully!');
                 }
-                
+
                 modal.remove();
-                
+
             } catch (error) {
                 console.error('Photo update error:', error);
                 if (window.showError) {
@@ -884,7 +824,7 @@
                 }
             } finally {
                 saveBtn.disabled = false;
-                saveBtn.innerHTML = '${t("savePhoto") || "Save Photo"}';
+                saveBtn.textContent = 'Save Photo';
             }
         }
     };

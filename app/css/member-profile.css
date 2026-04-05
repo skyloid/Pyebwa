@@ -86,7 +86,7 @@
 /* Profile Header - Enhanced Design */
 .profile-header {
     position: relative;
-    background: linear-gradient(135deg, #00217D 0%, #D41125 100%);
+    background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 100%);
     border-radius: 16px 16px 0 0;
     overflow: hidden;
     min-height: 280px;
@@ -660,56 +660,44 @@
 .gallery-item {
     position: relative;
     border-radius: 8px;
-    overflow: hidden;
+    overflow: visible;
     cursor: pointer;
     aspect-ratio: 1;
     background: #f0f0f0;
-    transition: transform 0.2s;
 }
 
-.gallery-item:hover {
-    transform: scale(1.05);
+.gallery-item img {
+    border-radius: 8px;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .photo-delete-btn {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 36px;
-    height: 36px;
+    top: 6px;
+    right: 6px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.95);
-    border: 2px solid rgba(0, 0, 0, 0.1);
+    background: rgba(220, 38, 38, 0.85);
+    border: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     z-index: 10;
-}
-
-.gallery-item:hover .photo-delete-btn {
-    opacity: 1;
-    transform: scale(1.05);
+    transition: background 0.2s ease;
+    padding: 0;
 }
 
 .photo-delete-btn:hover {
-    background: #ff4444;
-    border-color: #ff4444;
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
-}
-
-.photo-delete-btn:hover .material-icons {
-    color: white;
+    background: rgba(220, 38, 38, 1);
 }
 
 .photo-delete-btn .material-icons {
-    font-size: 20px;
-    color: #666;
-    transition: color 0.2s;
+    font-size: 16px;
+    color: #fff;
 }
 
 .gallery-item img {
@@ -969,7 +957,7 @@
 
 .empty-state .material-icons {
     font-size: 80px;
-    background: linear-gradient(135deg, #00217D, #D41125);
+    background: linear-gradient(135deg, #1B4332, #2D6A4F);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: 24px;
@@ -1010,18 +998,18 @@
 }
 
 .empty-state .btn {
-    background: linear-gradient(135deg, #00217D, #D41125);
+    background: linear-gradient(135deg, #1B4332, #2D6A4F);
     color: white;
     padding: 12px 32px;
     border-radius: 24px;
     font-weight: 500;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0, 33, 125, 0.3);
+    box-shadow: 0 4px 12px rgba(27, 67, 50, 0.3);
 }
 
 .empty-state .btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 33, 125, 0.4);
+    box-shadow: 0 6px 20px rgba(27, 67, 50, 0.4);
 }
 
 /* Loading States */
@@ -1037,8 +1025,8 @@
     content: '';
     width: 40px;
     height: 40px;
-    border: 3px solid rgba(0, 33, 125, 0.1);
-    border-top-color: #00217D;
+    border: 3px solid rgba(27, 67, 50, 0.1);
+    border-top-color: #1B4332;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -1752,7 +1740,7 @@ body.dark-mode #storyForm textarea:focus {
     content: "\e32a"; /* lock icon */
     font-family: "Material Icons";
     font-size: 20px;
-    color: #00217D;
+    color: #1B4332;
 }
 
 .privacy-description {
@@ -1801,13 +1789,13 @@ body.dark-mode #storyForm textarea:focus {
 }
 
 .privacy-select:hover {
-    border-color: #00217D;
+    border-color: #1B4332;
 }
 
 .privacy-select:focus {
     outline: none;
-    border-color: #00217D;
-    box-shadow: 0 0 0 3px rgba(0, 33, 125, 0.1);
+    border-color: #1B4332;
+    box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.1);
 }
 
 /* Privacy Indicators */
@@ -1827,8 +1815,8 @@ body.dark-mode #storyForm textarea:focus {
 }
 
 .privacy-indicator.family {
-    background: rgba(0, 33, 125, 0.1);
-    color: #00217D;
+    background: rgba(27, 67, 50, 0.1);
+    color: #1B4332;
 }
 
 .privacy-indicator.public {
@@ -1893,7 +1881,7 @@ body.dark-mode #storyForm textarea:focus {
 }
 
 .privacy-settings-content h3 .material-icons {
-    color: #00217D;
+    color: #1B4332;
 }
 
 .privacy-setting-item {
@@ -1908,8 +1896,8 @@ body.dark-mode #storyForm textarea:focus {
 }
 
 .privacy-setting-item:hover {
-    border-color: #00217D;
-    box-shadow: 0 2px 8px rgba(0, 33, 125, 0.1);
+    border-color: #1B4332;
+    box-shadow: 0 2px 8px rgba(27, 67, 50, 0.1);
 }
 
 .privacy-setting-info {
@@ -1944,14 +1932,14 @@ body.dark-mode #storyForm textarea:focus {
 }
 
 .privacy-toggle button.active {
-    background: #00217D;
+    background: #1B4332;
     color: white;
-    border-color: #00217D;
+    border-color: #1B4332;
 }
 
 .privacy-toggle button:hover:not(.active) {
-    border-color: #00217D;
-    background: rgba(0, 33, 125, 0.05);
+    border-color: #1B4332;
+    background: rgba(27, 67, 50, 0.05);
 }
 
 /* Dark mode privacy controls */
@@ -2140,9 +2128,9 @@ body.dark-mode .privacy-setting-row label {
 }
 
 .radio-option input[type="radio"]:checked + .radio-label {
-    background: #00217D;
+    background: #1B4332;
     color: white;
-    border-color: #00217D;
+    border-color: #1B4332;
 }
 
 .radio-label i {
@@ -2166,7 +2154,7 @@ body.dark-mode .privacy-setting-row label {
 }
 
 .relationship-story {
-    border-left: 4px solid #00217D;
+    border-left: 4px solid #1B4332;
 }
 
 .related-members-info {
@@ -2174,7 +2162,7 @@ body.dark-mode .privacy-setting-row label {
     align-items: center;
     gap: 8px;
     margin-top: 12px;
-    color: #00217D;
+    color: #1B4332;
     font-size: 14px;
 }
 
@@ -2204,7 +2192,7 @@ body.dark-mode .privacy-setting-row label {
 }
 
 .record-btn.recording {
-    background: #D41125;
+    background: #2D6A4F;
     color: white;
 }
 
@@ -2223,7 +2211,7 @@ body.dark-mode .privacy-setting-row label {
 }
 
 .recording-indicator {
-    color: #D41125;
+    color: #2D6A4F;
     animation: pulse 1s ease-in-out infinite;
 }
 
@@ -2256,7 +2244,7 @@ body.dark-mode .privacy-setting-row label {
 }
 
 .remove-audio {
-    color: #D41125;
+    color: #2D6A4F;
 }
 
 .remove-audio:hover {

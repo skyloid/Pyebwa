@@ -7,9 +7,9 @@
 
 :root {
     /* Haitian Flag Colors */
-    --primary-red: #D41125;
-    --primary-blue: #00217D;
-    --accent-yellow: #FFC72C;
+    --primary-red: #2D6A4F;
+    --primary-blue: #1B4332;
+    --accent-yellow: #6B4F3A;
     
     /* Neutral Colors */
     --white: #FFFFFF;
@@ -289,7 +289,7 @@ body {
 }
 
 .btn-primary:hover {
-    background: #001654;
+    background: #122E22;
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
 }
@@ -458,7 +458,7 @@ body {
 .form-group textarea:focus {
     outline: none;
     border-color: var(--primary-blue);
-    box-shadow: 0 0 0 3px rgba(0, 33, 125, 0.1);
+    box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.1);
 }
 
 .form-actions {
@@ -716,6 +716,6 @@ body {
 }
 
 .app-footer a:hover {
-    color: #FFB800;
+    color: #8B6E54;
     text-decoration: underline;
 }

@@ -10,8 +10,8 @@
     min-height: 500px;
     position: relative;
     background-image: 
-        radial-gradient(circle at 20% 80%, rgba(212, 17, 37, 0.02) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(0, 33, 125, 0.02) 0%, transparent 50%);
+        radial-gradient(circle at 20% 80%, rgba(45, 106, 79, 0.02) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(27, 67, 50, 0.02) 0%, transparent 50%);
 }
 
 body.dark-mode .tree-container {
@@ -385,7 +385,7 @@ body.dark-mode .tree-stats {
     }
     50% {
         transform: scale(1.05);
-        box-shadow: 0 0 20px rgba(0, 33, 125, 0.4);
+        box-shadow: 0 0 20px rgba(27, 67, 50, 0.4);
     }
 }
 
@@ -494,7 +494,7 @@ body.dark-mode .tree-stats {
 }
 
 .tree-node .member-card[aria-expanded="true"] {
-    box-shadow: 0 0 0 4px rgba(0, 33, 125, 0.2);
+    box-shadow: 0 0 0 4px rgba(27, 67, 50, 0.2);
 }
 
 /* Loading State for Tree */

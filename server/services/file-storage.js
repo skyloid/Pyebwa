@@ -21,12 +21,19 @@ async function saveFile(category, id, fileBuffer, originalName) {
         throw new Error(`Storage upload failed: ${error.message}`);
     }
 
-    // Return public URL
+    // Return public URL — rewrite internal Docker URL to public-facing path
     const { data: urlData } = supabaseAdmin.storage
         .from(DEFAULT_BUCKET)
         .getPublicUrl(storagePath);
 
-    return urlData.publicUrl;
+    // The Supabase client returns internal URL (http://127.0.0.1:8100/storage/...)
+    // Rewrite to go through our public proxy (/supabase/storage/...)
+    const publicOrigin = process.env.PUBLIC_URL || 'https://rasin.pyebwa.com';
+    const publicUrl = urlData.publicUrl.replace(
+        /^https?:\/\/[^/]+/,
+        publicOrigin + '/supabase'
+    );
+    return publicUrl;
 }
 
 // Delete a file from Supabase Storage

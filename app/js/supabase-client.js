@@ -50,7 +50,7 @@
     // Stub db global for lingering Firestore references
     window.db = {
         collection() {
-            console.warn('[supabase-client] Firestore calls are no longer available. Use PyebwaAPI.');
+            // Firestore stub — silently reject
             const stub = () => Promise.reject(new Error('Use PyebwaAPI'));
             return { doc: () => ({ get: stub, set: stub, update: stub }), get: stub, where: () => ({ get: stub }) };
         }

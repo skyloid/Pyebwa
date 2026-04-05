@@ -8,32 +8,39 @@
 }
 
 :root {
-    /* Haitian Flag Colors - Core Brand */
-    --primary-red: #D41125;
-    --primary-blue: #00217D;
-    --accent-yellow: #FFC72C;
-    
+    /* Pyebwa Brand — Nature Palette */
+    --primary-green: #1B4332;
+    --primary-moss: #2D6A4F;
+    --accent-brown: #6B4F3A;
+    --accent-sand: #DAD7CD;
+    --accent-cream: #F5F3EF;
+
+    /* Legacy aliases — map old names to new palette */
+    --primary-red: #2D6A4F;
+    --primary-blue: #1B4332;
+    --accent-yellow: #6B4F3A;
+
     /* Extended Brand Palette */
-    --red-dark: #B00E20;
-    --red-light: #E94255;
-    --blue-dark: #001551;
-    --blue-light: #0B3FA6;
-    --yellow-dark: #E6B400;
-    --yellow-light: #FFD651;
-    
-    /* Neutral Colors */
-    --white: #FFFFFF;
-    --black: #000000;
-    --gray-50: #F9FAFB;
-    --gray-100: #F3F4F6;
-    --gray-200: #E5E7EB;
-    --gray-300: #D1D5DB;
-    --gray-400: #9CA3AF;
-    --gray-500: #6B7280;
-    --gray-600: #4B5563;
-    --gray-700: #374151;
-    --gray-800: #1F2937;
-    --gray-900: #111827;
+    --red-dark: #245740;
+    --red-light: #3D8B68;
+    --blue-dark: #122E22;
+    --blue-light: #2D6A4F;
+    --yellow-dark: #5A4230;
+    --yellow-light: #8B6E54;
+
+    /* Neutral Colors — warm earth tones */
+    --white: #F5F3EF;
+    --black: #1B1B18;
+    --gray-50: #F5F3EF;
+    --gray-100: #EBE9E3;
+    --gray-200: #DAD7CD;
+    --gray-300: #C4C0B6;
+    --gray-400: #9C9890;
+    --gray-500: #706C64;
+    --gray-600: #54514A;
+    --gray-700: #3A3832;
+    --gray-800: #26241F;
+    --gray-900: #1B1B18;
     
     /* Modern Shadows with Depth */
     --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -45,9 +52,9 @@
     --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
     
     /* Colored Shadows */
-    --shadow-blue: 0 4px 14px 0 rgba(0, 33, 125, 0.25);
-    --shadow-red: 0 4px 14px 0 rgba(212, 17, 37, 0.25);
-    --shadow-yellow: 0 4px 14px 0 rgba(255, 199, 44, 0.35);
+    --shadow-blue: 0 4px 14px 0 rgba(27, 67, 50, 0.25);
+    --shadow-red: 0 4px 14px 0 rgba(45, 106, 79, 0.25);
+    --shadow-yellow: 0 4px 14px 0 rgba(107, 79, 58, 0.3);
     
     /* Layout */
     --header-height: 72px;
@@ -72,22 +79,31 @@
     --z-tooltip: 10001;
 }
 
-/* Dark Mode Variables */
+/* Dark Mode Variables — forest dark palette */
 body.dark-mode {
-    --gray-50: #18181B;
-    --gray-100: #27272A;
-    --gray-200: #3F3F46;
-    --gray-300: #52525B;
-    --gray-400: #71717A;
-    --gray-500: #A1A1AA;
-    --gray-600: #D4D4D8;
-    --gray-700: #E4E4E7;
-    --gray-800: #F4F4F5;
-    --gray-900: #FAFAFA;
-    
-    --shadow-sm: 0 2px 4px -1px rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 6px -2px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
+    --white: #0B1410;
+    --black: #DAD7CD;
+    --gray-50: #0B1410;
+    --gray-100: #101C17;
+    --gray-200: #1A2B23;
+    --gray-300: #253A30;
+    --gray-400: #4A6858;
+    --gray-500: #6E8C7C;
+    --gray-600: #96AEA0;
+    --gray-700: #B8CAC0;
+    --gray-800: #CCD8D0;
+    --gray-900: #DAD7CD;
+
+    --primary-green: #2D6A4F;
+    --primary-moss: #40916C;
+    --accent-brown: #8A6A4A;
+    --primary-red: #40916C;
+    --primary-blue: #2D6A4F;
+    --accent-yellow: #8A6A4A;
+
+    --shadow-sm: 0 2px 4px -1px rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.25);
+    --shadow-md: 0 4px 6px -2px rgba(0, 0, 0, 0.35), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.35);
 }
 
 /* Base Typography */
@@ -100,10 +116,10 @@ body {
     background-color: var(--gray-50);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-image: 
-        radial-gradient(circle at 20% 80%, rgba(212, 17, 37, 0.03) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(0, 33, 125, 0.03) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(255, 199, 44, 0.02) 0%, transparent 50%);
+    background-image:
+        radial-gradient(circle at 20% 80%, rgba(45, 106, 79, 0.04) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(27, 67, 50, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(107, 79, 58, 0.03) 0%, transparent 50%);
     min-height: 100vh;
     transition: background-color var(--transition-base), color var(--transition-base);
 }
@@ -132,10 +148,10 @@ h6 { font-size: 1rem; line-height: 1.5; }
 
 /* Modern App Header */
 .app-header {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(245, 243, 239, 0.95);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
     position: sticky;
     top: 0;
     z-index: var(--z-sticky);
@@ -150,19 +166,18 @@ h6 { font-size: 1rem; line-height: 1.5; }
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, 
-        var(--primary-red) 0%, 
-        var(--primary-blue) 50%, 
-        var(--accent-yellow) 100%);
-    opacity: 0.8;
+    background: linear-gradient(90deg,
+        var(--primary-green) 0%,
+        var(--primary-moss) 40%,
+        var(--accent-brown) 100%);
+    opacity: 0.7;
 }
 
 body.dark-mode .app-header {
-    background: #000 !important;
-    background-color: #000 !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+    background: rgba(13, 24, 18, 0.95) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 .header-container {
@@ -338,9 +353,10 @@ body.dark-mode .lang-btn.active {
 }
 
 .user-dropdown-inner {
-    background: white;
+    background: var(--white);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-lg);
+    border: 1px solid var(--gray-200);
     overflow: hidden;
 }
 
@@ -368,6 +384,43 @@ body.dark-mode .lang-btn.active {
     margin: 8px 0;
     border: none;
     border-top: 1px solid var(--gray-200);
+}
+
+/* Header Theme Toggle */
+.header-theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--gray-200);
+    background: var(--gray-100);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    padding: 0;
+    color: var(--gray-600);
+    flex-shrink: 0;
+}
+
+.header-theme-toggle:hover {
+    background: var(--gray-200);
+    color: var(--gray-800);
+}
+
+.header-theme-toggle .material-icons {
+    font-size: 20px;
+    pointer-events: none;
+}
+
+body.dark-mode .header-theme-toggle {
+    background: var(--gray-100);
+    border-color: var(--gray-200);
+    color: var(--accent-yellow);
+}
+
+body.dark-mode .header-theme-toggle:hover {
+    background: var(--gray-200);
 }
 
 /* Modern Buttons */

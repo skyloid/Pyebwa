@@ -8,6 +8,7 @@
             'default-src': ["'self'"],
             'script-src': [
                 "'self'",
+                "'unsafe-inline'",
                 "https://www.gstatic.com",
                 "https://www.googletagmanager.com",
                 "https://fonts.googleapis.com",
