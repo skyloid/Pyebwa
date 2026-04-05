@@ -944,18 +944,8 @@
     // Check if user needs onboarding
     window.shouldShowEnhancedOnboarding = async function() {
         try {
-            // Check if user has completed onboarding
-            if (window.currentUser && window.db) {
-                const userDoc = await window.db.collection('users').doc(window.currentUser.uid).get();
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
-                    // Show onboarding if not completed or if user has no family members
-                    return !userData.onboardingComplete || (window.familyMembers && window.familyMembers.length === 0);
-                }
-            }
-            return true; // Show onboarding by default for new users
+            return window.familyMembers && window.familyMembers.length === 0;
         } catch (error) {
-            console.error('Error checking onboarding status:', error);
             return false;
         }
     };

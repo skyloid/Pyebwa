@@ -24,6 +24,7 @@
                 "data:",
                 "blob:",
                 "https://*.googleusercontent.com",
+                "https://firebasestorage.googleapis.com",
                 "https://picsum.photos"
             ],
             'font-src': [

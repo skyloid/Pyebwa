@@ -103,12 +103,8 @@
     // Export for use
     window.pyebwaSearchMigration = SearchMigration;
     
-    // Auto-run migration when user is logged in
-    const checkAndMigrate = () => {
-        if (window.currentUser && window.userFamilyTreeId && window.pyebwaSearch) {
-            SearchMigration.runMigrationIfNeeded();
-        }
-    };
+    // Search migration disabled — data now in PostgreSQL, not Firestore
+    const checkAndMigrate = () => {};
     
     // Wait for authentication and search engine
     if (document.readyState === 'loading') {

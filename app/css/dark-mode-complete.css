@@ -41,7 +41,7 @@ body.dark-mode .nav-item:hover {
     background-color: var(--bg-tertiary);
 }
 
-body.dark-mode .user-dropdown {
+body.dark-mode .user-dropdown-inner {
     background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
     box-shadow: 0 4px 12px var(--shadow-color);

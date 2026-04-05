@@ -329,21 +329,25 @@ body.dark-mode .lang-btn.active {
     position: absolute;
     top: 100%;
     right: 0;
-    margin-top: 8px;
-    background: white;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-lg);
+    padding-top: 4px;
     min-width: 200px;
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-10px);
-    transition: all var(--transition-base);
+    transition: opacity var(--transition-base), visibility var(--transition-base);
+    z-index: 1000;
 }
 
-.user-menu:hover .user-dropdown {
+.user-dropdown-inner {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+}
+
+.user-menu:hover .user-dropdown,
+.user-menu:focus-within .user-dropdown {
     opacity: 1;
     visibility: visible;
-    transform: translateY(0);
 }
 
 .user-dropdown a {

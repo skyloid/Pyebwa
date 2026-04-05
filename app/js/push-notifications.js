@@ -33,7 +33,7 @@
                 }
 
                 // Register service worker
-                this.registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+                this.registration = await navigator.serviceWorker.register('/sw.js');
                 console.log('[Push] Service Worker registered');
 
                 // Check existing subscription

@@ -180,8 +180,22 @@ async function loadFamilyMembers() {
     try {
         const result = await PyebwaAPI.getPersons(userFamilyTreeId);
         familyMembers = (result.persons || []).map(p => ({
-            ...p,
-            treeId: userFamilyTreeId
+            id: p.id,
+            treeId: userFamilyTreeId,
+            firstName: p.first_name || p.firstName || '',
+            lastName: p.last_name || p.lastName || '',
+            birthDate: p.birth_date || p.birthDate || null,
+            deathDate: p.death_date || p.deathDate || null,
+            gender: p.gender || null,
+            email: p.email || null,
+            biography: p.biography || '',
+            photoUrl: p.photo_url || p.photoUrl || (p.photos && p.photos.length > 0 ? p.photos[0].url : null),
+            photos: p.photos || [],
+            relationships: p.relationships || [],
+            phone: p.phone || null,
+            userId: p.user_id || p.userId || null,
+            createdAt: p.created_at || p.createdAt || null,
+            updatedAt: p.updated_at || p.updatedAt || null
         }));
         window.familyMembers = familyMembers;
 
