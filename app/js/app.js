@@ -80,6 +80,14 @@ async function initializeAuth() {
 
     // Check Supabase auth session
     try {
+        if (typeof PyebwaAPI === 'undefined') {
+            // Wait for api-client.js to load (may be delayed by CDN)
+            await new Promise((resolve, reject) => {
+                if (window.PyebwaAPI) return resolve();
+                window.addEventListener('apiClientReady', resolve);
+                setTimeout(() => reject(new Error('PyebwaAPI failed to load')), 5000);
+            });
+        }
         const user = await PyebwaAPI.getCurrentUser();
 
         if (user) {

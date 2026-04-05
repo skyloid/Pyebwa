@@ -11,7 +11,8 @@
                 "https://www.gstatic.com",
                 "https://www.googletagmanager.com",
                 "https://fonts.googleapis.com",
-                "https://cdnjs.cloudflare.com" // For QR code library
+                "https://cdnjs.cloudflare.com",
+                "https://cdn.jsdelivr.net"
             ],
             'style-src': [
                 "'self'",
@@ -23,8 +24,7 @@
                 "data:",
                 "blob:",
                 "https://*.googleusercontent.com",
-                "https://firebasestorage.googleapis.com",
-                "https://picsum.photos" // For dashboard background images
+                "https://picsum.photos"
             ],
             'font-src': [
                 "'self'",
@@ -32,18 +32,12 @@
             ],
             'connect-src': [
                 "'self'",
-                "https://*.firebaseio.com",
-                "https://*.firebaseapp.com",
-                "https://identitytoolkit.googleapis.com",
-                "https://securetoken.googleapis.com",
-                "https://firestore.googleapis.com",
-                "https://firebasestorage.googleapis.com",
-                "wss://*.firebaseio.com"
+                "https://cdn.jsdelivr.net",
+                "https://cdnjs.cloudflare.com"
             ],
             'media-src': [
                 "'self'",
-                "blob:",
-                "https://firebasestorage.googleapis.com" // For audio/video playback
+                "blob:"
             ],
             'frame-src': ["'none'"],
             'object-src': ["'none'"],

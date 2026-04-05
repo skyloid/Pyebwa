@@ -13,13 +13,13 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
@@ -39,7 +39,7 @@ jobs:
       run: npm run test:ci
 
     - name: Upload coverage reports
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@ab904c41d6ece82784817410c45d8b8c02684457 # v3
       with:
         file: ./coverage/lcov.info
         flags: unittests
@@ -48,13 +48,13 @@ jobs:
   security:
     name: Security Audit
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
@@ -66,7 +66,7 @@ jobs:
       run: npm audit --audit-level=moderate
 
     - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
+      uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # pinned
       with:
         scan-type: 'fs'
         scan-ref: '.'
@@ -74,7 +74,7 @@ jobs:
         output: 'trivy-results.sarif'
 
     - name: Upload Trivy scan results
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@8dca8a82e2fa1a2c8908956f711300f9c4a4f4f6 # v2
       if: always()
       with:
         sarif_file: 'trivy-results.sarif'
@@ -83,13 +83,13 @@ jobs:
     name: Build Application
     runs-on: ubuntu-latest
     needs: [test, security]
-    
+
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
@@ -115,13 +115,13 @@ jobs:
     name: Mobile App Tests
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || contains(github.event.pull_request.changed_files, 'mobile-app/')
-    
+
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
@@ -148,13 +148,13 @@ jobs:
     name: Performance Tests
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    
+
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
@@ -171,14 +171,13 @@ jobs:
         NODE_ENV: test
 
     - name: Run Lighthouse CI
-      uses: treosh/lighthouse-ci-action@v10
+      uses: treosh/lighthouse-ci-action@03becbfc543944dd6e7534f7ff768abb8a296826 # v10
       with:
         urls: |
           http://localhost:3000
           http://localhost:3000/app
         configPath: './lighthouserc.json'
         uploadArtifacts: true
-        temporaryPublicStorage: true
 
   deploy-staging:
     name: Deploy to Staging
@@ -186,13 +185,13 @@ jobs:
     needs: [test, security, build]
     if: github.ref == 'refs/heads/develop'
     environment: staging
-    
+
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
@@ -215,13 +214,13 @@ jobs:
     needs: [test, security, build, performance]
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     environment: production
-    
+
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
@@ -241,20 +240,20 @@ jobs:
         FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
 
     - name: Notify deployment success
-      uses: 8398a7/action-slack@v3
+      uses: 8398a7/action-slack@fe58074bd2980fe0bf88f93302925353a92963f9 # v3.0.2
       if: success()
       with:
         status: success
-        text: 'Production deployment successful! 🚀'
+        text: 'Production deployment successful!'
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
     - name: Notify deployment failure
-      uses: 8398a7/action-slack@v3
+      uses: 8398a7/action-slack@fe58074bd2980fe0bf88f93302925353a92963f9 # v3.0.2
       if: failure()
       with:
         status: failure
-        text: 'Production deployment failed! 🚨'
+        text: 'Production deployment failed!'
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
@@ -263,10 +262,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test, security, build]
     if: failure()
-    
+
     steps:
     - name: Create issue on failure
-      uses: actions/github-script@v7
+      uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
       with:
         script: |
           github.rest.issues.create({
@@ -275,14 +274,14 @@ jobs:
             title: `CI/CD Pipeline Failed - ${context.sha.substring(0, 7)}`,
             body: `
             ## Pipeline Failure Report
-            
+
             **Commit:** ${context.sha}
             **Branch:** ${context.ref}
             **Workflow:** ${context.workflow}
             **Run ID:** ${context.runId}
-            
+
             One or more jobs in the CI/CD pipeline have failed. Please check the workflow logs for details.
-            
+
             [View Workflow Run](${context.payload.repository.html_url}/actions/runs/${context.runId})
             `,
             labels: ['bug', 'ci/cd', 'urgent']

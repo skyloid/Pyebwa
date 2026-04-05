@@ -1,9 +1,103 @@
 const express = require('express');
+const crypto = require('crypto');
 const router = express.Router();
 const userQueries = require('../db/queries/users');
 const { verifySession, isAdmin } = require('../db/auth');
 const { supabaseAdmin } = require('../services/supabase');
 const { logSecurityEvent, logUnauthorizedAccess, SecurityEvents } = require('../services/security-logger');
+
+// Signup — create user in Supabase Auth (triggers sync to public.users)
+router.post('/signup', async (req, res) => {
+    try {
+        const { email, fullName } = req.body;
+
+        if (!email || !fullName) {
+            return res.status(400).json({ error: 'Email and full name are required' });
+        }
+
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: 'Invalid email address' });
+        }
+
+        // Generate a secure random password
+        const tempPassword = crypto.randomBytes(12).toString('base64url');
+
+        // Create user in Supabase Auth (on_auth_user_created trigger syncs to public.users)
+        const { data, error } = await supabaseAdmin.auth.admin.createUser({
+            email: email,
+            password: tempPassword,
+            email_confirm: true,
+            user_metadata: {
+                display_name: fullName,
+                role: 'member'
+            }
+        });
+
+        if (error) {
+            console.error('Supabase signup error:', JSON.stringify(error), error.message, error.status);
+            const errMsg = error.message || error.msg || JSON.stringify(error);
+            if (errMsg.includes('already been registered') || errMsg.includes('already exists')) {
+                return res.status(409).json({ error: 'An account with this email already exists. Please log in instead.' });
+            }
+            return res.status(400).json({ error: errMsg });
+        }
+
+        // Update public.users with display_name if trigger didn't set it
+        try {
+            const existingUser = await userQueries.findById(data.user.id);
+            if (existingUser && !existingUser.display_name) {
+                await userQueries.update(data.user.id, { display_name: fullName });
+            } else if (!existingUser) {
+                // Trigger may not have fired yet — insert manually as fallback
+                await userQueries.create({
+                    id: data.user.id,
+                    email: email,
+                    password_hash: 'supabase-managed',
+                    display_name: fullName,
+                    role: 'member'
+                });
+            }
+        } catch (syncErr) {
+            console.warn('User sync fallback:', syncErr.message);
+        }
+
+        // Send welcome email with temporary password
+        try {
+            const emailService = require('../services/email');
+            if (emailService.isConfigured) {
+                await emailService.sendWelcomeEmail(email, {
+                    displayName: fullName,
+                    tempPassword: tempPassword,
+                    loginUrl: 'https://rasin.pyebwa.com/login-standalone.html'
+                });
+            } else {
+                console.log(`[SIGNUP] Email not configured. Temp password for ${email}: ${tempPassword}`);
+            }
+        } catch (emailErr) {
+            console.error('Welcome email failed:', emailErr.message);
+            // Don't fail signup if email fails — log the password so admin can share it
+            console.log(`[SIGNUP] Temp password for ${email}: ${tempPassword}`);
+        }
+
+        await logSecurityEvent(
+            SecurityEvents.ADMIN_ACTION,
+            data.user.id,
+            { action: 'user_signup', email, ip: req.ip },
+            'info'
+        );
+
+        res.status(201).json({
+            success: true,
+            message: 'Account created successfully. Check your email for login credentials.',
+            uid: data.user.id
+        });
+    } catch (error) {
+        console.error('Signup error:', error);
+        res.status(500).json({ error: 'Failed to create account. Please try again.' });
+    }
+});
 
 // Get current user info (JWT-based)
 router.get('/me', verifySession, async (req, res) => {
