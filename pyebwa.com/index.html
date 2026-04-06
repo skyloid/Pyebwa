@@ -5,6 +5,81 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pyebwa - Your Family Tree | Pyebwa Fanmi w</title>
     <meta name="description" content="Create and preserve your family history with Pyebwa. Build your family tree, share stories, and connect generations.">
+    <style>
+    :root {
+        --primary-red: #2D6A4F !important;
+        --primary-blue: #1B4332 !important;
+        --accent-yellow: #6B4F3A !important;
+        --accent-sand: #DAD7CD !important;
+        --accent-cream: #FDFCFA !important;
+    }
+    .navbar {
+        background: rgba(253, 252, 250, 0.96) !important;
+    }
+    body.dark-mode .navbar {
+        background: rgba(11, 20, 16, 0.92) !important;
+        border-bottom: 1px solid rgba(150, 174, 160, 0.14) !important;
+    }
+    .nav-menu {
+        position: relative !important;
+        top: 8px !important;
+    }
+    .nav-buttons {
+        position: relative !important;
+        top: 0 !important;
+    }
+    .nav-link,
+    .nav-buttons .btn {
+        display: inline-flex !important;
+        align-items: center !important;
+    }
+    .nav-link,
+    .nav-link:hover,
+    .nav-link.active {
+        color: #1B4332 !important;
+    }
+    body.dark-mode .nav-link,
+    body.dark-mode .nav-link:hover,
+    body.dark-mode .nav-link.active {
+        color: #CCD8D0 !important;
+    }
+    .btn-primary,
+    .btn-primary:hover,
+    .btn-cta,
+    .btn-cta:hover {
+        background: #1B4332 !important;
+        border-color: #1B4332 !important;
+        color: #FDFCFA !important;
+    }
+    body.dark-mode .btn-primary,
+    body.dark-mode .btn-primary:hover,
+    body.dark-mode .btn-cta,
+    body.dark-mode .btn-cta:hover {
+        background: #2D6A4F !important;
+        border-color: #2D6A4F !important;
+        color: #F5F3EF !important;
+    }
+    .btn-ghost,
+    .btn-ghost:hover {
+        color: #1B4332 !important;
+        border-color: #1B4332 !important;
+        background: rgba(253, 252, 250, 0.82) !important;
+    }
+    body.dark-mode .btn-ghost,
+    body.dark-mode .btn-ghost:hover {
+        color: #CCD8D0 !important;
+        border-color: rgba(150, 174, 160, 0.24) !important;
+        background: rgba(150, 174, 160, 0.12) !important;
+    }
+    .lang-btn.active {
+        background: #1B4332 !important;
+        color: #FDFCFA !important;
+    }
+    body.dark-mode .lang-btn.active {
+        background: #2D6A4F !important;
+        color: #F5F3EF !important;
+    }
+    </style>
     <!-- Immediate inline fix for slideshow -->
     <style>
     /* IMMEDIATE FIX - Ensures slideshow transitions work */
