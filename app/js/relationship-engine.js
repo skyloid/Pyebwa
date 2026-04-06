@@ -5,11 +5,29 @@
     var graph = null;
     var cache = { focusId: null, relationships: null };
 
+    function isDivorcedSpouseRelationship(rel) {
+        return rel && rel.type === 'spouse' && rel.maritalStatus === 'divorced';
+    }
+
+    function getSpouseLinks(node) {
+        if (!node) return [];
+        return Array.from(new Set([
+            ...Array.from(node.spouses || []),
+            ...Array.from(node.formerSpouses || [])
+        ]));
+    }
+
     // Build bidirectional graph from familyMembers array
     function buildGraph(members) {
         var g = new Map();
         members.forEach(function(m) {
-            g.set(m.id, { id: m.id, parents: new Set(), children: new Set(), spouses: new Set() });
+            g.set(m.id, {
+                id: m.id,
+                parents: new Set(),
+                children: new Set(),
+                spouses: new Set(),
+                formerSpouses: new Set()
+            });
         });
 
         members.forEach(function(m) {
@@ -34,8 +52,13 @@
                     self.children.add(rel.personId);
                     target.parents.add(m.id);
                 } else if (rel.type === 'spouse') {
-                    self.spouses.add(rel.personId);
-                    target.spouses.add(m.id);
+                    if (isDivorcedSpouseRelationship(rel)) {
+                        self.formerSpouses.add(rel.personId);
+                        target.formerSpouses.add(m.id);
+                    } else {
+                        self.spouses.add(rel.personId);
+                        target.spouses.add(m.id);
+                    }
                 } else if (rel.type === 'sibling') {
                     // Infer shared parents
                     if (target.parents.size > 0) {
@@ -103,7 +126,13 @@
 
         // Check direct spouse
         if (focusNode.spouses.has(targetId)) {
+            _computing.delete(pairKey);
             return { type: 'spouse', category: 'direct', gX: 0, gY: 0 };
+        }
+
+        if (focusNode.formerSpouses && focusNode.formerSpouses.has(targetId)) {
+            _computing.delete(pairKey);
+            return { type: 'formerSpouse', category: 'other', gX: 0, gY: 0 };
         }
 
         // Get ancestors of both
@@ -196,8 +225,9 @@
 
         // Check each of target's spouses — are any of them blood-related to focus?
         var result = null;
-        targetNode.spouses.forEach(function(spouseId) {
+        getSpouseLinks(targetNode).forEach(function(spouseId) {
             if (result) return;
+            if (spouseId === focusId) return;
             var bloodRel = computeRelationship(focusId, spouseId, members);
             if (bloodRel && bloodRel.category !== 'other' && bloodRel.type !== 'distant') {
                 if (bloodRel.type === 'child') {
@@ -216,8 +246,9 @@
         if (!result) {
             var focusNode = graph.get(focusId);
             if (focusNode) {
-                focusNode.spouses.forEach(function(spouseId) {
+                getSpouseLinks(focusNode).forEach(function(spouseId) {
                     if (result) return;
+                    if (spouseId === targetId) return;
                     var spouseRel = computeRelationship(spouseId, targetId, members);
                     if (spouseRel && spouseRel.category !== 'other' && spouseRel.type !== 'distant' && spouseRel.type !== 'spouse') {
                         if (spouseRel.type === 'parent') {
@@ -246,6 +277,7 @@
             en: {
                 self: 'You',
                 spouse: isMale ? 'Husband' : isFemale ? 'Wife' : 'Spouse',
+                formerSpouse: isMale ? 'Former Husband' : isFemale ? 'Former Wife' : 'Former Spouse',
                 parent: isMale ? 'Father' : isFemale ? 'Mother' : 'Parent',
                 child: isMale ? 'Son' : isFemale ? 'Daughter' : 'Child',
                 sibling: isMale ? 'Brother' : isFemale ? 'Sister' : 'Sibling',
@@ -267,6 +299,7 @@
             fr: {
                 self: 'Vous',
                 spouse: isMale ? 'Mari' : isFemale ? 'Femme' : 'Conjoint(e)',
+                formerSpouse: isMale ? 'Ex-mari' : isFemale ? 'Ex-femme' : 'Ex-conjoint(e)',
                 parent: isMale ? 'P\u00e8re' : isFemale ? 'M\u00e8re' : 'Parent',
                 child: isMale ? 'Fils' : isFemale ? 'Fille' : 'Enfant',
                 sibling: isMale ? 'Fr\u00e8re' : isFemale ? 'S\u0153ur' : 'Fr\u00e8re/S\u0153ur',
@@ -288,6 +321,7 @@
             ht: {
                 self: 'Ou menm',
                 spouse: isMale ? 'Mari' : isFemale ? 'Madanm' : 'Konj\u0175en',
+                formerSpouse: isMale ? 'Ansyen mari' : isFemale ? 'Ansyen madanm' : 'Ansyen konj\u0175en',
                 parent: isMale ? 'Papa' : isFemale ? 'Manman' : 'Paran',
                 child: isMale ? 'Pitit gason' : isFemale ? 'Pitit fi' : 'Pitit',
                 sibling: isMale ? 'Fr\u00e8' : isFemale ? 'S\u00e8' : 'Fr\u00e8/S\u00e8',

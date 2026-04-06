@@ -204,6 +204,7 @@ async function loadFamilyMembers() {
         }));
         window.familyMembers = familyMembers;
         window.allFamilyMembers = [...familyMembers];
+        window.pyebwaRelationshipEngine?.invalidate();
 
         const activeView = document.querySelector('.nav-item.active')?.getAttribute('data-view') || 'dashboard';
         showView(activeView);

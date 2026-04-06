@@ -28,6 +28,14 @@ function hasRelationship(member, targetId, type) {
     return getRelationshipList(member).some(rel => rel.type === type && rel.personId === targetId);
 }
 
+function hasActiveSpouseRelationship(member, targetId) {
+    return getRelationshipList(member).some(rel =>
+        rel.type === 'spouse' &&
+        rel.personId === targetId &&
+        rel.maritalStatus !== 'divorced'
+    );
+}
+
 function listsChildOf(member, parentId) {
     if (!member) return false;
     if (member.relationship === 'child' && member.relatedTo === parentId) return true;
@@ -97,7 +105,7 @@ function getDirectFamilyMembers(member) {
         if (hasRelationship(member, otherMember.id, 'parent') || hasRelationship(otherMember, member.id, 'child')) {
             family.children.push(otherMember);
         }
-        if (hasRelationship(member, otherMember.id, 'spouse') || hasRelationship(otherMember, member.id, 'spouse')) {
+        if (hasActiveSpouseRelationship(member, otherMember.id) || hasActiveSpouseRelationship(otherMember, member.id)) {
             family.spouses.push(otherMember);
         }
         if (hasRelationship(member, otherMember.id, 'sibling') || hasRelationship(otherMember, member.id, 'sibling')) {
@@ -113,6 +121,8 @@ function getDirectFamilyMembers(member) {
             return true;
         });
     });
+
+    family.children.sort(compareMembersForPlacement);
 
     return family;
 }
@@ -449,6 +459,7 @@ function initializeTreeNodeDragging() {
         translateX: 0,
         translateY: 0,
         moved: false,
+        isDragging: false,
         suppressClickUntil: 0
     });
 
@@ -467,11 +478,8 @@ function initializeTreeNodeDragging() {
             dragState.translateX = 0;
             dragState.translateY = 0;
             dragState.moved = false;
+            dragState.isDragging = false;
 
-            membersContainer.classList.add('tree-members-dragging');
-            membersContainer.style.transition = 'none';
-            membersContainer.setPointerCapture(event.pointerId);
-            event.preventDefault();
             event.stopPropagation();
         });
 
@@ -484,24 +492,38 @@ function initializeTreeNodeDragging() {
                 dragState.moved = true;
             }
 
+            if (!dragState.moved) {
+                return;
+            }
+
+            if (!dragState.isDragging) {
+                dragState.isDragging = true;
+                membersContainer.classList.add('tree-members-dragging');
+                membersContainer.style.transition = 'none';
+                membersContainer.setPointerCapture(event.pointerId);
+            }
+
             membersContainer.style.transform = `translate(${dragState.translateX}px, ${dragState.translateY}px)`;
+            event.preventDefault();
             requestTreeConnectionRedraw();
         });
 
         const releaseDrag = event => {
             if (dragState.activeElement !== membersContainer || dragState.pointerId !== event.pointerId) return;
 
-            membersContainer.releasePointerCapture(event.pointerId);
-            membersContainer.classList.remove('tree-members-dragging');
-            membersContainer.style.transition = '';
-            membersContainer.classList.add('tree-members-bounce');
-            membersContainer.style.transform = '';
-            requestTreeConnectionRedraw();
-
-            window.setTimeout(() => {
-                membersContainer.classList.remove('tree-members-bounce');
+            if (dragState.isDragging) {
+                membersContainer.releasePointerCapture(event.pointerId);
+                membersContainer.classList.remove('tree-members-dragging');
+                membersContainer.style.transition = '';
+                membersContainer.classList.add('tree-members-bounce');
+                membersContainer.style.transform = '';
                 requestTreeConnectionRedraw();
-            }, 420);
+
+                window.setTimeout(() => {
+                    membersContainer.classList.remove('tree-members-bounce');
+                    requestTreeConnectionRedraw();
+                }, 420);
+            }
 
             if (dragState.moved) {
                 dragState.suppressClickUntil = Date.now() + 250;
@@ -512,6 +534,7 @@ function initializeTreeNodeDragging() {
             dragState.translateX = 0;
             dragState.translateY = 0;
             dragState.moved = false;
+            dragState.isDragging = false;
         };
 
         membersContainer.addEventListener('pointerup', releaseDrag);
@@ -802,7 +825,13 @@ function buildMemberTree(member, processed = new Set()) {
     // Find spouse — check flat field AND relationships array in both directions
     function isSpouseOf(a, bId) {
         if (a.relationship === 'spouse' && a.relatedTo === bId) return true;
-        if (a.relationships) return a.relationships.some(r => r.type === 'spouse' && r.personId === bId);
+        if (a.relationships) {
+            return a.relationships.some(r =>
+                r.type === 'spouse' &&
+                r.personId === bId &&
+                r.maritalStatus !== 'divorced'
+            );
+        }
         return false;
     }
 
