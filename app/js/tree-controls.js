@@ -20,17 +20,35 @@
         
         // Initialize controls
         init() {
+            if (this.initialized) return;
+            this.initialized = true;
             this.createControlsUI();
             this.attachEventListeners();
             this.setupKeyboardShortcuts();
             this.initializePanZoom();
+            this.bindFullscreenEvents();
         },
         
         // Create controls UI
         createControlsUI() {
             const treeView = document.getElementById('treeView');
             if (!treeView) return;
-            
+
+            let toggleBtn = treeView.querySelector('.tree-toolbar-toggle');
+            const existingControls = treeView.querySelector('.tree-controls');
+            if (existingControls) {
+                const treeContainer = treeView.querySelector('.tree-container');
+                this.elements = {
+                    toggleBtn: toggleBtn,
+                    controls: existingControls,
+                    zoomValue: existingControls.querySelector('.zoom-value'),
+                    treeContainer: treeContainer,
+                    treeWrapper: treeContainer?.querySelector('.tree-wrapper'),
+                    tree: treeContainer?.querySelector('.tree')
+                };
+                return;
+            }
+
             // Create controls container
             const controls = document.createElement('div');
             controls.className = 'tree-controls';
@@ -116,6 +134,12 @@
         
         // Create mini-map navigation
         createMiniMap() {
+            const existingMiniMap = document.querySelector('#treeView .tree-minimap');
+            if (existingMiniMap) {
+                this.miniMap = existingMiniMap;
+                return;
+            }
+
             const miniMap = document.createElement('div');
             miniMap.className = 'tree-minimap';
             miniMap.innerHTML = `
@@ -148,7 +172,8 @@
         // Attach event listeners
         attachEventListeners() {
             var ctrl = this.elements.controls;
-            if (!ctrl) return;
+            if (!ctrl || ctrl.dataset.bound === 'true') return;
+            ctrl.dataset.bound = 'true';
 
             // Zoom controls — scoped to controls container
             ctrl.querySelector('.zoom-in')?.addEventListener('click', () => this.zoom(this.state.zoomStep));
@@ -317,7 +342,7 @@
             this.state.viewMode = mode;
             
             // Update active button
-            document.querySelectorAll('.view-mode').forEach(btn => {
+            this.elements.controls?.querySelectorAll('.view-mode').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.mode === mode);
             });
             
@@ -338,10 +363,7 @@
                 
                 // Re-initialize controls after tree re-render
                 setTimeout(() => {
-                    // Re-get elements after re-render
-                    this.elements.treeContainer = document.querySelector('.tree-container');
-                    this.elements.treeWrapper = document.querySelector('.tree-wrapper');
-                    this.elements.tree = document.querySelector('.tree');
+                    this.refreshElementRefs();
                     
                     // Restore zoom and position
                     this.state.zoom = currentZoom;
@@ -377,15 +399,7 @@
                 }
             }
             
-            this.state.isFullscreen = !this.state.isFullscreen;
-            treeView.classList.toggle('fullscreen', this.state.isFullscreen);
-            
-            // Update button icon
-            const btn = document.querySelector('.fullscreen');
-            const icon = btn?.querySelector('.material-icons');
-            if (icon) {
-                icon.textContent = this.state.isFullscreen ? 'fullscreen_exit' : 'fullscreen';
-            }
+            this.syncFullscreenState();
         },
         
         // Search in tree
@@ -569,19 +583,19 @@
         
         // Calculate number of generations
         calculateGenerations() {
-            // This is a simplified calculation
-            // In a real implementation, you would traverse the tree structure
             const tree = document.querySelector('.tree');
             if (!tree) return 1;
             
             let maxDepth = 1;
             const calculateDepth = (element, depth = 1) => {
                 maxDepth = Math.max(maxDepth, depth);
-                const children = element.querySelectorAll(':scope > li > ul');
+                const children = element.querySelectorAll(':scope > .tree-children > .tree-child > .tree-node');
                 children.forEach(child => calculateDepth(child, depth + 1));
             };
             
-            calculateDepth(tree);
+            tree.querySelectorAll(':scope > .tree-roots > .tree-root > .tree-node').forEach(root => {
+                calculateDepth(root);
+            });
             return maxDepth;
         },
         
@@ -653,6 +667,46 @@
         updateMiniMapViewport() {
             // This will be implemented to show current viewport position
             console.log('Updating mini-map viewport');
+        },
+
+        refreshElementRefs() {
+            const treeView = document.getElementById('treeView');
+            const controls = treeView?.querySelector('.tree-controls');
+            const treeContainer = treeView?.querySelector('.tree-container');
+
+            this.elements = {
+                controls: controls || this.elements?.controls || null,
+                zoomValue: controls?.querySelector('.zoom-value') || this.elements?.zoomValue || null,
+                treeContainer: treeContainer || null,
+                treeWrapper: treeContainer?.querySelector('.tree-wrapper') || null,
+                tree: treeContainer?.querySelector('.tree') || null
+            };
+        },
+
+        syncFullscreenState() {
+            const treeView = document.getElementById('treeView');
+            this.state.isFullscreen = !!(
+                document.fullscreenElement &&
+                treeView &&
+                (document.fullscreenElement === treeView || document.fullscreenElement.contains(treeView))
+            );
+
+            treeView?.classList.toggle('fullscreen', this.state.isFullscreen);
+
+            const btn = this.elements.controls?.querySelector('.fullscreen');
+            const icon = btn?.querySelector('.material-icons');
+            if (icon) {
+                icon.textContent = this.state.isFullscreen ? 'fullscreen_exit' : 'fullscreen';
+            }
+        },
+
+        bindFullscreenEvents() {
+            if (this.fullscreenEventsBound) return;
+            this.fullscreenEventsBound = true;
+
+            document.addEventListener('fullscreenchange', () => this.syncFullscreenState());
+            document.addEventListener('webkitfullscreenchange', () => this.syncFullscreenState());
+            document.addEventListener('msfullscreenchange', () => this.syncFullscreenState());
         },
 
         shouldHandleKeyboardShortcut(e) {

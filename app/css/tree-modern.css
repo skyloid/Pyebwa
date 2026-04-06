@@ -24,7 +24,7 @@ body.dark-mode .tree-container {
     justify-content: center;
     align-items: flex-start;
     min-width: 100%;
-    padding: 16px 8px;
+    padding: 4px 8px;
 }
 
 /* Tree Structure */

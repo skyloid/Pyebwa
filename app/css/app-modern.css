@@ -1705,7 +1705,7 @@ body.dark-mode .theme-toggle {
         gap: 16px;
         align-items: stretch;
     }
-    
+
     .members-grid {
         grid-template-columns: 1fr;
     }

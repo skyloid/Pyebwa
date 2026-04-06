@@ -16,6 +16,21 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
+.tree-controls.is-collapsed {
+    display: none !important;
+}
+
+.tree-toolbar-toggle {
+    margin: 0 0 12px auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tree-toolbar-toggle .material-icons {
+    font-size: 18px;
+}
+
 /* Control button base */
 .control-btn {
     background: var(--gray-100);
