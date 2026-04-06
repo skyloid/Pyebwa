@@ -33,6 +33,34 @@ body.dark-mode .tree-container {
     position: relative;
 }
 
+.tree-svg-connections {
+    position: absolute;
+    inset: 0;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.tree-connection {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    animation: drawLine 0.7s ease-out forwards;
+}
+
+.tree-connection-child,
+.tree-connection-parent {
+    stroke: color-mix(in srgb, var(--accent-brown, #6B4F3A) 60%, var(--primary-moss, #2D6A4F) 40%);
+    stroke-width: 3;
+    opacity: 0.72;
+}
+
+.tree-connection-spouse {
+    stroke: color-mix(in srgb, var(--accent-brown, #6B4F3A) 55%, white 45%);
+    stroke-width: 2.5;
+    opacity: 0.58;
+}
+
 /* Tree Roots Container */
 .tree-roots {
     display: flex;
@@ -62,23 +90,16 @@ body.dark-mode .tree-container {
     align-items: center;
     position: relative;
     z-index: 2;
+    touch-action: none;
+    will-change: transform;
 }
 
-/* Connection Line Between Spouses */
-.tree-members::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: calc(100% - 120px);
-    height: 2px;
-    background: linear-gradient(90deg, 
-        transparent 0%, 
-        var(--gray-300) 20%, 
-        var(--gray-300) 80%, 
-        transparent 100%);
-    transform: translate(-50%, -50%);
-    z-index: -1;
+.tree-members-bounce {
+    transition: transform 0.42s cubic-bezier(0.22, 1.2, 0.36, 1);
+}
+
+.tree-members-dragging {
+    z-index: 4;
 }
 
 /* Enhanced Member Card in Tree */
@@ -184,87 +205,9 @@ body.dark-mode .tree-container {
     margin-bottom: calc(var(--branch-offset) * 2);
 }
 
-/* Trunk from branch point down to parent */
-.tree-children::before {
-    content: '';
-    position: absolute;
-    bottom: calc(var(--branch-offset) * -2);
-    left: 50%;
-    width: 4px;
-    height: calc(var(--branch-offset) * 2);
-    background: var(--accent-brown, #6B4F3A);
-    border-radius: 2px;
-    transform: translateX(-50%);
-    opacity: 0.7;
-}
-
-/* Horizontal branch connecting children */
-.tree-children::after {
-    content: '';
-    position: absolute;
-    bottom: calc(var(--branch-offset) * -1);
-    left: 16px;
-    right: 16px;
-    height: 3px;
-    background: var(--accent-brown, #6B4F3A);
-    border-radius: 999px;
-    opacity: 0.6;
-}
-
 /* Individual Child Wrapper */
 .tree-child {
     position: relative;
-}
-
-/* Branch from horizontal bar up to each child */
-.tree-child::before {
-    content: '';
-    position: absolute;
-    bottom: calc(var(--branch-offset) * -1);
-    left: 50%;
-    width: 3px;
-    height: var(--branch-offset);
-    background: var(--accent-brown, #6B4F3A);
-    border-radius: 999px;
-    transform: translateX(-50%);
-    opacity: 0.7;
-}
-
-/* Single Child - No Horizontal Line */
-.tree-children:has(.tree-child:only-child)::after {
-    display: none;
-}
-
-.tree-children:has(.tree-child:only-child) .tree-child::before {
-    bottom: calc(var(--branch-offset) * -2);
-    height: calc(var(--branch-offset) * 2);
-}
-
-/* Curved elbows at branch ends */
-.tree-child:first-child:not(:only-child)::after,
-.tree-child:last-child:not(:only-child)::after {
-    content: '';
-    position: absolute;
-    bottom: calc(var(--branch-offset) * -1);
-    width: var(--branch-radius);
-    height: var(--branch-offset);
-    border: 3px solid var(--accent-brown, #6B4F3A);
-    opacity: 0.65;
-    pointer-events: none;
-}
-
-.tree-child:first-child:not(:only-child)::after {
-    left: 50%;
-    border-top: none;
-    border-right: none;
-    border-radius: 0 0 0 var(--branch-radius);
-}
-
-.tree-child:last-child:not(:only-child)::after {
-    right: 50%;
-    border-top: none;
-    border-left: none;
-    border-radius: 0 0 var(--branch-radius) 0;
 }
 
 /* Curved Connection Lines (Modern Look) */

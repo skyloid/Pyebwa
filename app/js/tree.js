@@ -318,6 +318,10 @@ function initializeTreeModeToggle() {
 }
 
 function handleTreeCardClick(member) {
+    if (window.pyebwaTreeDragState && window.pyebwaTreeDragState.suppressClickUntil > Date.now()) {
+        return;
+    }
+
     const state = getTreeInteractionState();
 
     if (state.mode === 'edit') {
@@ -328,6 +332,197 @@ function handleTreeCardClick(member) {
     state.focusPersonId = member.id;
     localStorage.setItem('pyebwaTreeFocusPerson', member.id);
     applyTreeFocusState();
+}
+
+function getDirectChildTreeNodes(nodeElement) {
+    return Array.from(nodeElement.querySelectorAll(':scope > .tree-children > .tree-child > .tree-node'));
+}
+
+function getDirectParentTreeNodes(nodeElement) {
+    return Array.from(nodeElement.querySelectorAll(':scope > .tree-parents > .tree-parent > .tree-node'));
+}
+
+function getElementCenter(element, treeRect, edge = 'center') {
+    const rect = element.getBoundingClientRect();
+    const x = rect.left - treeRect.left + (rect.width / 2);
+    let y = rect.top - treeRect.top + (rect.height / 2);
+
+    if (edge === 'top') {
+        y = rect.top - treeRect.top;
+    } else if (edge === 'bottom') {
+        y = rect.bottom - treeRect.top;
+    }
+
+    return { x, y };
+}
+
+function buildCurvedConnectionPath(start, end) {
+    const verticalDistance = Math.abs(end.y - start.y);
+    const controlOffset = Math.max(28, Math.min(120, verticalDistance * 0.45));
+    const direction = end.y >= start.y ? 1 : -1;
+    const c1 = { x: start.x, y: start.y + (controlOffset * direction) };
+    const c2 = { x: end.x, y: end.y - (controlOffset * direction) };
+    return `M ${start.x} ${start.y} C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${end.x} ${end.y}`;
+}
+
+function ensureTreeConnectionsLayer(treeElement) {
+    let svg = treeElement.querySelector('.tree-svg-connections');
+    if (!svg) {
+        svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('class', 'tree-svg-connections');
+        svg.setAttribute('aria-hidden', 'true');
+        treeElement.prepend(svg);
+    }
+    return svg;
+}
+
+function drawTreeConnections() {
+    const treeElement = document.querySelector('#treeContainer .tree');
+    if (!treeElement) return;
+
+    const svg = ensureTreeConnectionsLayer(treeElement);
+    const treeRect = treeElement.getBoundingClientRect();
+    const width = Math.max(1, Math.ceil(treeRect.width));
+    const height = Math.max(1, Math.ceil(treeRect.height));
+
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    svg.setAttribute('width', String(width));
+    svg.setAttribute('height', String(height));
+    svg.innerHTML = '';
+
+    const appendPath = (className, start, end) => {
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('class', className);
+        path.setAttribute('d', buildCurvedConnectionPath(start, end));
+        svg.appendChild(path);
+    };
+
+    treeElement.querySelectorAll('.tree-node').forEach(nodeElement => {
+        const membersContainer = nodeElement.querySelector(':scope > .tree-members');
+        if (!membersContainer) return;
+
+        const cards = Array.from(membersContainer.querySelectorAll(':scope > .member-card'));
+        if (cards.length > 1) {
+            const leftAnchor = getElementCenter(cards[0], treeRect, 'center');
+            const rightAnchor = getElementCenter(cards[cards.length - 1], treeRect, 'center');
+            appendPath('tree-connection tree-connection-spouse', leftAnchor, rightAnchor);
+        }
+
+        const parentAnchor = getElementCenter(membersContainer, treeRect, 'top');
+        getDirectChildTreeNodes(nodeElement).forEach(childNode => {
+            const childMembers = childNode.querySelector(':scope > .tree-members');
+            if (!childMembers) return;
+            const childAnchor = getElementCenter(childMembers, treeRect, 'bottom');
+            appendPath('tree-connection tree-connection-child', parentAnchor, childAnchor);
+        });
+
+        const childAnchor = getElementCenter(membersContainer, treeRect, 'bottom');
+        getDirectParentTreeNodes(nodeElement).forEach(parentNode => {
+            const parentMembers = parentNode.querySelector(':scope > .tree-members');
+            if (!parentMembers) return;
+            const parentAnchor = getElementCenter(parentMembers, treeRect, 'top');
+            appendPath('tree-connection tree-connection-parent', childAnchor, parentAnchor);
+        });
+    });
+}
+
+function requestTreeConnectionRedraw() {
+    if (window.pyebwaTreeConnectionFrame) {
+        cancelAnimationFrame(window.pyebwaTreeConnectionFrame);
+    }
+
+    window.pyebwaTreeConnectionFrame = requestAnimationFrame(() => {
+        window.pyebwaTreeConnectionFrame = null;
+        drawTreeConnections();
+    });
+}
+
+function initializeTreeNodeDragging() {
+    const treeElement = document.querySelector('#treeContainer .tree');
+    if (!treeElement) return;
+
+    const dragState = window.pyebwaTreeDragState || (window.pyebwaTreeDragState = {
+        activeElement: null,
+        pointerId: null,
+        startX: 0,
+        startY: 0,
+        translateX: 0,
+        translateY: 0,
+        moved: false,
+        suppressClickUntil: 0
+    });
+
+    treeElement.querySelectorAll('.tree-members').forEach(membersContainer => {
+        if (membersContainer.dataset.dragInitialized === 'true') return;
+        membersContainer.dataset.dragInitialized = 'true';
+
+        membersContainer.addEventListener('pointerdown', event => {
+            if (event.button !== 0) return;
+            if (!event.target.closest('.member-card')) return;
+
+            dragState.activeElement = membersContainer;
+            dragState.pointerId = event.pointerId;
+            dragState.startX = event.clientX;
+            dragState.startY = event.clientY;
+            dragState.translateX = 0;
+            dragState.translateY = 0;
+            dragState.moved = false;
+
+            membersContainer.classList.add('tree-members-dragging');
+            membersContainer.style.transition = 'none';
+            membersContainer.setPointerCapture(event.pointerId);
+            event.preventDefault();
+            event.stopPropagation();
+        });
+
+        membersContainer.addEventListener('pointermove', event => {
+            if (dragState.activeElement !== membersContainer || dragState.pointerId !== event.pointerId) return;
+
+            dragState.translateX = event.clientX - dragState.startX;
+            dragState.translateY = event.clientY - dragState.startY;
+            if (Math.abs(dragState.translateX) > 4 || Math.abs(dragState.translateY) > 4) {
+                dragState.moved = true;
+            }
+
+            membersContainer.style.transform = `translate(${dragState.translateX}px, ${dragState.translateY}px)`;
+            requestTreeConnectionRedraw();
+        });
+
+        const releaseDrag = event => {
+            if (dragState.activeElement !== membersContainer || dragState.pointerId !== event.pointerId) return;
+
+            membersContainer.releasePointerCapture(event.pointerId);
+            membersContainer.classList.remove('tree-members-dragging');
+            membersContainer.style.transition = '';
+            membersContainer.classList.add('tree-members-bounce');
+            membersContainer.style.transform = '';
+            requestTreeConnectionRedraw();
+
+            window.setTimeout(() => {
+                membersContainer.classList.remove('tree-members-bounce');
+                requestTreeConnectionRedraw();
+            }, 420);
+
+            if (dragState.moved) {
+                dragState.suppressClickUntil = Date.now() + 250;
+            }
+
+            dragState.activeElement = null;
+            dragState.pointerId = null;
+            dragState.translateX = 0;
+            dragState.translateY = 0;
+            dragState.moved = false;
+        };
+
+        membersContainer.addEventListener('pointerup', releaseDrag);
+        membersContainer.addEventListener('pointercancel', releaseDrag);
+    });
+
+    if (!window.pyebwaTreeConnectionEventsBound) {
+        window.pyebwaTreeConnectionEventsBound = true;
+        window.addEventListener('resize', requestTreeConnectionRedraw);
+        document.getElementById('treeContainer')?.addEventListener('scroll', requestTreeConnectionRedraw, { passive: true });
+    }
 }
 
 function renderFamilyTree(viewMode = 'full') {
@@ -427,6 +622,9 @@ function renderFamilyTree(viewMode = 'full') {
     
     // Render tree nodes
     renderTreeNode(treeElement, treeData);
+    container.classList.add('has-svg-connections');
+    initializeTreeNodeDragging();
+    requestTreeConnectionRedraw();
     // Apply current mode attribute so CSS reflects it
     container.setAttribute('data-tree-mode', getTreeInteractionState().mode);
     applyTreeFocusState();

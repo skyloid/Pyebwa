@@ -96,6 +96,12 @@
     margin-top: 16px;
 }
 
+.tree-container.has-svg-connections .tree-members,
+.tree-container.has-svg-connections .tree-child,
+.tree-container.has-svg-connections .tree-children {
+    position: relative;
+}
+
 /* Connect spouses — vine between partners */
 .tree-members::after {
     content: '';
@@ -108,6 +114,16 @@
     border-radius: 2px;
     z-index: -1;
     opacity: 0.5;
+}
+
+.tree-container.has-svg-connections .tree-members::before,
+.tree-container.has-svg-connections .tree-members::after,
+.tree-container.has-svg-connections .tree-children::before,
+.tree-container.has-svg-connections .tree-children::after,
+.tree-container.has-svg-connections .tree-child::before,
+.tree-container.has-svg-connections .tree-child::after {
+    display: none !important;
+    content: none !important;
 }
 
 .tree-members:has(.member-card:only-child)::after {
