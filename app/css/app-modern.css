@@ -1034,6 +1034,8 @@ body.dark-mode .focus-member-name {
     font-size: 12px;
     font-weight: 600;
     margin-top: 4px;
+    border: none;
+    text-decoration: none;
 }
 
 .member-relationship-badge.category-direct {

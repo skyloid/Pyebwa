@@ -28,6 +28,57 @@ function hasRelationship(member, targetId, type) {
     return getRelationshipList(member).some(rel => rel.type === type && rel.personId === targetId);
 }
 
+function listsChildOf(member, parentId) {
+    if (!member) return false;
+    if (member.relationship === 'child' && member.relatedTo === parentId) return true;
+    return getRelationshipList(member).some(rel => rel.type === 'child' && rel.personId === parentId);
+}
+
+function listsParentOf(member, childId) {
+    if (!member) return false;
+    if (member.relationship === 'parent' && member.relatedTo === childId) return true;
+    return getRelationshipList(member).some(rel => rel.type === 'parent' && rel.personId === childId);
+}
+
+function personIsChildOf(member, parentId) {
+    return listsChildOf(member, parentId) || (member && parentId ? familyMembers.some(m => m.id === parentId && listsParentOf(m, member.id)) : false);
+}
+
+function personHasChildren(memberId) {
+    return familyMembers.some(m => personIsChildOf(m, memberId)) ||
+        familyMembers.some(m => m.id === memberId && getRelationshipList(m).some(rel => rel.type === 'parent'));
+}
+
+function compareMembersForPlacement(a, b) {
+    if (a.birthDate && b.birthDate) {
+        return new Date(a.birthDate) - new Date(b.birthDate);
+    }
+    if (a.birthDate && !b.birthDate) return -1;
+    if (!a.birthDate && b.birthDate) return 1;
+    if (a.createdAt && b.createdAt) {
+        return new Date(a.createdAt) - new Date(b.createdAt);
+    }
+    if (a.createdAt && !b.createdAt) return -1;
+    if (!a.createdAt && b.createdAt) return 1;
+    return familyMembers.findIndex(m => m.id === a.id) - familyMembers.findIndex(m => m.id === b.id);
+}
+
+function getLinkedParents(child) {
+    return familyMembers.filter(parent => parent.id !== child.id && personIsChildOf(child, parent.id));
+}
+
+function getPrimaryParentId(child) {
+    const parents = getLinkedParents(child);
+    if (parents.length <= 1) {
+        return parents[0] ? parents[0].id : null;
+    }
+
+    const explicitChildLinks = parents.filter(parent => listsChildOf(child, parent.id));
+    const candidates = explicitChildLinks.length > 0 ? explicitChildLinks : parents;
+    candidates.sort(compareMembersForPlacement);
+    return candidates[0].id;
+}
+
 function getDirectFamilyMembers(member) {
     const sourceMembers = window.allFamilyMembers || familyMembers;
     const family = {
@@ -426,16 +477,21 @@ function buildTreeStructure(viewMode = 'full') {
         if (member.relationship === 'child' && member.relatedTo) {
             childOfMap.add(member.id);
         }
+        if (member.relationship === 'parent' && member.relatedTo) {
+            childOfMap.add(member.relatedTo);
+        }
         // Also check full relationships array
         if (member.relationships) {
             member.relationships.forEach(r => {
                 if (r.type === 'child' && r.personId) childOfMap.add(member.id);
+                if (r.type === 'parent' && r.personId) childOfMap.add(r.personId);
             });
         }
         // Siblings — mark as child of same parent
         if (member.relationship === 'sibling' && member.relatedTo) {
             const sib = memberMap.get(member.relatedTo);
-            if (sib && (sib.relationship === 'child' || (sib.relationships && sib.relationships.some(r => r.type === 'child')))) {
+            if (sib && (sib.relationship === 'child' || sib.relationship === 'parent' ||
+                (sib.relationships && sib.relationships.some(r => r.type === 'child' || r.type === 'parent')))) {
                 childOfMap.add(member.id);
             }
         }
@@ -449,14 +505,8 @@ function buildTreeStructure(viewMode = 'full') {
             const partner = memberMap.get(member.relatedTo);
             if (partner && !childOfMap.has(partner.id)) {
                 // Both are non-children. Check who has children pointing to them.
-                const memberHasKids = familyMembers.some(m =>
-                    (m.relationship === 'child' && m.relatedTo === member.id) ||
-                    (m.relationships && m.relationships.some(r => r.type === 'child' && r.personId === member.id))
-                );
-                const partnerHasKids = familyMembers.some(m =>
-                    (m.relationship === 'child' && m.relatedTo === partner.id) ||
-                    (m.relationships && m.relationships.some(r => r.type === 'child' && r.personId === partner.id))
-                );
+                const memberHasKids = personHasChildren(member.id);
+                const partnerHasKids = personHasChildren(partner.id);
                 // The one WITHOUT kids pointing to them is the spouse (non-root)
                 if (partnerHasKids && !memberHasKids) {
                     spouseOfRoot.add(member.id);
@@ -484,14 +534,8 @@ function buildTreeStructure(viewMode = 'full') {
             // Only exclude if their partner IS in the tree
             var partnerId = member.relatedTo || (member.relationships && member.relationships[0] ? member.relationships[0].personId : null);
             if (partnerId && memberMap.has(partnerId)) {
-                var memberHasKids = familyMembers.some(m =>
-                    (m.relationship === 'child' && m.relatedTo === member.id) ||
-                    (m.relationships && m.relationships.some(r => r.type === 'child' && r.personId === member.id))
-                );
-                var partnerHasKids = familyMembers.some(m =>
-                    (m.relationship === 'child' && m.relatedTo === partnerId) ||
-                    (m.relationships && m.relationships.some(r => r.type === 'child' && r.personId === partnerId))
-                );
+                var memberHasKids = personHasChildren(member.id);
+                var partnerHasKids = personHasChildren(partnerId);
 
                 if (partnerHasKids && !memberHasKids) {
                     pureSpouses.add(member.id);
@@ -564,8 +608,14 @@ function buildMemberTree(member, processed = new Set()) {
         if (a.relationships) return a.relationships.some(r => r.type === 'spouse' && r.personId === bId);
         return false;
     }
+
     const spouse = familyMembers.find(m =>
-        m.id !== member.id && !processed.has(m.id) && (isSpouseOf(m, member.id) || isSpouseOf(member, m.id))
+        m.id !== member.id &&
+        !processed.has(m.id) &&
+        (
+            isSpouseOf(m, member.id) ||
+            isSpouseOf(member, m.id)
+        )
     );
     if (spouse && !processed.has(spouse.id)) {
         node.spouse = spouse;
@@ -573,12 +623,25 @@ function buildMemberTree(member, processed = new Set()) {
     }
 
     // Find children — check flat field AND relationships array
-    const children = familyMembers.filter(m => {
-        if (m.relationship === 'child' && (m.relatedTo === member.id || (spouse && m.relatedTo === spouse.id))) return true;
-        if (m.relationships) return m.relationships.some(r =>
-            r.type === 'child' && (r.personId === member.id || (spouse && r.personId === spouse.id))
-        );
-        return false;
+    const linkedChildren = familyMembers.filter(m => {
+        if (m.id === member.id || (spouse && m.id === spouse.id)) return false;
+
+        const linkedToMember = personIsChildOf(m, member.id) || listsParentOf(member, m.id);
+        const linkedToSpouse = spouse ? (personIsChildOf(m, spouse.id) || listsParentOf(spouse, m.id)) : false;
+        if (!linkedToMember && !linkedToSpouse) return false;
+
+        const primaryParentId = getPrimaryParentId(m);
+        if (!primaryParentId) return linkedToMember || linkedToSpouse;
+
+        return primaryParentId === member.id || (spouse && primaryParentId === spouse.id);
+    });
+    const children = linkedChildren;
+    const connectedChildren = familyMembers.filter(m => {
+        if (m.id === member.id || (spouse && m.id === spouse.id)) return false;
+        const linkedToMember = personIsChildOf(m, member.id) || listsParentOf(member, m.id);
+        const linkedToSpouse = spouse ? (personIsChildOf(m, spouse.id) || listsParentOf(spouse, m.id)) : false;
+        if (!linkedToMember && !linkedToSpouse) return false;
+        return !children.some(child => child.id === m.id);
     });
     
     // Sort children by birthDate (oldest first)
@@ -600,6 +663,7 @@ function buildMemberTree(member, processed = new Set()) {
     node.children = children
         .map(child => buildMemberTree(child, processed))
         .filter(child => child !== null);
+    node.connectedChildren = connectedChildren;
     
     return node;
 }
@@ -706,6 +770,27 @@ function createMemberCard(node) {
         year.textContent = new Date(member.birthDate).getFullYear();
         card.appendChild(year);
     }
+
+    const connectedChildren = node.connectedChildren || member.connectedChildren;
+    if (connectedChildren && connectedChildren.length > 0) {
+        const note = document.createElement('button');
+        note.type = 'button';
+        note.className = 'member-relationship-badge category-extended';
+        if (connectedChildren.length === 1) {
+            note.textContent = `Connected through ${connectedChildren[0].firstName}`;
+            note.addEventListener('click', (event) => {
+                event.stopPropagation();
+                handleTreeCardClick(connectedChildren[0]);
+            });
+        } else {
+            note.textContent = `Connected through ${connectedChildren.length} children`;
+            note.addEventListener('click', (event) => {
+                event.stopPropagation();
+                handleTreeCardClick(connectedChildren[0]);
+            });
+        }
+        card.appendChild(note);
+    }
     
     return card;
 }
@@ -736,6 +821,13 @@ function buildAncestorTree(focusPerson, memberMap) {
     familyMembers.forEach(member => {
         if (member.relationship === 'parent' && member.relatedTo === focusPerson.id) {
             parents.push(member);
+        }
+        if (member.relationships) {
+            member.relationships.forEach(rel => {
+                if (rel.type === 'parent' && rel.personId === focusPerson.id && !parents.find(p => p.id === member.id)) {
+                    parents.push(member);
+                }
+            });
         }
     });
     
@@ -787,8 +879,8 @@ function buildDescendantTree(focusPerson, memberMap) {
     
     // Find children
     const children = familyMembers.filter(member => 
-        (member.relationship === 'child' && member.relatedTo === focusPerson.id) ||
-        (focusPerson.relationship === 'parent' && focusPerson.relatedTo === member.id)
+        personIsChildOf(member, focusPerson.id) ||
+        listsParentOf(focusPerson, member.id)
     );
     
     // Sort children by birth date

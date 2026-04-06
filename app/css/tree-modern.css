@@ -4,10 +4,10 @@
 .tree-container {
     background: var(--white);
     border-radius: var(--border-radius-xl);
-    padding: 40px;
+    padding: 16px;
     box-shadow: var(--shadow-lg);
     overflow: auto;
-    min-height: 500px;
+    min-height: 0;
     position: relative;
     background-image:
         radial-gradient(circle at 20% 80%, rgba(45, 106, 79, 0.03) 0%, transparent 50%),
@@ -24,7 +24,7 @@ body.dark-mode .tree-container {
     justify-content: center;
     align-items: flex-start;
     min-width: 100%;
-    padding: 40px 20px;
+    padding: 16px 8px;
 }
 
 /* Tree Structure */
@@ -83,8 +83,8 @@ body.dark-mode .tree-container {
 
 /* Enhanced Member Card in Tree */
 .tree-node .member-card {
-    width: 160px;
-    padding: 16px;
+    width: 150px;
+    padding: 12px;
     background: var(--accent-cream, #FDFCFA);
     border-radius: var(--border-radius-lg);
     box-shadow: var(--shadow-md);
@@ -133,9 +133,9 @@ body.dark-mode .tree-container {
 
 /* Member Photo in Tree */
 .tree-node .member-photo {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 12px;
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 8px;
     border-radius: 50%;
     background: var(--gray-100);
     display: flex;
@@ -149,7 +149,7 @@ body.dark-mode .tree-container {
 }
 
 .tree-node .member-photo .material-icons {
-    font-size: 36px;
+    font-size: 32px;
     color: var(--gray-400);
 }
 
@@ -159,7 +159,7 @@ body.dark-mode .tree-container {
 
 /* Member Name in Tree */
 .tree-node .member-name {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--gray-900);
     margin-bottom: 4px;
@@ -168,29 +168,31 @@ body.dark-mode .tree-container {
 
 /* Member Year in Tree */
 .tree-node .member-year {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--gray-600);
     font-weight: 500;
 }
 
 /* Children Container — branches grow upward */
 .tree-children {
+    --branch-offset: 18px;
+    --branch-radius: 16px;
     display: flex;
     gap: 48px;
     justify-content: center;
     position: relative;
-    margin-bottom: 60px;
+    margin-bottom: calc(var(--branch-offset) * 2);
 }
 
 /* Trunk from branch point down to parent */
 .tree-children::before {
     content: '';
     position: absolute;
-    bottom: -60px;
+    bottom: calc(var(--branch-offset) * -2);
     left: 50%;
     width: 4px;
-    height: 60px;
-    background: linear-gradient(to bottom, transparent, var(--accent-brown, #6B4F3A));
+    height: calc(var(--branch-offset) * 2);
+    background: var(--accent-brown, #6B4F3A);
     border-radius: 2px;
     transform: translateX(-50%);
     opacity: 0.7;
@@ -200,13 +202,13 @@ body.dark-mode .tree-container {
 .tree-children::after {
     content: '';
     position: absolute;
-    bottom: -30px;
-    left: 40px;
-    right: 40px;
+    bottom: calc(var(--branch-offset) * -1);
+    left: 16px;
+    right: 16px;
     height: 3px;
     background: var(--accent-brown, #6B4F3A);
-    border-radius: 2px;
-    opacity: 0.5;
+    border-radius: 999px;
+    opacity: 0.6;
 }
 
 /* Individual Child Wrapper */
@@ -218,19 +220,51 @@ body.dark-mode .tree-container {
 .tree-child::before {
     content: '';
     position: absolute;
-    bottom: -30px;
+    bottom: calc(var(--branch-offset) * -1);
     left: 50%;
     width: 3px;
-    height: 32px;
-    background: linear-gradient(to bottom, transparent, var(--accent-brown, #6B4F3A));
-    border-radius: 2px;
+    height: var(--branch-offset);
+    background: var(--accent-brown, #6B4F3A);
+    border-radius: 999px;
     transform: translateX(-50%);
-    opacity: 0.6;
+    opacity: 0.7;
 }
 
 /* Single Child - No Horizontal Line */
 .tree-children:has(.tree-child:only-child)::after {
     display: none;
+}
+
+.tree-children:has(.tree-child:only-child) .tree-child::before {
+    bottom: calc(var(--branch-offset) * -2);
+    height: calc(var(--branch-offset) * 2);
+}
+
+/* Curved elbows at branch ends */
+.tree-child:first-child:not(:only-child)::after,
+.tree-child:last-child:not(:only-child)::after {
+    content: '';
+    position: absolute;
+    bottom: calc(var(--branch-offset) * -1);
+    width: var(--branch-radius);
+    height: var(--branch-offset);
+    border: 3px solid var(--accent-brown, #6B4F3A);
+    opacity: 0.65;
+    pointer-events: none;
+}
+
+.tree-child:first-child:not(:only-child)::after {
+    left: 50%;
+    border-top: none;
+    border-right: none;
+    border-radius: 0 0 0 var(--branch-radius);
+}
+
+.tree-child:last-child:not(:only-child)::after {
+    right: 50%;
+    border-top: none;
+    border-left: none;
+    border-radius: 0 0 var(--branch-radius) 0;
 }
 
 /* Curved Connection Lines (Modern Look) */

@@ -4,9 +4,9 @@
 .tree-container {
     background: white;
     border-radius: var(--border-radius-xl);
-    padding: 40px 20px;
+    padding: 16px 8px;
     box-shadow: var(--shadow-lg);
-    min-height: 500px;
+    min-height: 0;
     position: relative;
     overflow-x: hidden; /* No horizontal scroll on desktop */
     overflow-y: auto;
@@ -26,7 +26,7 @@
     justify-content: center;
     align-items: flex-start;
     width: 100%;
-    padding: 40px 20px;
+    padding: 16px 8px;
     transform-origin: center top;
     transition: transform 0.3s ease;
 }
@@ -77,11 +77,11 @@
 
 /* Responsive member cards */
 .tree-node .member-card {
-    --card-width: 160px;
-    --card-padding: 16px;
-    --photo-size: 80px;
-    --name-size: 14px;
-    --year-size: 12px;
+    --card-width: 150px;
+    --card-padding: 12px;
+    --photo-size: 72px;
+    --name-size: 13px;
+    --year-size: 11px;
     
     width: var(--card-width);
     padding: var(--card-padding);
@@ -107,12 +107,12 @@
 
 .tree-children {
     --child-gap: 40px;
-    --child-margin-top: 80px;
+    --child-margin-top: 28px;
     display: flex;
     gap: var(--child-gap);
     justify-content: center;
     position: relative;
-    margin-top: var(--child-margin-top);
+    margin-bottom: var(--child-margin-top);
 }
 
 .tree-roots {
@@ -141,7 +141,7 @@
     
     .tree-small .tree-children {
         --child-gap: 60px;
-        --child-margin-top: 100px;
+        --child-margin-top: 36px;
     }
     
     .tree-small .tree-roots {
@@ -163,7 +163,7 @@
     
     .tree-medium .tree-children {
         --child-gap: 30px;
-        --child-margin-top: 70px;
+        --child-margin-top: 28px;
     }
     
     .tree-medium .tree-roots {
@@ -185,7 +185,7 @@
     
     .tree-large .tree-children {
         --child-gap: 20px;
-        --child-margin-top: 60px;
+        --child-margin-top: 24px;
     }
     
     .tree-large .tree-roots {
@@ -207,7 +207,7 @@
     
     .tree-xlarge .tree-children {
         --child-gap: 15px;
-        --child-margin-top: 50px;
+        --child-margin-top: 20px;
     }
     
     .tree-xlarge .tree-roots {
@@ -244,20 +244,9 @@
     font-weight: 500;
 }
 
-/* Responsive connection lines */
-.tree-children::before {
-    top: calc(var(--child-margin-top) * -1);
-    height: calc(var(--child-margin-top) / 2);
-}
-
-.tree-children::after {
-    top: calc(var(--child-margin-top) / -2);
-}
-
-.tree-child::before {
-    top: calc(var(--child-margin-top) / -2);
-    height: calc(var(--child-margin-top) / 2);
-}
+/* Connector geometry is controlled by tree-modern.css.
+   Avoid re-positioning the same pseudo-elements here, which causes
+   disconnected lines when responsive sizing kicks in. */
 
 /* Zoom controls for manual adjustment */
 /* Zoom controls removed */

@@ -447,7 +447,7 @@ function addRelationshipRow(data) {
 
     typeSelect.addEventListener('change', function() {
         var val = this.value;
-        var showPerson = val && val !== 'parent';
+        var showPerson = !!val;
         personSelect.style.display = showPerson ? '' : 'none';
         maritalSelect.style.display = val === 'spouse' ? '' : 'none';
         dateInput.style.display = val === 'spouse' ? '' : 'none';
@@ -460,7 +460,7 @@ function addRelationshipRow(data) {
 
     // Pre-populate if editing
     if (data) {
-        if (data.type && data.type !== 'parent') {
+        if (data.type) {
             personSelect.style.display = '';
             populatePersonSelect(personSelect);
             if (data.personId) personSelect.value = data.personId;
@@ -481,7 +481,7 @@ function getRelationshipsFromForm() {
         var type = row.querySelector('.rel-type').value;
         var personId = row.querySelector('.rel-person').value;
         if (!type) return;
-        if (type !== 'parent' && !personId) return;
+        if (!personId) return;
 
         var rel = { type: type };
         if (personId) rel.personId = personId;
