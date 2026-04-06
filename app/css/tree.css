@@ -3,28 +3,20 @@
     padding: 20px;
     overflow: auto;
     min-height: 400px;
-    display: flex;
-    flex-direction: column;
 }
 
-/* Family name header — the trunk/roots at the bottom */
+/* Family name header — displayed above the tree container */
 .family-name-header {
     text-align: center;
     font-size: 48px;
     font-weight: 800;
     color: var(--accent-brown, #6B4F3A);
-    margin-top: 20px;
-    margin-bottom: 0;
-    padding: 30px 20px 40px;
-    order: 1;
-    position: relative;
+    margin-bottom: 24px;
+    padding: 20px;
     text-transform: uppercase;
     letter-spacing: 3px;
     font-family: 'Montserrat', sans-serif;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-    display: flex;
-    justify-content: center;
-    align-items: center;
     width: 100%;
 }
 

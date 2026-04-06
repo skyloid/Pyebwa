@@ -351,19 +351,28 @@ function renderFamilyTree(viewMode = 'full') {
         
         if (oldestMember && oldestMember.lastName) {
             const familyName = oldestMember.lastName;
-            // Use translation system for family name format
             const familyNameFormat = t('familyNameFormat') || 'The {{name}} Family';
-            // Escape HTML to prevent XSS from family names
             const escapedName = familyName.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-            const formattedName = familyNameFormat.replace('{{name}}', escapedName);
-            familyNameHtml = `<div class="family-name-header">${formattedName}</div>`;
+            familyNameHtml = familyNameFormat.replace('{{name}}', escapedName);
         }
     }
-    
-    container.innerHTML = `
-        ${familyNameHtml}
-        <div class="tree-wrapper tree-scale-auto"><div class="tree"></div></div>
-    `;
+
+    // Render family name ABOVE the tree container (not inside it)
+    let nameDisplay = document.getElementById('familyNameDisplay');
+    if (!nameDisplay) {
+        nameDisplay = document.createElement('div');
+        nameDisplay.id = 'familyNameDisplay';
+        container.insertAdjacentElement('beforebegin', nameDisplay);
+    }
+    if (familyNameHtml) {
+        nameDisplay.className = 'family-name-header';
+        nameDisplay.textContent = familyNameHtml;
+        nameDisplay.style.display = '';
+    } else {
+        nameDisplay.style.display = 'none';
+    }
+
+    container.innerHTML = `<div class="tree-wrapper tree-scale-auto"><div class="tree"></div></div>`;
     const treeElement = container.querySelector('.tree');
     
     // Render tree nodes
@@ -516,7 +525,12 @@ function buildTreeStructure(viewMode = 'full') {
     console.log('Root members:', roots);
     
     // Build tree for each root
-    const trees = roots.map(root => buildMemberTree(root));
+    // Share processed set across all root trees to prevent members appearing twice
+    const globalProcessed = new Set();
+    const trees = roots.map(root => {
+        if (globalProcessed.has(root.id)) return null;
+        return buildMemberTree(root, globalProcessed);
+    }).filter(Boolean);
     
     // If multiple trees, create a virtual root
     if (trees.length > 1) {
