@@ -226,12 +226,10 @@ body.dark-mode .member-photo {
     border-color: var(--border-color);
 }
 
-/* Tree connection lines */
-body.dark-mode .tree-members::after,
-body.dark-mode .tree-children::before,
-body.dark-mode .tree-child::before,
-body.dark-mode .tree-child::after {
-    background-color: var(--border-color);
+/* Tree SVG connection lines */
+body.dark-mode .tree-connections path {
+    stroke: var(--accent-brown, #8A6A4A) !important;
+    opacity: 0.4 !important;
 }
 
 body.dark-mode .empty-state {

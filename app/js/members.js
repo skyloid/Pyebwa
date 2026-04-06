@@ -1,7 +1,11 @@
 // Members list view functionality
+var _activeFilter = 'all';
+var _focusPersonId = null;
+var _computedRelationships = null;
+
 function renderMembersList() {
     const container = document.getElementById('membersGrid');
-    
+
     if (familyMembers.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
@@ -12,18 +16,134 @@ function renderMembersList() {
         `;
         return;
     }
-    
-    // Clear container
+
+    // Initialize focus person
+    if (!_focusPersonId) {
+        _focusPersonId = localStorage.getItem('pyebwaFocusPerson');
+        // Default to logged-in user's person
+        if (!_focusPersonId && window.currentUser) {
+            var userPerson = familyMembers.find(m => m.email === window.currentUser.email);
+            if (userPerson) _focusPersonId = userPerson.id;
+        }
+        if (!_focusPersonId && familyMembers.length > 0) _focusPersonId = familyMembers[0].id;
+    }
+
+    // Render focus selector and filters
+    renderRelationshipControls();
+
+    // Compute relationships
+    if (window.pyebwaRelationshipEngine && _focusPersonId) {
+        _computedRelationships = window.pyebwaRelationshipEngine.computeAll(_focusPersonId, familyMembers);
+        console.log('[RelEngine] Focus:', _focusPersonId, 'Computed:', _computedRelationships ? _computedRelationships.size : 0, 'relationships');
+        if (_computedRelationships) {
+            _computedRelationships.forEach(function(r, id) {
+                var m = familyMembers.find(function(mm) { return mm.id === id; });
+                if (m) console.log('[RelEngine]', m.firstName, m.lastName, '->', r.label, '(' + r.type + ')');
+            });
+        }
+    } else {
+        console.warn('[RelEngine] Not available. Engine:', !!window.pyebwaRelationshipEngine, 'Focus:', _focusPersonId);
+    }
+
+    // Clear and render
     container.innerHTML = '';
-    
-    // Render member cards
+
+    var lang = window.currentLanguage || 'en';
+    var engine = window.pyebwaRelationshipEngine;
+    var cats = engine ? engine.categories : {};
+
+    // Update filter counts
+    if (_computedRelationships && engine) {
+        var cache = engine.getCache();
+        if (cache.byCategory) {
+            Object.keys(cache.byCategory).forEach(cat => {
+                var chip = document.querySelector('.filter-chip[data-filter="' + cat + '"] .filter-count');
+                if (chip) chip.textContent = cache.byCategory[cat].length || '';
+            });
+        }
+    }
+
     familyMembers.forEach(member => {
-        container.appendChild(createMemberListCard(member));
+        var rel = _computedRelationships ? _computedRelationships.get(member.id) : null;
+
+        // Apply filter
+        if (_activeFilter !== 'all' && rel && rel.category !== _activeFilter) return;
+        if (_activeFilter !== 'all' && !rel) return;
+
+        container.appendChild(createMemberListCard(member, rel));
+    });
+}
+
+function renderRelationshipControls() {
+    var existing = document.getElementById('relationshipControls');
+    if (existing) existing.remove();
+
+    var membersView = document.getElementById('membersView');
+    if (!membersView) return;
+
+    var header = membersView.querySelector('.view-header');
+    if (!header) return;
+
+    var lang = window.currentLanguage || 'en';
+    var engine = window.pyebwaRelationshipEngine;
+    var cats = engine ? engine.categories : {};
+
+    var controls = document.createElement('div');
+    controls.id = 'relationshipControls';
+    controls.className = 'relationship-controls';
+
+    // Focus person selector
+    var focusHtml = '<div class="focus-person-selector">';
+    focusHtml += '<label class="focus-label"><span class="material-icons" style="font-size:18px;vertical-align:middle;margin-right:4px;">person_pin</span>';
+    focusHtml += (lang === 'fr' ? 'Voir comme' : lang === 'ht' ? 'W\u00e8 tankou' : 'View as') + ':</label>';
+    focusHtml += '<select id="focusPersonSelect">';
+    familyMembers.slice().sort((a, b) => (a.firstName + a.lastName).localeCompare(b.firstName + b.lastName)).forEach(m => {
+        var selected = m.id === _focusPersonId ? ' selected' : '';
+        focusHtml += '<option value="' + m.id + '"' + selected + '>' + m.firstName + ' ' + m.lastName + '</option>';
+    });
+    focusHtml += '</select></div>';
+
+    // Filter chips
+    var filtersHtml = '<div class="relationship-filters">';
+    var filterKeys = ['all', 'direct', 'extended', 'lateral', 'cousin', 'inlaw'];
+    filterKeys.forEach(key => {
+        var cat = cats[key] || { label: {}, icon: 'label' };
+        var label = (cat.label && cat.label[lang]) || cat.label?.en || key;
+        var active = _activeFilter === key ? ' active' : '';
+        filtersHtml += '<button class="filter-chip' + active + '" data-filter="' + key + '">';
+        filtersHtml += '<span class="material-icons">' + (cat.icon || 'label') + '</span> ';
+        filtersHtml += label;
+        filtersHtml += '<span class="filter-count"></span>';
+        filtersHtml += '</button>';
+    });
+    filtersHtml += '</div>';
+
+    controls.innerHTML = focusHtml + filtersHtml;
+    header.after(controls);
+
+    // Event listeners
+    var select = controls.querySelector('#focusPersonSelect');
+    if (select) {
+        select.addEventListener('change', function() {
+            _focusPersonId = this.value;
+            localStorage.setItem('pyebwaFocusPerson', _focusPersonId);
+            if (window.pyebwaRelationshipEngine) window.pyebwaRelationshipEngine.invalidate();
+            renderMembersList();
+        });
+    }
+
+    controls.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', function() {
+            _activeFilter = this.getAttribute('data-filter');
+            controls.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            renderMembersList();
+        });
     });
 }
 
 // Create member card for list view
-function createMemberListCard(member) {
+function createMemberListCard(member, rel) {
     const card = document.createElement('div');
     card.className = 'member-card';
     card.onclick = () => showMemberDetails(member);
@@ -55,8 +175,13 @@ function createMemberListCard(member) {
     name.textContent = `${member.firstName} ${member.lastName}`;
     info.appendChild(name);
     
-    // Relationship
-    if (member.relationship) {
+    // Computed relationship badge
+    if (rel && rel.label && rel.type !== 'self') {
+        const badge = document.createElement('div');
+        badge.className = 'member-relationship-badge category-' + rel.category;
+        badge.textContent = rel.label;
+        info.appendChild(badge);
+    } else if (member.relationship) {
         const relationship = document.createElement('div');
         relationship.className = 'member-relationship';
         relationship.textContent = t(member.relationship);

@@ -280,7 +280,7 @@ function initializeEventListeners() {
     const addMemberForm = document.getElementById('addMemberForm');
     if (addMemberForm) addMemberForm.addEventListener('submit', handleAddMember);
 
-    const cancelBtn = document.querySelector('#addMemberForm .btn-secondary');
+    const cancelBtn = document.querySelector('#addMemberForm .form-actions .btn-secondary');
     if (cancelBtn) {
         cancelBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -289,16 +289,13 @@ function initializeEventListeners() {
         });
     }
 
-    // Relationship field
-    const relationshipField = document.querySelector('[name="relationship"]');
-    if (relationshipField) {
-        relationshipField.addEventListener('change', (e) => {
-            const relatedToGroup = document.getElementById('relatedToGroup');
-            if (relatedToGroup) {
-                relatedToGroup.style.display = (e.target.value && e.target.value !== 'parent') ? 'block' : 'none';
-                if (relatedToGroup.style.display === 'block') populateRelatedToOptions();
-            }
-        });
+    // Relationship rows — add first row and wire up "Add Relationship" button
+    var addRelBtn = document.getElementById('addRelationshipBtn');
+    if (addRelBtn) {
+        addRelBtn.addEventListener('click', () => addRelationshipRow());
+        // Add first row by default
+        var container = document.getElementById('relationshipsContainer');
+        if (container && container.children.length === 0) addRelationshipRow();
     }
 
     document.addEventListener('keydown', (e) => {
@@ -349,6 +346,10 @@ function showAddMemberModal(member = null) {
     const submitBtn = form.querySelector('[type="submit"]');
     form.reset();
 
+    // Clear relationship rows
+    var relContainer = document.getElementById('relationshipsContainer');
+    if (relContainer) relContainer.innerHTML = '';
+
     if (member) {
         editingMemberId = member.id;
         modalTitle.textContent = t('editFamilyMember') || 'Edit Family Member';
@@ -356,35 +357,142 @@ function showAddMemberModal(member = null) {
         form.firstName.value = member.firstName || '';
         form.lastName.value = member.lastName || '';
         form.gender.value = member.gender || '';
-        form.birthDate.value = member.birthDate || '';
-        form.deathDate.value = member.deathDate || '';
+        form.birthDate.value = member.birthDate ? member.birthDate.substring(0, 10) : '';
+        form.deathDate.value = member.deathDate ? member.deathDate.substring(0, 10) : '';
         form.email.value = member.email || '';
         form.biography.value = member.biography || '';
-        form.relationship.value = member.relationship || '';
-        if (member.relatedTo) {
-            document.getElementById('relatedToGroup').style.display = 'block';
-            populateRelatedToOptions();
-            form.relatedTo.value = member.relatedTo;
+
+        // Populate relationship rows from member's relationships array
+        var rels = member.relationships || [];
+        if (rels.length > 0) {
+            rels.forEach(function(rel) { addRelationshipRow(rel); });
+        } else if (member.relationship && member.relatedTo) {
+            addRelationshipRow({ type: member.relationship, personId: member.relatedTo });
+        } else {
+            addRelationshipRow();
         }
     } else {
         editingMemberId = null;
         modalTitle.textContent = t('addFamilyMember') || 'Add Family Member';
         submitBtn.textContent = t('save') || 'Save';
+        addRelationshipRow();
     }
 
     modal.classList.add('active');
 }
 
-function populateRelatedToOptions() {
-    const select = document.getElementById('relatedToSelect');
+function populatePersonSelect(select, excludeIds) {
+    excludeIds = excludeIds || [];
     select.innerHTML = '<option value="">' + (t('selectPerson') || 'Select person') + '</option>';
     familyMembers.forEach(member => {
         if (editingMemberId && member.id === editingMemberId) return;
-        const option = document.createElement('option');
+        if (excludeIds.indexOf(member.id) !== -1) return;
+        var option = document.createElement('option');
         option.value = member.id;
-        option.textContent = `${member.firstName} ${member.lastName}`;
+        option.textContent = member.firstName + ' ' + member.lastName;
         select.appendChild(option);
     });
+}
+
+// Legacy alias
+function populateRelatedToOptions() {
+    var select = document.getElementById('relatedToSelect');
+    if (select) populatePersonSelect(select);
+}
+
+var _relRowCounter = 0;
+
+function addRelationshipRow(data) {
+    var container = document.getElementById('relationshipsContainer');
+    if (!container) return;
+
+    _relRowCounter++;
+    var rowId = 'relRow_' + _relRowCounter;
+
+    var row = document.createElement('div');
+    row.className = 'relationship-row';
+    row.id = rowId;
+
+    row.innerHTML =
+        '<div class="rel-row-fields">' +
+            '<select class="rel-type" required>' +
+                '<option value="">' + (t('selectRelationship') || 'Select relationship') + '</option>' +
+                '<option value="child"' + (data && data.type === 'child' ? ' selected' : '') + '>' + (t('childOf') || 'Son / Daughter of') + '</option>' +
+                '<option value="spouse"' + (data && data.type === 'spouse' ? ' selected' : '') + '>' + (t('spouseOf') || 'Husband / Wife of') + '</option>' +
+                '<option value="sibling"' + (data && data.type === 'sibling' ? ' selected' : '') + '>' + (t('siblingOf') || 'Brother / Sister of') + '</option>' +
+                '<option value="parent"' + (data && data.type === 'parent' ? ' selected' : '') + '>' + (t('parentOf') || 'Father / Mother of') + '</option>' +
+            '</select>' +
+            '<select class="rel-person" style="display:none;"></select>' +
+            '<select class="rel-marital" style="display:none;">' +
+                '<option value="married">' + (t('married') || 'Married') + '</option>' +
+                '<option value="engaged">' + (t('engaged') || 'Engaged') + '</option>' +
+                '<option value="commonLaw">' + (t('commonLaw') || 'Common-Law') + '</option>' +
+                '<option value="separated">' + (t('separated') || 'Separated') + '</option>' +
+                '<option value="divorced">' + (t('divorced') || 'Divorced') + '</option>' +
+                '<option value="widowed">' + (t('widowed') || 'Widowed') + '</option>' +
+            '</select>' +
+            '<input type="date" class="rel-date" style="display:none;" placeholder="Date">' +
+        '</div>' +
+        '<button type="button" class="rel-remove-btn" title="Remove">' +
+            '<span class="material-icons" style="font-size:18px;">close</span>' +
+        '</button>';
+
+    container.appendChild(row);
+
+    var typeSelect = row.querySelector('.rel-type');
+    var personSelect = row.querySelector('.rel-person');
+    var maritalSelect = row.querySelector('.rel-marital');
+    var dateInput = row.querySelector('.rel-date');
+    var removeBtn = row.querySelector('.rel-remove-btn');
+
+    typeSelect.addEventListener('change', function() {
+        var val = this.value;
+        var showPerson = val && val !== 'parent';
+        personSelect.style.display = showPerson ? '' : 'none';
+        maritalSelect.style.display = val === 'spouse' ? '' : 'none';
+        dateInput.style.display = val === 'spouse' ? '' : 'none';
+        if (showPerson) populatePersonSelect(personSelect);
+    });
+
+    removeBtn.addEventListener('click', function() {
+        row.remove();
+    });
+
+    // Pre-populate if editing
+    if (data) {
+        if (data.type && data.type !== 'parent') {
+            personSelect.style.display = '';
+            populatePersonSelect(personSelect);
+            if (data.personId) personSelect.value = data.personId;
+        }
+        if (data.type === 'spouse') {
+            maritalSelect.style.display = '';
+            dateInput.style.display = '';
+            if (data.maritalStatus) maritalSelect.value = data.maritalStatus;
+            if (data.marriageDate) dateInput.value = data.marriageDate;
+        }
+    }
+}
+
+function getRelationshipsFromForm() {
+    var rows = document.querySelectorAll('.relationship-row');
+    var relationships = [];
+    rows.forEach(function(row) {
+        var type = row.querySelector('.rel-type').value;
+        var personId = row.querySelector('.rel-person').value;
+        if (!type) return;
+        if (type !== 'parent' && !personId) return;
+
+        var rel = { type: type };
+        if (personId) rel.personId = personId;
+        if (type === 'spouse') {
+            rel.maritalStatus = row.querySelector('.rel-marital').value || 'married';
+            var dateVal = row.querySelector('.rel-date').value;
+            if (dateVal) rel.marriageDate = dateVal;
+        }
+        relationships.push(rel);
+    });
+    return relationships;
 }
 
 async function handleAddMember(e) {
@@ -405,11 +513,10 @@ async function handleAddMember(e) {
             biography: form.biography.value || ''
         };
 
-        // Handle relationships
-        const relationship = form.relationship.value;
-        const relatedTo = form.relatedTo?.value || null;
-        if (relationship && relatedTo) {
-            memberData.relationships = [{ type: relationship, personId: relatedTo }];
+        // Handle relationships — collect all rows
+        var relationships = getRelationshipsFromForm();
+        if (relationships.length > 0) {
+            memberData.relationships = relationships;
         }
 
         const photoFile = form.photo.files[0];

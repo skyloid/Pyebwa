@@ -594,6 +594,477 @@ body.dark-mode .card {
     background: var(--gray-100);
 }
 
+/* Dynamic Relationship Rows */
+.relationship-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px;
+    margin-bottom: 8px;
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+}
+
+.rel-row-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    flex: 1;
+}
+
+.rel-row-fields select,
+.rel-row-fields input {
+    padding: 8px 10px;
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    font-size: 13px;
+    background: var(--white);
+    color: var(--gray-900);
+    min-width: 140px;
+}
+
+.rel-row-fields select:focus,
+.rel-row-fields input:focus {
+    border-color: var(--primary-moss, #2D6A4F);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(45, 106, 79, 0.15);
+}
+
+.rel-remove-btn {
+    background: none;
+    border: none;
+    color: var(--gray-400);
+    cursor: pointer;
+    padding: 8px 4px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.rel-remove-btn:hover {
+    color: #D21034;
+    background: rgba(210, 16, 52, 0.08);
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+body.dark-mode .relationship-row {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .rel-row-fields select,
+body.dark-mode .rel-row-fields input {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+    .rel-row-fields {
+        flex-direction: column;
+    }
+    .rel-row-fields select,
+    .rel-row-fields input {
+        min-width: 100%;
+    }
+}
+
+/* Tree Mode Toggle */
+.tree-mode-toggle {
+    display: inline-flex;
+    border-radius: 8px;
+    border: 1px solid var(--gray-200);
+    overflow: hidden;
+}
+
+.mode-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: none;
+    background: var(--white);
+    color: var(--gray-500);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.mode-btn .material-icons {
+    font-size: 18px;
+}
+
+.mode-btn:hover {
+    color: var(--gray-700);
+    background: var(--gray-100);
+}
+
+.mode-btn.active {
+    background: var(--primary-green, #1B4332);
+    color: var(--accent-cream, #FDFCFA);
+}
+
+body.dark-mode .mode-btn {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
+body.dark-mode .mode-btn.active {
+    background: var(--primary-moss, #40916C);
+    color: var(--bg-primary);
+}
+
+/* Tree focus state — dim non-family members */
+.tree-container.focus-active .tree-node .member-card {
+    opacity: 0.3;
+    transform: scale(0.9);
+    transition: all 0.4s ease;
+}
+
+.tree-container.focus-active .tree-node .member-card.focus-highlight {
+    opacity: 1;
+    transform: scale(1.05);
+    box-shadow: 0 0 0 3px var(--primary-moss, #2D6A4F), var(--shadow-lg);
+    z-index: 10;
+}
+
+.tree-container.focus-active .tree-node .member-card.focus-family {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Focus detail panel — below the tree */
+.tree-focus-detail {
+    display: none;
+    padding: 20px 24px;
+    border-top: 2px solid var(--gray-200);
+    margin-top: 0;
+}
+
+.focus-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+}
+
+.focus-detail-profile {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.focus-detail-photo {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--primary-moss, #2D6A4F);
+    flex-shrink: 0;
+}
+
+.focus-detail-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: var(--gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 3px solid var(--gray-200);
+}
+
+.focus-detail-avatar .material-icons {
+    font-size: 36px;
+    color: var(--gray-400);
+}
+
+.focus-detail-profile h3 {
+    margin: 0 0 4px;
+    font-size: 22px;
+    color: var(--gray-900);
+}
+
+.focus-detail-info {
+    font-size: 14px;
+    color: var(--gray-500);
+    margin: 0;
+}
+
+/* Family sections */
+.focus-detail-family {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.focus-section h4 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin: 0 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.focus-section h4 .material-icons {
+    font-size: 18px;
+    color: var(--primary-moss, #2D6A4F);
+}
+
+.focus-section-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.focus-member-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px 8px 8px;
+    background: var(--accent-cream, #FDFCFA);
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 180px;
+}
+
+.focus-member-card:hover {
+    border-color: var(--primary-moss, #2D6A4F);
+    box-shadow: var(--shadow-sm);
+}
+
+.focus-member-photo {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--gray-100);
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.focus-member-photo .material-icons {
+    font-size: 20px;
+    color: var(--gray-400);
+}
+
+.focus-member-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-900);
+}
+
+.focus-member-rel {
+    font-size: 11px;
+    color: var(--primary-moss, #2D6A4F);
+    font-weight: 500;
+}
+
+/* Dark mode */
+body.dark-mode .tree-focus-detail {
+    border-top-color: var(--border-color);
+}
+
+body.dark-mode .focus-detail-profile h3 {
+    color: var(--text-primary);
+}
+
+body.dark-mode .focus-section h4 {
+    color: var(--text-secondary);
+    border-bottom-color: var(--border-color);
+}
+
+body.dark-mode .focus-member-card {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .focus-member-card:hover {
+    border-color: var(--primary-moss, #40916C);
+}
+
+body.dark-mode .focus-member-name {
+    color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+    .focus-detail-header {
+        flex-direction: column;
+        gap: 12px;
+    }
+    .focus-section-grid {
+        flex-direction: column;
+    }
+    .focus-member-card {
+        min-width: 100%;
+    }
+}
+
+/* Relationship Controls */
+.relationship-controls {
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.focus-person-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.focus-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-600);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+}
+
+.focus-person-selector select {
+    padding: 8px 12px;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    background: var(--accent-cream, #FDFCFA);
+    color: var(--gray-900);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    min-width: 200px;
+}
+
+.relationship-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--gray-200);
+    background: var(--white);
+    color: var(--gray-600);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-chip .material-icons {
+    font-size: 16px;
+}
+
+.filter-chip:hover {
+    border-color: var(--primary-moss, #2D6A4F);
+    color: var(--primary-moss, #2D6A4F);
+}
+
+.filter-chip.active {
+    background: var(--primary-green, #1B4332);
+    color: var(--accent-cream, #FDFCFA);
+    border-color: var(--primary-green, #1B4332);
+}
+
+.filter-count {
+    font-size: 11px;
+    opacity: 0.7;
+    margin-left: 2px;
+}
+
+.filter-count:empty {
+    display: none;
+}
+
+/* Relationship badge on member cards */
+.member-relationship-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+.member-relationship-badge.category-direct {
+    background: rgba(27, 67, 50, 0.12);
+    color: var(--primary-green, #1B4332);
+}
+
+.member-relationship-badge.category-extended {
+    background: rgba(45, 106, 79, 0.12);
+    color: var(--primary-moss, #2D6A4F);
+}
+
+.member-relationship-badge.category-lateral {
+    background: rgba(107, 79, 58, 0.12);
+    color: var(--accent-brown, #6B4F3A);
+}
+
+.member-relationship-badge.category-cousin {
+    background: rgba(0, 32, 159, 0.1);
+    color: #00209F;
+}
+
+.member-relationship-badge.category-inlaw {
+    background: rgba(210, 16, 52, 0.1);
+    color: #D21034;
+}
+
+.member-relationship-badge.category-other {
+    background: var(--gray-100);
+    color: var(--gray-500);
+}
+
+.member-relationship-badge.category-self {
+    background: rgba(45, 106, 79, 0.15);
+    color: var(--primary-moss, #2D6A4F);
+}
+
+/* Dark mode relationship controls */
+body.dark-mode .focus-person-selector select {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+body.dark-mode .filter-chip {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+body.dark-mode .filter-chip:hover {
+    border-color: var(--primary-moss, #40916C);
+    color: var(--primary-moss, #40916C);
+}
+
+body.dark-mode .filter-chip.active {
+    background: var(--primary-moss, #40916C);
+    color: var(--bg-primary);
+    border-color: var(--primary-moss, #40916C);
+}
+
 /* Modern Member Grid */
 .members-grid {
     display: grid;

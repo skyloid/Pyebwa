@@ -162,10 +162,10 @@ window.autoScaleTree = autoScaleTree;
 
 // Update the existing renderFamilyTree function
 const originalRenderFamilyTree = window.renderFamilyTree;
-window.renderFamilyTree = function() {
+window.renderFamilyTree = function(...args) {
     // Call original render function
     if (originalRenderFamilyTree) {
-        originalRenderFamilyTree();
+        originalRenderFamilyTree.apply(this, args);
     }
     
     // Initialize responsive features after rendering

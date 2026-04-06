@@ -1,6 +1,279 @@
 // Family tree visualization
+function getTreeInteractionState() {
+    if (!window.pyebwaTreeInteractionState) {
+        window.pyebwaTreeInteractionState = {
+            mode: localStorage.getItem('pyebwaTreeMode') || 'view',
+            focusPersonId: localStorage.getItem('pyebwaTreeFocusPerson') || null
+        };
+    }
+    return window.pyebwaTreeInteractionState;
+}
+
+function getRelationshipList(member) {
+    const relationships = Array.isArray(member.relationships) ? [...member.relationships] : [];
+
+    if (member.relationship && member.relatedTo) {
+        const hasFlatRelationship = relationships.some(rel =>
+            rel.type === member.relationship && rel.personId === member.relatedTo
+        );
+        if (!hasFlatRelationship) {
+            relationships.push({ type: member.relationship, personId: member.relatedTo });
+        }
+    }
+
+    return relationships;
+}
+
+function hasRelationship(member, targetId, type) {
+    return getRelationshipList(member).some(rel => rel.type === type && rel.personId === targetId);
+}
+
+function getDirectFamilyMembers(member) {
+    const sourceMembers = window.allFamilyMembers || familyMembers;
+    const family = {
+        parents: [],
+        spouses: [],
+        children: [],
+        siblings: []
+    };
+
+    sourceMembers.forEach(otherMember => {
+        if (!otherMember || otherMember.id === member.id) return;
+
+        if (hasRelationship(member, otherMember.id, 'child') || hasRelationship(otherMember, member.id, 'parent')) {
+            family.parents.push(otherMember);
+        }
+        if (hasRelationship(member, otherMember.id, 'parent') || hasRelationship(otherMember, member.id, 'child')) {
+            family.children.push(otherMember);
+        }
+        if (hasRelationship(member, otherMember.id, 'spouse') || hasRelationship(otherMember, member.id, 'spouse')) {
+            family.spouses.push(otherMember);
+        }
+        if (hasRelationship(member, otherMember.id, 'sibling') || hasRelationship(otherMember, member.id, 'sibling')) {
+            family.siblings.push(otherMember);
+        }
+    });
+
+    Object.keys(family).forEach(key => {
+        const seen = new Set();
+        family[key] = family[key].filter(relative => {
+            if (seen.has(relative.id)) return false;
+            seen.add(relative.id);
+            return true;
+        });
+    });
+
+    return family;
+}
+
+function renderTreeFocusDetailMember(member, relationshipLabel) {
+    const photoHtml = member.photoUrl
+        ? `<div class="focus-member-photo" style="background-image:url('${member.photoUrl.replace(/'/g, "\\'")}')"></div>`
+        : `<div class="focus-member-photo"><span class="material-icons">${member.gender === 'female' ? 'face_3' : 'face'}</span></div>`;
+
+    return `
+        <button type="button" class="focus-member-card" data-member-id="${member.id}">
+            ${photoHtml}
+            <div>
+                <div class="focus-member-name">${member.firstName} ${member.lastName}</div>
+                ${relationshipLabel ? `<div class="focus-member-rel">${relationshipLabel}</div>` : ''}
+            </div>
+        </button>
+    `;
+}
+
+function buildTreeFocusSection(title, icon, members, computedRelationships) {
+    if (!members || members.length === 0) return '';
+
+    const cardsHtml = members.map(member => {
+        const rel = computedRelationships ? computedRelationships.get(member.id) : null;
+        const relationshipLabel = rel && rel.label ? rel.label : '';
+        return renderTreeFocusDetailMember(member, relationshipLabel);
+    }).join('');
+
+    return `
+        <div class="focus-section">
+            <h4><span class="material-icons">${icon}</span>${title}</h4>
+            <div class="focus-section-grid">${cardsHtml}</div>
+        </div>
+    `;
+}
+
+function ensureTreeFocusDetail() {
+    const treeView = document.getElementById('treeView');
+    const treeContainer = document.getElementById('treeContainer');
+    if (!treeView || !treeContainer) return null;
+
+    let detail = document.getElementById('treeFocusDetail');
+    if (!detail) {
+        detail = document.createElement('div');
+        detail.id = 'treeFocusDetail';
+        detail.className = 'tree-focus-detail';
+        treeContainer.insertAdjacentElement('afterend', detail);
+    }
+
+    return detail;
+}
+
+function clearTreeFocusState() {
+    const treeContainer = document.getElementById('treeContainer');
+    const detail = document.getElementById('treeFocusDetail');
+
+    if (treeContainer) {
+        treeContainer.classList.remove('focus-active');
+        treeContainer.querySelectorAll('.member-card').forEach(card => {
+            card.classList.remove('focus-highlight', 'focus-family');
+        });
+    }
+
+    if (detail) {
+        detail.style.display = 'none';
+        detail.innerHTML = '';
+    }
+}
+
+function applyTreeFocusState() {
+    const state = getTreeInteractionState();
+    const treeContainer = document.getElementById('treeContainer');
+    const detail = ensureTreeFocusDetail();
+    const sourceMembers = window.allFamilyMembers || familyMembers;
+
+    if (!treeContainer || !detail) return;
+
+    if (state.mode !== 'view' || !state.focusPersonId) {
+        clearTreeFocusState();
+        return;
+    }
+
+    const focusMember = sourceMembers.find(member => member.id === state.focusPersonId);
+    if (!focusMember) {
+        clearTreeFocusState();
+        return;
+    }
+
+    let computedRelationships = null;
+    if (window.pyebwaRelationshipEngine) {
+        computedRelationships = window.pyebwaRelationshipEngine.computeAll(state.focusPersonId, sourceMembers);
+    }
+
+    treeContainer.classList.add('focus-active');
+    treeContainer.querySelectorAll('.member-card').forEach(card => {
+        const memberId = card.getAttribute('data-member-id');
+        card.classList.remove('focus-highlight', 'focus-family');
+
+        if (!memberId) return;
+        if (memberId === state.focusPersonId) {
+            card.classList.add('focus-highlight');
+            return;
+        }
+
+        const rel = computedRelationships ? computedRelationships.get(memberId) : null;
+        if (rel && rel.category !== 'other') {
+            card.classList.add('focus-family');
+            return;
+        }
+
+        const directFamily = getDirectFamilyMembers(focusMember);
+        const inDirectFamily = Object.values(directFamily).some(group => group.some(member => member.id === memberId));
+        if (inDirectFamily) {
+            card.classList.add('focus-family');
+        }
+    });
+
+    const photoHtml = focusMember.photoUrl
+        ? `<img class="focus-detail-photo" src="${focusMember.photoUrl}" alt="${focusMember.firstName} ${focusMember.lastName}">`
+        : `<div class="focus-detail-avatar"><span class="material-icons">${focusMember.gender === 'female' ? 'face_3' : 'face'}</span></div>`;
+
+    const family = getDirectFamilyMembers(focusMember);
+    const sectionsHtml = [
+        buildTreeFocusSection(t('parents') || 'Parents', 'north', family.parents, computedRelationships),
+        buildTreeFocusSection(t('spouse') || 'Spouse', 'favorite', family.spouses, computedRelationships),
+        buildTreeFocusSection(t('children') || 'Children', 'south', family.children, computedRelationships),
+        buildTreeFocusSection(t('siblings') || 'Siblings', 'people', family.siblings, computedRelationships)
+    ].filter(Boolean).join('');
+
+    detail.innerHTML = `
+        <div class="focus-detail-header">
+            <div class="focus-detail-profile">
+                ${photoHtml}
+                <div>
+                    <h3>${focusMember.firstName} ${focusMember.lastName}</h3>
+                    <p class="focus-detail-info">${t('familyTree') || 'Family Tree'} ${state.mode === 'view' ? '• View Mode' : ''}</p>
+                </div>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button type="button" class="btn btn-secondary" id="treeFocusEditBtn">${t('edit') || 'Edit'}</button>
+                <button type="button" class="btn btn-secondary" id="treeFocusClearBtn">${t('close') || 'Close'}</button>
+            </div>
+        </div>
+        <div class="focus-detail-family">
+            ${sectionsHtml || `<p class="focus-detail-info">${t('noFamilyMembers') || 'No related family members found.'}</p>`}
+        </div>
+    `;
+    detail.style.display = 'block';
+
+    detail.querySelector('#treeFocusEditBtn')?.addEventListener('click', () => showAddMemberModal(focusMember));
+    detail.querySelector('#treeFocusClearBtn')?.addEventListener('click', () => {
+        state.focusPersonId = null;
+        localStorage.removeItem('pyebwaTreeFocusPerson');
+        clearTreeFocusState();
+    });
+    detail.querySelectorAll('.focus-member-card').forEach(button => {
+        button.addEventListener('click', () => {
+            state.focusPersonId = button.getAttribute('data-member-id');
+            localStorage.setItem('pyebwaTreeFocusPerson', state.focusPersonId);
+            applyTreeFocusState();
+        });
+    });
+}
+
+function setTreeInteractionMode(mode) {
+    const state = getTreeInteractionState();
+    state.mode = mode === 'edit' ? 'edit' : 'view';
+    localStorage.setItem('pyebwaTreeMode', state.mode);
+
+    const toggle = document.getElementById('treeModeToggle');
+    if (toggle) {
+        toggle.querySelectorAll('.mode-btn').forEach(button => {
+            button.classList.toggle('active', button.getAttribute('data-mode') === state.mode);
+        });
+    }
+
+    if (state.mode === 'edit') {
+        clearTreeFocusState();
+    } else {
+        applyTreeFocusState();
+    }
+}
+
+function initializeTreeModeToggle() {
+    const toggle = document.getElementById('treeModeToggle');
+    if (!toggle || toggle.dataset.initialized === 'true') return;
+
+    toggle.dataset.initialized = 'true';
+    toggle.querySelectorAll('.mode-btn').forEach(button => {
+        button.addEventListener('click', () => setTreeInteractionMode(button.getAttribute('data-mode')));
+    });
+
+    setTreeInteractionMode(getTreeInteractionState().mode);
+}
+
+function handleTreeCardClick(member) {
+    const state = getTreeInteractionState();
+
+    if (state.mode === 'edit') {
+        showAddMemberModal(member);
+        return;
+    }
+
+    state.focusPersonId = member.id;
+    localStorage.setItem('pyebwaTreeFocusPerson', member.id);
+    applyTreeFocusState();
+}
+
 function renderFamilyTree(viewMode = 'full') {
     const container = document.getElementById('treeContainer');
+    initializeTreeModeToggle();
     
     // Store original members if not already stored
     if (!window.allFamilyMembers) {
@@ -26,6 +299,7 @@ function renderFamilyTree(viewMode = 'full') {
                 </button>
             </div>
         `;
+        clearTreeFocusState();
         return;
     }
     
@@ -86,6 +360,7 @@ function renderFamilyTree(viewMode = 'full') {
     
     // Render tree nodes
     renderTreeNode(treeElement, treeData);
+    applyTreeFocusState();
     
     // Initialize tree controls if available
     if (window.pyebwaTreeControls) {
@@ -125,36 +400,94 @@ function buildTreeStructure(viewMode = 'full') {
         }
     }
     
-    // Find root members (those who are not children of anyone else)
-    const roots = familyMembers.filter(member => {
-        // If no relationship defined, they're a root
-        if (!member.relationship || !member.relatedTo) {
-            return true;
+    // A person is a root if nobody in the tree lists them as their child
+    // This is more reliable than checking the person's own relationship field
+    const childOfMap = new Set(); // IDs of people who are someone's child
+    familyMembers.forEach(member => {
+        if (member.relationship === 'child' && member.relatedTo) {
+            childOfMap.add(member.id);
         }
-        
-        // If they're marked as parent, they're a root
-        if (member.relationship === 'parent') {
-            return true;
+        // Also check full relationships array
+        if (member.relationships) {
+            member.relationships.forEach(r => {
+                if (r.type === 'child' && r.personId) childOfMap.add(member.id);
+            });
         }
-        
-        // If they're a child but their parent isn't in the tree, they're a root
-        if (member.relationship === 'child') {
-            const parent = memberMap.get(member.relatedTo);
-            return !parent;
+        // Siblings — mark as child of same parent
+        if (member.relationship === 'sibling' && member.relatedTo) {
+            const sib = memberMap.get(member.relatedTo);
+            if (sib && (sib.relationship === 'child' || (sib.relationships && sib.relationships.some(r => r.type === 'child')))) {
+                childOfMap.add(member.id);
+            }
         }
-        
-        // Spouses are not roots unless their partner isn't in the tree
-        if (member.relationship === 'spouse') {
+    });
+
+    // Find who is listed as a spouse of a non-child (potential root pair)
+    // Keep only one of each pair — the one who has children listing them as parent
+    const spouseOfRoot = new Set();
+    familyMembers.forEach(member => {
+        if (!childOfMap.has(member.id) && member.relationship === 'spouse' && member.relatedTo) {
             const partner = memberMap.get(member.relatedTo);
-            return !partner;
+            if (partner && !childOfMap.has(partner.id)) {
+                // Both are non-children. Check who has children pointing to them.
+                const memberHasKids = familyMembers.some(m =>
+                    (m.relationship === 'child' && m.relatedTo === member.id) ||
+                    (m.relationships && m.relationships.some(r => r.type === 'child' && r.personId === member.id))
+                );
+                const partnerHasKids = familyMembers.some(m =>
+                    (m.relationship === 'child' && m.relatedTo === partner.id) ||
+                    (m.relationships && m.relationships.some(r => r.type === 'child' && r.personId === partner.id))
+                );
+                // The one WITHOUT kids pointing to them is the spouse (non-root)
+                if (partnerHasKids && !memberHasKids) {
+                    spouseOfRoot.add(member.id);
+                } else if (memberHasKids && !partnerHasKids) {
+                    spouseOfRoot.add(partner.id);
+                } else {
+                    // Both or neither have kids — mark the one with relationship=spouse
+                    spouseOfRoot.add(member.id);
+                }
+            }
         }
-        
-        // Siblings without parents in tree are roots
-        if (member.relationship === 'sibling') {
-            return true;
+    });
+
+    // Exclude anyone who is purely a spouse (not a child of anyone)
+    // They'll be rendered alongside their partner by buildMemberTree.
+    // Keep at least one member from a spouse-only pair as a root, otherwise
+    // founder couples with no children disappear entirely.
+    const pureSpouses = new Set();
+    familyMembers.forEach(member => {
+        if (childOfMap.has(member.id)) return; // Has a child relationship — not a pure spouse
+        // Check if ALL their relationships are spouse
+        var allSpouse = member.relationships && member.relationships.length > 0 &&
+            member.relationships.every(r => r.type === 'spouse');
+        if (allSpouse || (member.relationship === 'spouse' && (!member.relationships || member.relationships.length <= 1))) {
+            // Only exclude if their partner IS in the tree
+            var partnerId = member.relatedTo || (member.relationships && member.relationships[0] ? member.relationships[0].personId : null);
+            if (partnerId && memberMap.has(partnerId)) {
+                var memberHasKids = familyMembers.some(m =>
+                    (m.relationship === 'child' && m.relatedTo === member.id) ||
+                    (m.relationships && m.relationships.some(r => r.type === 'child' && r.personId === member.id))
+                );
+                var partnerHasKids = familyMembers.some(m =>
+                    (m.relationship === 'child' && m.relatedTo === partnerId) ||
+                    (m.relationships && m.relationships.some(r => r.type === 'child' && r.personId === partnerId))
+                );
+
+                if (partnerHasKids && !memberHasKids) {
+                    pureSpouses.add(member.id);
+                } else if (!partnerHasKids && !memberHasKids) {
+                    // Founder couple with no children: keep one canonical partner as root.
+                    if (String(member.id) > String(partnerId)) {
+                        pureSpouses.add(member.id);
+                    }
+                }
+            }
         }
-        
-        return false;
+    });
+
+    const roots = familyMembers.filter(member => {
+        return !childOfMap.has(member.id) && !pureSpouses.has(member.id);
     });
     
     // Sort roots by birthDate (oldest first)
@@ -201,21 +534,27 @@ function buildMemberTree(member, processed = new Set()) {
         spouse: null
     };
     
-    // Find spouse
-    const spouse = familyMembers.find(m => 
-        m.id !== member.id && 
-        m.relatedTo === member.id && 
-        m.relationship === 'spouse'
+    // Find spouse — check flat field AND relationships array in both directions
+    function isSpouseOf(a, bId) {
+        if (a.relationship === 'spouse' && a.relatedTo === bId) return true;
+        if (a.relationships) return a.relationships.some(r => r.type === 'spouse' && r.personId === bId);
+        return false;
+    }
+    const spouse = familyMembers.find(m =>
+        m.id !== member.id && !processed.has(m.id) && (isSpouseOf(m, member.id) || isSpouseOf(member, m.id))
     );
     if (spouse && !processed.has(spouse.id)) {
         node.spouse = spouse;
         processed.add(spouse.id);
     }
-    
-    // Find children (those who list this member or spouse as parent)
+
+    // Find children — check flat field AND relationships array
     const children = familyMembers.filter(m => {
-        if (m.relationship !== 'child') return false;
-        return m.relatedTo === member.id || (spouse && m.relatedTo === spouse.id);
+        if (m.relationship === 'child' && (m.relatedTo === member.id || (spouse && m.relatedTo === spouse.id))) return true;
+        if (m.relationships) return m.relationships.some(r =>
+            r.type === 'child' && (r.personId === member.id || (spouse && r.personId === spouse.id))
+        );
+        return false;
     });
     
     // Sort children by birthDate (oldest first)
@@ -317,7 +656,8 @@ function createMemberCard(node) {
     
     const card = document.createElement('div');
     card.className = `member-card ${member.gender || 'unknown'}`;
-    card.onclick = () => showMemberDetails(member);
+    card.setAttribute('data-member-id', member.id);
+    card.onclick = () => handleTreeCardClick(member);
     
     // Photo or icon
     const photo = document.createElement('div');

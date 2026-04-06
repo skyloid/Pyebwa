@@ -1,5 +1,5 @@
 // Service Worker for Pyebwa Family Tree
-const CACHE_NAME = 'pyebwa-v1';
+const CACHE_NAME = 'pyebwa-v6';
 const urlsToCache = [
   '/',
   '/app/',
@@ -21,16 +21,21 @@ self.addEventListener('install', event => {
   );
 });
 
-// Fetch event
+// Fetch event — network-first strategy
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then(response => {
-        // Cache hit - return response
-        if (response) {
-          return response;
+        // Cache successful responses
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
         }
-        return fetch(event.request);
+        return response;
+      })
+      .catch(() => {
+        // Fallback to cache when offline
+        return caches.match(event.request);
       })
   );
 });

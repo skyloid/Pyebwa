@@ -8,8 +8,8 @@
     
     <!-- CSS -->
     <link rel="stylesheet" href="/app/css/app-modern.css?v=3">
-    <link rel="stylesheet" href="/app/css/tree.css?v=3">
-    <link rel="stylesheet" href="/app/css/tree-modern.css?v=1">
+    <link rel="stylesheet" href="/app/css/tree.css?v=5">
+    <link rel="stylesheet" href="/app/css/tree-modern.css?v=3">
     <link rel="stylesheet" href="/app/css/tree-responsive.css?v=1">
     <link rel="stylesheet" href="/app/css/tree-controls.css?v=1">
     <link rel="stylesheet" href="/app/css/tree-print.css?v=1">
@@ -180,7 +180,17 @@
             <div id="treeView" class="view-container" style="display: none;">
                 <div class="view-header">
                     <h2 data-i18n="familyTree">Pyebwa Fanmi Mwen</h2>
-                    <div style="display: flex; gap: 12px;">
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <div class="tree-mode-toggle" id="treeModeToggle">
+                            <button class="mode-btn active" data-mode="view" title="View mode — click to explore">
+                                <span class="material-icons">visibility</span>
+                                <span data-i18n="viewMode">View</span>
+                            </button>
+                            <button class="mode-btn" data-mode="edit" title="Edit mode — click to edit profiles">
+                                <span class="material-icons">edit</span>
+                                <span data-i18n="editMode">Edit</span>
+                            </button>
+                        </div>
                         <button class="btn btn-primary" id="addMemberBtn">
                             <span class="material-icons">person_add</span>
                             <span data-i18n="addMember">Ajoute Manm</span>
@@ -271,21 +281,12 @@
                     </div>
 
                     <div class="form-group">
-                        <label data-i18n="relationship">Relasyon</label>
-                        <select name="relationship" required>
-                            <option value="" data-i18n="selectRelationship">Chwazi relasyon</option>
-                            <option value="parent" data-i18n="parent">Paran</option>
-                            <option value="child" data-i18n="child">Pitit</option>
-                            <option value="spouse" data-i18n="spouse">Mari/Madanm</option>
-                            <option value="sibling" data-i18n="sibling">Frè/Sè</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group" id="relatedToGroup" style="display: none;">
-                        <label data-i18n="relatedTo">An relasyon ak</label>
-                        <select name="relatedTo" id="relatedToSelect">
-                            <!-- Options will be populated dynamically -->
-                        </select>
+                        <label data-i18n="relationships">Relationships</label>
+                        <div id="relationshipsContainer"></div>
+                        <button type="button" class="btn btn-secondary btn-sm" id="addRelationshipBtn" style="margin-top:8px;">
+                            <span class="material-icons" style="font-size:16px;">add</span>
+                            <span data-i18n="addRelationship">Add Relationship</span>
+                        </button>
                     </div>
 
                     <div class="form-group">
@@ -329,12 +330,13 @@
     <script src="/app/js/debug-utils.js?v=1"></script>
     <script src="/app/js/ui-helpers.js?v=1"></script>
     <script src="/app/js/app.js?v=2"></script>
-    <script src="/app/js/tree.js"></script>
+    <script src="/app/js/tree.js?v=10"></script>
     <script src="/app/js/tree-responsive.js"></script>
     <script src="/app/js/tree-controls.js"></script>
     <script src="/app/js/tree-views.js"></script>
     <script src="/app/js/tree-performance.js"></script>
     <script src="/app/js/tree-export.js"></script>
+    <script src="/app/js/relationship-engine.js"></script>
     <script src="/app/js/members.js"></script>
     <script src="/app/js/member-profile.js?v=2"></script>
     <script src="/app/js/share-card.js?v=1"></script>
