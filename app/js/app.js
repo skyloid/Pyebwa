@@ -44,17 +44,42 @@ window.addEventListener('pyebwaAuthSuccess', (event) => {
     log('[App] Auth success event received');
 });
 
-// Initialize app when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
+function getCookieValue(name) {
+    const nameEq = `${name}=`;
+    const cookies = document.cookie.split(';');
+    for (const rawCookie of cookies) {
+        const cookie = rawCookie.trim();
+        if (cookie.indexOf(nameEq) === 0) {
+            return cookie.substring(nameEq.length);
+        }
+    }
+    return null;
+}
+
+function getPreferredLanguage() {
+    const supportedLangs = ['en', 'fr', 'ht'];
+    const urlLang = new URLSearchParams(window.location.search).get('lang');
+    const cookieLang = getCookieValue('pyebwa_lang');
+    const savedLang = localStorage.getItem('pyebwaLang');
+    const browserLang = (navigator.language || '').split('-')[0].toLowerCase();
+
+    const candidates = [urlLang, cookieLang, savedLang, browserLang, 'en'];
+    return candidates.find(lang => supportedLangs.includes(lang)) || 'en';
+}
+
+function bootApp() {
     initializeAuth();
     initializeEventListeners();
-    const supportedLangs = ['en', 'fr', 'ht'];
-    const saved = localStorage.getItem('pyebwaLang');
-    const browserLang = (navigator.language || '').split('-')[0].toLowerCase();
-    const lang = saved || (supportedLangs.includes(browserLang) ? browserLang : 'en');
-    setLanguage(lang);
+    setLanguage(getPreferredLanguage());
     updateTranslations();
-});
+}
+
+// Initialize app when DOM is ready, even if this script was injected late.
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootApp);
+} else {
+    bootApp();
+}
 
 // ==================== AUTH ====================
 

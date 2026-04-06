@@ -30,6 +30,14 @@ document.addEventListener('DOMContentLoaded', function() {
     var ctaBtn = document.getElementById('ctaBtn');
     var mobileMenuBtn = document.getElementById('mobileMenuBtn') || document.getElementById('mobileMenuToggle');
     var mobileNav = document.querySelector('.mobile-nav') || document.querySelector('.nav-menu');
+    var buildVersionNodes = document.querySelectorAll('[data-build-version]');
+
+    if (buildVersionNodes.length) {
+        var versionLabel = window.__PYEBWA_VERSION__ || window.__PYEBWA_BUILD_ID__ || 'dev';
+        buildVersionNodes.forEach(function(node) {
+            node.textContent = versionLabel;
+        });
+    }
 
     // Login button - append language param to href
     if (loginBtn) {

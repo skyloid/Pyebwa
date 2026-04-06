@@ -26,6 +26,7 @@
                 
                 // Check for updates
                 this.checkForUpdates();
+                window.setInterval(() => this.checkForUpdates(), 60000);
                 
                 // Handle offline/online status
                 this.setupNetworkListeners();
@@ -86,6 +87,10 @@
         
         // Show update notification
         showUpdateNotification() {
+            if (document.querySelector('.version-update-banner, .sw-update-notification')) {
+                return;
+            }
+
             const notification = document.createElement('div');
             notification.className = 'sw-update-notification';
             notification.innerHTML = `
@@ -155,7 +160,7 @@
         
         // Apply update
         applyUpdate() {
-            if (!this.updateAvailable || !this.registration.waiting) return;
+            if (!this.registration?.waiting) return;
             
             // Tell waiting service worker to take control
             this.registration.waiting.postMessage({ type: 'SKIP_WAITING' });

@@ -87,8 +87,44 @@ app.get('/app/invite/:token', (req, res) => {
     res.sendFile(path.join(__dirname, 'app/invite.html'));
 });
 
+function setVersionHeaders(res) {
+    res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+}
+
+function setAssetHeaders(res, filePath) {
+    if (filePath.endsWith('.html') || filePath.endsWith('version.json')) {
+        setVersionHeaders(res);
+        return;
+    }
+
+    if (/\.(css|js|woff2?|ttf|eot)$/i.test(filePath)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        return;
+    }
+
+    if (/\.(png|jpe?g|gif|svg|ico|webp)$/i.test(filePath)) {
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        return;
+    }
+
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+}
+
+app.get('/version.json', (req, res) => {
+    setVersionHeaders(res);
+    res.sendFile(path.join(__dirname, 'app', 'version.json'));
+});
+
+app.get('/app/version.json', (req, res) => {
+    setVersionHeaders(res);
+    res.sendFile(path.join(__dirname, 'app', 'version.json'));
+});
+
 // Serve static files from the app directory
-app.use('/app', express.static(path.join(__dirname, 'app')));
+app.use('/app', express.static(path.join(__dirname, 'app'), {
+    setHeaders: setAssetHeaders
+}));
 
 // Serve favicon.ico from root
 app.get('/favicon.ico', (req, res) => {
@@ -98,27 +134,33 @@ app.get('/favicon.ico', (req, res) => {
 // Serve service worker from root
 app.get('/sw.js', (req, res) => {
     res.setHeader('Content-Type', 'application/javascript');
+    setVersionHeaders(res);
     res.sendFile(path.join(__dirname, 'sw.js'));
 });
 
 // Serve login/signup pages
 app.get('/login.html', (req, res) => {
+    setVersionHeaders(res);
     res.sendFile(path.join(__dirname, 'login.html'));
 });
 
 app.get('/signup.html', (req, res) => {
+    setVersionHeaders(res);
     res.sendFile(path.join(__dirname, 'signup.html'));
 });
 
 app.get('/signup-standalone.html', (req, res) => {
+    setVersionHeaders(res);
     res.sendFile(path.join(__dirname, 'signup-standalone.html'));
 });
 
 app.get('/login-standalone.html', (req, res) => {
+    setVersionHeaders(res);
     res.sendFile(path.join(__dirname, 'login-standalone.html'));
 });
 
 app.get('/reset-password.html', (req, res) => {
+    setVersionHeaders(res);
     res.sendFile(path.join(__dirname, 'reset-password.html'));
 });
 

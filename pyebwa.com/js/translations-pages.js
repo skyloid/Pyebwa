@@ -11,7 +11,7 @@ const pageTranslations = {
         
         // Common footer
         poweredBy: "Powered by",
-        humanLevelTech: "Technologies Humanitaires",
+        humanLevelTech: "Human Level Technologies Inc.",
         quickLinks: "Quick Links",
         privacyPolicy: "Privacy Policy",
         connect: "Connect",
@@ -188,7 +188,7 @@ const pageTranslations = {
         
         // Pied de page commun
         poweredBy: "Propulsé par",
-        humanLevelTech: "Technologies Humanitaires",
+        humanLevelTech: "Technologies Humanitaires Inc.",
         quickLinks: "Liens Rapides",
         privacyPolicy: "Politique de Confidentialité",
         connect: "Connecter",
@@ -365,7 +365,7 @@ const pageTranslations = {
         
         // Pye paj komen
         poweredBy: "Pwodwi pa",
-        humanLevelTech: "Technologies Humanitaires",
+        humanLevelTech: "Technologies Humanitaires Inc.",
         quickLinks: "Lyen Rapid",
         privacyPolicy: "Politik Konfidansyalite",
         connect: "Konekte",

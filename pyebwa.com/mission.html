@@ -4,10 +4,74 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-i18n="missionPageTitle">Our Mission - One Billion Trees for Haiti | Pyebwa</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/mobile.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script>
+        window.__PYEBWA_VERSION_URL__ = 'version.json';
+        window.__PYEBWA_BUILD_ID__ = null;
+        window.__PYEBWA_VERSION__ = null;
+        window.__PYEBWA_LOCAL_CSS__ = ['css/styles.css', 'css/mobile.css'];
+        window.__PYEBWA_LOCAL_SCRIPTS__ = [
+            'js/translations-pages.js',
+            'js/language.js',
+            'js/firebase-config.js',
+            'js/auth.js',
+            'js/back-to-top.js',
+            'js/version-watcher.js'
+        ];
+        window.__PYEBWA_assetUrl = function(path) {
+            const url = new URL(path, window.location.href);
+            url.searchParams.set('v', window.__PYEBWA_BUILD_ID__ || 'dev');
+            return url.pathname + url.search;
+        };
+        window.__PYEBWA_loadStyle = function(path, media) {
+            return new Promise((resolve, reject) => {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = window.__PYEBWA_assetUrl(path);
+                if (media) {
+                    link.media = media;
+                }
+                link.onload = resolve;
+                link.onerror = reject;
+                document.head.appendChild(link);
+            });
+        };
+        window.__PYEBWA_loadScript = function(path) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = window.__PYEBWA_assetUrl(path);
+                script.async = false;
+                script.onload = resolve;
+                script.onerror = reject;
+                (document.body || document.head).appendChild(script);
+            });
+        };
+        window.__PYEBWA_headAssetsPromise = (async function() {
+            let payload = { buildId: String(Date.now()) };
+
+            try {
+                const response = await fetch(`${window.__PYEBWA_VERSION_URL__}?t=${Date.now()}`, {
+                    cache: 'no-store',
+                    headers: { 'Cache-Control': 'no-cache' }
+                });
+
+                if (response.ok) {
+                    payload = await response.json();
+                }
+            } catch (error) {
+                console.warn('Falling back to timestamp build id:', error);
+            }
+
+            window.__PYEBWA_BUILD_ID__ = payload.buildId;
+            window.__PYEBWA_VERSION__ = payload.version || null;
+
+            for (const href of window.__PYEBWA_LOCAL_CSS__) {
+                const media = href.endsWith('mobile.css') ? '(max-width: 768px)' : null;
+                await window.__PYEBWA_loadStyle(href, media);
+            }
+        })();
+    </script>
     <style>
         :root {
             /* Nature Palette */
@@ -720,75 +784,72 @@
     <!-- Footer -->
     <footer class="footer" style="background: var(--primary-blue); color: white; padding: 40px 0;">
         <div class="container" style="text-align: center;">
-            <p>&copy; 2025 <span data-i18n="poweredBy">Powered by</span> <a href="https://humanlevel.ai" target="_blank" style="color: var(--accent-yellow); text-decoration: none; transition: all 0.3s;" data-i18n="humanLevelTech">Technologies Humanitaires</a></p>
+            <p>&copy; 2026 Pyebwa version <span data-build-version>1.0.1</span> - <span data-i18n="poweredBy">Powered by</span> <a href="https://humanlevel.ai" target="_blank" style="color: var(--accent-yellow); text-decoration: none; transition: all 0.3s;" data-i18n="humanLevelTech">Technologies Humanitaires Inc.</a></p>
         </div>
     </footer>
 
-    <script src="js/translations-pages.js"></script>
-    <script src="js/language.js"></script>
-    <script src="js/firebase-config.js"></script>
-    <script src="js/auth.js"></script>
     <script>
-        // Redirect login/signup buttons to secure.pyebwa.com
-        document.getElementById('loginBtn').addEventListener('click', () => {
-            window.location.href = 'https://secure.pyebwa.com/?redirect=' + encodeURIComponent(window.location.href);
-        });
-        document.getElementById('signupBtn').addEventListener('click', () => {
-            window.location.href = 'https://secure.pyebwa.com/?redirect=' + encodeURIComponent(window.location.href);
-        });
-        
-        // Animate tree planting visualization
-        let plantedTrees = 10;
-        const treeIcons = document.querySelectorAll('.tree-icon');
-        
-        setInterval(() => {
-            if (plantedTrees < treeIcons.length) {
-                treeIcons[plantedTrees].classList.add('planted');
-                treeIcons[plantedTrees].textContent = '🌳';
-                plantedTrees++;
+        (async function() {
+            await window.__PYEBWA_headAssetsPromise;
+
+            for (const src of window.__PYEBWA_LOCAL_SCRIPTS__) {
+                await window.__PYEBWA_loadScript(src);
             }
-        }, 3000);
-        
-        // Animate counter on scroll
-        let animated = false;
-        function animateCounter() {
-            if (animated) return;
-            
-            const counterSection = document.querySelector('.counter-section');
-            const rect = counterSection.getBoundingClientRect();
-            
-            if (rect.top < window.innerHeight && rect.bottom > 0) {
-                animated = true;
-                // Add animation logic here if needed
-            }
-        }
-        
-        window.addEventListener('scroll', animateCounter);
-        animateCounter(); // Check on load
-        
-        // Mobile menu toggle
-        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-        const navMenu = document.querySelector('.nav-menu');
-        
-        if (mobileMenuToggle) {
-            mobileMenuToggle.addEventListener('click', () => {
-                navMenu.classList.toggle('active');
+
+            document.getElementById('loginBtn').addEventListener('click', () => {
+                window.location.href = 'https://secure.pyebwa.com/?redirect=' + encodeURIComponent(window.location.href);
             });
-            
-            // Close menu when clicking outside
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.navbar') && navMenu.classList.contains('active')) {
-                    navMenu.classList.remove('active');
+            document.getElementById('signupBtn').addEventListener('click', () => {
+                window.location.href = 'https://secure.pyebwa.com/?redirect=' + encodeURIComponent(window.location.href);
+            });
+
+            let plantedTrees = 10;
+            const treeIcons = document.querySelectorAll('.tree-icon');
+
+            setInterval(() => {
+                if (plantedTrees < treeIcons.length) {
+                    treeIcons[plantedTrees].classList.add('planted');
+                    treeIcons[plantedTrees].textContent = '🌳';
+                    plantedTrees++;
                 }
-            });
-            
-            // Close menu when clicking a link
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.addEventListener('click', () => {
-                    navMenu.classList.remove('active');
+            }, 3000);
+
+            let animated = false;
+            function animateCounter() {
+                if (animated) return;
+
+                const counterSection = document.querySelector('.counter-section');
+                const rect = counterSection.getBoundingClientRect();
+
+                if (rect.top < window.innerHeight && rect.bottom > 0) {
+                    animated = true;
+                }
+            }
+
+            window.addEventListener('scroll', animateCounter);
+            animateCounter();
+
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const navMenu = document.querySelector('.nav-menu');
+
+            if (mobileMenuToggle) {
+                mobileMenuToggle.addEventListener('click', () => {
+                    navMenu.classList.toggle('active');
                 });
-            });
-        }
+
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.navbar') && navMenu.classList.contains('active')) {
+                        navMenu.classList.remove('active');
+                    }
+                });
+
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', () => {
+                        navMenu.classList.remove('active');
+                    });
+                });
+            }
+        })();
     </script>
     
     <!-- Forest Slideshow Script -->
@@ -861,8 +922,5 @@
             }
         })();
     </script>
-    
-    <!-- Back to Top Button -->
-    <script src="js/back-to-top.js"></script>
 </body>
 </html>

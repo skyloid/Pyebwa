@@ -6,27 +6,6 @@
     <title>Pyebwa - Your Family Tree</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     
-    <!-- CSS -->
-    <link rel="stylesheet" href="/app/css/app-modern.css?v=16">
-    <link rel="stylesheet" href="/app/css/tree.css?v=12">
-    <link rel="stylesheet" href="/app/css/tree-modern.css?v=11">
-    <link rel="stylesheet" href="/app/css/tree-responsive.css?v=7">
-    <link rel="stylesheet" href="/app/css/tree-controls.css?v=3">
-    <link rel="stylesheet" href="/app/css/tree-print.css?v=1">
-    <link rel="stylesheet" href="/app/css/member-profile.css?v=3">
-    <link rel="stylesheet" href="/app/css/share-card.css?v=1">
-    <link rel="stylesheet" href="/app/css/social-media.css?v=1">
-    <link rel="stylesheet" href="/app/css/invite-modal.css?v=1">
-    <link rel="stylesheet" href="/app/css/onboarding-flow.css">
-    <link rel="stylesheet" href="/app/css/video-messages.css">
-    <link rel="stylesheet" href="/app/css/animations.css?v=1">
-    <link rel="stylesheet" href="/app/css/mobile.css?v=2">
-    <link rel="stylesheet" href="/app/css/desktop.css?v=2">
-    <link rel="stylesheet" href="/app/css/mobile-fix.css?v=1">
-    <link rel="stylesheet" href="/app/css/mobile-nav-fix.css?v=2">
-    <link rel="stylesheet" href="/app/css/footer.css?v=3">
-    <link rel="stylesheet" href="/app/css/family-statistics.css?v=1">
-    <link rel="stylesheet" href="/app/css/dark-mode-complete.css?v=1">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
@@ -52,8 +31,143 @@
     
     <!-- Supabase Auth -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="/app/js/supabase-client.js"></script>
-    <script src="/app/js/api-client.js"></script>
+    <script>
+        window.__PYEBWA_VERSION_URL__ = '/app/version.json';
+        window.__PYEBWA_BUILD_ID__ = null;
+        window.__PYEBWA_VERSION__ = null;
+        window.__PYEBWA_LOCAL_CSS__ = [
+            '/app/css/app-modern.css',
+            '/app/css/tree.css',
+            '/app/css/tree-modern.css',
+            '/app/css/tree-responsive.css',
+            '/app/css/tree-controls.css',
+            '/app/css/tree-print.css',
+            '/app/css/member-profile.css',
+            '/app/css/share-card.css',
+            '/app/css/social-media.css',
+            '/app/css/invite-modal.css',
+            '/app/css/onboarding-flow.css',
+            '/app/css/video-messages.css',
+            '/app/css/animations.css',
+            '/app/css/mobile.css',
+            '/app/css/desktop.css',
+            '/app/css/mobile-fix.css',
+            '/app/css/mobile-nav-fix.css',
+            '/app/css/footer.css',
+            '/app/css/family-statistics.css',
+            '/app/css/dark-mode-complete.css'
+        ];
+        window.__PYEBWA_BOOT_SCRIPTS__ = [
+            '/app/js/supabase-client.js',
+            '/app/js/api-client.js'
+        ];
+        window.__PYEBWA_APP_SCRIPTS__ = [
+            '/app/js/auth-enhanced.js',
+            '/app/js/device-detection.js',
+            '/app/js/auth-emergency-fix.js',
+            '/app/js/app-loop-fix.js',
+            '/app/js/tablet-loop-fix.js',
+            '/app/js/tablet-debug.js',
+            '/app/js/cookies.js',
+            '/app/js/translations.js',
+            '/app/js/language-detection.js',
+            '/app/js/language-integration.js',
+            '/app/js/debug-utils.js',
+            '/app/js/ui-helpers.js',
+            '/app/js/app.js',
+            '/app/js/tree.js',
+            '/app/js/tree-responsive.js',
+            '/app/js/tree-controls.js',
+            '/app/js/tree-views.js',
+            '/app/js/tree-performance.js',
+            '/app/js/tree-export.js',
+            '/app/js/relationship-engine.js',
+            '/app/js/members.js',
+            '/app/js/member-profile.js',
+            '/app/js/share-card.js',
+            '/app/js/photo-gallery.js',
+            '/app/js/document-manager.js',
+            '/app/js/stories.js',
+            '/app/js/video-messages.js',
+            '/app/js/back-to-top.js',
+            '/app/js/mobile-nav-simple.js',
+            '/app/js/dashboard.js',
+            '/app/js/family-statistics.js',
+            '/app/js/onboarding.js',
+            '/app/js/onboarding-flow.js',
+            '/app/js/pdf-export.js',
+            '/app/js/modal-fix.js',
+            '/app/js/performance-monitor.js',
+            '/app/js/lazy-load.js',
+            '/app/js/sw-register.js',
+            '/app/js/version-watcher.js',
+            '/app/js/security-headers.js',
+            '/app/js/input-validator.js',
+            '/app/js/rate-limiter.js',
+            '/app/js/search-engine.js',
+            '/app/js/search-ui.js',
+            '/app/js/search-migration.js',
+            '/app/js/push-notifications.js',
+            '/app/js/theme-toggle-inline.js'
+        ];
+        window.__PYEBWA_versionPromise = (async function() {
+            let payload = { buildId: String(Date.now()) };
+
+            try {
+                const response = await fetch(window.__PYEBWA_VERSION_URL__, {
+                    cache: 'no-store',
+                    headers: { 'Cache-Control': 'no-cache' }
+                });
+
+                if (response.ok) {
+                    payload = await response.json();
+                }
+            } catch (error) {
+                console.warn('Falling back to timestamp build id:', error);
+            }
+
+            window.__PYEBWA_BUILD_ID__ = payload.buildId;
+            window.__PYEBWA_VERSION__ = payload.version || null;
+            return payload;
+        })();
+        window.__PYEBWA_assetUrl = function(path) {
+            if (/^(https?:)?\/\//.test(path)) {
+                return path;
+            }
+
+            const url = new URL(path, window.location.origin);
+            url.searchParams.set('v', window.__PYEBWA_BUILD_ID__ || 'dev');
+            return url.pathname + url.search;
+        };
+        window.__PYEBWA_loadStyle = function(path) {
+            return new Promise((resolve, reject) => {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = window.__PYEBWA_assetUrl(path);
+                link.onload = resolve;
+                link.onerror = reject;
+                document.head.appendChild(link);
+            });
+        };
+        window.__PYEBWA_loadScript = function(path) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = window.__PYEBWA_assetUrl(path);
+                script.async = false;
+                script.onload = resolve;
+                script.onerror = reject;
+                (document.body || document.head).appendChild(script);
+            });
+        };
+        window.__PYEBWA_headAssetsPromise = window.__PYEBWA_versionPromise.then(async () => {
+            for (const href of window.__PYEBWA_LOCAL_CSS__) {
+                await window.__PYEBWA_loadStyle(href);
+            }
+            for (const src of window.__PYEBWA_BOOT_SCRIPTS__) {
+                await window.__PYEBWA_loadScript(src);
+            }
+        });
+    </script>
 </head>
 <body>
     <!-- App Container -->
@@ -316,68 +430,15 @@
     </footer>
 
     <!-- JavaScript -->
-    <!-- firebase-config.js replaced by supabase-client.js in head -->
-    <script src="/app/js/auth-enhanced.js?v=1"></script>
-    <script src="/app/js/device-detection.js?v=1"></script>
-    <script src="/app/js/auth-emergency-fix.js?v=2"></script>
-    <script src="/app/js/app-loop-fix.js?v=2"></script>
-    <script src="/app/js/tablet-loop-fix.js?v=1"></script>
-    <script src="/app/js/tablet-debug.js?v=1"></script>
-    <script src="/app/js/cookies.js?v=1"></script>
-    <script src="/app/js/translations.js?v=5"></script>
-    <script src="/app/js/language-detection.js?v=1"></script>
-    <script src="/app/js/language-integration.js?v=1"></script>
-    <script src="/app/js/debug-utils.js?v=1"></script>
-    <script src="/app/js/ui-helpers.js?v=1"></script>
-    <script src="/app/js/app.js?v=4"></script>
-    <script src="/app/js/tree.js?v=19"></script>
-    <script src="/app/js/tree-responsive.js?v=3"></script>
-    <script src="/app/js/tree-controls.js?v=7"></script>
-    <script src="/app/js/tree-views.js"></script>
-    <script src="/app/js/tree-performance.js"></script>
-    <script src="/app/js/tree-export.js"></script>
-    <script src="/app/js/relationship-engine.js"></script>
-    <script src="/app/js/members.js"></script>
-    <script src="/app/js/member-profile.js?v=2"></script>
-    <script src="/app/js/share-card.js?v=1"></script>
-    <script src="/app/js/photo-gallery.js"></script>
-    <script src="/app/js/document-manager.js"></script>
-    <script src="/app/js/stories.js"></script>
-    <script src="/app/js/video-messages.js"></script>
-    <script src="/app/js/back-to-top.js"></script>
-    <!-- Theme toggle moved to end of body for better initialization -->
-    <!-- <script src="/app/js/theme-toggle-fixed.js?v=1"></script> -->
-    <script src="/app/js/mobile-nav-simple.js"></script>
-    <script src="/app/js/dashboard.js"></script>
-    <script src="/app/js/family-statistics.js"></script>
-    <script src="/app/js/onboarding.js"></script>
-    <script src="/app/js/onboarding-flow.js"></script>
-    <script src="/app/js/pdf-export.js"></script>
-    <script src="/app/js/modal-fix.js"></script>
-    
-    <!-- Performance & Optimization Scripts -->
-    <script src="/app/js/performance-monitor.js"></script>
-    <!-- firebase-optimized.js removed - using Supabase -->
-    <script src="/app/js/lazy-load.js"></script>
-    <script src="/app/js/sw-register.js"></script>
-    
-    <!-- Security Scripts -->
-    <script src="/app/js/security-headers.js?v=2"></script>
-    <script src="/app/js/input-validator.js"></script>
-    <script src="/app/js/rate-limiter.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" integrity="sha512-H+rglffZ6f5gF7UJgvH4Naa+fGCgjrHKMgoFOGmcPTRwR6oILo5R+gtzNrpDp7iMV3udbymBVjkeZGNz1Em4rQ==" crossorigin="anonymous"></script>
-    
-    <!-- Search Engine Scripts -->
-    <script src="/app/js/search-engine.js"></script>
-    <script src="/app/js/search-ui.js"></script>
-    <script src="/app/js/search-migration.js"></script>
-    
-    <!-- Push Notifications -->
-    <script src="/app/js/push-notifications.js"></script>
-    
-    <!-- Share modal removed - using pyebwa.com authentication flow -->
-    
-    <!-- Theme Toggle - Load at end of body for proper initialization -->
-    <script src="/app/js/theme-toggle-inline.js?v=4"></script>
+    <script>
+        (async function() {
+            await window.__PYEBWA_headAssetsPromise;
+
+            for (const src of window.__PYEBWA_APP_SCRIPTS__) {
+                await window.__PYEBWA_loadScript(src);
+            }
+        })();
+    </script>
 </body>
 </html>

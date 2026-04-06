@@ -1,33 +1,36 @@
 // Service Worker for Pyebwa Family Tree
-const CACHE_NAME = 'pyebwa-v7';
-const urlsToCache = [
-  '/',
-  '/app/',
-  '/app/css/app-modern.css',
-  '/app/css/tree-modern.css',
-  '/app/js/app.js',
-  '/app/js/translations.js',
-  '/app/images/default-avatar.png'
-];
+const CACHE_NAME = 'pyebwa-runtime-v9';
+const CACHEABLE_DESTINATIONS = new Set(['style', 'script', 'image', 'font']);
 
 // Install event
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
-      })
-  );
+  self.skipWaiting();
 });
 
 // Fetch event — network-first strategy
 self.addEventListener('fetch', event => {
+  const requestUrl = new URL(event.request.url);
+
+  // Ignore extension/internal browser requests and non-GET traffic.
+  if (!['http:', 'https:'].includes(requestUrl.protocol) || event.request.method !== 'GET') {
+    return;
+  }
+
+  if (requestUrl.pathname.endsWith('/version.json')) {
+    event.respondWith(fetch(event.request, { cache: 'no-store' }));
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
       .then(response => {
-        // Cache successful responses
-        if (response.ok) {
+        const shouldCache =
+          response.ok &&
+          ['basic', 'cors'].includes(response.type) &&
+          CACHEABLE_DESTINATIONS.has(event.request.destination) &&
+          requestUrl.searchParams.has('v');
+
+        if (shouldCache) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
         }
@@ -42,6 +45,7 @@ self.addEventListener('fetch', event => {
 
 // Activate event
 self.addEventListener('activate', event => {
+  event.waitUntil(clients.claim());
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
     caches.keys().then(cacheNames => {
@@ -54,4 +58,14 @@ self.addEventListener('activate', event => {
       );
     })
   );
+});
+
+self.addEventListener('message', event => {
+  if (!event.data || typeof event.data !== 'object') {
+    return;
+  }
+
+  if (event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });

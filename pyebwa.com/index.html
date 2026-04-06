@@ -5,12 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pyebwa - Your Family Tree | Pyebwa Fanmi w</title>
     <meta name="description" content="Create and preserve your family history with Pyebwa. Build your family tree, share stories, and connect generations.">
-    <link rel="stylesheet" href="css/styles.css?v=2345569">
-    <link rel="stylesheet" href="css/mobile.css?v=3" media="(max-width: 768px)">
-    <link rel="stylesheet" href="css/mobile-enhanced.css">
-    <link rel="stylesheet" href="css/slideshow-fallback.css">
-    <link rel="stylesheet" href="css/slideshow-immediate-fix-v2.css">
-    
     <!-- Immediate inline fix for slideshow -->
     <style>
     /* IMMEDIATE FIX - Ensures slideshow transitions work */
@@ -44,6 +38,81 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
     <!-- Firebase SDK removed - auth handled on rasin.pyebwa.com -->
+    <script>
+        window.__PYEBWA_VERSION_URL__ = 'version.json';
+        window.__PYEBWA_BUILD_ID__ = null;
+        window.__PYEBWA_VERSION__ = null;
+        window.__PYEBWA_LOCAL_CSS__ = [
+            'css/styles.css',
+            'css/mobile.css',
+            'css/mobile-enhanced.css',
+            'css/slideshow-fallback.css',
+            'css/slideshow-immediate-fix-v2.css'
+        ];
+        window.__PYEBWA_LOCAL_SCRIPTS__ = [
+            'js/clean-url.js',
+            'js/app-v2-fixed.js',
+            'js/back-to-top.js',
+            'js/slideshow-enhanced-v2.js',
+            'js/slideshow-mobile-optimize.js',
+            'js/mobile-nav-enhanced.js',
+            'js/translations-pages.js',
+            'js/language.js',
+            'js/version-watcher.js'
+        ];
+        window.__PYEBWA_assetUrl = function(path) {
+            const url = new URL(path, window.location.href);
+            url.searchParams.set('v', window.__PYEBWA_BUILD_ID__ || 'dev');
+            return url.pathname.replace(/^\/pyebwa\.com\//, '') + url.search;
+        };
+        window.__PYEBWA_loadStyle = function(path, media) {
+            return new Promise((resolve, reject) => {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = window.__PYEBWA_assetUrl(path);
+                if (media) {
+                    link.media = media;
+                }
+                link.onload = resolve;
+                link.onerror = reject;
+                document.head.appendChild(link);
+            });
+        };
+        window.__PYEBWA_loadScript = function(path) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = window.__PYEBWA_assetUrl(path);
+                script.async = false;
+                script.onload = resolve;
+                script.onerror = reject;
+                (document.body || document.head).appendChild(script);
+            });
+        };
+        window.__PYEBWA_headAssetsPromise = (async function() {
+            let payload = { buildId: String(Date.now()) };
+
+            try {
+                const response = await fetch(`${window.__PYEBWA_VERSION_URL__}?t=${Date.now()}`, {
+                    cache: 'no-store',
+                    headers: { 'Cache-Control': 'no-cache' }
+                });
+
+                if (response.ok) {
+                    payload = await response.json();
+                }
+            } catch (error) {
+                console.warn('Falling back to timestamp build id:', error);
+            }
+
+            window.__PYEBWA_BUILD_ID__ = payload.buildId;
+            window.__PYEBWA_VERSION__ = payload.version || null;
+
+            for (const href of window.__PYEBWA_LOCAL_CSS__) {
+                const media = href.endsWith('mobile.css') ? '(max-width: 768px)' : null;
+                await window.__PYEBWA_loadStyle(href, media);
+            }
+        })();
+    </script>
 </head>
 <body>
     <!-- Theme Toggle Button -->
@@ -220,7 +289,7 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2025 <span data-i18n="poweredBy">Powered by</span> <a href="https://humanlevel.ai" target="_blank" rel="noopener noreferrer">Technologies Humanitaires</a></p>
+            <p>&copy; 2026 Pyebwa version <span data-build-version>1.0.1</span> - <span data-i18n="poweredBy">Powered by</span> <a href="https://humanlevel.ai" target="_blank" rel="noopener noreferrer" data-i18n="humanLevelTech">Technologies Humanitaires Inc.</a></p>
         </div>
     </footer>
     
@@ -229,22 +298,14 @@
         <span class="material-icons">arrow_upward</span>
     </button>
 
-    <!-- Firebase and auth scripts removed - authentication handled at rasin.pyebwa.com/login.html -->
-    <script src="js/clean-url.js"></script>
-    <script src="js/app-v2-fixed.js?v=3"></script>
-    
-    <!-- Back to Top Button -->
-    <script src="js/back-to-top.js"></script>
-    
-    <!-- Main Page Slideshow -->
-    <script src="js/slideshow-enhanced-v2.js"></script>
-    <script src="js/slideshow-mobile-optimize.js"></script>
-    
-    <!-- Enhanced Mobile Navigation -->
-    <script src="js/mobile-nav-enhanced.js"></script>
-    
-    <!-- Language System -->
-    <script src="js/translations-pages.js"></script>
-    <script src="js/language.js"></script>
+    <script>
+        (async function() {
+            await window.__PYEBWA_headAssetsPromise;
+
+            for (const src of window.__PYEBWA_LOCAL_SCRIPTS__) {
+                await window.__PYEBWA_loadScript(src);
+            }
+        })();
+    </script>
 </body>
 </html>

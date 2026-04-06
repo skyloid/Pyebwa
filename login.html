@@ -115,7 +115,21 @@
             ht: { tagline: "Pyebwa Fanmi w", signIn: "Konekte", loginSubtitle: "Antre email ou epi n ap voye yon lyen sekirize pou konekte.", emailAddress: "Adres Email", noAccount: "Ou pa gen kont?", signUp: "Enskri", backToHomepage: "\u2190 Retounen nan Ak\u00e8y", sendMagicLink: "Voye lyen koneksyon an ba mwen", magicLinkHelp: "Louvri imel la sou aparèy sa a epi peze lyen an pou konekte otomatikman.", sendingMagicLink: "K ap voye lyen an...", alreadyLoggedIn: "Deja konekte k\u00f2m", redirecting: "K ap redirije...", loginSuccess: "Sikse! Byenveni ank\u00f2,", magicLinkSent: "Tcheke imel ou pou lyen koneksyon an.", loginFailed: "Koneksyon echwe.", invalidEmail: "Tanpri antre yon bon adres imel.", networkError: "Er\u00e8 rezo.", magicLinkFailed: "Pa kapab voye lyen koneksyon an." }
         };
 
-        let currentLang = localStorage.getItem('pyebwaLang') || 'ht';
+        function setLanguageCookie(lang) {
+            const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toUTCString();
+            document.cookie = `pyebwa_lang=${lang};expires=${expires};path=/;domain=.pyebwa.com;SameSite=Lax`;
+            document.cookie = `pyebwa_lang=${lang};expires=${expires};path=/;SameSite=Lax`;
+        }
+
+        const supportedLangs = ['en', 'fr', 'ht'];
+        const langFromQuery = new URLSearchParams(window.location.search).get('lang');
+        let currentLang = supportedLangs.includes(langFromQuery)
+            ? langFromQuery
+            : (localStorage.getItem('pyebwaLang') || 'ht');
+
+        localStorage.setItem('pyebwaLang', currentLang);
+        setLanguageCookie(currentLang);
+
         function t(key) { return (translations[currentLang] || translations.en)[key] || translations.en[key] || key; }
         function updateTranslations() {
             document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
@@ -126,7 +140,12 @@
             });
         }
         document.querySelectorAll('.lang-btn').forEach(btn => {
-            btn.addEventListener('click', () => { currentLang = btn.getAttribute('data-lang'); localStorage.setItem('pyebwaLang', currentLang); updateTranslations(); });
+            btn.addEventListener('click', () => {
+                currentLang = btn.getAttribute('data-lang');
+                localStorage.setItem('pyebwaLang', currentLang);
+                setLanguageCookie(currentLang);
+                updateTranslations();
+            });
         });
         document.addEventListener('DOMContentLoaded', updateTranslations);
 
@@ -147,14 +166,14 @@
         _sb.auth.getSession().then(({ data: { session } }) => {
             if (session) {
                 showMessage(messageDiv, t('alreadyLoggedIn') + ' ' + session.user.email + '. ' + t('redirecting'), 'success');
-                setTimeout(() => { window.location.href = '/app/'; }, 1500);
+                setTimeout(() => { window.location.href = '/app/?lang=' + encodeURIComponent(currentLang); }, 1500);
             }
         });
 
         _sb.auth.onAuthStateChange((event, session) => {
             if (!session) return;
             showMessage(messageDiv, t('loginSuccess') + ' ' + session.user.email + '. ' + t('redirecting'), 'success');
-            setTimeout(() => { window.location.href = '/app/'; }, 1200);
+            setTimeout(() => { window.location.href = '/app/?lang=' + encodeURIComponent(currentLang); }, 1200);
         });
 
         magicLinkForm.addEventListener('submit', async (e) => {
@@ -172,7 +191,7 @@
                     email,
                     options: {
                         shouldCreateUser: false,
-                        emailRedirectTo: window.location.origin + '/login.html'
+                        emailRedirectTo: window.location.origin + '/login.html?lang=' + encodeURIComponent(currentLang)
                     }
                 });
                 if (error) throw new Error(error.message);
