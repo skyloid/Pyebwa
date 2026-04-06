@@ -1,5 +1,5 @@
 // Service Worker for Pyebwa Family Tree
-const CACHE_NAME = 'pyebwa-v6';
+const CACHE_NAME = 'pyebwa-v7';
 const urlsToCache = [
   '/',
   '/app/',

@@ -157,11 +157,11 @@
 }
 
 .member-card.male {
-    border-color: #00209F;
+    border-color: var(--primary-moss, #2D6A4F);
 }
 
 .member-card.female {
-    border-color: #D21034;
+    border-color: var(--accent-brown, #6B4F3A);
 }
 
 .member-photo {

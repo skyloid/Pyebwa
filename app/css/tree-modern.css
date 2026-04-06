@@ -118,13 +118,13 @@ body.dark-mode .tree-container {
     opacity: 0.1;
 }
 
-/* Gender-based Card Styling — Haitian flag colors */
+/* Gender-based Card Styling — nature palette */
 .tree-node .member-card.male {
-    border: 2px solid #00209F;
+    border: 2px solid var(--primary-moss, #2D6A4F);
 }
 
 .tree-node .member-card.female {
-    border: 2px solid #D21034;
+    border: 2px solid var(--accent-brown, #6B4F3A);
 }
 
 .tree-node .member-card.unknown {

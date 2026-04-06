@@ -719,6 +719,29 @@ body.dark-mode .mode-btn.active {
     color: var(--bg-primary);
 }
 
+/* Tree interaction mode — visual feedback */
+#treeContainer[data-tree-mode="edit"] .member-card {
+    cursor: cell;
+}
+
+#treeContainer[data-tree-mode="edit"] .member-card::after {
+    content: '✏️';
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    font-size: 13px;
+}
+
+#treeContainer[data-tree-mode="edit"] .member-card:hover::after {
+    opacity: 1;
+}
+
+#treeContainer[data-tree-mode="view"] .member-card {
+    cursor: pointer;
+}
+
 /* Tree focus state — dim non-family members */
 .tree-container.focus-active .tree-node .member-card {
     opacity: 0.3;

@@ -239,6 +239,12 @@ function setTreeInteractionMode(mode) {
         });
     }
 
+    // Apply mode class to container so CSS can reflect it
+    const container = document.getElementById('treeContainer');
+    if (container) {
+        container.setAttribute('data-tree-mode', state.mode);
+    }
+
     if (state.mode === 'edit') {
         clearTreeFocusState();
     } else {
@@ -360,6 +366,8 @@ function renderFamilyTree(viewMode = 'full') {
     
     // Render tree nodes
     renderTreeNode(treeElement, treeData);
+    // Apply current mode attribute so CSS reflects it
+    container.setAttribute('data-tree-mode', getTreeInteractionState().mode);
     applyTreeFocusState();
     
     // Initialize tree controls if available
