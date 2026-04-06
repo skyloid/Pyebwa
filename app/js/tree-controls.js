@@ -232,18 +232,35 @@
             container.addEventListener('mouseleave', () => this.endPan());
             
             // Touch events
-            container.addEventListener('touchstart', (e) => this.startPan(e.touches[0]));
-            container.addEventListener('touchmove', (e) => this.pan(e.touches[0]));
+            container.addEventListener('touchstart', (e) => this.startPan(e), { passive: true });
+            container.addEventListener('touchmove', (e) => this.pan(e), { passive: false });
             container.addEventListener('touchend', () => this.endPan());
+        },
+
+        getEventPoint(e) {
+            const point = e.touches?.[0] || e.changedTouches?.[0] || e;
+            return {
+                pageX: point?.pageX ?? 0,
+                pageY: point?.pageY ?? 0
+            };
+        },
+
+        shouldIgnorePanStart(target) {
+            return !!(target && typeof target.closest === 'function' && target.closest(
+                '.tree-members, .member-card, .tree-controls, .focus-member-card, input, textarea, select, [contenteditable="true"], button, a'
+            ));
         },
         
         // Start panning
         startPan(e) {
             if (e.button && e.button !== 0) return; // Only left click
+            if (this.shouldIgnorePanStart(e.target)) return;
+
+            const point = this.getEventPoint(e);
             
             this.state.isPanning = true;
-            this.state.startX = e.pageX;
-            this.state.startY = e.pageY;
+            this.state.startX = point.pageX;
+            this.state.startY = point.pageY;
             this.state.originPanX = this.state.panX;
             this.state.originPanY = this.state.panY;
             
@@ -255,8 +272,9 @@
             if (!this.state.isPanning) return;
             
             e.preventDefault();
-            const walkX = (e.pageX - this.state.startX) * 1.5;
-            const walkY = (e.pageY - this.state.startY) * 1.5;
+            const point = this.getEventPoint(e);
+            const walkX = (point.pageX - this.state.startX) * 1.5;
+            const walkY = (point.pageY - this.state.startY) * 1.5;
 
             this.state.panX = this.state.originPanX + walkX;
             this.state.panY = this.state.originPanY + walkY;
