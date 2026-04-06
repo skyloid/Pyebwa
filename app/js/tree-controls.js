@@ -654,10 +654,35 @@
             // This will be implemented to show current viewport position
             console.log('Updating mini-map viewport');
         },
+
+        shouldHandleKeyboardShortcut(e) {
+            if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) {
+                return false;
+            }
+
+            const treeView = document.getElementById('treeView');
+            if (!treeView || window.getComputedStyle(treeView).display === 'none') {
+                return false;
+            }
+
+            const target = e.target;
+            if (target && (
+                target.closest('input, textarea, select, [contenteditable="true"]') ||
+                target.isContentEditable
+            )) {
+                return false;
+            }
+
+            return true;
+        },
         
         // Setup keyboard shortcuts
         setupKeyboardShortcuts() {
             document.addEventListener('keydown', (e) => {
+                if (!this.shouldHandleKeyboardShortcut(e)) {
+                    return;
+                }
+
                 // Zoom shortcuts
                 if (e.key === '+' || e.key === '=') {
                     e.preventDefault();
