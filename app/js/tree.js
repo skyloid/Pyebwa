@@ -247,10 +247,10 @@ function applyTreeFocusState() {
 
     const family = getDirectFamilyMembers(focusMember);
     const sectionsHtml = [
-        buildTreeFocusSection(t('parents') || 'Parents', 'north', family.parents, computedRelationships),
+        buildTreeFocusSection(t('children') || 'Children', 'north', family.children, computedRelationships),
         buildTreeFocusSection(t('spouse') || 'Spouse', 'favorite', family.spouses, computedRelationships),
-        buildTreeFocusSection(t('children') || 'Children', 'south', family.children, computedRelationships),
-        buildTreeFocusSection(t('siblings') || 'Siblings', 'people', family.siblings, computedRelationships)
+        buildTreeFocusSection(t('siblings') || 'Siblings', 'people', family.siblings, computedRelationships),
+        buildTreeFocusSection(t('parents') || 'Parents', 'north', family.parents, computedRelationships)
     ].filter(Boolean).join('');
 
     detail.innerHTML = `

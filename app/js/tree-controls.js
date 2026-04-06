@@ -9,11 +9,13 @@
             minZoom: 25,
             maxZoom: 200,
             zoomStep: 10,
+            panX: 0,
+            panY: 0,
             isPanning: false,
             startX: 0,
             startY: 0,
-            scrollLeft: 0,
-            scrollTop: 0,
+            originPanX: 0,
+            originPanY: 0,
             viewMode: 'full', // full, ancestors, descendants, hourglass
             isFullscreen: false
         },
@@ -240,10 +242,10 @@
             if (e.button && e.button !== 0) return; // Only left click
             
             this.state.isPanning = true;
-            this.state.startX = e.pageX - this.elements.treeContainer.offsetLeft;
-            this.state.startY = e.pageY - this.elements.treeContainer.offsetTop;
-            this.state.scrollLeft = this.elements.treeContainer.scrollLeft;
-            this.state.scrollTop = this.elements.treeContainer.scrollTop;
+            this.state.startX = e.pageX;
+            this.state.startY = e.pageY;
+            this.state.originPanX = this.state.panX;
+            this.state.originPanY = this.state.panY;
             
             this.elements.treeContainer.style.cursor = 'grabbing';
         },
@@ -253,13 +255,12 @@
             if (!this.state.isPanning) return;
             
             e.preventDefault();
-            const x = e.pageX - this.elements.treeContainer.offsetLeft;
-            const y = e.pageY - this.elements.treeContainer.offsetTop;
-            const walkX = (x - this.state.startX) * 1.5;
-            const walkY = (y - this.state.startY) * 1.5;
-            
-            this.elements.treeContainer.scrollLeft = this.state.scrollLeft - walkX;
-            this.elements.treeContainer.scrollTop = this.state.scrollTop - walkY;
+            const walkX = (e.pageX - this.state.startX) * 1.5;
+            const walkY = (e.pageY - this.state.startY) * 1.5;
+
+            this.state.panX = this.state.originPanX + walkX;
+            this.state.panY = this.state.originPanY + walkY;
+            this.applyZoom();
             
             this.updateMiniMapViewport();
         },
@@ -289,7 +290,7 @@
             const wrapper = this.elements.treeWrapper;
             if (!wrapper) return;
             
-            wrapper.style.transform = `scale(${this.state.zoom / 100})`;
+            wrapper.style.transform = `translate3d(${this.state.panX}px, ${this.state.panY}px, 0) scale(${this.state.zoom / 100})`;
             wrapper.style.transformOrigin = 'center bottom';
             if (this.elements.zoomValue) {
                 this.elements.zoomValue.textContent = `${this.state.zoom}%`;
@@ -319,6 +320,8 @@
         // Reset zoom
         resetZoom() {
             this.state.zoom = 100;
+            this.state.panX = 0;
+            this.state.panY = 0;
             this.applyZoom();
             this.centerTree();
         },
@@ -330,6 +333,8 @@
             if (!container || !tree) return;
             
             setTimeout(() => {
+                this.state.panX = 0;
+                this.state.panY = 0;
                 const containerWidth = container.clientWidth;
                 const containerHeight = container.clientHeight;
                 const treeWidth = tree.offsetWidth * (this.state.zoom / 100);
@@ -337,6 +342,7 @@
                 
                 container.scrollLeft = (treeWidth - containerWidth) / 2;
                 container.scrollTop = Math.max(0, (treeHeight - containerHeight) / 4);
+                this.applyZoom();
                 
                 this.updateMiniMapViewport();
             }, 100);
@@ -359,6 +365,8 @@
         filterTreeByMode() {
             // Store current zoom and position
             const currentZoom = this.state.zoom;
+            const currentPanX = this.state.panX;
+            const currentPanY = this.state.panY;
             const scrollLeft = this.elements.treeContainer?.scrollLeft || 0;
             const scrollTop = this.elements.treeContainer?.scrollTop || 0;
             
@@ -372,6 +380,8 @@
                     
                     // Restore zoom and position
                     this.state.zoom = currentZoom;
+                    this.state.panX = currentPanX;
+                    this.state.panY = currentPanY;
                     this.applyZoom();
                     if (this.elements.treeContainer) {
                         this.elements.treeContainer.scrollLeft = scrollLeft;
