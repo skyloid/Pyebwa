@@ -211,6 +211,8 @@ function applyTreeFocusState() {
         </div>
     `;
     detail.style.display = 'block';
+    // Scroll the panel into view so user doesn't have to scroll manually
+    setTimeout(() => detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
 
     detail.querySelector('#treeFocusEditBtn')?.addEventListener('click', () => showAddMemberModal(focusMember));
     detail.querySelector('#treeFocusClearBtn')?.addEventListener('click', () => {

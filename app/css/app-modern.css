@@ -764,9 +764,20 @@ body.dark-mode .mode-btn.active {
 /* Focus detail panel — below the tree */
 .tree-focus-detail {
     display: none;
-    padding: 20px 24px;
-    border-top: 2px solid var(--gray-200);
-    margin-top: 0;
+    padding: 24px;
+    margin-top: 24px;
+    background: var(--accent-cream, #FDFCFA);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--gray-200);
+    border-left: 4px solid var(--primary-moss, #2D6A4F);
+    box-shadow: var(--shadow-md);
+    animation: fadeInUp 0.3s ease;
+}
+
+body.dark-mode .tree-focus-detail {
+    background: var(--bg-secondary);
+    border-color: var(--gray-700);
+    border-left-color: var(--primary-moss, #40916C);
 }
 
 .focus-detail-header {
@@ -899,10 +910,6 @@ body.dark-mode .mode-btn.active {
 }
 
 /* Dark mode */
-body.dark-mode .tree-focus-detail {
-    border-top-color: var(--border-color);
-}
-
 body.dark-mode .focus-detail-profile h3 {
     color: var(--text-primary);
 }
