@@ -208,12 +208,14 @@
             
             // Mouse wheel zoom
             this.elements.treeContainer?.addEventListener('wheel', (e) => {
-                if (e.ctrlKey || e.metaKey) {
-                    e.preventDefault();
-                    const delta = e.deltaY > 0 ? -this.state.zoomStep : this.state.zoomStep;
-                    this.zoom(delta);
+                if (e.target && typeof e.target.closest === 'function' && e.target.closest('input, textarea, select, [contenteditable="true"]')) {
+                    return;
                 }
-            });
+
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? -this.state.zoomStep : this.state.zoomStep;
+                this.zoom(delta);
+            }, { passive: false });
         },
         
         // Setup panning
@@ -283,12 +285,15 @@
         
         // Apply zoom
         applyZoom() {
+            this.refreshElementRefs();
             const wrapper = this.elements.treeWrapper;
             if (!wrapper) return;
             
             wrapper.style.transform = `scale(${this.state.zoom / 100})`;
             wrapper.style.transformOrigin = 'center bottom';
-            this.elements.zoomValue.textContent = `${this.state.zoom}%`;
+            if (this.elements.zoomValue) {
+                this.elements.zoomValue.textContent = `${this.state.zoom}%`;
+            }
             
             // Update zoom slider position
             this.updateZoomSlider();
@@ -299,7 +304,7 @@
         
         // Update zoom slider position
         updateZoomSlider() {
-            const slider = document.getElementById('zoomSlider');
+            const slider = this.elements.controls?.querySelector('#zoomSlider');
             const thumb = slider?.querySelector('.zoom-slider-thumb');
             const track = slider?.querySelector('.zoom-slider-track');
             
@@ -781,7 +786,7 @@
         
         // Setup zoom slider
         setupZoomSlider() {
-            const slider = document.getElementById('zoomSlider');
+            const slider = this.elements.controls?.querySelector('#zoomSlider');
             const thumb = slider?.querySelector('.zoom-slider-thumb');
             const track = slider?.querySelector('.zoom-slider-track');
             

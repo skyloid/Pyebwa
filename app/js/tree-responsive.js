@@ -104,7 +104,7 @@ function applyZoomLevel(level) {
 
 // Update zoom level display
 function updateZoomDisplay() {
-    const zoomLevelDisplay = document.querySelector('.zoom-level');
+    const zoomLevelDisplay = document.querySelector('.zoom-level .zoom-value') || document.querySelector('.zoom-value');
     if (zoomLevelDisplay) {
         zoomLevelDisplay.textContent = `${currentZoomLevel}%`;
     }
@@ -138,18 +138,23 @@ function applyTreeSizeClass() {
 function initializeResponsiveTree() {
     // Apply size class
     applyTreeSizeClass();
+
+    const treeWrapper = document.querySelector('.tree-wrapper');
+    const tree = document.querySelector('.tree');
+    if (treeWrapper && tree) {
+        currentZoomLevel = 100;
+        treeWrapper.classList.remove('tree-scale-90', 'tree-scale-80', 'tree-scale-70', 'tree-scale-60', 'tree-scale-50');
+        treeWrapper.classList.add('tree-scale-auto');
+        tree.style.transform = 'scale(1)';
+        updateZoomDisplay();
+    }
     
-    // Auto-scale to fit
-    autoScaleTree();
-    
-    // Re-scale on window resize (debounced)
+    // Re-apply size class on window resize (debounced)
     let resizeTimeout;
     window.addEventListener('resize', () => {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(() => {
-            if (window.innerWidth > 768) {
-                autoScaleTree();
-            }
+            applyTreeSizeClass();
         }, 250);
     });
 }

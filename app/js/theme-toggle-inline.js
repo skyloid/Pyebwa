@@ -23,10 +23,10 @@
             updateIcon();
         }
 
-        // Load saved theme (default: dark)
+        // Load saved theme (default: light)
         try {
             var saved = localStorage.getItem('theme');
-            if (saved !== 'light') {
+            if (saved === 'dark') {
                 document.body.classList.add('dark-mode');
             }
         } catch (e) {}
@@ -45,15 +45,13 @@
     }
 
     // Apply saved theme immediately (before DOM ready)
-    // Default to dark mode unless user explicitly chose light
+    // Default to light mode unless user explicitly chose dark
     try {
         var saved = localStorage.getItem('theme');
-        if (saved !== 'light') {
+        if (saved === 'dark') {
             document.body.classList.add('dark-mode');
         }
-    } catch (e) {
-        document.body.classList.add('dark-mode');
-    }
+    } catch (e) {}
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initThemeToggle);
