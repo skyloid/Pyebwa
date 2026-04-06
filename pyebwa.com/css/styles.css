@@ -982,10 +982,15 @@ body.dark-mode .feature-card {
 
 body.dark-mode .footer {
     background: #101C17;
+    color: #F5F3EF;
 }
 
 body.dark-mode .footer a {
-    color: var(--gray-400);
+    color: #CCD8D0;
+}
+
+body.dark-mode .footer a:hover {
+    color: #F5F3EF;
 }
 
 body.dark-mode input,
@@ -999,7 +1004,7 @@ body.dark-mode select {
 #themeToggle {
     position: fixed;
     top: 20px;
-    right: 135px;
+    right: 205px;
     z-index: 2147483647;
     width: 48px;
     height: 48px;
