@@ -447,6 +447,151 @@ function requestTreeConnectionRedraw() {
     });
 }
 
+function redrawTreeConnectionsNow() {
+    if (window.pyebwaTreeConnectionFrame) {
+        cancelAnimationFrame(window.pyebwaTreeConnectionFrame);
+        window.pyebwaTreeConnectionFrame = null;
+    }
+
+    drawTreeConnections();
+}
+
+function getTreeMembersMotionState(element) {
+    if (!window.pyebwaTreeMotionStates) {
+        window.pyebwaTreeMotionStates = new WeakMap();
+    }
+
+    let state = window.pyebwaTreeMotionStates.get(element);
+    if (!state) {
+        state = {
+            dragX: 0,
+            dragY: 0,
+            bounceX: 0,
+            bounceY: 0,
+            hoverLift: 0,
+            rotateX: 0,
+            rotateY: 0,
+            bounceFrame: null,
+            hoverFrame: null
+        };
+        window.pyebwaTreeMotionStates.set(element, state);
+    }
+
+    return state;
+}
+
+function applyTreeMembersTransform(element) {
+    const state = getTreeMembersMotionState(element);
+    const translateX = state.dragX + state.bounceX;
+    const translateY = state.dragY + state.bounceY + state.hoverLift;
+
+    element.style.transform = `
+        translate(${translateX}px, ${translateY}px)
+        rotateX(${state.rotateX}deg)
+        rotateY(${state.rotateY}deg)
+    `;
+}
+
+function cancelTreeMembersBounce(element) {
+    const state = getTreeMembersMotionState(element);
+    if (state.bounceFrame) {
+        cancelAnimationFrame(state.bounceFrame);
+        state.bounceFrame = null;
+    }
+    state.bounceX = 0;
+    state.bounceY = 0;
+}
+
+function tweenTreeMembersHover(element, target) {
+    const state = getTreeMembersMotionState(element);
+    if (state.hoverFrame) {
+        cancelAnimationFrame(state.hoverFrame);
+    }
+
+    const start = {
+        hoverLift: state.hoverLift,
+        rotateX: state.rotateX,
+        rotateY: state.rotateY
+    };
+    const startTime = performance.now();
+    const duration = 180;
+    const easeOut = progress => 1 - Math.pow(1 - progress, 3);
+
+    const frame = now => {
+        const progress = Math.min(1, (now - startTime) / duration);
+        const eased = easeOut(progress);
+
+        state.hoverLift = start.hoverLift + ((target.hoverLift || 0) - start.hoverLift) * eased;
+        state.rotateX = start.rotateX + ((target.rotateX || 0) - start.rotateX) * eased;
+        state.rotateY = start.rotateY + ((target.rotateY || 0) - start.rotateY) * eased;
+
+        applyTreeMembersTransform(element);
+        redrawTreeConnectionsNow();
+
+        if (progress < 1) {
+            state.hoverFrame = requestAnimationFrame(frame);
+        } else {
+            state.hoverFrame = null;
+        }
+    };
+
+    state.hoverFrame = requestAnimationFrame(frame);
+}
+
+function playTreeMembersReleaseBounce(element, velocityX, velocityY) {
+    const state = getTreeMembersMotionState(element);
+    cancelTreeMembersBounce(element);
+
+    const startX = state.dragX;
+    const startY = state.dragY;
+    const overshootX = Math.max(-32, Math.min(32, (-startX * 0.28) + (velocityX * 0.12)));
+    const overshootY = Math.max(-24, Math.min(24, (-startY * 0.26) + (velocityY * 0.12)));
+    const startTime = performance.now();
+    const settleDuration = 460;
+    const easeOutCubic = progress => 1 - Math.pow(1 - progress, 3);
+    const easeOutBack = progress => {
+        const c1 = 2.25;
+        const c3 = c1 + 1;
+        return 1 + c3 * Math.pow(progress - 1, 3) + c1 * Math.pow(progress - 1, 2);
+    };
+
+    const frame = now => {
+        const elapsed = now - startTime;
+
+        if (elapsed <= 170) {
+            const progress = easeOutCubic(elapsed / 170);
+            state.dragX = startX * (1 - progress);
+            state.dragY = startY * (1 - progress);
+            state.bounceX = overshootX * progress;
+            state.bounceY = overshootY * progress;
+        } else {
+            const progress = Math.min(1, (elapsed - 170) / (settleDuration - 170));
+            const eased = easeOutBack(progress);
+            state.dragX = 0;
+            state.dragY = 0;
+            state.bounceX = overshootX * (1 - eased);
+            state.bounceY = overshootY * (1 - eased);
+        }
+
+        applyTreeMembersTransform(element);
+        redrawTreeConnectionsNow();
+
+        if (elapsed < settleDuration) {
+            state.bounceFrame = requestAnimationFrame(frame);
+        } else {
+            state.dragX = 0;
+            state.dragY = 0;
+            state.bounceX = 0;
+            state.bounceY = 0;
+            state.bounceFrame = null;
+            applyTreeMembersTransform(element);
+            redrawTreeConnectionsNow();
+        }
+    };
+
+    state.bounceFrame = requestAnimationFrame(frame);
+}
+
 function initializeTreeNodeDragging() {
     const treeElement = document.querySelector('#treeContainer .tree');
     if (!treeElement) return;
@@ -458,6 +603,9 @@ function initializeTreeNodeDragging() {
         startY: 0,
         translateX: 0,
         translateY: 0,
+        lastMoveTime: 0,
+        velocityX: 0,
+        velocityY: 0,
         moved: false,
         isDragging: false,
         suppressClickUntil: 0
@@ -466,10 +614,17 @@ function initializeTreeNodeDragging() {
     treeElement.querySelectorAll('.tree-members').forEach(membersContainer => {
         if (membersContainer.dataset.dragInitialized === 'true') return;
         membersContainer.dataset.dragInitialized = 'true';
+        const motionState = getTreeMembersMotionState(membersContainer);
 
         membersContainer.addEventListener('pointerdown', event => {
             if (event.button !== 0) return;
             if (!event.target.closest('.member-card')) return;
+
+            cancelTreeMembersBounce(membersContainer);
+            if (motionState.hoverFrame) {
+                cancelAnimationFrame(motionState.hoverFrame);
+                motionState.hoverFrame = null;
+            }
 
             dragState.activeElement = membersContainer;
             dragState.pointerId = event.pointerId;
@@ -477,8 +632,21 @@ function initializeTreeNodeDragging() {
             dragState.startY = event.clientY;
             dragState.translateX = 0;
             dragState.translateY = 0;
+            dragState.lastMoveTime = performance.now();
+            dragState.velocityX = 0;
+            dragState.velocityY = 0;
             dragState.moved = false;
             dragState.isDragging = false;
+
+            motionState.dragX = 0;
+            motionState.dragY = 0;
+            motionState.rotateX = 0;
+            motionState.rotateY = 0;
+            motionState.hoverLift = 0;
+            membersContainer.classList.remove('tree-members-hovered');
+            membersContainer.style.setProperty('--tree-hover-x', '50%');
+            membersContainer.style.setProperty('--tree-hover-y', '50%');
+            applyTreeMembersTransform(membersContainer);
 
             event.stopPropagation();
         });
@@ -486,8 +654,13 @@ function initializeTreeNodeDragging() {
         membersContainer.addEventListener('pointermove', event => {
             if (dragState.activeElement !== membersContainer || dragState.pointerId !== event.pointerId) return;
 
+            const now = performance.now();
+            const deltaTime = Math.max(16, now - dragState.lastMoveTime);
             dragState.translateX = event.clientX - dragState.startX;
             dragState.translateY = event.clientY - dragState.startY;
+            dragState.velocityX = (dragState.translateX - motionState.dragX) / deltaTime * 16;
+            dragState.velocityY = (dragState.translateY - motionState.dragY) / deltaTime * 16;
+            dragState.lastMoveTime = now;
             if (Math.abs(dragState.translateX) > 4 || Math.abs(dragState.translateY) > 4) {
                 dragState.moved = true;
             }
@@ -499,13 +672,14 @@ function initializeTreeNodeDragging() {
             if (!dragState.isDragging) {
                 dragState.isDragging = true;
                 membersContainer.classList.add('tree-members-dragging');
-                membersContainer.style.transition = 'none';
                 membersContainer.setPointerCapture(event.pointerId);
             }
 
-            membersContainer.style.transform = `translate(${dragState.translateX}px, ${dragState.translateY}px)`;
+            motionState.dragX = dragState.translateX;
+            motionState.dragY = dragState.translateY;
+            applyTreeMembersTransform(membersContainer);
             event.preventDefault();
-            requestTreeConnectionRedraw();
+            redrawTreeConnectionsNow();
         });
 
         const releaseDrag = event => {
@@ -514,15 +688,7 @@ function initializeTreeNodeDragging() {
             if (dragState.isDragging) {
                 membersContainer.releasePointerCapture(event.pointerId);
                 membersContainer.classList.remove('tree-members-dragging');
-                membersContainer.style.transition = '';
-                membersContainer.classList.add('tree-members-bounce');
-                membersContainer.style.transform = '';
-                requestTreeConnectionRedraw();
-
-                window.setTimeout(() => {
-                    membersContainer.classList.remove('tree-members-bounce');
-                    requestTreeConnectionRedraw();
-                }, 420);
+                playTreeMembersReleaseBounce(membersContainer, dragState.velocityX, dragState.velocityY);
             }
 
             if (dragState.moved) {
@@ -539,6 +705,40 @@ function initializeTreeNodeDragging() {
 
         membersContainer.addEventListener('pointerup', releaseDrag);
         membersContainer.addEventListener('pointercancel', releaseDrag);
+        membersContainer.addEventListener('pointerenter', event => {
+            if (!event.target.closest('.member-card')) return;
+            if (dragState.activeElement === membersContainer) return;
+            membersContainer.classList.add('tree-members-hovered');
+        });
+        membersContainer.addEventListener('pointermove', event => {
+            if (dragState.activeElement === membersContainer) return;
+            if (!event.target.closest('.member-card')) return;
+
+            const rect = membersContainer.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            const offsetX = (x / rect.width) - 0.5;
+            const offsetY = (y / rect.height) - 0.5;
+
+            membersContainer.style.setProperty('--tree-hover-x', `${x}px`);
+            membersContainer.style.setProperty('--tree-hover-y', `${y}px`);
+            tweenTreeMembersHover(membersContainer, {
+                hoverLift: -8,
+                rotateX: Math.max(-5, Math.min(5, -offsetY * 8)),
+                rotateY: Math.max(-7, Math.min(7, offsetX * 10))
+            });
+        });
+        membersContainer.addEventListener('pointerleave', () => {
+            membersContainer.classList.remove('tree-members-hovered');
+            membersContainer.style.setProperty('--tree-hover-x', '50%');
+            membersContainer.style.setProperty('--tree-hover-y', '50%');
+            if (dragState.activeElement === membersContainer) return;
+            tweenTreeMembersHover(membersContainer, {
+                hoverLift: 0,
+                rotateX: 0,
+                rotateY: 0
+            });
+        });
     });
 
     if (!window.pyebwaTreeConnectionEventsBound) {

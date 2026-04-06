@@ -94,6 +94,8 @@
     gap: 20px;
     position: relative;
     margin-top: 16px;
+    transform-style: preserve-3d;
+    perspective: 1200px;
 }
 
 .tree-container.has-svg-connections .tree-members,
@@ -141,6 +143,7 @@
     text-align: center;
     min-width: 140px;
     position: relative;
+    will-change: transform, box-shadow;
 }
 
 .member-card:hover {
