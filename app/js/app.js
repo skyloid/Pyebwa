@@ -203,6 +203,7 @@ async function loadFamilyMembers() {
             updatedAt: p.updated_at || p.updatedAt || null
         }));
         window.familyMembers = familyMembers;
+        window.allFamilyMembers = [...familyMembers];
 
         const activeView = document.querySelector('.nav-item.active')?.getAttribute('data-view') || 'dashboard';
         showView(activeView);

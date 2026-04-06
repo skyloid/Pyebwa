@@ -1297,8 +1297,23 @@ window.setLanguage = function(lang) {
     });
     
     // Re-render dynamic content
-    const currentView = document.querySelector('.view-container[style*="block"]');
-    if (currentView && currentView.id === 'dashboardView' && window.renderDashboard) {
+    const currentView = Array.from(document.querySelectorAll('.view-container'))
+        .find(element => window.getComputedStyle(element).display !== 'none');
+
+    if (!currentView) return;
+
+    if (currentView.id === 'dashboardView' && window.renderDashboard) {
         window.renderDashboard();
+        return;
+    }
+
+    if (currentView.id === 'treeView' && window.renderFamilyTree) {
+        const currentTreeViewMode = window.pyebwaTreeControls?.state?.viewMode || 'full';
+        window.renderFamilyTree(currentTreeViewMode);
+        return;
+    }
+
+    if (currentView.id === 'membersView' && window.renderMembersList) {
+        window.renderMembersList();
     }
 }

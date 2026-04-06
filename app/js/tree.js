@@ -333,11 +333,10 @@ function handleTreeCardClick(member) {
 function renderFamilyTree(viewMode = 'full') {
     const container = document.getElementById('treeContainer');
     initializeTreeModeToggle();
-    
-    // Store original members if not already stored
-    if (!window.allFamilyMembers) {
-        window.allFamilyMembers = [...familyMembers];
-    }
+
+    // Keep the tree source in sync with the latest loaded members.
+    const latestMembers = Array.isArray(window.allFamilyMembers) ? window.allFamilyMembers : familyMembers;
+    window.allFamilyMembers = [...latestMembers];
     
     // Apply view filter
     if (viewMode !== 'full' && window.pyebwaTreeViews) {
