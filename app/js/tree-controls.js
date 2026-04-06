@@ -5,7 +5,7 @@
     const TreeControls = {
         // Control state
         state: {
-            zoom: 100,
+            zoom: 50,
             minZoom: 25,
             maxZoom: 200,
             zoomStep: 10,
@@ -62,12 +62,12 @@
                     </button>
                     <div class="zoom-slider-container">
                         <div class="zoom-slider" id="zoomSlider">
-                            <div class="zoom-slider-track" style="width: 50%"></div>
-                            <div class="zoom-slider-thumb" style="left: 50%"></div>
+                            <div class="zoom-slider-track" style="width: 14.2857%"></div>
+                            <div class="zoom-slider-thumb" style="left: 14.2857%"></div>
                         </div>
                     </div>
                     <div class="zoom-level">
-                        <span class="zoom-value">100%</span>
+                        <span class="zoom-value">50%</span>
                     </div>
                     <button class="control-btn zoom-in" title="Zoom In (+)">
                         <i class="material-icons">add</i>
@@ -337,7 +337,7 @@
         
         // Reset zoom
         resetZoom() {
-            this.state.zoom = 100;
+            this.state.zoom = 50;
             this.state.panX = 0;
             this.state.panY = 0;
             this.applyZoom();
