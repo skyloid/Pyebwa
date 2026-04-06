@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
   },
   activeLang: {
     backgroundColor: '#e3f2fd',
-    borderColor: '#00217D',
+    borderColor: '#1B4332',
   },
   flag: {
     fontSize: 20,
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   activeLangText: {
-    color: '#00217D',
+    color: '#1B4332',
     fontWeight: 'bold',
   },
 });

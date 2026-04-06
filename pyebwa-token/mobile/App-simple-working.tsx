@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
   },
   subtitle: {
     fontSize: 16,
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   userTypeButtonActive: {
-    borderColor: '#00217D',
+    borderColor: '#1B4332',
     backgroundColor: '#f0f5ff',
   },
   userTypeText: {
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   userTypeTextActive: {
-    color: '#00217D',
+    color: '#1B4332',
     fontWeight: 'bold',
   },
   input: {
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   loginButton: {
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
     paddingVertical: 15,
     borderRadius: 10,
     alignItems: 'center',
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   header: {
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
     padding: 20,
     paddingTop: 50,
   },
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
   },
   statLabel: {
     fontSize: 14,
@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   actionButton: {
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
     padding: 20,
     borderRadius: 15,
     alignItems: 'center',
@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   logoutButton: {
-    backgroundColor: '#D41125',
+    backgroundColor: '#2D6A4F',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',

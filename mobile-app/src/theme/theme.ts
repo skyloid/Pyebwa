@@ -1,9 +1,9 @@
 import { MD3LightTheme, MD3DarkTheme } from 'react-native-paper';
 
 const pyebwaColors = {
-  primary: '#00217D',
+  primary: '#1B4332',
   primaryContainer: '#D1E4FF',
-  secondary: '#D41125',
+  secondary: '#2D6A4F',
   secondaryContainer: '#FFCDD2',
   tertiary: '#22C55E',
   tertiaryContainer: '#C8E6C9',
@@ -206,7 +206,7 @@ export const darkTheme = {
     outlineVariant: '#4B5563',
     inverseSurface: '#F9FAFB',
     inverseOnSurface: '#374151',
-    inversePrimary: '#00217D',
+    inversePrimary: '#1B4332',
   },
   spacing,
   borderRadius,

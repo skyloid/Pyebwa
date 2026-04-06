@@ -226,7 +226,7 @@ export const AnalyticsDashboard: React.FC = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#00217D" />
+        <ActivityIndicator size="large" color="#1B4332" />
         <Text style={styles.loadingText}>{t('analytics.generatingInsights')}</Text>
       </View>
     );
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   retryButton: {
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
     paddingHorizontal: 30,
     paddingVertical: 12,
     borderRadius: 25,
@@ -493,7 +493,7 @@ const styles = StyleSheet.create({
   financialValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
   },
   financialLabel: {
     fontSize: 12,
@@ -598,7 +598,7 @@ const styles = StyleSheet.create({
   rankNumber: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
   },
   fieldInfo: {
     flex: 1,
@@ -656,7 +656,7 @@ const styles = StyleSheet.create({
   tokensText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
   },
   tokensLabel: {
     fontSize: 10,

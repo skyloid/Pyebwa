@@ -55,7 +55,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout }) => {
     <SafeAreaView style={styles.container}>
       <ScrollView>
         <View style={styles.header}>
-          <Ionicons name="person-circle" size={80} color="#00217D" />
+          <Ionicons name="person-circle" size={80} color="#1B4332" />
           <Text style={styles.userName}>Demo User</Text>
           <Text style={styles.userEmail}>demo@pyebwa.com</Text>
         </View>
@@ -65,20 +65,20 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout }) => {
           
           <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <Ionicons name="notifications" size={24} color="#00217D" />
+              <Ionicons name="notifications" size={24} color="#1B4332" />
               <Text style={styles.settingText}>Push Notifications</Text>
             </View>
             <Switch
               value={notifications}
               onValueChange={setNotifications}
-              trackColor={{ false: '#ddd', true: '#00217D' }}
+              trackColor={{ false: '#ddd', true: '#1B4332' }}
               thumbColor="#f4f3f4"
             />
           </View>
 
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <Ionicons name="language" size={24} color="#00217D" />
+              <Ionicons name="language" size={24} color="#1B4332" />
               <Text style={styles.settingText}>Language</Text>
             </View>
             <Text style={styles.settingValue}>
@@ -122,7 +122,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout }) => {
           
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <Ionicons name="information-circle" size={24} color="#00217D" />
+              <Ionicons name="information-circle" size={24} color="#1B4332" />
               <Text style={styles.settingText}>About PYEBWA</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#999" />
@@ -130,7 +130,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout }) => {
 
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <Ionicons name="document-text" size={24} color="#00217D" />
+              <Ionicons name="document-text" size={24} color="#1B4332" />
               <Text style={styles.settingText}>Terms & Conditions</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#999" />
@@ -138,7 +138,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout }) => {
 
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <Ionicons name="shield-checkmark" size={24} color="#00217D" />
+              <Ionicons name="shield-checkmark" size={24} color="#1B4332" />
               <Text style={styles.settingText}>Privacy Policy</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#999" />
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
     marginTop: 10,
   },
   userEmail: {
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
     paddingHorizontal: 20,
     marginBottom: 15,
   },
@@ -225,8 +225,8 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   languageButtonActive: {
-    backgroundColor: '#00217D',
-    borderColor: '#00217D',
+    backgroundColor: '#1B4332',
+    borderColor: '#1B4332',
   },
   languageButtonText: {
     fontSize: 16,
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   logoutButton: {
-    backgroundColor: '#D41125',
+    backgroundColor: '#2D6A4F',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

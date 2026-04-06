@@ -223,7 +223,7 @@ export const FieldManagementScreen: React.FC = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#00217D" />
+        <ActivityIndicator size="large" color="#1B4332" />
         <Text style={styles.loadingText}>{t('common.loading')}</Text>
       </View>
     );
@@ -254,7 +254,7 @@ export const FieldManagementScreen: React.FC = () => {
 
         {/* Export Button */}
         <TouchableOpacity style={styles.exportButton} onPress={exportFieldData}>
-          <Ionicons name="download-outline" size={20} color="#00217D" />
+          <Ionicons name="download-outline" size={20} color="#1B4332" />
           <Text style={styles.exportButtonText}>{t('fieldManagement.exportData')}</Text>
         </TouchableOpacity>
 
@@ -281,7 +281,7 @@ export const FieldManagementScreen: React.FC = () => {
                     openEditModal(field);
                   }}
                 >
-                  <Ionicons name="pencil" size={20} color="#00217D" />
+                  <Ionicons name="pencil" size={20} color="#1B4332" />
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.actionButton}
@@ -514,7 +514,7 @@ const styles = StyleSheet.create({
   summaryValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
   },
   summaryLabel: {
     fontSize: 12,
@@ -532,11 +532,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 10,
     borderWidth: 1,
-    borderColor: '#00217D',
+    borderColor: '#1B4332',
   },
   exportButtonText: {
     fontSize: 16,
-    color: '#00217D',
+    color: '#1B4332',
     fontWeight: '600',
   },
   fieldCard: {
@@ -648,7 +648,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -688,7 +688,7 @@ const styles = StyleSheet.create({
   },
   selectedSpecies: {
     backgroundColor: '#e3f2fd',
-    borderColor: '#00217D',
+    borderColor: '#1B4332',
   },
   speciesButtonIcon: {
     fontSize: 24,
@@ -699,7 +699,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   selectedSpeciesText: {
-    color: '#00217D',
+    color: '#1B4332',
     fontWeight: 'bold',
   },
   modalButtons: {
@@ -722,7 +722,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   saveButton: {
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
   },
   saveButtonText: {
     color: 'white',
@@ -730,7 +730,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   closeButton: {
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
     marginTop: 20,
   },
   closeButtonText: {
@@ -749,7 +749,7 @@ const styles = StyleSheet.create({
   mapLine: {
     position: 'absolute',
     height: 2,
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
     transformOrigin: 'left center',
   },
   detailRow: {

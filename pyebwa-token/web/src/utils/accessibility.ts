@@ -143,7 +143,7 @@ export const prefersHighContrast = () => {
  */
 export const focusStyles = `
   :focus-visible {
-    outline: 3px solid #00217D;
+    outline: 3px solid #1B4332;
     outline-offset: 2px;
   }
 
@@ -193,13 +193,13 @@ export const getContrastRatio = (color1: string, color2: string): number => {
  */
 export const accessibleColors = {
   primary: {
-    default: '#00217D',
+    default: '#1B4332',
     hover: '#001654',
     active: '#000D2B',
     text: '#FFFFFF',
   },
   secondary: {
-    default: '#D41125',
+    default: '#2D6A4F',
     hover: '#A60E1E',
     active: '#7D0A16',
     text: '#FFFFFF',

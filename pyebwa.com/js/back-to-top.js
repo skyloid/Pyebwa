@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
             right: 30px;
             width: 50px;
             height: 50px;
-            background: linear-gradient(135deg, #00217D 0%, #D41125 100%);
+            background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 100%);
             border: 2px solid #FFC72C;
             border-radius: 50%;
             cursor: pointer;
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .back-to-top:hover {
             transform: translateY(-3px);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-            background: linear-gradient(135deg, #D41125 0%, #00217D 100%);
+            background: linear-gradient(135deg, #2D6A4F 0%, #1B4332 100%);
         }
         
         .back-to-top:active {
@@ -65,12 +65,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         /* Dark mode support */
         body.dark-mode .back-to-top {
-            background: linear-gradient(135deg, #D41125 0%, #00217D 100%);
+            background: linear-gradient(135deg, #2D6A4F 0%, #1B4332 100%);
             border-color: #FFC72C;
         }
         
         body.dark-mode .back-to-top:hover {
-            background: linear-gradient(135deg, #00217D 0%, #D41125 100%);
+            background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 100%);
         }
         
         /* Mobile adjustments */

@@ -110,7 +110,7 @@ export default function App() {
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f5f5' }}>
-        <ActivityIndicator size="large" color="#00217D" />
+        <ActivityIndicator size="large" color="#1B4332" />
         <Text style={{ marginTop: 10, color: '#666' }}>Loading...</Text>
       </View>
     );
@@ -127,7 +127,7 @@ export default function App() {
               source={require('./assets/icon.png')} 
               style={{ width: 100, height: 100, marginBottom: 20 }} 
             />
-            <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#00217D', marginBottom: 5 }}>
+            <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#1B4332', marginBottom: 5 }}>
               PYEBWA Token
             </Text>
             <Text style={{ fontSize: 16, color: '#666' }}>
@@ -148,7 +148,7 @@ export default function App() {
                 flex: 1,
                 paddingVertical: 12,
                 borderRadius: 20,
-                backgroundColor: mode === 'login' ? '#00217D' : 'transparent',
+                backgroundColor: mode === 'login' ? '#1B4332' : 'transparent',
                 alignItems: 'center'
               }}
               onPress={() => setMode('login')}
@@ -165,7 +165,7 @@ export default function App() {
                 flex: 1,
                 paddingVertical: 12,
                 borderRadius: 20,
-                backgroundColor: mode === 'register' ? '#00217D' : 'transparent',
+                backgroundColor: mode === 'register' ? '#1B4332' : 'transparent',
                 alignItems: 'center'
               }}
               onPress={() => setMode('register')}
@@ -192,7 +192,7 @@ export default function App() {
                     padding: 15,
                     borderRadius: 10,
                     borderWidth: 2,
-                    borderColor: userType === 'family' ? '#00217D' : '#ddd',
+                    borderColor: userType === 'family' ? '#1B4332' : '#ddd',
                     backgroundColor: userType === 'family' ? '#f0f5ff' : 'white',
                   }}
                   onPress={() => setUserType('family')}
@@ -200,7 +200,7 @@ export default function App() {
                   <Text style={{
                     textAlign: 'center',
                     fontSize: 14,
-                    color: userType === 'family' ? '#00217D' : '#666',
+                    color: userType === 'family' ? '#1B4332' : '#666',
                     fontWeight: userType === 'family' ? 'bold' : 'normal'
                   }}>
                     👨‍👩‍👧‍👦 Family Member
@@ -212,7 +212,7 @@ export default function App() {
                     padding: 15,
                     borderRadius: 10,
                     borderWidth: 2,
-                    borderColor: userType === 'planter' ? '#00217D' : '#ddd',
+                    borderColor: userType === 'planter' ? '#1B4332' : '#ddd',
                     backgroundColor: userType === 'planter' ? '#f0f5ff' : 'white',
                   }}
                   onPress={() => setUserType('planter')}
@@ -220,7 +220,7 @@ export default function App() {
                   <Text style={{
                     textAlign: 'center',
                     fontSize: 14,
-                    color: userType === 'planter' ? '#00217D' : '#666',
+                    color: userType === 'planter' ? '#1B4332' : '#666',
                     fontWeight: userType === 'planter' ? 'bold' : 'normal'
                   }}>
                     🌳 Tree Planter
@@ -289,7 +289,7 @@ export default function App() {
           {/* Auth Button */}
           <TouchableOpacity
             style={{
-              backgroundColor: '#00217D',
+              backgroundColor: '#1B4332',
               paddingVertical: 15,
               borderRadius: 10,
               alignItems: 'center',
@@ -360,7 +360,7 @@ export default function App() {
   if (screen === 'home') {
     return (
       <View style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
-        <View style={{ backgroundColor: '#00217D', padding: 20, paddingTop: 50 }}>
+        <View style={{ backgroundColor: '#1B4332', padding: 20, paddingTop: 50 }}>
           <Text style={{ fontSize: 24, fontWeight: 'bold', color: 'white' }}>PYEBWA Token</Text>
           <Text style={{ fontSize: 16, color: 'rgba(255,255,255,0.8)', marginTop: 5 }}>
             {userType === 'planter' ? '🌳 Tree Planter Dashboard' : '👨‍👩‍👧‍👦 Family Dashboard'}
@@ -379,17 +379,17 @@ export default function App() {
 
               <View style={{ flexDirection: 'row', gap: 15, marginBottom: 20 }}>
                 <View style={{ flex: 1, backgroundColor: 'white', padding: 20, borderRadius: 15, alignItems: 'center' }}>
-                  <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#00217D' }}>50</Text>
+                  <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1B4332' }}>50</Text>
                   <Text style={{ fontSize: 14, color: '#666', marginTop: 5 }}>Trees Planted</Text>
                 </View>
                 <View style={{ flex: 1, backgroundColor: 'white', padding: 20, borderRadius: 15, alignItems: 'center' }}>
-                  <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#00217D' }}>200</Text>
+                  <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1B4332' }}>200</Text>
                   <Text style={{ fontSize: 14, color: '#666', marginTop: 5 }}>Pending</Text>
                 </View>
               </View>
 
               <TouchableOpacity 
-                style={{ backgroundColor: '#00217D', padding: 20, borderRadius: 15, alignItems: 'center', marginBottom: 20 }}
+                style={{ backgroundColor: '#1B4332', padding: 20, borderRadius: 15, alignItems: 'center', marginBottom: 20 }}
                 onPress={() => setScreen('camera')}
               >
                 <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>📸 Submit New Planting</Text>
@@ -416,14 +416,14 @@ export default function App() {
 
               <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 15, marginBottom: 20, alignItems: 'center' }}>
                 <Text style={{ fontSize: 16, color: '#666', marginBottom: 10 }}>Token Balance</Text>
-                <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#00217D', marginBottom: 15 }}>100 PYEBWA</Text>
-                <TouchableOpacity style={{ backgroundColor: '#D41125', paddingHorizontal: 30, paddingVertical: 10, borderRadius: 20 }}>
+                <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1B4332', marginBottom: 15 }}>100 PYEBWA</Text>
+                <TouchableOpacity style={{ backgroundColor: '#2D6A4F', paddingHorizontal: 30, paddingVertical: 10, borderRadius: 20 }}>
                   <Text style={{ color: 'white', fontWeight: 'bold' }}>Buy More Tokens</Text>
                 </TouchableOpacity>
               </View>
 
               <TouchableOpacity 
-                style={{ backgroundColor: '#00217D', padding: 20, borderRadius: 15, alignItems: 'center', marginBottom: 20 }}
+                style={{ backgroundColor: '#1B4332', padding: 20, borderRadius: 15, alignItems: 'center', marginBottom: 20 }}
                 onPress={() => Alert.alert('Coming Soon', 'Heritage upload feature will be available soon!')}
               >
                 <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>📸 Upload Heritage</Text>
@@ -432,7 +432,7 @@ export default function App() {
           )}
 
           <TouchableOpacity 
-            style={{ backgroundColor: '#D41125', padding: 15, borderRadius: 10, alignItems: 'center' }}
+            style={{ backgroundColor: '#2D6A4F', padding: 15, borderRadius: 10, alignItems: 'center' }}
             onPress={handleLogout}
           >
             <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>Logout</Text>
@@ -446,7 +446,7 @@ export default function App() {
   if (screen === 'camera') {
     return (
       <View style={{ flex: 1 }}>
-        <View style={{ backgroundColor: '#00217D', padding: 20, paddingTop: 50, flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{ backgroundColor: '#1B4332', padding: 20, paddingTop: 50, flexDirection: 'row', alignItems: 'center' }}>
           <TouchableOpacity 
             onPress={() => setScreen('home')}
             style={{ marginRight: 15 }}

@@ -15,11 +15,11 @@ const SimpleLoginScreen = ({ onLogin }: { onLogin: () => void }) => (
   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f5f5', padding: 20 }}>
     <View style={{ alignItems: 'center', marginBottom: 40 }}>
       <Image source={require('./assets/icon.png')} style={{ width: 100, height: 100, marginBottom: 20 }} />
-      <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#00217D', marginBottom: 5 }}>PYEBWA Token</Text>
+      <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#1B4332', marginBottom: 5 }}>PYEBWA Token</Text>
       <Text style={{ fontSize: 16, color: '#666' }}>Preserve Heritage • Plant Trees</Text>
     </View>
     <TouchableOpacity 
-      style={{ backgroundColor: '#00217D', paddingHorizontal: 40, paddingVertical: 15, borderRadius: 10 }}
+      style={{ backgroundColor: '#1B4332', paddingHorizontal: 40, paddingVertical: 15, borderRadius: 10 }}
       onPress={onLogin}
     >
       <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>Demo Login</Text>
@@ -51,7 +51,7 @@ export default function App() {
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f5f5' }}>
-        <ActivityIndicator size="large" color="#00217D" />
+        <ActivityIndicator size="large" color="#1B4332" />
         <StatusBar style="auto" />
       </View>
     );
@@ -87,10 +87,10 @@ export default function App() {
 
               return <Ionicons name={iconName} size={size} color={color} />;
             },
-            tabBarActiveTintColor: '#00217D',
+            tabBarActiveTintColor: '#1B4332',
             tabBarInactiveTintColor: 'gray',
             headerStyle: {
-              backgroundColor: '#00217D',
+              backgroundColor: '#1B4332',
             },
             headerTintColor: '#fff',
             headerTitleStyle: {

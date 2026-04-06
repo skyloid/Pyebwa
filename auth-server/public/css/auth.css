@@ -5,8 +5,8 @@
 }
 
 :root {
-    --primary-red: #D41125;
-    --primary-blue: #00217D;
+    --primary-red: #2D6A4F;
+    --primary-blue: #1B4332;
     --accent-yellow: #FFC72C;
     --white: #FFFFFF;
     --gray-50: #F9FAFB;
@@ -44,7 +44,7 @@ body {
     text-align: center;
     font-size: 36px;
     font-weight: 800;
-    background: linear-gradient(135deg, #D41125 0%, #FF1744 50%, #D41125 100%);
+    background: linear-gradient(135deg, #2D6A4F 0%, #FF1744 50%, #2D6A4F 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

@@ -61,7 +61,7 @@ export const HomeScreen: React.FC = () => {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#00217D" />
+          <ActivityIndicator size="large" color="#1B4332" />
         </View>
       </SafeAreaView>
     );
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   header: {
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
     padding: 20,
     paddingTop: 10,
   },
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
   },
   statLabel: {
     fontSize: 14,
@@ -290,11 +290,11 @@ const styles = StyleSheet.create({
   tokenValue: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
     marginBottom: 15,
   },
   buyButton: {
-    backgroundColor: '#D41125',
+    backgroundColor: '#2D6A4F',
     paddingHorizontal: 30,
     paddingVertical: 10,
     borderRadius: 20,
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   actionButton: {
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
     marginHorizontal: 15,
     marginTop: 20,
     padding: 20,
@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
   infoTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
     marginBottom: 10,
   },
   infoText: {

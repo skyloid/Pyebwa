@@ -76,7 +76,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
               source={require('../../assets/icon.png')} 
               style={{ width: 100, height: 100, marginBottom: 20 }} 
             />
-            <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#00217D', marginBottom: 5 }}>
+            <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#1B4332', marginBottom: 5 }}>
               PYEBWA Token
             </Text>
             <Text style={{ fontSize: 16, color: '#666' }}>
@@ -97,7 +97,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
                 flex: 1,
                 paddingVertical: 12,
                 borderRadius: 20,
-                backgroundColor: mode === 'login' ? '#00217D' : 'transparent',
+                backgroundColor: mode === 'login' ? '#1B4332' : 'transparent',
                 alignItems: 'center'
               }}
               onPress={() => setMode('login')}
@@ -114,7 +114,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
                 flex: 1,
                 paddingVertical: 12,
                 borderRadius: 20,
-                backgroundColor: mode === 'register' ? '#00217D' : 'transparent',
+                backgroundColor: mode === 'register' ? '#1B4332' : 'transparent',
                 alignItems: 'center'
               }}
               onPress={() => setMode('register')}
@@ -141,7 +141,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
                     padding: 15,
                     borderRadius: 10,
                     borderWidth: 2,
-                    borderColor: userType === 'family' ? '#00217D' : '#ddd',
+                    borderColor: userType === 'family' ? '#1B4332' : '#ddd',
                     backgroundColor: userType === 'family' ? '#f0f5ff' : 'white',
                   }}
                   onPress={() => setUserType('family')}
@@ -149,7 +149,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
                   <Text style={{
                     textAlign: 'center',
                     fontSize: 14,
-                    color: userType === 'family' ? '#00217D' : '#666',
+                    color: userType === 'family' ? '#1B4332' : '#666',
                     fontWeight: userType === 'family' ? 'bold' : 'normal'
                   }}>
                     👨‍👩‍👧‍👦 Family Member
@@ -161,7 +161,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
                     padding: 15,
                     borderRadius: 10,
                     borderWidth: 2,
-                    borderColor: userType === 'planter' ? '#00217D' : '#ddd',
+                    borderColor: userType === 'planter' ? '#1B4332' : '#ddd',
                     backgroundColor: userType === 'planter' ? '#f0f5ff' : 'white',
                   }}
                   onPress={() => setUserType('planter')}
@@ -169,7 +169,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
                   <Text style={{
                     textAlign: 'center',
                     fontSize: 14,
-                    color: userType === 'planter' ? '#00217D' : '#666',
+                    color: userType === 'planter' ? '#1B4332' : '#666',
                     fontWeight: userType === 'planter' ? 'bold' : 'normal'
                   }}>
                     🌳 Tree Planter
@@ -239,7 +239,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
           {/* Auth Button */}
           <TouchableOpacity
             style={{
-              backgroundColor: '#00217D',
+              backgroundColor: '#1B4332',
               paddingVertical: 15,
               borderRadius: 10,
               alignItems: 'center',

@@ -12,7 +12,7 @@
         width: 50px;
         height: 50px;
         border-radius: 50%;
-        background: var(--primary-blue, #00217D);
+        background: var(--primary-blue, #1B4332);
         color: white;
         border: none;
         font-size: 24px;

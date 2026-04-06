@@ -173,7 +173,7 @@
                 styles.textContent = `
                     .in-app-notification { position: fixed; top: 20px; right: 20px; max-width: 400px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000; animation: slideInRight 0.3s ease; overflow: hidden; }
                     .notification-content { display: flex; align-items: flex-start; padding: 16px; gap: 12px; }
-                    .notification-icon { flex-shrink: 0; width: 40px; height: 40px; background: #00217D; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+                    .notification-icon { flex-shrink: 0; width: 40px; height: 40px; background: #1B4332; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
                     .notification-body { flex: 1; }
                     .notification-body h4 { margin: 0 0 4px 0; font-size: 16px; font-weight: 600; }
                     .notification-body p { margin: 0; font-size: 14px; color: #666; }

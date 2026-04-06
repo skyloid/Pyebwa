@@ -4,7 +4,7 @@
   "description": "Connect your family heritage to Haiti's reforestation. Every memory preserved plants trees.",
   "start_url": "/",
   "display": "standalone",
-  "theme_color": "#00217D",
+  "theme_color": "#1B4332",
   "background_color": "#ffffff",
   "orientation": "portrait-primary",
   "categories": ["social", "finance", "lifestyle"],

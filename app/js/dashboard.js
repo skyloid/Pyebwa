@@ -150,7 +150,7 @@ function createDashboard() {
             overflow: hidden; 
             min-height: 250px; 
             padding: 0;
-            background: linear-gradient(135deg, #00217D 0%, #D41125 100%);
+            background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 100%);
         ">
             ${hasPhotos ? `
                 <!-- Slideshow container for family photos -->

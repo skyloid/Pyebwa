@@ -1,10 +1,10 @@
 /* Admin Dashboard Base Styles */
 
 :root {
-    --admin-primary: #00217D;
+    --admin-primary: #1B4332;
     --admin-primary-dark: #001654;
     --admin-primary-light: #0033b8;
-    --admin-accent: #D41125;
+    --admin-accent: #2D6A4F;
     --admin-success: #4caf50;
     --admin-warning: #ff9800;
     --admin-danger: #f44336;

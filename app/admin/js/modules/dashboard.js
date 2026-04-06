@@ -249,12 +249,12 @@
                         datasets: [{
                             label: 'New Users',
                             data: data,
-                            borderColor: '#00217D',
+                            borderColor: '#1B4332',
                             backgroundColor: 'rgba(0, 33, 125, 0.1)',
                             borderWidth: 3,
                             fill: true,
                             tension: 0.4,
-                            pointBackgroundColor: '#00217D',
+                            pointBackgroundColor: '#1B4332',
                             pointBorderColor: '#fff',
                             pointBorderWidth: 2,
                             pointRadius: 4
@@ -393,8 +393,8 @@
                         datasets: [{
                             data: values,
                             backgroundColor: [
-                                '#00217D',
-                                '#D41125',
+                                '#1B4332',
+                                '#2D6A4F',
                                 '#4CAF50',
                                 '#FF9800'
                             ],

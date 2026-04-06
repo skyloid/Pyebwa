@@ -265,10 +265,10 @@ class EmailService {
                 <style>
                     body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
                     .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                    .header { background: #00217D; color: white; padding: 30px; text-align: center; }
+                    .header { background: #1B4332; color: white; padding: 30px; text-align: center; }
                     .content { padding: 30px; background: #f9f9f9; }
                     .footer { padding: 20px; text-align: center; color: #666; font-size: 14px; }
-                    .button { display: inline-block; padding: 12px 30px; background: #D41125; color: white; text-decoration: none; border-radius: 5px; }
+                    .button { display: inline-block; padding: 12px 30px; background: #2D6A4F; color: white; text-decoration: none; border-radius: 5px; }
                     .type-badge { display: inline-block; padding: 5px 15px; background: #e0e0e0; border-radius: 15px; font-size: 14px; }
                 </style>
             </head>
@@ -308,10 +308,10 @@ class EmailService {
                 <style>
                     body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
                     .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                    .header { background: #00217D; color: white; padding: 40px; text-align: center; }
+                    .header { background: #1B4332; color: white; padding: 40px; text-align: center; }
                     .content { padding: 40px; }
                     .feature { margin: 20px 0; padding: 20px; background: #f5f5f5; border-radius: 8px; }
-                    .button { display: inline-block; padding: 15px 40px; background: #D41125; color: white; text-decoration: none; border-radius: 5px; font-size: 18px; }
+                    .button { display: inline-block; padding: 15px 40px; background: #2D6A4F; color: white; text-decoration: none; border-radius: 5px; font-size: 18px; }
                     .footer { padding: 20px; text-align: center; color: #666; font-size: 14px; }
                 </style>
             </head>
@@ -373,9 +373,9 @@ class EmailService {
                 <style>
                     body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
                     .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                    .header { background: #00217D; color: white; padding: 30px; text-align: center; }
+                    .header { background: #1B4332; color: white; padding: 30px; text-align: center; }
                     .content { padding: 40px; background: #f9f9f9; }
-                    .button { display: inline-block; padding: 15px 40px; background: #D41125; color: white; text-decoration: none; border-radius: 5px; }
+                    .button { display: inline-block; padding: 15px 40px; background: #2D6A4F; color: white; text-decoration: none; border-radius: 5px; }
                     .footer { padding: 20px; text-align: center; color: #666; font-size: 14px; }
                     .warning { background: #fff3cd; border: 1px solid #ffeeba; padding: 15px; border-radius: 5px; color: #856404; }
                 </style>
@@ -423,10 +423,10 @@ class EmailService {
                 <style>
                     body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
                     .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                    .header { background: #00217D; color: white; padding: 40px; text-align: center; }
+                    .header { background: #1B4332; color: white; padding: 40px; text-align: center; }
                     .content { padding: 40px; }
-                    .invite-box { background: #f0f8ff; border: 2px solid #00217D; padding: 30px; border-radius: 10px; text-align: center; margin: 30px 0; }
-                    .button { display: inline-block; padding: 15px 40px; background: #D41125; color: white; text-decoration: none; border-radius: 5px; font-size: 18px; }
+                    .invite-box { background: #f0f8ff; border: 2px solid #1B4332; padding: 30px; border-radius: 10px; text-align: center; margin: 30px 0; }
+                    .button { display: inline-block; padding: 15px 40px; background: #2D6A4F; color: white; text-decoration: none; border-radius: 5px; font-size: 18px; }
                     .footer { padding: 20px; text-align: center; color: #666; font-size: 14px; }
                 </style>
             </head>

@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     borderRadius: 30,
     borderWidth: 2,
-    borderColor: '#00217D',
+    borderColor: '#1B4332',
   },
   zone: {
     position: 'absolute',

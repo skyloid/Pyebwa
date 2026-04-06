@@ -145,7 +145,7 @@ export const ProductionCameraScreen: React.FC = () => {
   if (hasPermission === null) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#00217D" />
+        <ActivityIndicator size="large" color="#1B4332" />
         <Text style={styles.loadingText}>Requesting camera permission...</Text>
       </View>
     );
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 4,
@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
     minWidth: 80,
   },
   selectedSpecies: {
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
   },
   speciesIcon: {
     fontSize: 30,

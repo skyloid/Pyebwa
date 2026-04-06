@@ -258,7 +258,7 @@ export const PedometerFieldMapper: React.FC<Props> = ({ onComplete, onCancel }) 
         ))}
         {session.isWalking && (
           <View style={styles.currentSegment}>
-            <ActivityIndicator size="small" color="#00217D" />
+            <ActivityIndicator size="small" color="#1B4332" />
             <Text style={styles.currentSegmentText}>
               Walking... {session.currentSegmentSteps} steps (~{formatDistance(session.currentSegmentSteps * 0.75)})
             </Text>
@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
   },
   warning: {
     flexDirection: 'row',
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
   },
   accuracy: {
     flexDirection: 'row',
@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
   },
   instructionText: {
     fontSize: 16,
-    color: '#00217D',
+    color: '#1B4332',
     textAlign: 'center',
   },
   segmentList: {
@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#4CAF50',
   },
   markButton: {
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
   },
   undoButton: {
     backgroundColor: '#FF9800',

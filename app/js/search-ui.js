@@ -389,7 +389,7 @@
                     width: 40px;
                     height: 40px;
                     border: 3px solid #f3f3f3;
-                    border-top: 3px solid #00217D;
+                    border-top: 3px solid #1B4332;
                     border-radius: 50%;
                     animation: spin 1s linear infinite;
                     margin: 0 auto 16px;

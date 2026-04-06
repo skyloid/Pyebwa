@@ -150,7 +150,7 @@ export const SecurityDashboard: React.FC = () => {
       {
         label: 'Security Events',
         data: metrics?.eventsPerHour || [],
-        borderColor: '#00217D',
+        borderColor: '#1B4332',
         backgroundColor: 'rgba(0, 33, 125, 0.1)',
         tension: 0.4,
       },
@@ -178,7 +178,7 @@ export const SecurityDashboard: React.FC = () => {
       {
         label: 'Events by Type',
         data: Object.values(metrics?.eventsByType || {}),
-        backgroundColor: '#00217D',
+        backgroundColor: '#1B4332',
       },
     ],
   };

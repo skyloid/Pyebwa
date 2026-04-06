@@ -104,7 +104,7 @@
                     bottom: 20px;
                     left: 50%;
                     transform: translateX(-50%);
-                    background: #00217D;
+                    background: #1B4332;
                     color: white;
                     padding: 15px 20px;
                     border-radius: 8px;
@@ -132,7 +132,7 @@
                 
                 .sw-update-notification button {
                     background: white;
-                    color: #00217D;
+                    color: #1B4332;
                     border: none;
                     padding: 6px 15px;
                     border-radius: 4px;

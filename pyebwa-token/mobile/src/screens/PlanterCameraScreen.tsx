@@ -593,7 +593,7 @@ const styles = StyleSheet.create({
   fieldName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
     marginBottom: 10,
   },
   fieldStats: {
@@ -643,7 +643,7 @@ const styles = StyleSheet.create({
   },
   selectedSpecies: {
     backgroundColor: '#e3f2fd',
-    borderColor: '#00217D',
+    borderColor: '#1B4332',
   },
   disabledSpecies: {
     opacity: 0.5,
@@ -658,14 +658,14 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   selectedSpeciesText: {
-    color: '#00217D',
+    color: '#1B4332',
     fontWeight: 'bold',
   },
   disabledSpeciesText: {
     color: '#999',
   },
   captureButton: {
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

@@ -9,7 +9,7 @@
         themes: {
             classic: {
                 name: 'Classic',
-                bgGradient: ['#00217D', '#D41125'],
+                bgGradient: ['#1B4332', '#2D6A4F'],
                 textColor: '#FFFFFF',
                 accentColor: '#FFD700'
             },

@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
     marginBottom: 10,
   },
   fieldCard: {
@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   confirmButton: {
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
   },
   confirmButtonText: {
     color: 'white',

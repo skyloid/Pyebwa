@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
     marginBottom: 5,
   },
   subtitle: {
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   userTypeButtonActive: {
-    borderColor: '#00217D',
+    borderColor: '#1B4332',
     backgroundColor: '#f0f5ff',
   },
   userTypeText: {
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   userTypeTextActive: {
-    color: '#00217D',
+    color: '#1B4332',
     fontWeight: 'bold',
   },
   input: {
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   loginButton: {
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
     paddingVertical: 15,
     borderRadius: 10,
     alignItems: 'center',

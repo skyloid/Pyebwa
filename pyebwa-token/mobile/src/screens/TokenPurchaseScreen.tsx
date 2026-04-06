@@ -196,7 +196,7 @@ export const TokenPurchaseScreen: React.FC = () => {
           </View>
           
           <View style={styles.benefitItem}>
-            <Ionicons name="people" size={24} color="#00217D" />
+            <Ionicons name="people" size={24} color="#1B4332" />
             <View style={styles.benefitText}>
               <Text style={styles.benefitTitle}>{t('purchase.benefits.heritage.title')}</Text>
               <Text style={styles.benefitDescription}>{t('purchase.benefits.heritage.description')}</Text>
@@ -204,7 +204,7 @@ export const TokenPurchaseScreen: React.FC = () => {
           </View>
           
           <View style={styles.benefitItem}>
-            <Ionicons name="trending-up" size={24} color="#D41125" />
+            <Ionicons name="trending-up" size={24} color="#2D6A4F" />
             <View style={styles.benefitText}>
               <Text style={styles.benefitTitle}>{t('purchase.benefits.value.title')}</Text>
               <Text style={styles.benefitDescription}>{t('purchase.benefits.value.description')}</Text>
@@ -267,7 +267,7 @@ export const TokenPurchaseScreen: React.FC = () => {
                     ]}
                     onPress={() => setSelectedPaymentMethod(method.id)}
                   >
-                    <Ionicons name={method.icon as any} size={24} color="#00217D" />
+                    <Ionicons name={method.icon as any} size={24} color="#1B4332" />
                     <Text style={styles.paymentMethodName}>{method.name}</Text>
                     {selectedPaymentMethod === method.id && (
                       <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   balanceCard: {
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
     padding: 30,
     alignItems: 'center',
     marginBottom: 20,
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
   tokenAmount: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
     marginTop: 10,
   },
   tokenLabel: {
@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   buyButton: {
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
     paddingHorizontal: 30,
     paddingVertical: 10,
     borderRadius: 20,
@@ -516,7 +516,7 @@ const styles = StyleSheet.create({
   summaryPrice: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
   },
   paymentMethodLabel: {
     fontSize: 16,

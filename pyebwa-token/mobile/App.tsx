@@ -122,7 +122,7 @@ export default function App() {
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f5f5' }}>
-        <ActivityIndicator size="large" color="#00217D" />
+        <ActivityIndicator size="large" color="#1B4332" />
         <Text style={{ marginTop: 10, color: '#666' }}>{t('common.loading')}</Text>
       </View>
     );
@@ -139,7 +139,7 @@ export default function App() {
               source={require('./assets/icon.png')} 
               style={{ width: 100, height: 100, marginBottom: 20 }} 
             />
-            <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#00217D', marginBottom: 5 }}>
+            <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#1B4332', marginBottom: 5 }}>
               {t('app.name')}
             </Text>
             <Text style={{ fontSize: 16, color: '#666' }}>
@@ -160,7 +160,7 @@ export default function App() {
                 flex: 1,
                 paddingVertical: 12,
                 borderRadius: 20,
-                backgroundColor: mode === 'login' ? '#00217D' : 'transparent',
+                backgroundColor: mode === 'login' ? '#1B4332' : 'transparent',
                 alignItems: 'center'
               }}
               onPress={() => setMode('login')}
@@ -177,7 +177,7 @@ export default function App() {
                 flex: 1,
                 paddingVertical: 12,
                 borderRadius: 20,
-                backgroundColor: mode === 'register' ? '#00217D' : 'transparent',
+                backgroundColor: mode === 'register' ? '#1B4332' : 'transparent',
                 alignItems: 'center'
               }}
               onPress={() => setMode('register')}
@@ -208,7 +208,7 @@ export default function App() {
                     padding: 15,
                     borderRadius: 10,
                     borderWidth: 2,
-                    borderColor: userType === 'family' ? '#00217D' : '#ddd',
+                    borderColor: userType === 'family' ? '#1B4332' : '#ddd',
                     backgroundColor: userType === 'family' ? '#f0f5ff' : 'white',
                   }}
                   onPress={() => setUserType('family')}
@@ -216,7 +216,7 @@ export default function App() {
                   <Text style={{
                     textAlign: 'center',
                     fontSize: 14,
-                    color: userType === 'family' ? '#00217D' : '#666',
+                    color: userType === 'family' ? '#1B4332' : '#666',
                     fontWeight: userType === 'family' ? 'bold' : 'normal'
                   }}>
                     {t('auth.familyMember')}
@@ -228,7 +228,7 @@ export default function App() {
                     padding: 15,
                     borderRadius: 10,
                     borderWidth: 2,
-                    borderColor: userType === 'planter' ? '#00217D' : '#ddd',
+                    borderColor: userType === 'planter' ? '#1B4332' : '#ddd',
                     backgroundColor: userType === 'planter' ? '#f0f5ff' : 'white',
                   }}
                   onPress={() => setUserType('planter')}
@@ -236,7 +236,7 @@ export default function App() {
                   <Text style={{
                     textAlign: 'center',
                     fontSize: 14,
-                    color: userType === 'planter' ? '#00217D' : '#666',
+                    color: userType === 'planter' ? '#1B4332' : '#666',
                     fontWeight: userType === 'planter' ? 'bold' : 'normal'
                   }}>
                     {t('auth.treePlanter')}
@@ -249,7 +249,7 @@ export default function App() {
                     padding: 15,
                     borderRadius: 10,
                     borderWidth: 2,
-                    borderColor: userType === 'validator' ? '#00217D' : '#ddd',
+                    borderColor: userType === 'validator' ? '#1B4332' : '#ddd',
                     backgroundColor: userType === 'validator' ? '#f0f5ff' : 'white',
                   }}
                   onPress={() => setUserType('validator')}
@@ -257,7 +257,7 @@ export default function App() {
                   <Text style={{
                     textAlign: 'center',
                     fontSize: 14,
-                    color: userType === 'validator' ? '#00217D' : '#666',
+                    color: userType === 'validator' ? '#1B4332' : '#666',
                     fontWeight: userType === 'validator' ? 'bold' : 'normal'
                   }}>
                     🔍 Validator
@@ -326,7 +326,7 @@ export default function App() {
           {/* Auth Button */}
           <TouchableOpacity
             style={{
-              backgroundColor: '#00217D',
+              backgroundColor: '#1B4332',
               paddingVertical: 15,
               borderRadius: 10,
               alignItems: 'center',
@@ -413,7 +413,7 @@ export default function App() {
   if (screen === 'home') {
     return (
       <View style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
-        <View style={{ backgroundColor: '#00217D', padding: 20, paddingTop: 50 }}>
+        <View style={{ backgroundColor: '#1B4332', padding: 20, paddingTop: 50 }}>
           <Text style={{ fontSize: 24, fontWeight: 'bold', color: 'white' }}>{t('app.name')}</Text>
           <Text style={{ fontSize: 16, color: 'rgba(255,255,255,0.8)', marginTop: 5 }}>
             {t(userType === 'planter' ? 'dashboard.planterDashboard' : userType === 'validator' ? 'validator.dashboard' : 'dashboard.familyDashboard')}
@@ -443,7 +443,7 @@ export default function App() {
             borderRadius: 10, 
             marginBottom: 20,
             borderWidth: 2,
-            borderColor: '#00217D',
+            borderColor: '#1B4332',
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.1,
@@ -460,7 +460,7 @@ export default function App() {
                   paddingVertical: 10,
                   paddingHorizontal: 15,
                   borderRadius: 8,
-                  backgroundColor: userType === 'family' ? '#00217D' : '#f0f0f0',
+                  backgroundColor: userType === 'family' ? '#1B4332' : '#f0f0f0',
                   alignItems: 'center'
                 }}
                 onPress={async () => {
@@ -482,7 +482,7 @@ export default function App() {
                   paddingVertical: 10,
                   paddingHorizontal: 15,
                   borderRadius: 8,
-                  backgroundColor: userType === 'planter' ? '#00217D' : '#f0f0f0',
+                  backgroundColor: userType === 'planter' ? '#1B4332' : '#f0f0f0',
                   alignItems: 'center'
                 }}
                 onPress={async () => {
@@ -504,7 +504,7 @@ export default function App() {
                   paddingVertical: 10,
                   paddingHorizontal: 15,
                   borderRadius: 8,
-                  backgroundColor: userType === 'validator' ? '#00217D' : '#f0f0f0',
+                  backgroundColor: userType === 'validator' ? '#1B4332' : '#f0f0f0',
                   alignItems: 'center'
                 }}
                 onPress={async () => {
@@ -529,11 +529,11 @@ export default function App() {
               <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 15, marginBottom: 20 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
                   <View style={{ alignItems: 'center' }}>
-                    <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#00217D' }}>12</Text>
+                    <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1B4332' }}>12</Text>
                     <Text style={{ fontSize: 14, color: '#666', marginTop: 5 }}>{t('validator.myFields')}</Text>
                   </View>
                   <View style={{ alignItems: 'center' }}>
-                    <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#00217D' }}>45.2</Text>
+                    <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1B4332' }}>45.2</Text>
                     <Text style={{ fontSize: 14, color: '#666', marginTop: 5 }}>Hectares</Text>
                   </View>
                 </View>
@@ -547,7 +547,7 @@ export default function App() {
                   <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>{t('validator.createField')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  style={{ flex: 1, backgroundColor: '#00217D', padding: 20, borderRadius: 15, alignItems: 'center' }}
+                  style={{ flex: 1, backgroundColor: '#1B4332', padding: 20, borderRadius: 15, alignItems: 'center' }}
                   onPress={() => setScreen('fieldManagement')}
                 >
                   <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>{t('validator.manageFields')}</Text>
@@ -558,7 +558,7 @@ export default function App() {
                 <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#333', marginBottom: 15 }}>{t('validator.activeFields')}</Text>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text style={{ fontSize: 14, color: '#666' }}>{t('validator.totalArea')}</Text>
-                  <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#00217D' }}>45.2 ha</Text>
+                  <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#1B4332' }}>45.2 ha</Text>
                 </View>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
                   <Text style={{ fontSize: 14, color: '#666' }}>{t('validator.capacityUsed')}</Text>
@@ -584,18 +584,18 @@ export default function App() {
 
               <View style={{ flexDirection: 'row', gap: 15, marginBottom: 20 }}>
                 <View style={{ flex: 1, backgroundColor: 'white', padding: 20, borderRadius: 15, alignItems: 'center' }}>
-                  <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#00217D' }}>50</Text>
+                  <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1B4332' }}>50</Text>
                   <Text style={{ fontSize: 14, color: '#666', marginTop: 5 }}>{t('dashboard.treesPlanted')}</Text>
                 </View>
                 <View style={{ flex: 1, backgroundColor: 'white', padding: 20, borderRadius: 15, alignItems: 'center' }}>
-                  <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#00217D' }}>200</Text>
+                  <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1B4332' }}>200</Text>
                   <Text style={{ fontSize: 14, color: '#666', marginTop: 5 }}>{t('dashboard.pending')}</Text>
                 </View>
               </View>
 
               <View style={{ flexDirection: 'row', gap: 15, marginBottom: 20 }}>
                 <TouchableOpacity 
-                  style={{ flex: 1, backgroundColor: '#00217D', padding: 20, borderRadius: 15, alignItems: 'center' }}
+                  style={{ flex: 1, backgroundColor: '#1B4332', padding: 20, borderRadius: 15, alignItems: 'center' }}
                   onPress={() => setScreen('camera')}
                 >
                   <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>{t('dashboard.submitNewPlanting')}</Text>
@@ -629,9 +629,9 @@ export default function App() {
 
               <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 15, marginBottom: 20, alignItems: 'center' }}>
                 <Text style={{ fontSize: 16, color: '#666', marginBottom: 10 }}>{t('dashboard.tokenBalance')}</Text>
-                <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#00217D', marginBottom: 15 }}>100 PYEBWA</Text>
+                <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1B4332', marginBottom: 15 }}>100 PYEBWA</Text>
                 <TouchableOpacity 
-                  style={{ backgroundColor: '#D41125', paddingHorizontal: 30, paddingVertical: 10, borderRadius: 20 }}
+                  style={{ backgroundColor: '#2D6A4F', paddingHorizontal: 30, paddingVertical: 10, borderRadius: 20 }}
                   onPress={() => setScreen('purchase')}
                 >
                   <Text style={{ color: 'white', fontWeight: 'bold' }}>{t('dashboard.buyMoreTokens')}</Text>
@@ -640,7 +640,7 @@ export default function App() {
 
               <View style={{ flexDirection: 'row', gap: 15, marginBottom: 20 }}>
                 <TouchableOpacity 
-                  style={{ flex: 1, backgroundColor: '#00217D', padding: 20, borderRadius: 15, alignItems: 'center' }}
+                  style={{ flex: 1, backgroundColor: '#1B4332', padding: 20, borderRadius: 15, alignItems: 'center' }}
                   onPress={() => setScreen('heritage')}
                 >
                   <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>{t('dashboard.uploadHeritage')}</Text>
@@ -656,7 +656,7 @@ export default function App() {
           )}
 
           <TouchableOpacity 
-            style={{ backgroundColor: '#D41125', padding: 15, borderRadius: 10, alignItems: 'center' }}
+            style={{ backgroundColor: '#2D6A4F', padding: 15, borderRadius: 10, alignItems: 'center' }}
             onPress={handleLogout}
           >
             <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>{t('auth.logout')}</Text>
@@ -670,7 +670,7 @@ export default function App() {
   if (screen === 'camera') {
     return (
       <View style={{ flex: 1 }}>
-        <View style={{ backgroundColor: '#00217D', padding: 20, paddingTop: 50, flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{ backgroundColor: '#1B4332', padding: 20, paddingTop: 50, flexDirection: 'row', alignItems: 'center' }}>
           <TouchableOpacity 
             onPress={() => setScreen('home')}
             style={{ marginRight: 15 }}
@@ -688,7 +688,7 @@ export default function App() {
   if (screen === 'heritage') {
     return (
       <View style={{ flex: 1 }}>
-        <View style={{ backgroundColor: '#00217D', padding: 20, paddingTop: 50, flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{ backgroundColor: '#1B4332', padding: 20, paddingTop: 50, flexDirection: 'row', alignItems: 'center' }}>
           <TouchableOpacity 
             onPress={() => setScreen('home')}
             style={{ marginRight: 15 }}
@@ -706,7 +706,7 @@ export default function App() {
   if (screen === 'purchase') {
     return (
       <View style={{ flex: 1 }}>
-        <View style={{ backgroundColor: '#00217D', padding: 20, paddingTop: 50, flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{ backgroundColor: '#1B4332', padding: 20, paddingTop: 50, flexDirection: 'row', alignItems: 'center' }}>
           <TouchableOpacity 
             onPress={() => setScreen('home')}
             style={{ marginRight: 15 }}
@@ -742,7 +742,7 @@ export default function App() {
   if (screen === 'fieldManagement') {
     return (
       <View style={{ flex: 1 }}>
-        <View style={{ backgroundColor: '#00217D', padding: 20, paddingTop: 50, flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{ backgroundColor: '#1B4332', padding: 20, paddingTop: 50, flexDirection: 'row', alignItems: 'center' }}>
           <TouchableOpacity 
             onPress={() => setScreen('home')}
             style={{ marginRight: 15 }}

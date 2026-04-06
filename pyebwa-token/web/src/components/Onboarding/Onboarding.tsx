@@ -39,7 +39,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, userType }) 
       description: t('onboarding.family.welcome.description'),
       icon: <FaTree size={48} />,
       image: '/images/onboarding/welcome.svg',
-      color: '#00217D',
+      color: '#1B4332',
     },
     {
       id: 'tokens',
@@ -47,7 +47,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, userType }) 
       description: t('onboarding.family.tokens.description'),
       icon: <FaCoins size={48} />,
       image: '/images/onboarding/tokens.svg',
-      color: '#D41125',
+      color: '#2D6A4F',
     },
     {
       id: 'heritage',
@@ -55,7 +55,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, userType }) 
       description: t('onboarding.family.heritage.description'),
       icon: <FaCamera size={48} />,
       image: '/images/onboarding/heritage.svg',
-      color: '#00217D',
+      color: '#1B4332',
     },
     {
       id: 'impact',
@@ -63,7 +63,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, userType }) 
       description: t('onboarding.family.impact.description'),
       icon: <FaChartLine size={48} />,
       image: '/images/onboarding/impact.svg',
-      color: '#D41125',
+      color: '#2D6A4F',
     },
   ];
 
@@ -74,7 +74,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, userType }) 
       description: t('onboarding.planter.welcome.description'),
       icon: <FaTree size={48} />,
       image: '/images/onboarding/planter-welcome.svg',
-      color: '#00217D',
+      color: '#1B4332',
     },
     {
       id: 'plant',
@@ -82,7 +82,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, userType }) 
       description: t('onboarding.planter.plant.description'),
       icon: <FaCamera size={48} />,
       image: '/images/onboarding/plant.svg',
-      color: '#D41125',
+      color: '#2D6A4F',
     },
     {
       id: 'verify',
@@ -90,7 +90,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, userType }) 
       description: t('onboarding.planter.verify.description'),
       icon: <FaChartLine size={48} />,
       image: '/images/onboarding/verify.svg',
-      color: '#00217D',
+      color: '#1B4332',
     },
     {
       id: 'earn',
@@ -98,7 +98,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, userType }) 
       description: t('onboarding.planter.earn.description'),
       icon: <FaCoins size={48} />,
       image: '/images/onboarding/earn.svg',
-      color: '#D41125',
+      color: '#2D6A4F',
     },
   ];
 

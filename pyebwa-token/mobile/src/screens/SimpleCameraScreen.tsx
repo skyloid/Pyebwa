@@ -166,7 +166,7 @@ export const SimpleCameraScreen: React.FC = () => {
   if (hasPermission === false) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-        <Text style={{ fontSize: 16, textAlign: 'center', color: '#D41125' }}>
+        <Text style={{ fontSize: 16, textAlign: 'center', color: '#2D6A4F' }}>
           Camera permission denied. Please enable camera access in your device settings.
         </Text>
       </View>
@@ -176,7 +176,7 @@ export const SimpleCameraScreen: React.FC = () => {
   if (hasLocationPermission === false) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-        <Text style={{ fontSize: 16, textAlign: 'center', color: '#D41125' }}>
+        <Text style={{ fontSize: 16, textAlign: 'center', color: '#2D6A4F' }}>
           Location permission denied. GPS is required to verify tree planting in Haiti.
         </Text>
       </View>
@@ -354,7 +354,7 @@ export const SimpleCameraScreen: React.FC = () => {
         {photoCount > 0 && (
           <TouchableOpacity 
             style={{ 
-              backgroundColor: '#00217D', 
+              backgroundColor: '#1B4332',
               padding: 15, 
               borderRadius: 10, 
               alignItems: 'center' 

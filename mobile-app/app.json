@@ -9,7 +9,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#00217D"
+      "backgroundColor": "#1B4332"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -27,7 +27,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#00217D"
+        "backgroundColor": "#1B4332"
       },
       "package": "com.pyebwa.mobile",
       "versionCode": 1,

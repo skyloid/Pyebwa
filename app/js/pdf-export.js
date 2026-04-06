@@ -319,7 +319,7 @@ async function addFamilyTreeVisualization(pdf) {
         
         .pdf-member-box {
             background: white;
-            border: 2px solid #00217D;
+            border: 2px solid #1B4332;
             border-radius: 8px;
             padding: var(--box-padding);
             margin: 5px;
@@ -327,7 +327,7 @@ async function addFamilyTreeVisualization(pdf) {
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .pdf-member-box.female {
-            border-color: #D41125;
+            border-color: #2D6A4F;
         }
         .pdf-member-name {
             font-weight: bold;
@@ -594,7 +594,7 @@ async function addGenderChart(pdf, x, y, width, demographics, size = 'normal') {
                 labels: [t('males') || 'Males', t('females') || 'Females'],
                 datasets: [{
                     data: [demographics.genderDistribution.male, demographics.genderDistribution.female],
-                    backgroundColor: ['#00217D', '#D41125'],
+                    backgroundColor: ['#1B4332', '#2D6A4F'],
                     borderWidth: 2,
                     borderColor: '#fff'
                 }]
@@ -655,7 +655,7 @@ async function addAgeChart(pdf, x, y, width, demographics, size = 'normal') {
                 datasets: [{
                     label: t('numberOfMembers') || 'Number of Members',
                     data: demographics.ageGroups.map(g => g.count),
-                    backgroundColor: '#00217D',
+                    backgroundColor: '#1B4332',
                     borderColor: '#001551',
                     borderWidth: 1
                 }]
@@ -813,7 +813,7 @@ function showPDFExportLoading() {
         }
         .pdf-export-loading h3 {
             margin: 20px 0 10px;
-            color: #00217D;
+            color: #1B4332;
         }
         .pdf-export-loading p {
             color: #666;

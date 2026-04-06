@@ -462,7 +462,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
   },
   stats: {
     flexDirection: 'row',
@@ -485,7 +485,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
   },
   accuracy: {
     flexDirection: 'row',
@@ -510,13 +510,13 @@ const styles = StyleSheet.create({
   stepCounterTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
     marginBottom: 10,
   },
   stepCount: {
     fontSize: 36,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
     marginBottom: 10,
   },
   stepButtons: {
@@ -525,7 +525,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   stepButton: {
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
@@ -547,7 +547,7 @@ const styles = StyleSheet.create({
   },
   instructionText: {
     fontSize: 16,
-    color: '#00217D',
+    color: '#1B4332',
     textAlign: 'center',
   },
   buttons: {
@@ -565,7 +565,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#2196F3',
   },
   markButton: {
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
   },
   completeButton: {
     backgroundColor: '#4CAF50',
@@ -594,7 +594,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
     marginBottom: 10,
   },
   modalText: {
@@ -628,7 +628,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   saveButton: {
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
   },
   saveButtonText: {
     color: 'white',

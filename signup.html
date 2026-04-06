@@ -19,8 +19,8 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         :root {
-            --primary-blue: #00217D;
-            --primary-red: #D41125;
+            --primary-blue: #1B4332;
+            --primary-red: #2D6A4F;
             --white: #FFFFFF;
             --gray-50: #F9FAFB;
             --gray-200: #E5E7EB;
@@ -336,7 +336,7 @@
     <div class="language-selector" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
         <button class="lang-btn" data-lang="en" style="padding: 8px 12px; margin: 0 2px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px;">EN</button>
         <button class="lang-btn" data-lang="fr" style="padding: 8px 12px; margin: 0 2px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px;">FR</button>
-        <button class="lang-btn active" data-lang="ht" style="padding: 8px 12px; margin: 0 2px; border: 1px solid #ddd; background: #00217D; color: white; cursor: pointer; border-radius: 4px;">HT</button>
+        <button class="lang-btn active" data-lang="ht" style="padding: 8px 12px; margin: 0 2px; border: 1px solid #ddd; background: #1B4332; color: white; cursor: pointer; border-radius: 4px;">HT</button>
     </div>
 
     <div class="container">
@@ -595,7 +595,7 @@
             document.querySelectorAll('.lang-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.getAttribute('data-lang') === currentLang);
                 if (btn.getAttribute('data-lang') === currentLang) {
-                    btn.style.background = '#00217D';
+                    btn.style.background = '#1B4332';
                     btn.style.color = 'white';
                 } else {
                     btn.style.background = 'white';

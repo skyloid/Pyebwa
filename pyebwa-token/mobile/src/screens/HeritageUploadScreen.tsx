@@ -161,7 +161,7 @@ export const HeritageUploadScreen: React.FC = () => {
                 style={styles.removeImageButton}
                 onPress={() => setSelectedImage(null)}
               >
-                <Ionicons name="close-circle" size={30} color="#D41125" />
+                <Ionicons name="close-circle" size={30} color="#2D6A4F" />
               </TouchableOpacity>
             </View>
           ) : (
@@ -170,14 +170,14 @@ export const HeritageUploadScreen: React.FC = () => {
                 style={styles.imagePickerButton}
                 onPress={() => pickImage('camera')}
               >
-                <Ionicons name="camera" size={40} color="#00217D" />
+                <Ionicons name="camera" size={40} color="#1B4332" />
                 <Text style={styles.imagePickerText}>{t('heritage.takePhoto')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.imagePickerButton}
                 onPress={() => pickImage('library')}
               >
-                <Ionicons name="images" size={40} color="#00217D" />
+                <Ionicons name="images" size={40} color="#1B4332" />
                 <Text style={styles.imagePickerText}>{t('heritage.chooseFromLibrary')}</Text>
               </TouchableOpacity>
             </View>
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
     marginBottom: 20,
   },
   imageContainer: {
@@ -321,14 +321,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     borderWidth: 2,
-    borderColor: '#00217D',
+    borderColor: '#1B4332',
     borderRadius: 10,
     borderStyle: 'dashed',
     width: '45%',
   },
   imagePickerText: {
     marginTop: 10,
-    color: '#00217D',
+    color: '#1B4332',
     textAlign: 'center',
   },
   label: {
@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
     minWidth: 80,
   },
   selectedCategory: {
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
   },
   categoryIcon: {
     fontSize: 24,
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
   },
   uploadButton: {
     flexDirection: 'row',
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',

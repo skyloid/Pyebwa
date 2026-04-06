@@ -452,7 +452,7 @@ export class SystemModule {
                 datasets: [{
                     label: 'CPU Usage %',
                     data: metrics.cpu,
-                    borderColor: '#D41125',
+                    borderColor: '#2D6A4F',
                     backgroundColor: 'rgba(212, 17, 37, 0.1)',
                     tension: 0.4
                 }]
@@ -479,7 +479,7 @@ export class SystemModule {
                 datasets: [{
                     label: 'Memory Usage MB',
                     data: metrics.memory,
-                    borderColor: '#00217D',
+                    borderColor: '#1B4332',
                     backgroundColor: 'rgba(0, 33, 125, 0.1)',
                     tension: 0.4
                 }]

@@ -305,7 +305,7 @@ export const FieldMapperScreen: React.FC = () => {
                 {
                   left: x - 5,
                   top: y - 5,
-                  backgroundColor: index === 0 ? '#4CAF50' : '#00217D',
+                  backgroundColor: index === 0 ? '#4CAF50' : '#1B4332',
                 },
               ]}
             />
@@ -584,7 +584,7 @@ const styles = StyleSheet.create({
   pathSegment: {
     position: 'absolute',
     height: 3,
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
     transformOrigin: 'left center',
   },
   mapPoint: {
@@ -600,7 +600,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#D41125',
+    backgroundColor: '#2D6A4F',
     borderWidth: 3,
     borderColor: 'white',
   },
@@ -631,7 +631,7 @@ const styles = StyleSheet.create({
   statusValue: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
   },
   accuracyBar: {
     flexDirection: 'row',
@@ -674,7 +674,7 @@ const styles = StyleSheet.create({
   },
   stopButton: {
     flexDirection: 'row',
-    backgroundColor: '#D41125',
+    backgroundColor: '#2D6A4F',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
@@ -702,7 +702,7 @@ const styles = StyleSheet.create({
   formTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -754,7 +754,7 @@ const styles = StyleSheet.create({
   },
   selectedSpecies: {
     backgroundColor: '#e3f2fd',
-    borderColor: '#00217D',
+    borderColor: '#1B4332',
   },
   speciesIcon: {
     fontSize: 24,
@@ -765,7 +765,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   selectedSpeciesText: {
-    color: '#00217D',
+    color: '#1B4332',
     fontWeight: 'bold',
   },
   buttonRow: {
@@ -788,6 +788,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   completeButton: {
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
   },
 });

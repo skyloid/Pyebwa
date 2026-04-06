@@ -478,7 +478,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
   },
   stats: {
     backgroundColor: '#f0f5ff',
@@ -502,7 +502,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#00217D',
+    color: '#1B4332',
   },
   accuracy: {
     flexDirection: 'row',
@@ -545,7 +545,7 @@ const styles = StyleSheet.create({
   },
   instructionText: {
     fontSize: 16,
-    color: '#00217D',
+    color: '#1B4332',
     textAlign: 'center',
   },
   pointsList: {
@@ -601,7 +601,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#666',
   },
   completeButton: {
-    backgroundColor: '#00217D',
+    backgroundColor: '#1B4332',
   },
   buttonText: {
     color: 'white',

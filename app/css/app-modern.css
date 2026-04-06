@@ -642,7 +642,7 @@ body.dark-mode .card {
 }
 
 .rel-remove-btn:hover {
-    color: #D21034;
+    color: #2D6A4F;
     background: rgba(210, 16, 52, 0.08);
 }
 
@@ -1055,12 +1055,12 @@ body.dark-mode .focus-member-name {
 
 .member-relationship-badge.category-cousin {
     background: rgba(0, 32, 159, 0.1);
-    color: #00209F;
+    color: #1B4332;
 }
 
 .member-relationship-badge.category-inlaw {
     background: rgba(210, 16, 52, 0.1);
-    color: #D21034;
+    color: #2D6A4F;
 }
 
 .member-relationship-badge.category-other {
