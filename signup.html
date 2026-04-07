@@ -584,12 +584,67 @@
                 justify-content: center;
             }
         }
+        
+        .back-to-top {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index: 1000;
+            width: 48px;
+            height: 48px;
+            margin: 0;
+            padding: 0;
+            border: 1px solid rgba(229, 231, 235, 0.95);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.88);
+            color: var(--gray-700);
+            box-shadow: 0 10px 24px rgba(17, 24, 39, 0.08);
+            backdrop-filter: blur(10px);
+            transition: opacity 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(10px);
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        .back-to-top:hover {
+            box-shadow: 0 12px 26px rgba(17, 24, 39, 0.12);
+            transform: translateY(-2px);
+        }
+
+        body.dark-mode .back-to-top {
+            background: rgba(16, 28, 23, 0.88);
+            border-color: rgba(37, 58, 48, 0.95);
+            color: var(--gray-900);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32);
+        }
+
+        .back-to-top .material-icons {
+            font-size: 22px;
+        }
+
+        @media (max-width: 640px) {
+            .back-to-top {
+                right: 12px;
+                bottom: 12px;
+                width: 44px;
+                height: 44px;
+            }
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode" title="Toggle theme">
         <span class="material-icons" id="themeIcon">dark_mode</span>
+    </button>
+    <button class="back-to-top" id="backToTop" type="button" aria-label="Back to top" title="Back to top">
+        <span class="material-icons">arrow_upward</span>
     </button>
 
     <!-- Language Selector -->
@@ -705,6 +760,7 @@
                 successTitle: "Check your email",
                 successCopy: "We sent a secure sign-in link to the email address below.",
                 successNote: "Open the message on this device and tap the link to finish signing in.",
+                backToTop: "Back to top",
                 signupFailed: "Failed to create account. Please try again.",
                 fillAllFields: "Please fill in your name and email.",
                 emailInUse: "Email address is already in use.",
@@ -733,6 +789,7 @@
                 successTitle: "Vérifiez votre email",
                 successCopy: "Nous avons envoyé un lien de connexion sécurisé à l'adresse ci-dessous.",
                 successNote: "Ouvrez le message sur cet appareil et appuyez sur le lien pour terminer la connexion.",
+                backToTop: "Retour en haut",
                 signupFailed: "Échec de la création du compte. Veuillez réessayer.",
                 fillAllFields: "Veuillez saisir votre nom et votre email.",
                 emailInUse: "L'adresse email est déjà utilisée.",
@@ -761,6 +818,7 @@
                 successTitle: "Tcheke imel ou",
                 successCopy: "Nou voye yon lyen koneksyon sekirize nan adrès imel ki anba a.",
                 successNote: "Louvri mesaj la sou aparèy sa a epi peze lyen an pou fini konekte.",
+                backToTop: "Retounen anlè",
                 signupFailed: "Pa kapab kreye kont. Tanpri eseye ankò.",
                 fillAllFields: "Tanpri antre non ou ak imel ou.",
                 emailInUse: "Adres email la deja nan sèvis.",
@@ -889,6 +947,12 @@
                 btn.style.color = isActive ? '#FFFFFF' : '#374151';
             });
 
+            const backToTopBtn = document.getElementById('backToTop');
+            if (backToTopBtn) {
+                backToTopBtn.setAttribute('aria-label', t('backToTop'));
+                backToTopBtn.setAttribute('title', t('backToTop'));
+            }
+
             if (signupSuccessState.classList.contains('active')) {
                 successTitle.textContent = t('successTitle');
                 successCopy.textContent = t('successCopy');
@@ -931,6 +995,15 @@
             event.preventDefault();
             toggleTheme();
         });
+        const backToTopBtn = document.getElementById('backToTop');
+        function syncBackToTopVisibility() {
+            backToTopBtn.classList.toggle('visible', window.scrollY > 160);
+        }
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        window.addEventListener('scroll', syncBackToTopVisibility, { passive: true });
+        syncBackToTopVisibility();
         
         // Prevent redirect loops - mark that we're on signup page
         sessionStorage.setItem('onSignupPage', 'true');
