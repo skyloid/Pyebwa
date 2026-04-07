@@ -149,7 +149,7 @@
         flex-direction: row;
         align-items: center;
         gap: 5px;
-        flex: 0 1 auto; /* Don't let brand take up too much space */
+        flex: 0 0 auto;
     }
     
     .nav-actions {
@@ -201,7 +201,8 @@
     }
     
     .logo-header {
-        height: 30px;
+        width: 180px;
+        height: auto;
     }
     
     .social-buttons {

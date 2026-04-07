@@ -86,6 +86,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Theme toggle handled by inline script in HTML — no duplicate listener needed
 });
 
+window.__PYEBWA_UPDATE_VERSION_LABELS__ = function(versionLabel) {
+    var buildVersionNodes = document.querySelectorAll('[data-build-version]');
+    if (!buildVersionNodes.length || !versionLabel) {
+        return;
+    }
+
+    buildVersionNodes.forEach(function(node) {
+        node.textContent = versionLabel;
+    });
+};
+
 // Smooth scroll for anchor links
 document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
     anchor.addEventListener('click', function(e) {

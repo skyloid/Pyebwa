@@ -79,7 +79,15 @@
             }
 
             const payload = await response.json();
+            const nextVersion = payload.version || null;
             const nextBuildId = payload.buildId;
+
+            if (nextVersion) {
+                window.__PYEBWA_VERSION__ = nextVersion;
+                if (typeof window.__PYEBWA_UPDATE_VERSION_LABELS__ === 'function') {
+                    window.__PYEBWA_UPDATE_VERSION_LABELS__(nextVersion);
+                }
+            }
 
             if (!lastSeenBuildId) {
                 lastSeenBuildId = nextBuildId;

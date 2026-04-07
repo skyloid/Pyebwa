@@ -94,13 +94,13 @@ a,
     }
     
     .nav-brand {
-        flex: 1;
-        max-width: 200px;
+        flex: 0 0 auto;
+        max-width: none;
     }
     
     .logo-header {
-        height: 35px;
-        width: auto;
+        width: 190px;
+        height: auto;
     }
     
     .tagline {
