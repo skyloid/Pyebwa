@@ -149,6 +149,32 @@
         });
         document.addEventListener('DOMContentLoaded', updateTranslations);
 
+        function hasRecentLogoutIntent() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('logged_out') === '1') {
+                return true;
+            }
+
+            const logoutAt = sessionStorage.getItem('pyebwaLoggedOutAt') || localStorage.getItem('pyebwaLoggedOutAt');
+            if (!logoutAt) {
+                return false;
+            }
+
+            return (Date.now() - parseInt(logoutAt, 10)) < 15000;
+        }
+
+        function clearLogoutIntent() {
+            sessionStorage.removeItem('pyebwaLoggedOutAt');
+            localStorage.removeItem('pyebwaLoggedOutAt');
+            const url = new URL(window.location.href);
+            if (url.searchParams.has('logged_out')) {
+                url.searchParams.delete('logged_out');
+                window.history.replaceState({}, document.title, url.pathname + (url.searchParams.toString() ? '?' + url.searchParams.toString() : ''));
+            }
+        }
+
+        const logoutIntentActive = hasRecentLogoutIntent();
+
         const messageDiv = document.getElementById('message');
         const magicLinkForm = document.getElementById('magicLinkForm');
         const magicLinkBtn = document.getElementById('magicLinkBtn');
@@ -164,6 +190,13 @@
 
         // Check if already logged in
         _sb.auth.getSession().then(({ data: { session } }) => {
+            if (logoutIntentActive) {
+                if (session) {
+                    _sb.auth.signOut({ scope: 'global' }).catch(() => {});
+                }
+                clearLogoutIntent();
+                return;
+            }
             if (session) {
                 showMessage(messageDiv, t('alreadyLoggedIn') + ' ' + session.user.email + '. ' + t('redirecting'), 'success');
                 setTimeout(() => { window.location.href = '/app/?lang=' + encodeURIComponent(currentLang); }, 1500);
@@ -171,7 +204,15 @@
         });
 
         _sb.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_OUT') {
+                clearLogoutIntent();
+                return;
+            }
+            if (logoutIntentActive) {
+                return;
+            }
             if (!session) return;
+            clearLogoutIntent();
             showMessage(messageDiv, t('loginSuccess') + ' ' + session.user.email + '. ' + t('redirecting'), 'success');
             setTimeout(() => { window.location.href = '/app/?lang=' + encodeURIComponent(currentLang); }, 1200);
         });
@@ -195,6 +236,7 @@
                     }
                 });
                 if (error) throw new Error(error.message);
+                clearLogoutIntent();
                 showMessage(messageDiv, t('magicLinkSent'), 'success');
             } catch (error) {
                 showMessage(messageDiv, error.message || t('magicLinkFailed'), 'error');

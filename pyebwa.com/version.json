@@ -1,5 +1,5 @@
 {
-  "version": "1.0.7",
-  "buildId": "20260407T004600Z-onboarding-api-fix",
-  "deployedAt": "2026-04-07T00:46:00Z"
+  "version": "1.0.8",
+  "buildId": "20260407T011000Z-logout-loop-fix",
+  "deployedAt": "2026-04-07T01:10:00Z"
 }

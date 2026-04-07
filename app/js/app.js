@@ -683,9 +683,13 @@ window.canViewField = function(member, fieldName) {
 async function logout() {
     try {
         showLoadingState('Signing out...');
+        const logoutMarker = Date.now().toString();
+        sessionStorage.setItem('pyebwaLoggedOutAt', logoutMarker);
+        localStorage.setItem('pyebwaLoggedOutAt', logoutMarker);
         await PyebwaAPI.logout();
         sessionStorage.clear();
-        window.location.href = '/login.html';
+        sessionStorage.setItem('pyebwaLoggedOutAt', logoutMarker);
+        window.location.href = 'https://pyebwa.com/?logged_out=1';
     } catch (error) {
         console.error('Logout error:', error);
         hideLoadingState();

@@ -68,7 +68,7 @@
         async logout() {
             const client = window.supabaseClient;
             if (client) {
-                await client.auth.signOut();
+                await client.auth.signOut({ scope: 'global' });
             }
             window._currentUser = null;
             this._notifyAuthState(null);
