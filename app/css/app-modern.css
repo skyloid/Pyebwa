@@ -624,6 +624,23 @@ body.dark-mode .card {
     min-width: 140px;
 }
 
+.rel-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    background: var(--white);
+    color: var(--gray-800);
+    font-size: 13px;
+}
+
+.rel-toggle input[type="checkbox"] {
+    margin: 0;
+}
+
 .rel-row-fields select:focus,
 .rel-row-fields input:focus {
     border-color: var(--primary-moss, #2D6A4F);
@@ -658,6 +675,12 @@ body.dark-mode .relationship-row {
 
 body.dark-mode .rel-row-fields select,
 body.dark-mode .rel-row-fields input {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+body.dark-mode .rel-toggle {
     background: var(--bg-secondary);
     border-color: var(--border-color);
     color: var(--text-primary);

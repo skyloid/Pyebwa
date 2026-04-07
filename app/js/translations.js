@@ -96,6 +96,7 @@ const translations = {
         separated: "Separated",
         divorced: "Divorced",
         widowed: "Widowed",
+        markAsInLaw: "Mark as in-law",
         
         // Members view
         familyMembers: "Family Members",
@@ -620,6 +621,7 @@ const translations = {
         separated: "S\u00e9par\u00e9(e)",
         divorced: "Divorc\u00e9(e)",
         widowed: "Veuf / Veuve",
+        markAsInLaw: "Marquer comme par alliance",
 
         // Members view
         familyMembers: "Membres de la Famille",
@@ -926,6 +928,7 @@ const translations = {
         separated: "Separe",
         divorced: "Div\u00f2se",
         widowed: "V\u00e8f / V\u00e8v",
+        markAsInLaw: "Make kòm pa alyans",
         grandparent: "Grann",
         grandchild: "Ti pitit",
 

@@ -17,6 +17,63 @@
         ]));
     }
 
+    function getRelationshipsForMember(member) {
+        var rels = Array.isArray(member.relationships) ? member.relationships.slice() : [];
+        if (member.relationship && member.relatedTo) {
+            var hasFlat = rels.some(function(r) {
+                return r.type === member.relationship && r.personId === member.relatedTo;
+            });
+            if (!hasFlat) {
+                rels.push({ type: member.relationship, personId: member.relatedTo });
+            }
+        }
+        return rels;
+    }
+
+    function isInLawRelationship(rel) {
+        return !!(rel && rel.isInLaw);
+    }
+
+    function findExplicitInLawRelationship(focusId, targetId, members) {
+        var focus = members.find(function(member) { return member.id === focusId; });
+        var target = members.find(function(member) { return member.id === targetId; });
+        if (!focus && !target) return null;
+
+        var focusRels = focus ? getRelationshipsForMember(focus) : [];
+        var targetRels = target ? getRelationshipsForMember(target) : [];
+
+        if (focusRels.some(function(rel) { return rel.type === 'child' && rel.personId === targetId && isInLawRelationship(rel); })) {
+            return { type: 'parentInLaw', category: 'inlaw', gX: 1, gY: 0 };
+        }
+        if (focusRels.some(function(rel) { return rel.type === 'parent' && rel.personId === targetId && isInLawRelationship(rel); })) {
+            return { type: 'childInLaw', category: 'inlaw', gX: 0, gY: 1 };
+        }
+        if (targetRels.some(function(rel) { return rel.type === 'parent' && rel.personId === focusId && isInLawRelationship(rel); })) {
+            return { type: 'parentInLaw', category: 'inlaw', gX: 1, gY: 0 };
+        }
+        if (targetRels.some(function(rel) { return rel.type === 'child' && rel.personId === focusId && isInLawRelationship(rel); })) {
+            return { type: 'childInLaw', category: 'inlaw', gX: 0, gY: 1 };
+        }
+
+        return null;
+    }
+
+    function findDirectRelationship(focusId, targetId, type, members) {
+        var focus = members.find(function(member) { return member.id === focusId; });
+        var target = members.find(function(member) { return member.id === targetId; });
+        var focusRels = focus ? getRelationshipsForMember(focus) : [];
+        var targetRels = target ? getRelationshipsForMember(target) : [];
+
+        var focusMatch = focusRels.find(function(rel) {
+            return rel.type === type && rel.personId === targetId;
+        });
+        if (focusMatch) return focusMatch;
+
+        return targetRels.find(function(rel) {
+            return rel.type === type && rel.personId === focusId;
+        }) || null;
+    }
+
     // Build bidirectional graph from familyMembers array
     function buildGraph(members) {
         var g = new Map();
@@ -31,13 +88,7 @@
         });
 
         members.forEach(function(m) {
-            var rels = m.relationships || [];
-            // Also include the flat relationship/relatedTo
-            if (m.relationship && m.relatedTo) {
-                rels = rels.slice();
-                var hasFlat = rels.some(function(r) { return r.type === m.relationship && r.personId === m.relatedTo; });
-                if (!hasFlat) rels.push({ type: m.relationship, personId: m.relatedTo });
-            }
+            var rels = getRelationshipsForMember(m);
 
             rels.forEach(function(rel) {
                 var target = g.get(rel.personId);
@@ -45,10 +96,12 @@
                 if (!target || !self) return;
 
                 if (rel.type === 'child') {
+                    if (isInLawRelationship(rel)) return;
                     // m is child of target
                     self.parents.add(rel.personId);
                     target.children.add(m.id);
                 } else if (rel.type === 'parent') {
+                    if (isInLawRelationship(rel)) return;
                     self.children.add(rel.personId);
                     target.parents.add(m.id);
                 } else if (rel.type === 'spouse') {
@@ -124,15 +177,35 @@
         var targetNode = graph.get(targetId);
         if (!focusNode || !targetNode) return null;
 
+        var explicitInLaw = findExplicitInLawRelationship(focusId, targetId, members);
+        if (explicitInLaw) {
+            _computing.delete(pairKey);
+            return explicitInLaw;
+        }
+
         // Check direct spouse
         if (focusNode.spouses.has(targetId)) {
+            var spouseRel = findDirectRelationship(focusId, targetId, 'spouse', members);
             _computing.delete(pairKey);
-            return { type: 'spouse', category: 'direct', gX: 0, gY: 0 };
+            return {
+                type: 'spouse',
+                category: 'direct',
+                gX: 0,
+                gY: 0,
+                maritalStatus: spouseRel && spouseRel.maritalStatus ? spouseRel.maritalStatus : 'married'
+            };
         }
 
         if (focusNode.formerSpouses && focusNode.formerSpouses.has(targetId)) {
+            var formerSpouseRel = findDirectRelationship(focusId, targetId, 'spouse', members);
             _computing.delete(pairKey);
-            return { type: 'formerSpouse', category: 'other', gX: 0, gY: 0 };
+            return {
+                type: 'formerSpouse',
+                category: 'other',
+                gX: 0,
+                gY: 0,
+                maritalStatus: formerSpouseRel && formerSpouseRel.maritalStatus ? formerSpouseRel.maritalStatus : 'divorced'
+            };
         }
 
         // Get ancestors of both
@@ -272,11 +345,16 @@
         lang = lang || window.currentLanguage || 'en';
         var isMale = gender === 'male';
         var isFemale = gender === 'female';
+        var maritalStatus = rel.maritalStatus || 'married';
 
         var labels = {
             en: {
                 self: 'You',
                 spouse: isMale ? 'Husband' : isFemale ? 'Wife' : 'Spouse',
+                spouseEngaged: isMale ? 'Fiance' : isFemale ? 'Fiancee' : 'Fiance',
+                spouseCommonLaw: 'Partner',
+                spouseSeparated: isMale ? 'Separated Husband' : isFemale ? 'Separated Wife' : 'Separated Spouse',
+                spouseWidowed: isMale ? 'Late Husband' : isFemale ? 'Late Wife' : 'Late Spouse',
                 formerSpouse: isMale ? 'Former Husband' : isFemale ? 'Former Wife' : 'Former Spouse',
                 parent: isMale ? 'Father' : isFemale ? 'Mother' : 'Parent',
                 child: isMale ? 'Son' : isFemale ? 'Daughter' : 'Child',
@@ -299,6 +377,10 @@
             fr: {
                 self: 'Vous',
                 spouse: isMale ? 'Mari' : isFemale ? 'Femme' : 'Conjoint(e)',
+                spouseEngaged: isMale ? 'Fiance' : isFemale ? 'Fiancee' : 'Partenaire fiance',
+                spouseCommonLaw: 'Partenaire',
+                spouseSeparated: isMale ? 'Mari separe' : isFemale ? 'Femme separee' : 'Conjoint(e) separe(e)',
+                spouseWidowed: isMale ? 'Defunt mari' : isFemale ? 'Defunte femme' : 'Conjoint(e) decede(e)',
                 formerSpouse: isMale ? 'Ex-mari' : isFemale ? 'Ex-femme' : 'Ex-conjoint(e)',
                 parent: isMale ? 'P\u00e8re' : isFemale ? 'M\u00e8re' : 'Parent',
                 child: isMale ? 'Fils' : isFemale ? 'Fille' : 'Enfant',
@@ -321,6 +403,10 @@
             ht: {
                 self: 'Ou menm',
                 spouse: isMale ? 'Mari' : isFemale ? 'Madanm' : 'Konj\u0175en',
+                spouseEngaged: 'Fyanse',
+                spouseCommonLaw: 'Patne',
+                spouseSeparated: isMale ? 'Mari separe' : isFemale ? 'Madanm separe' : 'Konjwen separe',
+                spouseWidowed: isMale ? 'Defen mari' : isFemale ? 'Defen madanm' : 'Defen konjwen',
                 formerSpouse: isMale ? 'Ansyen mari' : isFemale ? 'Ansyen madanm' : 'Ansyen konj\u0175en',
                 parent: isMale ? 'Papa' : isFemale ? 'Manman' : 'Paran',
                 child: isMale ? 'Pitit gason' : isFemale ? 'Pitit fi' : 'Pitit',
@@ -344,6 +430,14 @@
 
         var dict = labels[lang] || labels.en;
         var type = rel.type;
+
+        if (type === 'spouse') {
+            if (maritalStatus === 'engaged') return dict.spouseEngaged || dict.spouse;
+            if (maritalStatus === 'commonLaw') return dict.spouseCommonLaw || dict.spouse;
+            if (maritalStatus === 'separated') return dict.spouseSeparated || dict.formerSpouse;
+            if (maritalStatus === 'widowed') return dict.spouseWidowed || dict.formerSpouse;
+            return dict.spouse || type;
+        }
 
         // Cousin labels
         if (type === 'cousin') {

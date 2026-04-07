@@ -24,7 +24,19 @@ function getRelationshipList(member) {
     return relationships;
 }
 
+function isInLawRelationship(rel) {
+    return !!(rel && rel.isInLaw);
+}
+
 function hasRelationship(member, targetId, type) {
+    return getRelationshipList(member).some(rel =>
+        rel.type === type &&
+        rel.personId === targetId &&
+        ((type !== 'parent' && type !== 'child') || !isInLawRelationship(rel))
+    );
+}
+
+function hasRelationshipForDisplay(member, targetId, type) {
     return getRelationshipList(member).some(rel => rel.type === type && rel.personId === targetId);
 }
 
@@ -39,13 +51,21 @@ function hasActiveSpouseRelationship(member, targetId) {
 function listsChildOf(member, parentId) {
     if (!member) return false;
     if (member.relationship === 'child' && member.relatedTo === parentId) return true;
-    return getRelationshipList(member).some(rel => rel.type === 'child' && rel.personId === parentId);
+    return getRelationshipList(member).some(rel =>
+        rel.type === 'child' &&
+        rel.personId === parentId &&
+        !isInLawRelationship(rel)
+    );
 }
 
 function listsParentOf(member, childId) {
     if (!member) return false;
     if (member.relationship === 'parent' && member.relatedTo === childId) return true;
-    return getRelationshipList(member).some(rel => rel.type === 'parent' && rel.personId === childId);
+    return getRelationshipList(member).some(rel =>
+        rel.type === 'parent' &&
+        rel.personId === childId &&
+        !isInLawRelationship(rel)
+    );
 }
 
 function personIsChildOf(member, parentId) {
@@ -54,7 +74,10 @@ function personIsChildOf(member, parentId) {
 
 function personHasChildren(memberId) {
     return familyMembers.some(m => personIsChildOf(m, memberId)) ||
-        familyMembers.some(m => m.id === memberId && getRelationshipList(m).some(rel => rel.type === 'parent'));
+        familyMembers.some(m =>
+            m.id === memberId &&
+            getRelationshipList(m).some(rel => rel.type === 'parent' && !isInLawRelationship(rel))
+        );
 }
 
 function compareMembersForPlacement(a, b) {
@@ -99,10 +122,10 @@ function getDirectFamilyMembers(member) {
     sourceMembers.forEach(otherMember => {
         if (!otherMember || otherMember.id === member.id) return;
 
-        if (hasRelationship(member, otherMember.id, 'child') || hasRelationship(otherMember, member.id, 'parent')) {
+        if (hasRelationshipForDisplay(member, otherMember.id, 'child') || hasRelationshipForDisplay(otherMember, member.id, 'parent')) {
             family.parents.push(otherMember);
         }
-        if (hasRelationship(member, otherMember.id, 'parent') || hasRelationship(otherMember, member.id, 'child')) {
+        if (hasRelationshipForDisplay(member, otherMember.id, 'parent') || hasRelationshipForDisplay(otherMember, member.id, 'child')) {
             family.children.push(otherMember);
         }
         if (hasActiveSpouseRelationship(member, otherMember.id) || hasActiveSpouseRelationship(otherMember, member.id)) {

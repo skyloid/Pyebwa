@@ -510,6 +510,10 @@ function addRelationshipRow(data) {
                 '<option value="widowed">' + (t('widowed') || 'Widowed') + '</option>' +
             '</select>' +
             '<input type="date" class="rel-date" style="display:none;" placeholder="Date">' +
+            '<label class="rel-toggle rel-inlaw-toggle" style="display:none;">' +
+                '<input type="checkbox" class="rel-inlaw"' + (data && data.isInLaw ? ' checked' : '') + '>' +
+                '<span>' + (t('markAsInLaw') || 'Mark as in-law') + '</span>' +
+            '</label>' +
         '</div>' +
         '<button type="button" class="rel-remove-btn" title="Remove">' +
             '<span class="material-icons" style="font-size:18px;">close</span>' +
@@ -521,7 +525,12 @@ function addRelationshipRow(data) {
     var personSelect = row.querySelector('.rel-person');
     var maritalSelect = row.querySelector('.rel-marital');
     var dateInput = row.querySelector('.rel-date');
+    var inLawToggle = row.querySelector('.rel-inlaw-toggle');
     var removeBtn = row.querySelector('.rel-remove-btn');
+
+    function isParentRelationshipType(type) {
+        return type === 'parent' || type === 'child';
+    }
 
     typeSelect.addEventListener('change', function() {
         var val = this.value;
@@ -529,6 +538,7 @@ function addRelationshipRow(data) {
         personSelect.style.display = showPerson ? '' : 'none';
         maritalSelect.style.display = val === 'spouse' ? '' : 'none';
         dateInput.style.display = val === 'spouse' ? '' : 'none';
+        inLawToggle.style.display = isParentRelationshipType(val) ? 'inline-flex' : 'none';
         if (showPerson) populatePersonSelect(personSelect);
     });
 
@@ -549,6 +559,9 @@ function addRelationshipRow(data) {
             if (data.maritalStatus) maritalSelect.value = data.maritalStatus;
             if (data.marriageDate) dateInput.value = data.marriageDate;
         }
+        if (isParentRelationshipType(data.type)) {
+            inLawToggle.style.display = 'inline-flex';
+        }
     }
 }
 
@@ -567,6 +580,9 @@ function getRelationshipsFromForm() {
             rel.maritalStatus = row.querySelector('.rel-marital').value || 'married';
             var dateVal = row.querySelector('.rel-date').value;
             if (dateVal) rel.marriageDate = dateVal;
+        }
+        if (type === 'parent' || type === 'child') {
+            rel.isInLaw = !!row.querySelector('.rel-inlaw').checked;
         }
         relationships.push(rel);
     });
