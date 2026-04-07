@@ -415,6 +415,14 @@ body.dark-mode .chart-bar {
     background: var(--bg-tertiary, #1A2B23);
 }
 
+body.dark-mode .chart-bar.male {
+    background: linear-gradient(to top, #6B4F3A, #8A6A4A);
+}
+
+body.dark-mode .chart-bar.female {
+    background: linear-gradient(to top, #1B4332, #2D6A4F);
+}
+
 body.dark-mode .activity-item {
     border-bottom-color: var(--border-color, #253A30);
 }
