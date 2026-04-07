@@ -11,6 +11,7 @@ let familyMembers = [];
 let editingMemberId = null;
 let appBootStarted = false;
 let authInitializationPromise = null;
+let logoutPromise = null;
 
 window.familyMembers = familyMembers;
 window.currentUser = currentUser;
@@ -85,6 +86,33 @@ function getPreferredLanguage() {
     return candidates.find(lang => supportedLangs.includes(lang)) || 'en';
 }
 
+function hasRecentLogoutIntent() {
+    const marker = sessionStorage.getItem('pyebwaLoggedOutAt') || localStorage.getItem('pyebwaLoggedOutAt');
+    if (!marker) return false;
+    return (Date.now() - parseInt(marker, 10)) < 20000;
+}
+
+function clearLogoutIntent() {
+    sessionStorage.removeItem('pyebwaLoggedOutAt');
+    localStorage.removeItem('pyebwaLoggedOutAt');
+}
+
+async function waitForSessionToClear(timeoutMs = 4000) {
+    const client = window.supabaseClient;
+    if (!client) return;
+
+    const startedAt = Date.now();
+    while ((Date.now() - startedAt) < timeoutMs) {
+        try {
+            const { data: { session } } = await client.auth.getSession();
+            if (!session) return;
+        } catch (error) {
+            return;
+        }
+        await new Promise(resolve => setTimeout(resolve, 150));
+    }
+}
+
 function updateFooterVersionLabel() {
     const versionLabel = window.__PYEBWA_VERSION__ || window.__PYEBWA_BUILD_ID__ || 'dev';
     document.querySelectorAll('[data-build-version]').forEach(node => {
@@ -144,6 +172,13 @@ async function initializeAuth() {
 
     // Check Supabase auth session
     try {
+        if (hasRecentLogoutIntent()) {
+            hideLoadingState();
+            document.body.dataset.appReady = 'false';
+            window.location.replace('https://pyebwa.com/?logged_out=1');
+            return;
+        }
+
         if (typeof PyebwaAPI === 'undefined') {
             // Wait for api-client.js to load (may be delayed by CDN)
             await new Promise((resolve, reject) => {
@@ -705,20 +740,32 @@ window.canViewField = function(member, fieldName) {
 // ==================== LOGOUT ====================
 
 async function logout() {
+    if (logoutPromise) {
+        return logoutPromise;
+    }
+
+    logoutPromise = (async () => {
     try {
         showLoadingState('Signing out...');
         const logoutMarker = Date.now().toString();
         sessionStorage.setItem('pyebwaLoggedOutAt', logoutMarker);
         localStorage.setItem('pyebwaLoggedOutAt', logoutMarker);
         await PyebwaAPI.logout();
+        await waitForSessionToClear();
         sessionStorage.clear();
         sessionStorage.setItem('pyebwaLoggedOutAt', logoutMarker);
-        window.location.href = 'https://pyebwa.com/?logged_out=1';
+        window.location.replace('https://pyebwa.com/?logged_out=1');
     } catch (error) {
         console.error('Logout error:', error);
         hideLoadingState();
         showError('Error signing out. Please try again.');
+        throw error;
+    } finally {
+        logoutPromise = null;
     }
+    })();
+
+    return logoutPromise;
 }
 
 // ==================== EXPORTS ====================

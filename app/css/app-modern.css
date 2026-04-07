@@ -211,8 +211,8 @@ body.dark-mode .app-header {
 }
 
 .app-logo-img {
-    height: 44px;
-    width: auto;
+    width: clamp(85px, 7.5vw, 110px);
+    height: auto;
     object-fit: contain;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
     transition: transform var(--transition-base);
@@ -220,6 +220,10 @@ body.dark-mode .app-header {
 
 .app-logo-img:hover {
     transform: scale(1.05);
+}
+
+.app-logo-img-mobile {
+    width: 75px;
 }
 
 /* Modern Navigation */

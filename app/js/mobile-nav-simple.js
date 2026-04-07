@@ -96,11 +96,11 @@
         
         // Logout handler
         if (mobileLogoutBtn) {
-            mobileLogoutBtn.addEventListener('click', function(e) {
+            mobileLogoutBtn.addEventListener('click', async function(e) {
                 e.preventDefault();
                 console.log('[MobileNavSimple] Logging out');
-                if (window.auth && window.auth.signOut) {
-                    window.auth.signOut();
+                if (typeof window.logout === 'function') {
+                    await window.logout();
                 }
             });
         }

@@ -85,7 +85,8 @@
     }
     
     .app-logo-img {
-        height: 36px;
+        width: 70px;
+        height: auto;
     }
     
     /* Mobile navigation header */
