@@ -30,7 +30,7 @@ const pageTranslations = {
         feature2Desc: "Preserve memories and family stories for future generations",
         feature3Title: "Connect Family",
         feature3Desc: "Find and connect with family members everywhere",
-        tagline: "Your Family Roots",
+        tagline: "Know Your Roots",
         
         // About Page
         aboutTitle: "About Pyebwa",
@@ -207,7 +207,7 @@ const pageTranslations = {
         feature2Desc: "Préservez les souvenirs et les histoires familiales pour les générations futures",
         feature3Title: "Connectez la Famille",
         feature3Desc: "Trouvez et connectez-vous avec des membres de la famille partout",
-        tagline: "Vos Racines Familiales",
+        tagline: "Connaissez Vos Racines",
         
         // Page À propos
         aboutTitle: "À propos de Pyebwa",
@@ -384,7 +384,7 @@ const pageTranslations = {
         feature2Desc: "Prezève memwa ak istwa fanmi pou jenerasyon k ap vini yo",
         feature3Title: "Konekte Fanmi",
         feature3Desc: "Jwenn ak konekte ak fanmi ou toupatou",
-        tagline: "Rasin Fanmiy-ou",
+        tagline: "Konnen Rasin-ou",
         
         // Paj Konsènan
         aboutTitle: "Konsènan Pyebwa",

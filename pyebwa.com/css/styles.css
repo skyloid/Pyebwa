@@ -369,7 +369,7 @@ body.dark-mode .nav-menu .nav-link:hover {
 }
 
 .logo-header {
-    width: clamp(220px, 24vw, 320px);
+    width: clamp(178px, 19.44vw, 259px);
     height: auto;
     display: inline-block;
     vertical-align: middle;
