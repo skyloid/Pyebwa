@@ -146,9 +146,11 @@
         }
         
         body.dark-mode .tree-node {
-            background: var(--gray-100);
-            border-color: var(--gray-300);
-            color: var(--gray-900);
+            background: linear-gradient(180deg,
+                color-mix(in srgb, var(--gray-100, #1F2723) 94%, var(--primary-green, #1B4332) 6%) 0%,
+                color-mix(in srgb, var(--gray-100, #1F2723) 97%, black 3%) 100%);
+            border-color: color-mix(in srgb, var(--primary-moss, #2D6A4F) 28%, transparent 72%);
+            color: var(--accent-cream, #FDFCFA);
         }
         
         body.dark-mode .app-footer {

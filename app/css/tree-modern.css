@@ -2,7 +2,9 @@
 
 /* Tree Container */
 .tree-container {
-    background: var(--white);
+    background: linear-gradient(180deg,
+        color-mix(in srgb, var(--accent-cream, #FDFCFA) 88%, white 12%) 0%,
+        color-mix(in srgb, var(--white, #FFFFFF) 94%, var(--accent-cream, #FDFCFA) 6%) 100%);
     border-radius: var(--border-radius-xl);
     padding: 16px;
     box-shadow: var(--shadow-lg);
@@ -15,7 +17,9 @@
 }
 
 body.dark-mode .tree-container {
-    background: var(--gray-100);
+    background: linear-gradient(180deg,
+        color-mix(in srgb, var(--gray-100, #1F2723) 92%, var(--primary-green, #1B4332) 8%) 0%,
+        color-mix(in srgb, var(--gray-100, #1F2723) 96%, black 4%) 100%);
 }
 
 /* Tree Wrapper */

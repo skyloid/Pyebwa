@@ -2,7 +2,7 @@
 
 /* Tree Container with no horizontal scroll on desktop */
 .tree-container {
-    background: white;
+    background: transparent;
     border-radius: var(--border-radius-xl);
     padding: 16px 8px;
     box-shadow: var(--shadow-lg);

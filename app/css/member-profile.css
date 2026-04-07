@@ -933,7 +933,9 @@
 .empty-state {
     text-align: center;
     padding: 80px 40px;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: linear-gradient(135deg,
+        color-mix(in srgb, var(--accent-cream, #FDFCFA) 90%, white 10%) 0%,
+        color-mix(in srgb, var(--white, #FFFFFF) 82%, var(--accent-beige, #E9D8C5) 18%) 100%);
     border-radius: 16px;
     position: relative;
     overflow: hidden;

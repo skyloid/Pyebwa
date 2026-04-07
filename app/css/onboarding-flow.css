@@ -466,7 +466,6 @@ body.dark-mode .empty-preview {
 
 .tree-node {
     background: var(--accent-cream, #FDFCFA);
-    border: 2px solid var(--gray-200);
     border-radius: 12px;
     padding: 16px;
     text-align: center;
@@ -475,9 +474,10 @@ body.dark-mode .empty-preview {
 }
 
 body.dark-mode .tree-node {
-    background: #0f172a;
-    border-color: #334155;
-    color: #e2e8f0;
+    background: linear-gradient(180deg,
+        color-mix(in srgb, var(--gray-100, #1F2723) 94%, var(--primary-green, #1B4332) 6%) 0%,
+        color-mix(in srgb, var(--gray-100, #1F2723) 97%, black 3%) 100%);
+    color: var(--accent-cream, #FDFCFA);
 }
 
 .tree-node.me {
