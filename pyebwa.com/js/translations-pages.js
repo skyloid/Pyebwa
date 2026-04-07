@@ -4,7 +4,7 @@ const pageTranslations = {
         // Common navigation
         home: "Home",
         about: "About",
-        ourMission: "Our Mission",
+        ourMission: "Mission",
         contact: "Contact",
         login: "Login",
         signup: "Sign Up",
@@ -181,7 +181,7 @@ const pageTranslations = {
         // Navigation commune
         home: "Accueil",
         about: "À propos",
-        ourMission: "Notre Mission",
+        ourMission: "Mission",
         contact: "Contact",
         login: "Connexion",
         signup: "S'inscrire",
@@ -358,7 +358,7 @@ const pageTranslations = {
         // Navigasyon komen
         home: "Akèy",
         about: "Konsènan",
-        ourMission: "Misyon Nou",
+        ourMission: "Misyon",
         contact: "Kontak",
         login: "Konekte",
         signup: "Enskri",
@@ -375,7 +375,7 @@ const pageTranslations = {
         
         // Kontni paj akèy
         heroTitle: "Kenbe Istwa Fanmiy-ou vivan!",
-        heroSubtitle: "Kreye pyebwa fanmiy-ou, pataje istwa, epi konekte jenerasyon yo",
+        heroSubtitle: "Kreye pyebwa fanmiy-ou, pataje istwa, epi konekte jenerasyon\u00A0yo",
         getStarted: "Kòmanse Kounye a",
         featuresTitle: "Poukisa Pyebwa?",
         feature1Title: "Bati Pyebwa w",
