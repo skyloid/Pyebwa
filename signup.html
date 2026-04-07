@@ -21,12 +21,16 @@
         :root {
             --primary-blue: #1B4332;
             --primary-red: #2D6A4F;
-            --white: #FFFFFF;
-            --gray-50: #F9FAFB;
-            --gray-200: #E5E7EB;
-            --gray-700: #374151;
-            --gray-900: #111827;
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --accent-brown: #6B4F3A;
+            --accent-sand: #DAD7CD;
+            --accent-cream: #FDFCFA;
+            --white: #FDFCFA;
+            --gray-50: #F5F3EF;
+            --gray-100: #EBE9E3;
+            --gray-200: #DAD7CD;
+            --gray-700: #3A3832;
+            --gray-900: #1B1B18;
+            --shadow-xl: 0 24px 40px -12px rgba(18, 46, 34, 0.22);
         }
         
         * {
@@ -37,7 +41,10 @@
         
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background:
+                radial-gradient(circle at top left, rgba(218, 215, 205, 0.9), transparent 38%),
+                radial-gradient(circle at bottom right, rgba(107, 79, 58, 0.18), transparent 32%),
+                linear-gradient(135deg, #f5f3ef 0%, #ebe9e3 42%, #dad7cd 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -46,13 +53,17 @@
         }
 
         body.dark-mode {
-            --white: #0F172A;
-            --gray-50: #111827;
-            --gray-200: #334155;
-            --gray-700: #CBD5E1;
-            --gray-900: #F8FAFC;
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.45);
-            background: linear-gradient(135deg, #020617 0%, #0f172a 48%, #1e293b 100%);
+            --white: #101C17;
+            --gray-50: #142018;
+            --gray-100: #1A2B23;
+            --gray-200: #253A30;
+            --gray-700: #96AEA0;
+            --gray-900: #DAD7CD;
+            --shadow-xl: 0 24px 40px -12px rgba(0, 0, 0, 0.5);
+            background:
+                radial-gradient(circle at top left, rgba(45, 106, 79, 0.24), transparent 34%),
+                radial-gradient(circle at bottom right, rgba(107, 79, 58, 0.2), transparent 28%),
+                linear-gradient(135deg, #08110d 0%, #101c17 48%, #1a2b23 100%);
         }
 
         .language-selector {
@@ -72,9 +83,9 @@
         }
 
         body.dark-mode .language-selector {
-            background: rgba(15, 23, 42, 0.88);
-            border-color: rgba(71, 85, 105, 0.95);
-            box-shadow: 0 10px 24px rgba(2, 6, 23, 0.38);
+            background: rgba(16, 28, 23, 0.88);
+            border-color: rgba(37, 58, 48, 0.95);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32);
         }
 
         .lang-btn {
@@ -92,7 +103,7 @@
         }
 
         body.dark-mode .lang-btn {
-            color: #CBD5E1;
+            color: var(--gray-900);
         }
 
         .lang-btn:hover {
@@ -102,7 +113,7 @@
         }
 
         body.dark-mode .lang-btn:hover {
-            background: rgba(45, 106, 79, 0.28);
+            background: rgba(45, 106, 79, 0.22);
         }
 
         .lang-btn.active {
@@ -134,10 +145,10 @@
         }
 
         body.dark-mode .theme-toggle {
-            background: rgba(15, 23, 42, 0.88);
-            border-color: rgba(71, 85, 105, 0.95);
-            color: #F8FAFC;
-            box-shadow: 0 10px 24px rgba(2, 6, 23, 0.38);
+            background: rgba(16, 28, 23, 0.88);
+            border-color: rgba(37, 58, 48, 0.95);
+            color: var(--gray-900);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32);
         }
         
         .container {
@@ -149,6 +160,8 @@
             max-width: 420px;
             position: relative;
             overflow: hidden;
+            border: 1px solid rgba(218, 215, 205, 0.8);
+            backdrop-filter: blur(12px);
         }
         
         .container::before {
@@ -162,8 +175,8 @@
         }
 
         body.dark-mode .container {
-            background: rgba(15, 23, 42, 0.92);
-            border: 1px solid rgba(51, 65, 85, 0.8);
+            background: rgba(16, 28, 23, 0.92);
+            border: 1px solid rgba(37, 58, 48, 0.84);
         }
         
         .logo {
@@ -224,21 +237,21 @@
             outline: none;
             border-color: var(--primary-blue);
             background: var(--white);
-            box-shadow: 0 0 0 3px rgba(0, 33, 125, 0.1);
+            box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.14);
         }
 
         body.dark-mode input {
-            color: #F8FAFC;
-            background: rgba(15, 23, 42, 0.72);
-            border-color: #334155;
+            color: var(--gray-900);
+            background: rgba(20, 32, 24, 0.86);
+            border-color: rgba(37, 58, 48, 0.92);
         }
 
         body.dark-mode input::placeholder {
-            color: #94A3B8;
+            color: var(--gray-700);
         }
 
         body.dark-mode input:focus {
-            background: rgba(15, 23, 42, 0.94);
+            background: rgba(20, 32, 24, 0.98);
             box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.18);
         }
         
@@ -259,14 +272,14 @@
         }
         
         .btn-primary {
-            background: var(--primary-blue);
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-red) 100%);
             color: var(--white);
         }
-        
+
         .btn-primary:hover:not(:disabled) {
-            background: #001654;
+            background: linear-gradient(135deg, #153227 0%, #245740 100%);
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 33, 125, 0.3);
+            box-shadow: 0 10px 24px rgba(27, 67, 50, 0.24);
         }
         
         .btn-primary:disabled {
@@ -289,21 +302,21 @@
         }
         
         .error {
-            background: #FEE2E2;
-            color: #991B1B;
-            border: 1px solid #FECACA;
+            background: #F6E7DE;
+            color: #7A3E23;
+            border: 1px solid #E6C5B3;
         }
         
         .success {
-            background: #D1FAE5;
-            color: #065F46;
-            border: 1px solid #A7F3D0;
+            background: #DDEADF;
+            color: #1B4332;
+            border: 1px solid #B8D0BC;
         }
         
         .info {
-            background: #DBEAFE;
-            color: #1E40AF;
-            border: 1px solid #BFDBFE;
+            background: #ECE7E0;
+            color: #3A3832;
+            border: 1px solid #D2CBC3;
         }
         
         .loading {
@@ -324,13 +337,18 @@
         .links {
             text-align: center;
             margin-top: 20px;
+            color: var(--gray-700);
         }
-        
+
         .links a {
             color: var(--primary-blue);
             text-decoration: none;
             font-size: 14px;
             font-weight: 500;
+        }
+
+        body.dark-mode .links {
+            color: var(--gray-900);
         }
         
         .links a:hover {
@@ -345,8 +363,8 @@
         }
 
         body.dark-mode .benefits {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(51, 65, 85, 0.7);
+            background: rgba(20, 32, 24, 0.72);
+            border: 1px solid rgba(37, 58, 48, 0.72);
         }
         
         .benefit {
@@ -389,8 +407,8 @@
         }
 
         body.dark-mode .magic-link-section {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(51, 65, 85, 0.7);
+            background: rgba(20, 32, 24, 0.72);
+            border: 1px solid rgba(37, 58, 48, 0.72);
         }
         
         .magic-link-icon {
@@ -431,8 +449,8 @@
         }
 
         body.dark-mode .signup-success-state {
-            background: linear-gradient(180deg, rgba(27, 67, 50, 0.22) 0%, rgba(15, 23, 42, 0.72) 100%);
-            border-color: rgba(74, 222, 128, 0.18);
+            background: linear-gradient(180deg, rgba(45, 106, 79, 0.26) 0%, rgba(16, 28, 23, 0.88) 100%);
+            border-color: rgba(45, 106, 79, 0.24);
         }
 
         .signup-success-icon {
@@ -485,9 +503,9 @@
         }
 
         body.dark-mode .signup-success-email {
-            background: rgba(15, 23, 42, 0.88);
-            border-color: rgba(74, 222, 128, 0.16);
-            color: #F8FAFC;
+            background: rgba(20, 32, 24, 0.9);
+            border-color: rgba(45, 106, 79, 0.18);
+            color: var(--gray-900);
         }
 
         .signup-success-note {
@@ -511,8 +529,8 @@
         }
 
         body.dark-mode .signup-success-note {
-            background: rgba(15, 23, 42, 0.9);
-            color: #CBD5E1;
+            background: rgba(20, 32, 24, 0.92);
+            color: var(--gray-700);
         }
         
         @keyframes slideIn {
@@ -752,7 +770,12 @@
         };
 
         const supportedLangs = ['en', 'fr', 'ht'];
-        const themeStorageKey = 'pyebwaTheme';
+        const themeStorageKeys = ['theme', 'pyebwaTheme'];
+        const signupSuccessState = document.getElementById('signupSuccessState');
+        const successTitle = document.getElementById('successTitle');
+        const successCopy = document.getElementById('successCopy');
+        const successEmail = document.getElementById('successEmail');
+        const successNote = document.getElementById('successNote');
 
         function applyTheme(theme) {
             const isDark = theme === 'dark';
@@ -770,9 +793,11 @@
 
         function getStoredTheme() {
             try {
-                const storedTheme = localStorage.getItem(themeStorageKey);
-                if (storedTheme === 'dark' || storedTheme === 'light') {
-                    return storedTheme;
+                for (const storageKey of themeStorageKeys) {
+                    const storedTheme = localStorage.getItem(storageKey);
+                    if (storedTheme === 'dark' || storedTheme === 'light') {
+                        return storedTheme;
+                    }
                 }
             } catch (error) {
                 console.warn('[Signup] Unable to read stored theme:', error);
@@ -781,6 +806,20 @@
             return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
                 ? 'dark'
                 : 'light';
+        }
+
+        function persistTheme(theme) {
+            try {
+                themeStorageKeys.forEach((storageKey) => localStorage.setItem(storageKey, theme));
+            } catch (error) {
+                console.warn('[Signup] Unable to persist theme:', error);
+            }
+        }
+
+        function toggleTheme() {
+            const nextTheme = document.body.classList.contains('dark-mode') ? 'light' : 'dark';
+            persistTheme(nextTheme);
+            applyTheme(nextTheme);
         }
 
         function setLanguageCookie(lang) {
@@ -885,16 +924,12 @@
         document.addEventListener('DOMContentLoaded', updateTranslations);
         updateTranslations();
         applyTheme(getStoredTheme());
+        window.toggleTheme = toggleTheme;
 
         const themeToggle = document.getElementById('themeToggle');
-        themeToggle.addEventListener('click', () => {
-            const nextTheme = document.body.classList.contains('dark-mode') ? 'light' : 'dark';
-            try {
-                localStorage.setItem(themeStorageKey, nextTheme);
-            } catch (error) {
-                console.warn('[Signup] Unable to persist theme:', error);
-            }
-            applyTheme(nextTheme);
+        themeToggle.addEventListener('click', (event) => {
+            event.preventDefault();
+            toggleTheme();
         });
         
         // Prevent redirect loops - mark that we're on signup page
@@ -933,11 +968,6 @@
         const messageDiv = document.getElementById('message');
         const signupForm = document.getElementById('signupForm');
         const signupBtn = document.getElementById('signupBtn');
-        const signupSuccessState = document.getElementById('signupSuccessState');
-        const successTitle = document.getElementById('successTitle');
-        const successCopy = document.getElementById('successCopy');
-        const successEmail = document.getElementById('successEmail');
-        const successNote = document.getElementById('successNote');
         
         // Show message helper
         function showMessage(text, type = 'info') {
