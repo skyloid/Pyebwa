@@ -374,8 +374,8 @@ const pageTranslations = {
         instagram: "Instagram",
         
         // Kontni paj akèy
-        heroTitle: "Kenbe Istwa Fanmi w Vivan",
-        heroSubtitle: "Kreye pyebwa fanmi w, pataje istwa, epi konekte jenerasyon yo",
+        heroTitle: "Kenbe Istwa Fanmiy-ou vivan!",
+        heroSubtitle: "Kreye pyebwa fanmiy-ou, pataje istwa, epi konekte jenerasyon yo",
         getStarted: "Kòmanse Kounye a",
         featuresTitle: "Poukisa Pyebwa?",
         feature1Title: "Bati Pyebwa w",
@@ -384,7 +384,7 @@ const pageTranslations = {
         feature2Desc: "Prezève memwa ak istwa fanmi pou jenerasyon k ap vini yo",
         feature3Title: "Konekte Fanmi",
         feature3Desc: "Jwenn ak konekte ak fanmi ou toupatou",
-        tagline: "Rasin Fanmi w",
+        tagline: "Rasin Fanmiy-ou",
         
         // Paj Konsènan
         aboutTitle: "Konsènan Pyebwa",
