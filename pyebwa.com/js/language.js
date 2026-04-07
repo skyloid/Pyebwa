@@ -89,12 +89,26 @@
     }
     
     // Get current language with proper persistence
-    // Priority: cookie > localStorage > browser detection > default (ht)
+    // Priority: URL param > cookie > localStorage > browser detection > default (ht)
     let currentLang = null;
+    const urlLang = new URLSearchParams(window.location.search).get('lang');
+
+    // Check URL first so cross-site redirects can force the expected language.
+    if (urlLang && translations[urlLang]) {
+        currentLang = urlLang;
+        console.log('Language from URL:', currentLang);
+        try {
+            localStorage.setItem('pyebwaLang', currentLang);
+            localStorage.setItem('language', currentLang);
+        } catch (error) {
+            console.warn('Unable to persist URL language to localStorage:', error);
+        }
+        setCookie('pyebwa_lang', currentLang, 365);
+    }
     
     // Check cookie first (for cross-session persistence)
     const cookieLang = getCookie('pyebwa_lang');
-    if (cookieLang && translations[cookieLang]) {
+    if (!currentLang && cookieLang && translations[cookieLang]) {
         currentLang = cookieLang;
         console.log('Language from cookie:', currentLang);
     }

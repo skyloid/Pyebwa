@@ -86,6 +86,24 @@ function getPreferredLanguage() {
     return candidates.find(lang => supportedLangs.includes(lang)) || 'en';
 }
 
+function persistSharedLanguagePreference(lang) {
+    const supportedLangs = ['en', 'fr', 'ht'];
+    if (!supportedLangs.includes(lang)) {
+        return;
+    }
+
+    try {
+        localStorage.setItem('pyebwaLang', lang);
+        localStorage.setItem('language', lang);
+    } catch (error) {
+        console.warn('Unable to persist language to localStorage:', error);
+    }
+
+    const expires = new Date(Date.now() + (365 * 24 * 60 * 60 * 1000)).toUTCString();
+    document.cookie = `pyebwa_lang=${lang};expires=${expires};path=/;SameSite=Lax`;
+    document.cookie = `pyebwa_lang=${lang};expires=${expires};path=/;domain=.pyebwa.com;SameSite=Lax`;
+}
+
 function hasRecentLogoutIntent() {
     const marker = sessionStorage.getItem('pyebwaLoggedOutAt') || localStorage.getItem('pyebwaLoggedOutAt');
     if (!marker) return false;
@@ -748,13 +766,15 @@ async function logout() {
     try {
         showLoadingState('Signing out...');
         const logoutMarker = Date.now().toString();
+        const logoutLang = window.currentLanguage || getPreferredLanguage();
+        persistSharedLanguagePreference(logoutLang);
         sessionStorage.setItem('pyebwaLoggedOutAt', logoutMarker);
         localStorage.setItem('pyebwaLoggedOutAt', logoutMarker);
         await PyebwaAPI.logout();
         await waitForSessionToClear();
         sessionStorage.clear();
         sessionStorage.setItem('pyebwaLoggedOutAt', logoutMarker);
-        window.location.replace('https://pyebwa.com/?logged_out=1');
+        window.location.replace(`https://pyebwa.com/?logged_out=1&lang=${encodeURIComponent(logoutLang)}`);
     } catch (error) {
         console.error('Logout error:', error);
         hideLoadingState();
