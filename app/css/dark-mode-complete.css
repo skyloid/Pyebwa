@@ -270,8 +270,18 @@ body.dark-mode .footer-link {
     color: var(--text-secondary);
 }
 
+body.dark-mode .app-footer a,
+body.dark-mode .footer-container a {
+    color: #E4DED4;
+}
+
 body.dark-mode .footer-link:hover {
     color: var(--text-primary);
+}
+
+body.dark-mode .app-footer a:hover,
+body.dark-mode .footer-container a:hover {
+    color: #DAD7CD;
 }
 
 /* Loading States */

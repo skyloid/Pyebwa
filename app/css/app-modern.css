@@ -1732,6 +1732,36 @@ body.dark-mode .theme-toggle {
     text-decoration: underline;
 }
 
+body.dark-mode .footer-container a,
+body.dark-mode .footer-container a:link,
+body.dark-mode .footer-container a:visited {
+    color: #E4DED4;
+    opacity: 1;
+}
+
+body.dark-mode .footer-container a:hover,
+body.dark-mode .footer-container a:focus-visible {
+    color: #DAD7CD;
+}
+
+body.dark-mode .footer-container p {
+    opacity: 1;
+    color: var(--text-primary, #DAD7CD);
+}
+
+body.dark-mode .footer-company-link,
+body.dark-mode .footer-company-link:link,
+body.dark-mode .footer-company-link:visited,
+body.dark-mode .footer-company-link:active {
+    color: #E4DED4 !important;
+    opacity: 1 !important;
+}
+
+body.dark-mode .footer-company-link:hover,
+body.dark-mode .footer-company-link:focus-visible {
+    color: #DAD7CD !important;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     :root {
