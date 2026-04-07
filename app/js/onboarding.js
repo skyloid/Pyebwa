@@ -146,6 +146,11 @@ const onboardingStyles = `
     overflow: hidden;
 }
 
+body.dark-mode .onboarding-modal .modal-content {
+    background: #0f172a;
+    color: #e2e8f0;
+}
+
 .onboarding-content {
     position: relative;
 }
@@ -202,6 +207,10 @@ const onboardingStyles = `
     line-height: 1.6;
 }
 
+body.dark-mode .onboarding-slide p {
+    color: #94a3b8;
+}
+
 .onboarding-features {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -227,10 +236,18 @@ const onboardingStyles = `
     color: var(--gray-900);
 }
 
+body.dark-mode .feature-item h4 {
+    color: #f8fafc;
+}
+
 .feature-item p {
     font-size: 14px;
     color: var(--gray-600);
     line-height: 1.5;
+}
+
+body.dark-mode .feature-item p {
+    color: #94a3b8;
 }
 
 .onboarding-navigation {
@@ -239,6 +256,11 @@ const onboardingStyles = `
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+body.dark-mode .onboarding-navigation {
+    background: #111827;
+    border-top: 1px solid #334155;
 }
 
 .onboarding-dots {
@@ -253,6 +275,10 @@ const onboardingStyles = `
     background: var(--gray-300);
     cursor: pointer;
     transition: all 0.3s;
+}
+
+body.dark-mode .onboarding-dots .dot {
+    background: #475569;
 }
 
 .onboarding-dots .dot.active {

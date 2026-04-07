@@ -151,12 +151,14 @@
                                     <p class="choice-label">${t('howWouldYouLikeToStart') || 'How would you like to start?'}</p>
                                     <div class="choice-buttons">
                                         <button type="button" class="choice-btn ${this.onboardingData.startChoice === 'me' ? 'active' : ''}" 
-                                                data-choice="me" onclick="pyebwaOnboarding.setStartChoice('me')">
+                                                data-choice="me" aria-pressed="${this.onboardingData.startChoice === 'me' ? 'true' : 'false'}"
+                                                onclick="pyebwaOnboarding.setStartChoice('me')">
                                             <i class="material-icons">person</i>
                                             <span>${t('startWithMe') || 'Start with me'}</span>
                                         </button>
                                         <button type="button" class="choice-btn ${this.onboardingData.startChoice === 'ancestors' ? 'active' : ''}" 
-                                                data-choice="ancestors" onclick="pyebwaOnboarding.setStartChoice('ancestors')">
+                                                data-choice="ancestors" aria-pressed="${this.onboardingData.startChoice === 'ancestors' ? 'true' : 'false'}"
+                                                onclick="pyebwaOnboarding.setStartChoice('ancestors')">
                                             <i class="material-icons">family_restroom</i>
                                             <span>${t('startWithMyAncestors') || 'Start with my ancestors'}</span>
                                         </button>
@@ -229,6 +231,12 @@
                                         <h4>${t('howToShareTree') || 'How to share your tree'}</h4>
                                         <p>${t('useShareButton') || 'Use the share button to invite family members to view or edit'}</p>
                                     </div>
+
+                                    <div class="tip-card" data-feature="tree-modes">
+                                        <i class="material-icons">swap_horiz</i>
+                                        <h4>${t('viewAndEditModes') || 'View and Edit modes'}</h4>
+                                        <p>${t('switchBetweenViewAndEditModes') || 'Use View mode to explore the tree safely, and switch to Edit mode when you want to move nodes or change family details.'}</p>
+                                    </div>
                                     
                                     <div class="tip-card" data-feature="switch-languages">
                                         <i class="material-icons">language</i>
@@ -256,6 +264,12 @@
             `;
             
             document.body.appendChild(modal);
+
+            modal.querySelectorAll('.choice-btn').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    this.setStartChoice(btn.dataset.choice);
+                });
+            });
             
             // Add initial member form if step 2
             if (this.onboardingData.familyMembers.length === 0) {
@@ -412,8 +426,24 @@
         setStartChoice(choice) {
             this.onboardingData.startChoice = choice;
             document.querySelectorAll('.choice-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.choice === choice);
+                const isActive = btn.dataset.choice === choice;
+                btn.classList.toggle('active', isActive);
+                btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
             });
+
+            const membersForm = document.getElementById('membersForm');
+            if (membersForm && membersForm.children.length > 0) {
+                const existingMembers = this.onboardingData.familyMembers.map(member => ({ ...member }));
+                membersForm.innerHTML = '';
+                this.onboardingData.familyMembers = [];
+                existingMembers.forEach((member) => {
+                    this.addMemberForm();
+                    const newIndex = this.onboardingData.familyMembers.length - 1;
+                    this.onboardingData.familyMembers[newIndex] = { ...this.onboardingData.familyMembers[newIndex], ...member };
+                });
+            }
+
+            this.updateMiniTreePreview();
             this.autoSave();
         },
         
@@ -723,21 +753,10 @@
             // Set new timer
             this.autoSaveTimer = setTimeout(async () => {
                 try {
-                    // Save to Firestore
-                    if (window.currentUser && window.db) {
-                        await window.db.collection('users').doc(window.currentUser.uid).update({
-                            onboardingProgress: {
-                                currentStep: this.currentStep,
-                                data: this.onboardingData,
-                                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-                            }
-                        });
-                    }
-                    
-                    // Save to localStorage as backup
                     localStorage.setItem('pyebwaOnboardingProgress', JSON.stringify({
                         currentStep: this.currentStep,
-                        data: this.onboardingData
+                        data: this.onboardingData,
+                        lastUpdated: new Date().toISOString()
                     }));
                 } catch (error) {
                     console.error('Error auto-saving onboarding progress:', error);
@@ -748,18 +767,6 @@
         // Load saved progress
         async loadProgress() {
             try {
-                // Try to load from Firestore first
-                if (window.currentUser && window.db) {
-                    const userDoc = await window.db.collection('users').doc(window.currentUser.uid).get();
-                    if (userDoc.exists && userDoc.data().onboardingProgress) {
-                        const progress = userDoc.data().onboardingProgress;
-                        this.currentStep = progress.currentStep || 1;
-                        this.onboardingData = { ...this.onboardingData, ...progress.data };
-                        return;
-                    }
-                }
-                
-                // Fallback to localStorage
                 const saved = localStorage.getItem('pyebwaOnboardingProgress');
                 if (saved) {
                     const progress = JSON.parse(saved);
@@ -781,71 +788,91 @@
                     window.showLoadingState(t('settingUpYourFamilyTree') || 'Setting up your family tree...');
                 }
                 
-                // Update user profile
-                await window.db.collection('users').doc(window.currentUser.uid).update({
-                    fullName: this.onboardingData.fullName,
-                    displayName: this.onboardingData.fullName,
-                    country: this.onboardingData.country,
-                    language: this.onboardingData.language,
-                    onboardingComplete: true,
-                    onboardingData: this.onboardingData,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                // Update Firebase Auth display name
+                if (!window.PyebwaAPI || !window.userFamilyTreeId) {
+                    throw new Error('Missing application API context');
+                }
+
+                const supabaseClient = window.supabaseClient;
+                if (supabaseClient && this.onboardingData.fullName) {
+                    const { error: userUpdateError } = await supabaseClient.auth.updateUser({
+                        data: { display_name: this.onboardingData.fullName }
+                    });
+                    if (userUpdateError) {
+                        console.warn('Unable to update auth display name:', userUpdateError);
+                    }
+                }
+
                 if (window.currentUser) {
-                    await window.currentUser.updateProfile({
-                        displayName: this.onboardingData.fullName
-                    });
+                    window.currentUser.displayName = this.onboardingData.fullName;
                 }
-                
-                // Create family tree with initial members
-                if (this.onboardingData.familyMembers.length > 0) {
-                    // Add the user as the first member if starting with self
-                    if (this.onboardingData.startChoice === 'me') {
-                        const userMember = {
-                            firstName: this.onboardingData.fullName.split(' ')[0],
-                            lastName: this.onboardingData.fullName.split(' ').slice(1).join(' '),
-                            email: this.onboardingData.email,
-                            userId: window.currentUser.uid,
-                            isMainPerson: true,
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                        };
-                        
-                        if (window.addFamilyMember) {
-                            await window.addFamilyMember(userMember);
-                        }
+
+                const existingPersons = await window.PyebwaAPI.getPersons(window.userFamilyTreeId);
+                const hasExistingMembers = Array.isArray(existingPersons.persons) && existingPersons.persons.length > 0;
+
+                if (!hasExistingMembers) {
+                    const createdRefs = {};
+
+                    if (this.onboardingData.startChoice === 'me' && this.onboardingData.fullName) {
+                        const selfNameParts = this.onboardingData.fullName.trim().split(/\s+/);
+                        const selfPerson = await window.PyebwaAPI.addPerson(window.userFamilyTreeId, {
+                            firstName: selfNameParts[0] || '',
+                            lastName: selfNameParts.slice(1).join(' '),
+                            email: this.onboardingData.email || null,
+                            birthDate: null,
+                            biography: '',
+                            nickname: '',
+                            useNickname: false
+                        });
+                        createdRefs.me = selfPerson.id;
                     }
-                    
-                    // Add other family members
-                    for (const member of this.onboardingData.familyMembers) {
-                        if (member.fullName) {
-                            const nameParts = member.fullName.split(' ');
-                            const memberData = {
-                                firstName: nameParts[0],
-                                lastName: nameParts.slice(1).join(' '),
-                                birthDate: member.birthYear ? `${member.birthYear}-01-01` : '',
-                                photoUrl: member.photoUrl || '',
-                                relationship: member.relationship || '',
-                                relatedTo: member.relatedTo || '',
-                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+
+                    for (let index = 0; index < this.onboardingData.familyMembers.length; index++) {
+                        const member = this.onboardingData.familyMembers[index];
+                        if (!member || !member.fullName || !member.fullName.trim()) {
+                            continue;
+                        }
+
+                        const nameParts = member.fullName.trim().split(/\s+/);
+                        const relationships = [];
+                        const relatedRef = member.relatedTo;
+                        const relatedPersonId =
+                            relatedRef === 'me'
+                                ? createdRefs.me
+                                : (relatedRef !== '' && relatedRef !== undefined && relatedRef !== null
+                                    ? createdRefs[String(relatedRef)]
+                                    : null);
+
+                        if (member.relationship && relatedPersonId) {
+                            const relation = {
+                                type: member.relationship,
+                                personId: relatedPersonId
                             };
-                            
-                            if (window.addFamilyMember) {
-                                await window.addFamilyMember(memberData);
+                            if (member.relationship === 'spouse') {
+                                relation.maritalStatus = 'married';
                             }
+                            relationships.push(relation);
                         }
+
+                        const createdPerson = await window.PyebwaAPI.addPerson(window.userFamilyTreeId, {
+                            firstName: nameParts[0] || '',
+                            lastName: nameParts.slice(1).join(' '),
+                            birthDate: member.birthYear ? `${member.birthYear}-01-01` : null,
+                            biography: '',
+                            nickname: '',
+                            useNickname: false,
+                            relationships
+                        });
+
+                        createdRefs[String(index)] = createdPerson.id;
                     }
                 }
-                
-                // Update family tree name
-                if (window.userFamilyTreeId) {
-                    await window.db.collection('familyTrees').doc(window.userFamilyTreeId).update({
-                        name: this.onboardingData.familyName,
-                        region: this.onboardingData.familyRegion,
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                }
+
+                await window.PyebwaAPI.updateTree(window.userFamilyTreeId, {
+                    name: this.onboardingData.familyName || `${this.onboardingData.fullName || 'Family'} Family Tree`,
+                    description: this.onboardingData.familyRegion
+                        ? `Family region: ${this.onboardingData.familyRegion}`
+                        : 'Created during onboarding'
+                });
                 
                 // Clear saved progress
                 localStorage.removeItem('pyebwaOnboardingProgress');
@@ -920,13 +947,6 @@
             // Implement dashboard tour (placeholder for now)
             if (window.showSuccess) {
                 window.showSuccess(t('dashboardTourComingSoon') || 'Dashboard tour coming soon!');
-            }
-            
-            // Mark tour as completed
-            if (window.currentUser && window.db) {
-                window.db.collection('users').doc(window.currentUser.uid).update({
-                    'onboardingData.dashboardTourCompleted': true
-                });
             }
         },
         

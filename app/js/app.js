@@ -157,8 +157,15 @@ async function initializeAuth() {
             try {
                 await initializeUserFamilyTree();
                 hideLoadingState();
+                const onboardingParams = new URLSearchParams(window.location.search);
+                const forceOnboarding = ['1', 'true', 'yes'].includes((onboardingParams.get('onboarding') || '').toLowerCase());
                 const needsOnboarding = typeof window.shouldShowEnhancedOnboarding === 'function' && await window.shouldShowEnhancedOnboarding();
-                if (needsOnboarding) {
+
+                if (forceOnboarding && typeof window.showEnhancedOnboarding === 'function') {
+                    window.showEnhancedOnboarding();
+                } else if (forceOnboarding && typeof window.showOnboarding === 'function') {
+                    window.showOnboarding();
+                } else if (needsOnboarding) {
                     window.showEnhancedOnboarding();
                 } else if (window.shouldShowOnboarding && window.shouldShowOnboarding()) {
                     window.showOnboarding();

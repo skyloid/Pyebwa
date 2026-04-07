@@ -28,11 +28,38 @@
     animation: slideUp 0.4s ease-out;
 }
 
+body.dark-mode .onboarding-flow-container {
+    background: #0f172a;
+    color: #e2e8f0;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+}
+
+body.dark-mode .onboarding-flow-modal .onboarding-flow-container,
+body.dark-mode #onboardingFlowModal .onboarding-flow-container {
+    background: var(--bg-secondary, #101c17) !important;
+    color: var(--text-primary, #dad7cd) !important;
+    border: 1px solid var(--border-color, #253a30) !important;
+}
+
 /* Progress Bar */
 .onboarding-progress {
     padding: 24px 32px;
     background: var(--gray-50);
     border-bottom: 1px solid var(--gray-200);
+}
+
+body.dark-mode .onboarding-progress {
+    background: #111827;
+    border-bottom-color: #334155;
+}
+
+body.dark-mode .onboarding-flow-modal .onboarding-progress,
+body.dark-mode .onboarding-flow-modal .onboarding-content,
+body.dark-mode .onboarding-flow-modal .onboarding-navigation,
+body.dark-mode #onboardingFlowModal .onboarding-progress,
+body.dark-mode #onboardingFlowModal .onboarding-content,
+body.dark-mode #onboardingFlowModal .onboarding-navigation {
+    background: var(--bg-secondary, #101c17) !important;
 }
 
 .progress-bar {
@@ -41,6 +68,10 @@
     border-radius: 4px;
     overflow: hidden;
     margin-bottom: 12px;
+}
+
+body.dark-mode .progress-bar {
+    background: #334155;
 }
 
 .progress-fill {
@@ -60,6 +91,10 @@
     font-size: 14px;
     font-weight: 600;
     color: var(--gray-700);
+}
+
+body.dark-mode .step-counter {
+    color: #cbd5e1;
 }
 
 /* Content Area */
@@ -87,11 +122,19 @@
     text-align: center;
 }
 
+body.dark-mode .step-title {
+    color: #f8fafc;
+}
+
 .step-subtitle {
     font-size: 18px;
     color: var(--gray-600);
     text-align: center;
     margin-bottom: 40px;
+}
+
+body.dark-mode .step-subtitle {
+    color: #94a3b8;
 }
 
 /* Form Styles */
@@ -123,6 +166,10 @@
     margin-bottom: 8px;
 }
 
+body.dark-mode .onboarding-flow-container .form-group label {
+    color: #cbd5e1;
+}
+
 .form-group input,
 .form-group select {
     padding: 12px 16px;
@@ -131,6 +178,17 @@
     font-size: 16px;
     transition: all 0.2s;
     background: white;
+}
+
+body.dark-mode .onboarding-flow-container .form-group input,
+body.dark-mode .onboarding-flow-container .form-group select {
+    background: #111827;
+    border-color: #334155;
+    color: #f8fafc;
+}
+
+body.dark-mode .onboarding-flow-container .form-group input::placeholder {
+    color: #94a3b8;
 }
 
 .form-group input:focus,
@@ -164,6 +222,10 @@
     margin-bottom: 20px;
 }
 
+body.dark-mode .choice-label {
+    color: #cbd5e1;
+}
+
 .choice-buttons {
     display: flex;
     gap: 16px;
@@ -184,6 +246,12 @@
     min-width: 180px;
 }
 
+body.dark-mode .choice-btn {
+    background: #111827;
+    border-color: #334155;
+    color: #e2e8f0;
+}
+
 .choice-btn:hover {
     border-color: #40E0D0;
     transform: translateY(-2px);
@@ -196,8 +264,21 @@
     color: white;
 }
 
+body.dark-mode .choice-btn.active,
+body.dark-mode .onboarding-flow-modal .choice-btn.active,
+body.dark-mode #onboardingFlowModal .choice-btn.active {
+    background: linear-gradient(135deg, #00BCD4 0%, #40E0D0 100%) !important;
+    border-color: transparent !important;
+    color: #ffffff !important;
+    box-shadow: 0 10px 22px rgba(64, 224, 208, 0.22);
+}
+
 .choice-btn .material-icons {
     font-size: 32px;
+}
+
+.choice-btn.active .material-icons {
+    color: #ffffff;
 }
 
 /* Step 2: Members Form */
@@ -221,6 +302,28 @@
     transition: all 0.2s;
 }
 
+body.dark-mode .member-form-item {
+    background: #111827;
+    border-color: rgba(51, 65, 85, 0.4);
+}
+
+body.dark-mode .onboarding-flow-modal .member-form-item,
+body.dark-mode .onboarding-flow-modal .tree-preview,
+body.dark-mode .onboarding-flow-modal .sample-tree-container,
+body.dark-mode .onboarding-flow-modal .tip-card,
+body.dark-mode .onboarding-flow-modal .choice-btn,
+body.dark-mode .onboarding-flow-modal .tree-member,
+body.dark-mode #onboardingFlowModal .member-form-item,
+body.dark-mode #onboardingFlowModal .tree-preview,
+body.dark-mode #onboardingFlowModal .sample-tree-container,
+body.dark-mode #onboardingFlowModal .tip-card,
+body.dark-mode #onboardingFlowModal .choice-btn,
+body.dark-mode #onboardingFlowModal .tree-member {
+    background: var(--bg-tertiary, #1a2b23) !important;
+    border-color: var(--border-color, #253a30) !important;
+    color: var(--text-primary, #dad7cd) !important;
+}
+
 .member-form-item:hover {
     border-color: var(--gray-200);
 }
@@ -239,6 +342,10 @@
     margin: 0;
 }
 
+body.dark-mode .member-header h4 {
+    color: #f8fafc;
+}
+
 .remove-member-btn {
     background: none;
     border: none;
@@ -252,6 +359,14 @@
 .remove-member-btn:hover {
     background: var(--gray-200);
     color: var(--primary-red);
+}
+
+body.dark-mode .remove-member-btn {
+    color: #94a3b8;
+}
+
+body.dark-mode .remove-member-btn:hover {
+    background: #1e293b;
 }
 
 .member-fields {
@@ -283,6 +398,10 @@
     justify-content: center;
 }
 
+body.dark-mode .photo-preview {
+    background: #1e293b;
+}
+
 .photo-preview img {
     width: 100%;
     height: 100%;
@@ -294,6 +413,10 @@
     color: var(--gray-600);
 }
 
+body.dark-mode .photo-loading {
+    color: #94a3b8;
+}
+
 /* Tree Preview */
 .tree-preview {
     margin-top: 40px;
@@ -303,11 +426,19 @@
     text-align: center;
 }
 
+body.dark-mode .tree-preview {
+    background: #111827;
+}
+
 .tree-preview h3 {
     font-size: 18px;
     font-weight: 600;
     color: var(--gray-800);
     margin-bottom: 20px;
+}
+
+body.dark-mode .tree-preview h3 {
+    color: #f8fafc;
 }
 
 .mini-tree-container {
@@ -320,6 +451,10 @@
 .empty-preview {
     color: var(--gray-500);
     font-style: italic;
+}
+
+body.dark-mode .empty-preview {
+    color: #94a3b8;
 }
 
 .mini-tree {
@@ -337,6 +472,12 @@
     text-align: center;
     min-width: 120px;
     transition: all 0.2s;
+}
+
+body.dark-mode .tree-node {
+    background: #0f172a;
+    border-color: #334155;
+    color: #e2e8f0;
 }
 
 .tree-node.me {
@@ -393,6 +534,16 @@
     transition: all 0.2s;
 }
 
+body.dark-mode .skip-tutorial-btn {
+    border-color: #475569;
+    color: #cbd5e1;
+}
+
+body.dark-mode .skip-tutorial-btn:hover {
+    background: #1e293b;
+    border-color: #64748b;
+}
+
 .skip-tutorial-btn:hover {
     background: var(--gray-100);
     border-color: var(--gray-400);
@@ -415,6 +566,10 @@
     justify-content: center;
 }
 
+body.dark-mode .sample-tree-container {
+    background: #111827;
+}
+
 .sample-tree-visual {
     position: relative;
     display: flex;
@@ -433,6 +588,12 @@
     gap: 12px;
     position: relative;
     transition: all 0.2s;
+}
+
+body.dark-mode .tree-member {
+    background: #0f172a;
+    border-color: #334155;
+    color: #e2e8f0;
 }
 
 .tree-member img {
@@ -482,6 +643,10 @@
     background: var(--gray-300);
 }
 
+body.dark-mode .tree-connection {
+    background: #475569;
+}
+
 /* Tutorial Tips */
 .tutorial-tips {
     display: flex;
@@ -496,6 +661,11 @@
     padding: 20px;
     opacity: 0.6;
     transition: all 0.3s;
+}
+
+body.dark-mode .tip-card {
+    background: #111827;
+    border-color: #334155;
 }
 
 .tip-card.active {
@@ -517,10 +687,18 @@
     margin-bottom: 8px;
 }
 
+body.dark-mode .tip-card h4 {
+    color: #f8fafc;
+}
+
 .tip-card p {
     font-size: 14px;
     color: var(--gray-600);
     line-height: 1.5;
+}
+
+body.dark-mode .tip-card p {
+    color: #94a3b8;
 }
 
 /* Navigation */
@@ -533,8 +711,26 @@
     align-items: center;
 }
 
+body.dark-mode .onboarding-navigation {
+    background: #111827;
+    border-top: 1px solid #334155;
+}
+
+body.dark-mode .onboarding-flow-modal .form-group input,
+body.dark-mode .onboarding-flow-modal .form-group select,
+body.dark-mode #onboardingFlowModal .form-group input,
+body.dark-mode #onboardingFlowModal .form-group select {
+    background: var(--input-bg, #1a2b23) !important;
+    border-color: var(--input-border, #253a30) !important;
+    color: var(--text-primary, #dad7cd) !important;
+}
+
 .back-btn {
     color: var(--gray-700);
+}
+
+body.dark-mode .back-btn {
+    color: #cbd5e1;
 }
 
 .next-btn {
@@ -549,6 +745,11 @@
     padding: 40px;
 }
 
+body.dark-mode .tour-prompt-modal .modal-content {
+    background: #0f172a;
+    color: #e2e8f0;
+}
+
 .tour-prompt-modal h3 {
     font-size: 24px;
     margin-bottom: 16px;
@@ -558,6 +759,10 @@
     font-size: 16px;
     color: var(--gray-600);
     margin-bottom: 32px;
+}
+
+body.dark-mode .tour-prompt-modal p {
+    color: #94a3b8;
 }
 
 .tour-prompt-modal .modal-actions {
