@@ -44,6 +44,101 @@
             justify-content: center;
             padding: 20px;
         }
+
+        body.dark-mode {
+            --white: #0F172A;
+            --gray-50: #111827;
+            --gray-200: #334155;
+            --gray-700: #CBD5E1;
+            --gray-900: #F8FAFC;
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.45);
+            background: linear-gradient(135deg, #020617 0%, #0f172a 48%, #1e293b 100%);
+        }
+
+        .language-selector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px;
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid rgba(229, 231, 235, 0.95);
+            border-radius: 999px;
+            box-shadow: 0 10px 24px rgba(17, 24, 39, 0.08);
+            backdrop-filter: blur(10px);
+        }
+
+        body.dark-mode .language-selector {
+            background: rgba(15, 23, 42, 0.88);
+            border-color: rgba(71, 85, 105, 0.95);
+            box-shadow: 0 10px 24px rgba(2, 6, 23, 0.38);
+        }
+
+        .lang-btn {
+            width: auto;
+            min-width: 44px;
+            margin: 0;
+            padding: 8px 12px;
+            border: 1px solid transparent;
+            border-radius: 999px;
+            background: transparent;
+            color: var(--gray-700);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
+        body.dark-mode .lang-btn {
+            color: #CBD5E1;
+        }
+
+        .lang-btn:hover {
+            background: rgba(27, 67, 50, 0.08);
+            transform: none;
+            box-shadow: none;
+        }
+
+        body.dark-mode .lang-btn:hover {
+            background: rgba(45, 106, 79, 0.28);
+        }
+
+        .lang-btn.active {
+            background: var(--primary-blue);
+            color: var(--white);
+            box-shadow: 0 8px 18px rgba(27, 67, 50, 0.22);
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            width: auto;
+            min-width: 52px;
+            margin: 0;
+            padding: 10px 14px;
+            border: 1px solid rgba(229, 231, 235, 0.95);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.88);
+            color: var(--gray-700);
+            box-shadow: 0 10px 24px rgba(17, 24, 39, 0.08);
+            backdrop-filter: blur(10px);
+        }
+
+        .theme-toggle:hover {
+            transform: none;
+            box-shadow: 0 12px 26px rgba(17, 24, 39, 0.12);
+        }
+
+        body.dark-mode .theme-toggle {
+            background: rgba(15, 23, 42, 0.88);
+            border-color: rgba(71, 85, 105, 0.95);
+            color: #F8FAFC;
+            box-shadow: 0 10px 24px rgba(2, 6, 23, 0.38);
+        }
         
         .container {
             background: var(--white);
@@ -64,6 +159,11 @@
             right: 0;
             height: 4px;
             background: linear-gradient(90deg, var(--primary-blue) 50%, var(--primary-red) 50%);
+        }
+
+        body.dark-mode .container {
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid rgba(51, 65, 85, 0.8);
         }
         
         .logo {
@@ -125,6 +225,21 @@
             border-color: var(--primary-blue);
             background: var(--white);
             box-shadow: 0 0 0 3px rgba(0, 33, 125, 0.1);
+        }
+
+        body.dark-mode input {
+            color: #F8FAFC;
+            background: rgba(15, 23, 42, 0.72);
+            border-color: #334155;
+        }
+
+        body.dark-mode input::placeholder {
+            color: #94A3B8;
+        }
+
+        body.dark-mode input:focus {
+            background: rgba(15, 23, 42, 0.94);
+            box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.18);
         }
         
         button {
@@ -228,6 +343,11 @@
             padding: 20px;
             margin: 20px 0;
         }
+
+        body.dark-mode .benefits {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(51, 65, 85, 0.7);
+        }
         
         .benefit {
             display: flex;
@@ -267,6 +387,11 @@
             border-radius: 12px;
             margin-top: 20px;
         }
+
+        body.dark-mode .magic-link-section {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(51, 65, 85, 0.7);
+        }
         
         .magic-link-icon {
             font-size: 48px;
@@ -289,6 +414,105 @@
         
         .email-sent {
             animation: slideIn 0.3s ease;
+        }
+
+        .signup-success-state {
+            display: none;
+            text-align: center;
+            padding: 28px 24px;
+            background: linear-gradient(180deg, rgba(27, 67, 50, 0.08) 0%, rgba(45, 106, 79, 0.04) 100%);
+            border: 1px solid rgba(45, 106, 79, 0.16);
+            border-radius: 16px;
+            margin-top: 20px;
+        }
+
+        .signup-success-state.active {
+            display: block;
+        }
+
+        body.dark-mode .signup-success-state {
+            background: linear-gradient(180deg, rgba(27, 67, 50, 0.22) 0%, rgba(15, 23, 42, 0.72) 100%);
+            border-color: rgba(74, 222, 128, 0.18);
+        }
+
+        .signup-success-icon {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 18px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: rgba(27, 67, 50, 0.12);
+            color: var(--primary-blue);
+        }
+
+        .signup-success-icon .material-icons {
+            font-size: 36px;
+        }
+
+        .signup-success-title {
+            font-size: 22px;
+            line-height: 1.25;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 10px;
+        }
+
+        .signup-success-copy {
+            color: var(--gray-700);
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 18px;
+        }
+
+        .signup-success-email {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            max-width: 100%;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.76);
+            border: 1px solid rgba(45, 106, 79, 0.16);
+            color: var(--gray-900);
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .signup-success-email span:last-child {
+            word-break: break-word;
+        }
+
+        body.dark-mode .signup-success-email {
+            background: rgba(15, 23, 42, 0.88);
+            border-color: rgba(74, 222, 128, 0.16);
+            color: #F8FAFC;
+        }
+
+        .signup-success-note {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 10px;
+            text-align: left;
+            padding: 14px 16px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.72);
+            color: var(--gray-700);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .signup-success-note .material-icons {
+            font-size: 20px;
+            color: var(--primary-blue);
+            flex: 0 0 auto;
+        }
+
+        body.dark-mode .signup-success-note {
+            background: rgba(15, 23, 42, 0.9);
+            color: #CBD5E1;
         }
         
         @keyframes slideIn {
@@ -328,15 +552,33 @@
         .back-link:hover {
             text-decoration: underline;
         }
+
+        @media (max-width: 640px) {
+            .theme-toggle {
+                top: 12px;
+                left: 12px;
+            }
+
+            .language-selector {
+                top: 12px;
+                right: 12px;
+                left: 12px;
+                justify-content: center;
+            }
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode" title="Toggle theme">
+        <span class="material-icons" id="themeIcon">dark_mode</span>
+    </button>
+
     <!-- Language Selector -->
-    <div class="language-selector" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
-        <button class="lang-btn" data-lang="en" style="padding: 8px 12px; margin: 0 2px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px;">EN</button>
-        <button class="lang-btn" data-lang="fr" style="padding: 8px 12px; margin: 0 2px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px;">FR</button>
-        <button class="lang-btn active" data-lang="ht" style="padding: 8px 12px; margin: 0 2px; border: 1px solid #ddd; background: #1B4332; color: white; cursor: pointer; border-radius: 4px;">HT</button>
+    <div class="language-selector">
+        <button class="lang-btn" type="button" data-lang="en" onclick="switchLanguage('en')">EN</button>
+        <button class="lang-btn" type="button" data-lang="fr" onclick="switchLanguage('fr')">FR</button>
+        <button class="lang-btn active" type="button" data-lang="ht" onclick="switchLanguage('ht')">HT</button>
     </div>
 
     <div class="container">
@@ -362,13 +604,8 @@
                     <input type="email" id="email" required data-i18n-placeholder="emailPlaceholder" placeholder="your@email.com" autocomplete="email">
                 </div>
 
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" required placeholder="Min. 8 characters" minlength="8" autocomplete="new-password">
-                </div>
-
                 <button type="submit" class="btn-primary" id="signupBtn">
-                    <i class="material-icons">person_add</i>
+                    <i class="material-icons">mail</i>
                     <span data-i18n="createAccount">Create Account</span>
                 </button>
             </form>
@@ -377,8 +614,8 @@
                 <div class="benefit">
                     <i class="material-icons">security</i>
                     <div class="benefit-text">
-                        <div class="benefit-title" data-i18n="securePassword">Secure Password</div>
-                        <div class="benefit-desc" data-i18n="securePasswordDesc">System-generated 16-character secure password</div>
+                        <div class="benefit-title" data-i18n="magicLinkTitle">Magic Link Sign-In</div>
+                        <div class="benefit-desc" data-i18n="magicLinkDesc">No password to remember. We'll email you a secure sign-in link.</div>
                     </div>
                 </div>
                 <div class="benefit">
@@ -400,6 +637,22 @@
             <div class="links">
                 <span data-i18n="alreadyHaveAccount">Already have an account?</span> <a href="/login.html" data-i18n="signIn">Sign In</a>
             </div>
+
+            <div class="signup-success-state" id="signupSuccessState">
+                <div class="signup-success-icon">
+                    <span class="material-icons">mark_email_read</span>
+                </div>
+                <h3 class="signup-success-title" id="successTitle">Check your email</h3>
+                <p class="signup-success-copy" id="successCopy">We sent a secure sign-in link to the email address below.</p>
+                <div class="signup-success-email">
+                    <span class="material-icons">alternate_email</span>
+                    <span id="successEmail"></span>
+                </div>
+                <div class="signup-success-note">
+                    <span class="material-icons">info</span>
+                    <span id="successNote">Open the message on this device and tap the link to finish signing in.</span>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -407,48 +660,6 @@
         // CRITICAL: Prevent any redirects on signup page
         window.preventRedirect = true;
         window.isSignupPage = true;
-        
-        // Override window.location.href to prevent redirects
-        const originalLocation = window.location;
-        const originalHref = originalLocation.href;
-        Object.defineProperty(window, 'location', {
-            get: function() {
-                return originalLocation;
-            },
-            set: function(value) {
-                // Block any redirect attempts to login.html
-                if (typeof value === 'string' && value.includes('login.html')) {
-                    console.warn('Blocked redirect to login.html from signup page');
-                    console.trace('Redirect stack trace:');
-                    return;
-                }
-                if (typeof value === 'object' && value.href && value.href.includes('login.html')) {
-                    console.warn('Blocked redirect to login.html from signup page');
-                    console.trace('Redirect stack trace:');
-                    return;
-                }
-                originalLocation.href = value;
-            }
-        });
-        
-        // Also override location.replace and location.assign
-        originalLocation.replace = function(url) {
-            if (url.includes('login.html')) {
-                console.warn('Blocked location.replace to login.html');
-                console.trace('Replace stack trace:');
-                return;
-            }
-            console.log('Allowing replace to:', url);
-        };
-        
-        originalLocation.assign = function(url) {
-            if (url.includes('login.html')) {
-                console.warn('Blocked location.assign to login.html');
-                console.trace('Assign stack trace:');
-                return;
-            }
-            console.log('Allowing assign to:', url);
-        };
         
         // Firebase removed - using session-based auth
         
@@ -462,8 +673,8 @@
                 fullNamePlaceholder: "John Doe",
                 emailAddress: "Email Address",
                 emailPlaceholder: "your@email.com",
-                securePassword: "Secure Password",
-                securePasswordDesc: "System-generated 16-character secure password",
+                magicLinkTitle: "Magic Link Sign-In",
+                magicLinkDesc: "No password to remember. We'll email you a secure sign-in link.",
                 buildTree: "Build Your Tree",
                 buildTreeDesc: "Add unlimited family members",
                 preserveMemories: "Preserve Memories",
@@ -471,10 +682,13 @@
                 alreadyHaveAccount: "Already have an account?",
                 signIn: "Sign In",
                 creatingAccount: "Creating Account...",
-                accountCreated: "Account created successfully! Check your email for your secure password and login instructions.",
-                emailSent: "We've sent your password to",
+                accountCreated: "Account created successfully! Check your email for your sign-in link.",
+                emailSent: "We've sent a sign-in link to",
+                successTitle: "Check your email",
+                successCopy: "We sent a secure sign-in link to the email address below.",
+                successNote: "Open the message on this device and tap the link to finish signing in.",
                 signupFailed: "Failed to create account. Please try again.",
-                fillAllFields: "Please fill in all fields.",
+                fillAllFields: "Please fill in your name and email.",
                 emailInUse: "Email address is already in use.",
                 invalidEmail: "Invalid email address.",
                 networkError: "Network error. Please check your connection and try again."
@@ -487,8 +701,8 @@
                 fullNamePlaceholder: "Jean Dupont",
                 emailAddress: "Adresse Email",
                 emailPlaceholder: "votre@email.com",
-                securePassword: "Mot de Passe Sécurisé",
-                securePasswordDesc: "Mot de passe sécurisé de 16 caractères généré par le système",
+                magicLinkTitle: "Lien Magique de Connexion",
+                magicLinkDesc: "Aucun mot de passe à mémoriser. Nous vous enverrons un lien de connexion sécurisé.",
                 buildTree: "Construisez Votre Arbre",
                 buildTreeDesc: "Ajoutez un nombre illimité de membres de la famille",
                 preserveMemories: "Préservez les Souvenirs",
@@ -496,10 +710,13 @@
                 alreadyHaveAccount: "Vous avez déjà un compte?",
                 signIn: "Se Connecter",
                 creatingAccount: "Création du Compte...",
-                accountCreated: "Compte créé avec succès! Vérifiez votre email pour votre mot de passe sécurisé et les instructions de connexion.",
-                emailSent: "Nous avons envoyé votre mot de passe à",
+                accountCreated: "Compte créé avec succès! Vérifiez votre email pour votre lien de connexion.",
+                emailSent: "Nous avons envoyé un lien de connexion à",
+                successTitle: "Vérifiez votre email",
+                successCopy: "Nous avons envoyé un lien de connexion sécurisé à l'adresse ci-dessous.",
+                successNote: "Ouvrez le message sur cet appareil et appuyez sur le lien pour terminer la connexion.",
                 signupFailed: "Échec de la création du compte. Veuillez réessayer.",
-                fillAllFields: "Veuillez remplir tous les champs.",
+                fillAllFields: "Veuillez saisir votre nom et votre email.",
                 emailInUse: "L'adresse email est déjà utilisée.",
                 invalidEmail: "Adresse email invalide.",
                 networkError: "Erreur réseau. Vérifiez votre connexion et réessayez."
@@ -512,8 +729,8 @@
                 fullNamePlaceholder: "Jan Doe",
                 emailAddress: "Adres Email",
                 emailPlaceholder: "email@ou.com",
-                securePassword: "Modpas Sekirite",
-                securePasswordDesc: "Modpas sekirite 16 karaktè sistèm nan jenere",
+                magicLinkTitle: "Lyen Majik pou Konekte",
+                magicLinkDesc: "Pa gen modpas pou sonje. N ap voye yon lyen sekirize nan imel ou.",
                 buildTree: "Bati Pyebwa w",
                 buildTreeDesc: "Ajoute manm fanmi san limit",
                 preserveMemories: "Prezève Souvni",
@@ -521,56 +738,88 @@
                 alreadyHaveAccount: "Ou deja gen yon kont?",
                 signIn: "Konekte",
                 creatingAccount: "K ap Kreye Kont...",
-                accountCreated: "Kont kreye avèk siksè! Gade nan email ou pou modpas sekirite w ak enstriksyon koneksyon yo.",
-                emailSent: "Nou voye modpas ou nan",
+                accountCreated: "Kont kreye avèk siksè! Tcheke imel ou pou lyen koneksyon an.",
+                emailSent: "Nou voye lyen koneksyon an nan",
+                successTitle: "Tcheke imel ou",
+                successCopy: "Nou voye yon lyen koneksyon sekirize nan adrès imel ki anba a.",
+                successNote: "Louvri mesaj la sou aparèy sa a epi peze lyen an pou fini konekte.",
                 signupFailed: "Pa kapab kreye kont. Tanpri eseye ankò.",
-                fillAllFields: "Tanpri ranpli tout chan yo.",
+                fillAllFields: "Tanpri antre non ou ak imel ou.",
                 emailInUse: "Adres email la deja nan sèvis.",
                 invalidEmail: "Adres email pa valab.",
                 networkError: "Erè rezo. Tcheke koneksyon ou epi eseye ankò."
             }
         };
 
-        // Handle language parameter from URL and store it
-        const urlParams = new URLSearchParams(window.location.search);
-        const langParam = urlParams.get('lang');
-        let currentLang = 'ht'; // Default to Haitian Creole
-        
-        if (langParam && ['en', 'fr', 'ht'].includes(langParam)) {
-            currentLang = langParam;
-            // Set cookie for cross-domain access
-            const date = new Date();
-            date.setTime(date.getTime() + (365 * 24 * 60 * 60 * 1000)); // 1 year
-            const expires = "expires=" + date.toUTCString();
-            document.cookie = `pyebwa_lang=${langParam};${expires};path=/;SameSite=Lax`;
-            document.cookie = `pyebwa_lang=${langParam};${expires};path=/;domain=.pyebwa.com;SameSite=Lax`;
-            
-            // Also store in localStorage for faster access
-            localStorage.setItem('pyebwaLang', langParam);
-            
-            console.log('[Signup] Language preference stored:', langParam);
-        } else {
-            // Check existing preferences
-            const cookieLang = getCookie('pyebwa_lang');
-            const storedLang = localStorage.getItem('pyebwaLang');
-            if (cookieLang && ['en', 'fr', 'ht'].includes(cookieLang)) {
-                currentLang = cookieLang;
-            } else if (storedLang && ['en', 'fr', 'ht'].includes(storedLang)) {
-                currentLang = storedLang;
+        const supportedLangs = ['en', 'fr', 'ht'];
+        const themeStorageKey = 'pyebwaTheme';
+
+        function applyTheme(theme) {
+            const isDark = theme === 'dark';
+            document.body.classList.toggle('dark-mode', isDark);
+            const themeIcon = document.getElementById('themeIcon');
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeIcon) {
+                themeIcon.textContent = isDark ? 'light_mode' : 'dark_mode';
+            }
+            if (themeToggle) {
+                themeToggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+                themeToggle.setAttribute('title', isDark ? 'Switch to light mode' : 'Switch to dark mode');
             }
         }
 
-        // Cookie helper function
-        function getCookie(name) {
-            const nameEQ = name + "=";
-            const ca = document.cookie.split(';');
-            for (let i = 0; i < ca.length; i++) {
-                let c = ca[i];
-                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+        function getStoredTheme() {
+            try {
+                const storedTheme = localStorage.getItem(themeStorageKey);
+                if (storedTheme === 'dark' || storedTheme === 'light') {
+                    return storedTheme;
+                }
+            } catch (error) {
+                console.warn('[Signup] Unable to read stored theme:', error);
             }
-            return null;
+
+            return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light';
         }
+
+        function setLanguageCookie(lang) {
+            const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toUTCString();
+            document.cookie = `pyebwa_lang=${lang};expires=${expires};path=/;domain=.pyebwa.com;SameSite=Lax`;
+            document.cookie = `pyebwa_lang=${lang};expires=${expires};path=/;SameSite=Lax`;
+        }
+
+        function getStoredLanguage() {
+            const langFromQuery = new URLSearchParams(window.location.search).get('lang');
+            if (supportedLangs.includes(langFromQuery)) {
+                return langFromQuery;
+            }
+
+            try {
+                const storedLang = localStorage.getItem('pyebwaLang');
+                if (supportedLangs.includes(storedLang)) {
+                    return storedLang;
+                }
+            } catch (error) {
+                console.warn('[Signup] Unable to read localStorage language:', error);
+            }
+
+            const cookieMatch = document.cookie.match(/(?:^|;\s*)pyebwa_lang=([^;]+)/);
+            if (cookieMatch && supportedLangs.includes(cookieMatch[1])) {
+                return cookieMatch[1];
+            }
+
+            return 'ht';
+        }
+
+        let currentLang = getStoredLanguage();
+
+        try {
+            localStorage.setItem('pyebwaLang', currentLang);
+        } catch (error) {
+            console.warn('[Signup] Unable to persist localStorage language:', error);
+        }
+        setLanguageCookie(currentLang);
 
         // Translation function
         function t(key) {
@@ -592,41 +841,61 @@
             });
             
             // Update language buttons
+            document.documentElement.lang = currentLang;
+
             document.querySelectorAll('.lang-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.getAttribute('data-lang') === currentLang);
-                if (btn.getAttribute('data-lang') === currentLang) {
-                    btn.style.background = '#1B4332';
-                    btn.style.color = 'white';
-                } else {
-                    btn.style.background = 'white';
-                    btn.style.color = 'black';
-                }
+                const isActive = btn.getAttribute('data-lang') === currentLang;
+                btn.classList.toggle('active', isActive);
+                btn.style.background = isActive ? '#1B4332' : 'rgba(255, 255, 255, 0.88)';
+                btn.style.color = isActive ? '#FFFFFF' : '#374151';
             });
+
+            if (signupSuccessState.classList.contains('active')) {
+                successTitle.textContent = t('successTitle');
+                successCopy.textContent = t('successCopy');
+                successNote.textContent = t('successNote');
+            }
         }
 
-        // Language selector functionality
+        function switchLanguage(newLang) {
+            if (!supportedLangs.includes(newLang) || newLang === currentLang) {
+                return;
+            }
+
+            currentLang = newLang;
+            try {
+                localStorage.setItem('pyebwaLang', newLang);
+            } catch (error) {
+                console.warn('[Signup] Unable to persist localStorage language:', error);
+            }
+            setLanguageCookie(newLang);
+
+            updateTranslations();
+        }
+
+        window.switchLanguage = switchLanguage;
+
         document.querySelectorAll('.lang-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const newLang = e.target.getAttribute('data-lang');
-                if (newLang !== currentLang) {
-                    currentLang = newLang;
-                    
-                    // Store preference
-                    const date = new Date();
-                    date.setTime(date.getTime() + (365 * 24 * 60 * 60 * 1000));
-                    const expires = "expires=" + date.toUTCString();
-                    document.cookie = `pyebwa_lang=${newLang};${expires};path=/;SameSite=Lax`;
-                    document.cookie = `pyebwa_lang=${newLang};${expires};path=/;domain=.pyebwa.com;SameSite=Lax`;
-                    localStorage.setItem('pyebwaLang', newLang);
-                    
-                    // Update page
-                    updateTranslations();
-                }
+                e.preventDefault();
+                switchLanguage(e.currentTarget.getAttribute('data-lang'));
             });
         });
 
-        // Initialize translations when page loads
         document.addEventListener('DOMContentLoaded', updateTranslations);
+        updateTranslations();
+        applyTheme(getStoredTheme());
+
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', () => {
+            const nextTheme = document.body.classList.contains('dark-mode') ? 'light' : 'dark';
+            try {
+                localStorage.setItem(themeStorageKey, nextTheme);
+            } catch (error) {
+                console.warn('[Signup] Unable to persist theme:', error);
+            }
+            applyTheme(nextTheme);
+        });
         
         // Prevent redirect loops - mark that we're on signup page
         sessionStorage.setItem('onSignupPage', 'true');
@@ -664,12 +933,31 @@
         const messageDiv = document.getElementById('message');
         const signupForm = document.getElementById('signupForm');
         const signupBtn = document.getElementById('signupBtn');
+        const signupSuccessState = document.getElementById('signupSuccessState');
+        const successTitle = document.getElementById('successTitle');
+        const successCopy = document.getElementById('successCopy');
+        const successEmail = document.getElementById('successEmail');
+        const successNote = document.getElementById('successNote');
         
         // Show message helper
         function showMessage(text, type = 'info') {
             messageDiv.innerHTML = `<i class="material-icons">${type === 'error' ? 'error' : type === 'success' ? 'check_circle' : 'info'}</i> ${text}`;
             messageDiv.className = 'message ' + type;
             messageDiv.style.display = 'flex';
+        }
+
+        function hideSuccessState() {
+            signupSuccessState.classList.remove('active');
+            successEmail.textContent = '';
+        }
+
+        function showSuccessState(email) {
+            messageDiv.style.display = 'none';
+            successTitle.textContent = t('successTitle');
+            successCopy.textContent = t('successCopy');
+            successEmail.textContent = email;
+            successNote.textContent = t('successNote');
+            signupSuccessState.classList.add('active');
         }
         
         // Handle signup form submission
@@ -678,39 +966,38 @@
 
             const fullName = document.getElementById('fullName').value.trim();
             const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-
-            if (!fullName || !email || !password) {
-                showMessage('Please fill in all fields.', 'error');
-                return;
-            }
-            if (password.length < 8) {
-                showMessage('Password must be at least 8 characters.', 'error');
+            if (!fullName || !email) {
+                hideSuccessState();
+                showMessage(t('fillAllFields'), 'error');
                 return;
             }
 
             signupBtn.disabled = true;
-            signupBtn.innerHTML = '<span class="loading"></span> Creating Account...';
+            signupBtn.innerHTML = `<span class="loading"></span> ${t('creatingAccount')}`;
+            hideSuccessState();
+            messageDiv.style.display = 'none';
 
             try {
-                const { data, error } = await _sb.auth.signUp({
+                const { error } = await _sb.auth.signInWithOtp({
                     email,
-                    password,
-                    options: { data: { display_name: fullName, role: 'member' } }
+                    options: {
+                        shouldCreateUser: true,
+                        data: { display_name: fullName, role: 'member' },
+                        emailRedirectTo: `${window.location.origin}/login.html`
+                    }
                 });
                 if (error) throw new Error(error.message);
 
-                showMessage('Account created successfully! Redirecting to the app...', 'success');
                 signupForm.reset();
-
-                setTimeout(() => { window.location.href = '/app/'; }, 2000);
+                showSuccessState(email);
 
             } catch (error) {
                 console.error('Signup error:', error);
-                showMessage(error.message || 'Failed to create account. Please try again.', 'error');
+                hideSuccessState();
+                showMessage(error.message || t('signupFailed'), 'error');
             } finally {
                 signupBtn.disabled = false;
-                signupBtn.innerHTML = '<i class="material-icons">person_add</i> Create Account';
+                signupBtn.innerHTML = `<i class="material-icons">mail</i><span>${t('createAccount')}</span>`;
             }
         });
     </script>

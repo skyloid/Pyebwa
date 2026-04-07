@@ -26,33 +26,43 @@
 
     const PyebwaAPI = {
         // --- Auth (Supabase GoTrue) ---
-        async login(email, password) {
+        async login(email) {
             const client = window.supabaseClient;
             if (!client) throw new Error('Supabase client not initialized');
 
-            const { data, error } = await client.auth.signInWithPassword({ email, password });
-            if (error) throw new Error(error.message);
-
-            // Fetch app-level user data
-            const user = await this.getCurrentUser();
-            this._notifyAuthState(user);
-            return { success: true, user };
-        },
-
-        async signup(email, fullName, password) {
-            const client = window.supabaseClient;
-            if (!client) throw new Error('Supabase client not initialized');
-
-            const { data, error } = await client.auth.signUp({
+            const { error } = await client.auth.signInWithOtp({
                 email,
-                password,
-                options: { data: { display_name: fullName, role: 'member' } }
+                options: {
+                    shouldCreateUser: false,
+                    emailRedirectTo: window.location.origin + '/login.html'
+                }
             });
             if (error) throw new Error(error.message);
 
-            const user = await this.getCurrentUser();
-            this._notifyAuthState(user);
-            return { success: true, uid: data.user?.id, user };
+            return {
+                success: true,
+                message: 'Check your email for your sign-in link.'
+            };
+        },
+
+        async signup(email, fullName) {
+            const client = window.supabaseClient;
+            if (!client) throw new Error('Supabase client not initialized');
+
+            const { error } = await client.auth.signInWithOtp({
+                email,
+                options: {
+                    shouldCreateUser: true,
+                    data: { display_name: fullName, role: 'member' },
+                    emailRedirectTo: window.location.origin + '/login.html'
+                }
+            });
+            if (error) throw new Error(error.message);
+
+            return {
+                success: true,
+                message: 'Check your email for your sign-in link.'
+            };
         },
 
         async logout() {
