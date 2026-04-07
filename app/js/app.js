@@ -85,6 +85,13 @@ function getPreferredLanguage() {
     return candidates.find(lang => supportedLangs.includes(lang)) || 'en';
 }
 
+function updateFooterVersionLabel() {
+    const versionLabel = window.__PYEBWA_VERSION__ || window.__PYEBWA_BUILD_ID__ || 'dev';
+    document.querySelectorAll('[data-build-version]').forEach(node => {
+        node.textContent = versionLabel;
+    });
+}
+
 function bootApp() {
     if (appBootStarted) {
         return;
@@ -95,6 +102,7 @@ function bootApp() {
     initializeEventListeners();
     setLanguage(getPreferredLanguage());
     updateTranslations();
+    updateFooterVersionLabel();
 }
 
 // Initialize app when DOM is ready, even if this script was injected late.

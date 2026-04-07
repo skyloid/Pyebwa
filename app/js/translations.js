@@ -505,6 +505,7 @@ const translations = {
         
         // Footer
         poweredBy: "Powered by",
+        humanLevelTech: "Human Level Technologies Inc.",
         
         // Share Card
         shareProfileCard: "Share Profile Card",
@@ -833,6 +834,7 @@ const translations = {
         
         // Footer
         poweredBy: "Propulsé par",
+        humanLevelTech: "Technologies Humanitaires Inc.",
     },
     
     ht: {
@@ -1142,6 +1144,7 @@ const translations = {
         
         // Footer
         poweredBy: "Powered by",
+        humanLevelTech: "Technologies Humanitaires Inc.",
         
         // Enhanced Onboarding
         of: "nan",
