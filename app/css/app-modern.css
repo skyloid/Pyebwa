@@ -121,7 +121,7 @@ body {
         radial-gradient(circle at 20% 80%, rgba(45, 106, 79, 0.04) 0%, transparent 50%),
         radial-gradient(circle at 80% 20%, rgba(27, 67, 50, 0.03) 0%, transparent 50%),
         radial-gradient(circle at 40% 40%, rgba(107, 79, 58, 0.03) 0%, transparent 50%);
-    min-height: 100vh;
+    min-height: 96vh;
     transition: background-color var(--transition-base), color var(--transition-base);
 }
 
@@ -142,7 +142,7 @@ h6 { font-size: 1rem; line-height: 1.5; }
 
 /* App Container */
 #app {
-    min-height: 100vh;
+    min-height: 96vh;
     display: flex;
     flex-direction: column;
 }
