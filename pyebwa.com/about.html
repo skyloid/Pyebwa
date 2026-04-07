@@ -585,11 +585,25 @@
                 });
             }
 
+            function getSelectedLanguage() {
+                return window.currentLang ||
+                    (document.querySelector('.lang-btn.active') && document.querySelector('.lang-btn.active').dataset.lang) ||
+                    localStorage.getItem('pyebwaLang') ||
+                    localStorage.getItem('language') ||
+                    'ht';
+            }
+
             document.getElementById('loginBtn').addEventListener('click', () => {
-                window.location.href = 'https://secure.pyebwa.com/?redirect=' + encodeURIComponent(window.location.href);
+                const url = new URL('https://secure.pyebwa.com/');
+                url.searchParams.set('lang', getSelectedLanguage());
+                url.searchParams.set('redirect', window.location.href);
+                window.location.href = url.toString();
             });
             document.getElementById('signupBtn').addEventListener('click', () => {
-                window.location.href = 'https://secure.pyebwa.com/?redirect=' + encodeURIComponent(window.location.href);
+                const url = new URL('https://secure.pyebwa.com/');
+                url.searchParams.set('lang', getSelectedLanguage());
+                url.searchParams.set('redirect', window.location.href);
+                window.location.href = url.toString();
             });
         })();
     </script>

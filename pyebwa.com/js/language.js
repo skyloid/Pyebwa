@@ -157,6 +157,31 @@
                 element.placeholder = translations[currentLang][key];
             }
         });
+
+        updateAuthLinks();
+    }
+
+    function updateAuthLinks() {
+        const authTargets = [
+            { id: 'loginBtn', fallback: 'https://rasin.pyebwa.com/login-standalone.html' },
+            { id: 'signupBtn', fallback: 'https://rasin.pyebwa.com/signup-standalone.html' },
+            { id: 'ctaBtn', fallback: 'https://rasin.pyebwa.com/signup-standalone.html' }
+        ];
+
+        authTargets.forEach(({ id, fallback }) => {
+            const element = document.getElementById(id);
+            if (!element || !element.href) {
+                return;
+            }
+
+            try {
+                const url = new URL(element.getAttribute('href') || fallback, window.location.origin);
+                url.searchParams.set('lang', currentLang);
+                element.href = url.toString();
+            } catch (error) {
+                console.warn('Unable to update auth link language for', id, error);
+            }
+        });
     }
 
     // Initialize language selector if it exists
