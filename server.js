@@ -42,7 +42,14 @@ app.use(cors({
     credentials: true
 }));
 app.use(compression());
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({
+    limit: '10mb',
+    verify: (req, res, buf) => {
+        if (req.originalUrl && req.originalUrl.startsWith('/api/auth/send-email-hook')) {
+            req.rawBody = buf.toString('utf8');
+        }
+    }
+}));
 
 // Legacy /uploads path - photos now stored in Supabase Storage
 // Keep for backward compat if any old URLs exist

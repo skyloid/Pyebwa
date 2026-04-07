@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="{{ if eq .RedirectTo "https://rasin.pyebwa.com/login.html?lang=fr" }}fr{{ else if eq .RedirectTo "https://rasin.pyebwa.com/login.html?lang=ht" }}ht{{ else if eq .Data.lang "fr" }}fr{{ else if eq .Data.lang "ht" }}ht{{ else }}en{{ end }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ if eq .RedirectTo "https://rasin.pyebwa.com/login.html?lang=fr" }}Votre lien de connexion{{ else if eq .RedirectTo "https://rasin.pyebwa.com/login.html?lang=ht" }}Lyen koneksyon ou{{ else if eq .Data.lang "fr" }}Votre lien de connexion{{ else if eq .Data.lang "ht" }}Lyen koneksyon ou{{ else }}Your sign-in link{{ end }}</title>
+</head>
+<body style="margin:0;padding:0;background:#f5f3ef;font-family:Inter,Arial,sans-serif;color:#1b1b18;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f5f3ef;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#fdfcfa;border:1px solid #dad7cd;border-radius:18px;overflow:hidden;">
+          <tr>
+            <td style="height:6px;background:linear-gradient(90deg,#1B4332 0%,#2D6A4F 55%,#6B4F3A 100%);"></td>
+          </tr>
+          <tr>
+            <td style="padding:36px 32px 18px 32px;text-align:center;">
+              <div style="font-size:30px;font-weight:700;color:#1B4332;line-height:1.1;">Pyebwa</div>
+              <div style="margin-top:8px;font-size:14px;color:#3A3832;">
+                {{ if eq .RedirectTo "https://rasin.pyebwa.com/login.html?lang=fr" }}Votre arbre généalogique{{ else if eq .RedirectTo "https://rasin.pyebwa.com/login.html?lang=ht" }}Pyebwa fanmi w{{ else if eq .Data.lang "fr" }}Votre arbre généalogique{{ else if eq .Data.lang "ht" }}Pyebwa fanmi w{{ else }}Your Family Tree{{ end }}
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 32px 10px 32px;">
+              <h1 style="margin:0 0 14px 0;font-size:24px;line-height:1.3;color:#1b1b18;text-align:center;">
+                {{ if eq .RedirectTo "https://rasin.pyebwa.com/login.html?lang=fr" }}Connectez-vous à votre compte{{ else if eq .RedirectTo "https://rasin.pyebwa.com/login.html?lang=ht" }}Konekte sou kont ou{{ else if eq .Data.lang "fr" }}Connectez-vous à votre compte{{ else if eq .Data.lang "ht" }}Konekte sou kont ou{{ else }}Sign in to your account{{ end }}
+              </h1>
+              <p style="margin:0 0 24px 0;font-size:16px;line-height:1.6;color:#3A3832;text-align:center;">
+                {{ if eq .RedirectTo "https://rasin.pyebwa.com/login.html?lang=fr" }}Utilisez le bouton ci-dessous pour vous connecter en toute sécurité. Ce lien est unique et réservé à cette connexion.{{ else if eq .RedirectTo "https://rasin.pyebwa.com/login.html?lang=ht" }}Sèvi ak bouton ki anba a pou konekte an sekirite. Lyen sa a fèt espesyalman pou ou epi li valab sèlman pou koneksyon sa a.{{ else if eq .Data.lang "fr" }}Utilisez le bouton ci-dessous pour vous connecter en toute sécurité. Ce lien est unique et réservé à cette connexion.{{ else if eq .Data.lang "ht" }}Sèvi ak bouton ki anba a pou konekte an sekirite. Lyen sa a fèt espesyalman pou ou epi li valab sèlman pou koneksyon sa a.{{ else }}Use the button below to sign in securely. This link is unique to you and can only be used for this login.{{ end }}
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:0 32px 28px 32px;">
+              <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:14px 28px;border-radius:999px;background:linear-gradient(135deg,#1B4332 0%,#2D6A4F 100%);color:#FDFCFA;text-decoration:none;font-size:16px;font-weight:700;">
+                {{ if eq .RedirectTo "https://rasin.pyebwa.com/login.html?lang=fr" }}Se connecter à Pyebwa{{ else if eq .RedirectTo "https://rasin.pyebwa.com/login.html?lang=ht" }}Konekte sou Pyebwa{{ else if eq .Data.lang "fr" }}Se connecter à Pyebwa{{ else if eq .Data.lang "ht" }}Konekte sou Pyebwa{{ else }}Sign In to Pyebwa{{ end }}
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 32px 18px 32px;">
+              <p style="margin:0;font-size:14px;line-height:1.6;color:#3A3832;text-align:center;">
+                {{ if eq .RedirectTo "https://rasin.pyebwa.com/login.html?lang=fr" }}Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :{{ else if eq .RedirectTo "https://rasin.pyebwa.com/login.html?lang=ht" }}Si bouton an pa mache, kopye epi kole lyen sa a nan navigatè ou:{{ else if eq .Data.lang "fr" }}Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :{{ else if eq .Data.lang "ht" }}Si bouton an pa mache, kopye epi kole lyen sa a nan navigatè ou:{{ else }}If the button does not work, copy and paste this link into your browser:{{ end }}
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 32px 28px 32px;">
+              <p style="margin:0;font-size:13px;line-height:1.7;color:#2D6A4F;word-break:break-all;text-align:center;">
+                <a href="{{ .ConfirmationURL }}" style="color:#2D6A4F;text-decoration:underline;">{{ .ConfirmationURL }}</a>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:18px 32px 32px 32px;border-top:1px solid #ebe9e3;">
+              <p style="margin:0;font-size:12px;line-height:1.6;color:#6a675e;text-align:center;">
+                {{ if eq .RedirectTo "https://rasin.pyebwa.com/login.html?lang=fr" }}Ce lien de connexion vous ramènera automatiquement vers Pyebwa après vérification.{{ else if eq .RedirectTo "https://rasin.pyebwa.com/login.html?lang=ht" }}Lyen koneksyon sa a ap mennen ou tounen sou Pyebwa otomatikman apre verifikasyon.{{ else if eq .Data.lang "fr" }}Ce lien de connexion vous ramènera automatiquement vers Pyebwa après vérification.{{ else if eq .Data.lang "ht" }}Lyen koneksyon sa a ap mennen ou tounen sou Pyebwa otomatikman apre verifikasyon.{{ else }}This sign-in link will return you to Pyebwa automatically after verification.{{ end }}
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

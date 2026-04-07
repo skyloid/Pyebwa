@@ -430,6 +430,18 @@
             element.style.display = 'flex';
         }
 
+        async function persistEmailLanguagePreference(email, lang) {
+            try {
+                await fetch('/api/auth/email-language', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, lang })
+                });
+            } catch (error) {
+                console.warn('[Login] Unable to persist email language preference:', error);
+            }
+        }
+
         // Initialize Supabase client
         const _sb = supabase.createClient(window.location.origin + '/supabase', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzc1MTk5NDM4LCJleHAiOjE5MzI4Nzk0Mzh9.t_O46hoypu8qZjZgiM_GjMkwhDBhwFa-IXRMjnQ5m7o');
 
@@ -473,10 +485,12 @@
             magicLinkBtn.disabled = true;
             magicLinkBtn.innerHTML = '<span class="loading"></span> ' + t('sendingMagicLink');
             try {
+                await persistEmailLanguagePreference(email, currentLang);
                 const { error } = await _sb.auth.signInWithOtp({
                     email,
                     options: {
                         shouldCreateUser: false,
+                        data: { lang: currentLang },
                         emailRedirectTo: window.location.origin + '/login.html?lang=' + encodeURIComponent(currentLang)
                     }
                 });

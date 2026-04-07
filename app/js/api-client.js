@@ -24,17 +24,32 @@
         return fetch(url, { ...options, headers });
     }
 
+    async function persistEmailLanguagePreference(email, lang) {
+        try {
+            await fetch('/api/auth/email-language', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, lang })
+            });
+        } catch (error) {
+            console.warn('Unable to persist email language preference:', error);
+        }
+    }
+
     const PyebwaAPI = {
         // --- Auth (Supabase GoTrue) ---
-        async login(email) {
+        async login(email, lang = 'en') {
             const client = window.supabaseClient;
             if (!client) throw new Error('Supabase client not initialized');
+
+            await persistEmailLanguagePreference(email, lang);
 
             const { error } = await client.auth.signInWithOtp({
                 email,
                 options: {
                     shouldCreateUser: false,
-                    emailRedirectTo: window.location.origin + '/login.html'
+                    data: { lang },
+                    emailRedirectTo: window.location.origin + '/login.html?lang=' + encodeURIComponent(lang)
                 }
             });
             if (error) throw new Error(error.message);
@@ -45,7 +60,7 @@
             };
         },
 
-        async signup(email, fullName) {
+        async signup(email, fullName, lang = 'en') {
             const client = window.supabaseClient;
             if (!client) throw new Error('Supabase client not initialized');
 
@@ -53,8 +68,8 @@
                 email,
                 options: {
                     shouldCreateUser: true,
-                    data: { display_name: fullName, role: 'member' },
-                    emailRedirectTo: window.location.origin + '/login.html'
+                    data: { display_name: fullName, role: 'member', lang },
+                    emailRedirectTo: window.location.origin + '/login.html?lang=' + encodeURIComponent(lang)
                 }
             });
             if (error) throw new Error(error.message);

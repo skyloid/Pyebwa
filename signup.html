@@ -1113,8 +1113,8 @@
                     email,
                     options: {
                         shouldCreateUser: true,
-                        data: { display_name: fullName, role: 'member' },
-                        emailRedirectTo: `${window.location.origin}/login.html`
+                        data: { display_name: fullName, role: 'member', lang: currentLang },
+                        emailRedirectTo: `${window.location.origin}/login.html?lang=${encodeURIComponent(currentLang)}`
                     }
                 });
                 if (error) throw new Error(error.message);
