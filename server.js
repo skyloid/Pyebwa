@@ -151,7 +151,8 @@ app.get('/signup.html', (req, res) => {
 
 app.get('/signup-standalone.html', (req, res) => {
     setVersionHeaders(res);
-    res.sendFile(path.join(__dirname, 'signup-standalone.html'));
+    const query = req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : '';
+    res.redirect(302, '/signup.html' + query);
 });
 
 app.get('/login-standalone.html', (req, res) => {

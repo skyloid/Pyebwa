@@ -190,11 +190,6 @@
     </script>
 </head>
 <body>
-    <!-- Theme Toggle Button -->
-    <button id="themeToggle" aria-label="Toggle dark mode">
-        <span class="material-icons" id="themeIcon">dark_mode</span>
-    </button>
-
     <script>
         (function() {
             // Apply saved theme immediately (before DOM ready to prevent flash)
@@ -235,25 +230,14 @@
         })();
     </script>
     
-    <!-- Language Selector -->
-    <div class="language-selector">
-        <button class="lang-btn" data-lang="en">EN</button>
-        <button class="lang-btn" data-lang="fr">FR</button>
-        <button class="lang-btn active" data-lang="ht">HT</button>
-    </div>
-
     <!-- Hero Section -->
     <header class="hero">
         <nav class="navbar">
             <div class="container">
                 <div class="nav-brand">
                     <img src="https://pyebwa.com/images/Pyebwa-title.png?v=20260407-logo-title-v3" alt="Pyebwa" class="logo-header">
-                    <span class="tagline" data-i18n="tagline">Rasin Fanmiy-ou</span>
+                    <span class="tagline" data-i18n="tagline">Know Your Roots</span>
                 </div>
-                <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Menu">
-                    <span class="material-icons">menu</span>
-                    <span class="menu-icon-fallback" aria-hidden="true">☰</span>
-                </button>
                 <div class="nav-menu" id="navMenu">
                     <a href="index.html" class="nav-link" data-i18n="home">Akèy</a>
                     <a href="about.html" class="nav-link" data-i18n="about">Konsènan</a>
@@ -261,56 +245,70 @@
                     <a href="contact.html" class="nav-link" data-i18n="contact">Kontak</a>
                     <div class="nav-buttons">
                         <a href="https://rasin.pyebwa.com/login-standalone.html" class="btn btn-ghost" id="loginBtn" data-i18n="login">Konekte</a>
-                        <a href="https://rasin.pyebwa.com/signup-standalone.html" class="btn btn-primary" id="signupBtn" data-i18n="signup">Enskri</a>
+                        <a href="https://rasin.pyebwa.com/signup.html" class="btn btn-primary" id="signupBtn" data-i18n="signup">Enskri</a>
                     </div>
                 </div>
+                <div class="header-controls">
+                    <div class="language-selector">
+                        <button class="lang-btn" data-lang="en">EN</button>
+                        <button class="lang-btn" data-lang="fr">FR</button>
+                        <button class="lang-btn active" data-lang="ht">HT</button>
+                    </div>
+                    <button id="themeToggle" aria-label="Toggle dark mode">
+                        <span class="material-icons" id="themeIcon">dark_mode</span>
+                    </button>
+                </div>
+                <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Menu">
+                    <span class="material-icons">menu</span>
+                    <span class="menu-icon-fallback" aria-hidden="true">☰</span>
+                </button>
             </div>
         </nav>        <!-- Haiti Slideshow -->
         <div class="slideshow-container">
             <div class="slide active">
-                <img src="https://pyebwa.com/images/SlideShow/20140508-094914.jpg" alt="20140508 094914">
+                <img src="https://pyebwa.com/images/SlideShow/20140508-094914.jpg?v=20260407T223900Z-upscaled-slides" alt="20140508 094914">
             </div>
             <div class="slide">
-                <img src="https://pyebwa.com/images/SlideShow/5e0a0e49e91b8e0f8379e91e7dee11f9.jpg" alt="5E0A0E49E91B8E0F8379E91E7Dee11F9">
+                <img src="https://pyebwa.com/images/SlideShow/5e0a0e49e91b8e0f8379e91e7dee11f9.jpg?v=20260407T223900Z-upscaled-slides" alt="5E0A0E49E91B8E0F8379E91E7Dee11F9">
             </div>
             <div class="slide">
-                <img src="https://pyebwa.com/images/SlideShow/6e7c0d44bc280212592d6ede168dc4ca.jpg" alt="6E7C0D44Bc280212592D6Ede168Dc4Ca">
+                <img src="https://pyebwa.com/images/SlideShow/6e7c0d44bc280212592d6ede168dc4ca.jpg?v=20260407T223900Z-upscaled-slides" alt="6E7C0D44Bc280212592D6Ede168Dc4Ca">
             </div>
             <div class="slide">
-                <img src="https://pyebwa.com/images/SlideShow/HD-wallpaper-haitian-flag-silk-wavy-flags-north-american-countries-national-symbols-flag-of-haiti-fabric-flags-haiti-flag-3d-art-haiti-north-america-haiti-3d-flag.jpg" alt="Hd Wallpaper Haitian Flag Silk Wavy Flags North American Countries National Symbols Flag Of Haiti Fabric Flags Haiti Flag 3D Art Haiti North America Haiti 3D Flag">
+                <img src="https://pyebwa.com/images/SlideShow/HD-wallpaper-haitian-flag-silk-wavy-flags-north-american-countries-national-symbols-flag-of-haiti-fabric-flags-haiti-flag-3d-art-haiti-north-america-haiti-3d-flag.jpg?v=20260407T223900Z-upscaled-slides" alt="Hd Wallpaper Haitian Flag Silk Wavy Flags North American Countries National Symbols Flag Of Haiti Fabric Flags Haiti Flag 3D Art Haiti North America Haiti 3D Flag">
             </div>
             <div class="slide">
-                <img src="https://pyebwa.com/images/SlideShow/LaCitadelle.jpg" alt="Lacitadelle">
+                <img src="https://pyebwa.com/images/SlideShow/LaCitadelle.jpg?v=20260407T223900Z-upscaled-slides" alt="Lacitadelle">
             </div>
             <div class="slide">
-                <img src="https://pyebwa.com/images/SlideShow/TB-landscape-scaled-e1612506085272.jpg" alt="Tb Landscape Scaled E1612506085272">
+                <img src="https://pyebwa.com/images/SlideShow/TB-landscape-scaled-e1612506085272.jpg?v=20260407T223900Z-upscaled-slides" alt="Tb Landscape Scaled E1612506085272">
             </div>
             <div class="slide">
-                <img src="https://pyebwa.com/images/SlideShow/citadelle-laferriere-and-cannon-balls-47ko900hbv2okyxp.jpg" alt="Citadelle Laferriere And Cannon Balls 47Ko900Hbv2Okyxp">
+                <img src="https://pyebwa.com/images/SlideShow/citadelle-laferriere-and-cannon-balls-47ko900hbv2okyxp.jpg?v=20260407T223900Z-upscaled-slides" alt="Citadelle Laferriere And Cannon Balls 47Ko900Hbv2Okyxp">
             </div>
             <div class="slide">
-                <img src="https://pyebwa.com/images/SlideShow/concert-philharmonique.jpg" alt="Concert Philharmonique">
+                <img src="https://pyebwa.com/images/SlideShow/concert-philharmonique.jpg?v=20260407T223900Z-upscaled-slides" alt="Concert Philharmonique">
             </div>
             <div class="slide">
-                <img src="https://pyebwa.com/images/SlideShow/expedia_group-793013-161452384-777434.jpg" alt="Expedia Group 793013 161452384 777434">
+                <img src="https://pyebwa.com/images/SlideShow/expedia_group-793013-161452384-777434.jpg?v=20260407T223900Z-upscaled-slides" alt="Expedia Group 793013 161452384 777434">
             </div>
             <div class="slide">
-                <img src="https://pyebwa.com/images/SlideShow/haiti-flag-art-wbkozdm492j96815.jpg" alt="Haiti Flag Art Wbkozdm492J96815">
+                <img src="https://pyebwa.com/images/SlideShow/haiti-flag-art-wbkozdm492j96815.jpg?v=20260407T223900Z-upscaled-slides" alt="Haiti Flag Art Wbkozdm492J96815">
             </div>
             <div class="slide">
-                <img src="https://pyebwa.com/images/SlideShow/istockphoto-637815386-612x612.jpg" alt="Istockphoto 637815386 612X612">
+                <img src="https://pyebwa.com/images/SlideShow/istockphoto-637815386-612x612.jpg?v=20260407T223900Z-upscaled-slides" alt="Istockphoto 637815386 612X612">
             </div>
             <div class="slide">
-                <img src="https://pyebwa.com/images/SlideShow/sun-rise-on-cormier.jpg" alt="Sun Rise On Cormier">
+                <img src="https://pyebwa.com/images/SlideShow/sun-rise-on-cormier.jpg?v=20260407T223900Z-upscaled-slides" alt="Sun Rise On Cormier">
             </div>
             <div class="slide">
-                <img src="https://pyebwa.com/images/SlideShow/tumblr_nsbo1mpejL1qjcl7eo4_1280.jpg" alt="Tumblr Nsbo1Mpejl1Qjcl7Eo4 1280">
+                <img src="https://pyebwa.com/images/SlideShow/tumblr_nsbo1mpejL1qjcl7eo4_1280.jpg?v=20260407T223900Z-upscaled-slides" alt="Tumblr Nsbo1Mpejl1Qjcl7Eo4 1280">
             </div>
             <div class="slide">
-                <img src="https://pyebwa.com/images/SlideShow/us-occupation-of-haiti-16323314377941.jpg" alt="Us Occupation Of Haiti 16323314377941">
+                <img src="https://pyebwa.com/images/SlideShow/us-occupation-of-haiti-16323314377941.jpg?v=20260407T223900Z-upscaled-slides" alt="Us Occupation Of Haiti 16323314377941">
             </div>
             <div class="slide">
-                <img src="https://pyebwa.com/images/SlideShow/wp2203260.webp" alt="Wp2203260">
+                <img src="https://pyebwa.com/images/SlideShow/wp2203260.webp?v=20260407T223900Z-upscaled-slides" alt="Wp2203260">
             </div>
         </div>
         
@@ -327,7 +325,7 @@
                 <p class="hero-subtitle" data-i18n="heroSubtitle">
                     Kreye pyebwa fanmiy-ou, pataje istwa, epi konekte jenerasyon yo
                 </p>
-                <a href="https://rasin.pyebwa.com/signup-standalone.html" class="btn btn-cta" id="ctaBtn" data-i18n="getStarted">Kòmanse Kounye a</a>
+                <a href="https://rasin.pyebwa.com/signup.html" class="btn btn-cta" id="ctaBtn" data-i18n="getStarted">Kòmanse Kounye a</a>
             </div>
         </div>
     </header>
@@ -364,7 +362,7 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2026 Pyebwa version <span data-build-version>1.0.22</span> - <span data-i18n="poweredBy">Powered by</span> <a href="https://humanlevel.ai" target="_blank" rel="noopener noreferrer" data-i18n="humanLevelTech">Technologies Humanitaires Inc.</a></p>
+            <p>&copy; 2026 Pyebwa version <span data-build-version>1.0.23</span> - <span data-i18n="poweredBy">Powered by</span> <a href="https://humanlevel.ai" target="_blank" rel="noopener noreferrer" data-i18n="humanLevelTech">Technologies Humanitaires Inc.</a></p>
         </div>
     </footer>
     

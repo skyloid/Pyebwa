@@ -164,8 +164,8 @@
     function updateAuthLinks() {
         const authTargets = [
             { id: 'loginBtn', fallback: 'https://rasin.pyebwa.com/login-standalone.html' },
-            { id: 'signupBtn', fallback: 'https://rasin.pyebwa.com/signup-standalone.html' },
-            { id: 'ctaBtn', fallback: 'https://rasin.pyebwa.com/signup-standalone.html' }
+            { id: 'signupBtn', fallback: 'https://rasin.pyebwa.com/signup.html' },
+            { id: 'ctaBtn', fallback: 'https://rasin.pyebwa.com/signup.html' }
         ];
 
         authTargets.forEach(({ id, fallback }) => {

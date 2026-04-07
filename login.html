@@ -31,6 +31,32 @@
                 linear-gradient(135deg, #f5f3ef 0%, #ebe9e3 42%, #dad7cd 100%);
             min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
         }
+        .auth-shell {
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 22px;
+        }
+        .auth-brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+        .auth-brand-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+        .auth-brand img {
+            width: min(320px, 72vw);
+            height: auto;
+            display: block;
+            filter: drop-shadow(0 12px 24px rgba(18, 46, 34, 0.14));
+        }
         .container {
             background: rgba(253, 252, 250, 0.96); border-radius: 20px; padding: 40px;
             box-shadow: var(--shadow-xl); width: 100%; max-width: 420px; position: relative; overflow: hidden;
@@ -41,9 +67,6 @@
             content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
             background: linear-gradient(90deg, var(--primary-green) 0%, var(--primary-moss) 52%, var(--accent-brown) 100%);
         }
-        .logo { text-align: center; margin-bottom: 10px; }
-        .logo h1 { color: var(--primary-green); font-size: 32px; font-weight: 700; }
-        .logo p { color: var(--gray-700); font-size: 14px; }
         h2 { color: var(--gray-900); text-align: center; font-size: 24px; font-weight: 600; margin-bottom: 10px; }
         .subtitle { color: var(--gray-700); text-align: center; font-size: 16px; margin-bottom: 30px; line-height: 1.5; }
         .form-group { margin-bottom: 20px; }
@@ -71,6 +94,97 @@
         .links a { color: var(--primary-moss); text-decoration: none; font-size: 14px; font-weight: 600; }
         .links a:hover { text-decoration: underline; }
         .helper-text { color: var(--gray-700); font-size: 13px; line-height: 1.5; margin-top: 12px; text-align: center; }
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            width: 44px;
+            height: 44px;
+            border: 1px solid rgba(218, 215, 205, 0.9);
+            border-radius: 999px;
+            background: rgba(253, 252, 250, 0.92);
+            color: var(--gray-700);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 10px 24px rgba(18, 46, 34, 0.12);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        .theme-toggle:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 28px rgba(18, 46, 34, 0.18);
+        }
+        .theme-toggle .material-icons {
+            font-size: 22px;
+        }
+        body.dark-mode {
+            background:
+                radial-gradient(circle at top left, rgba(45, 106, 79, 0.24), transparent 38%),
+                radial-gradient(circle at bottom right, rgba(107, 79, 58, 0.22), transparent 32%),
+                linear-gradient(135deg, #0f1713 0%, #15201a 42%, #1d2b23 100%);
+        }
+        body.dark-mode .container {
+            background: rgba(17, 24, 20, 0.92);
+            border-color: rgba(84, 107, 95, 0.45);
+            box-shadow: 0 28px 48px -14px rgba(0, 0, 0, 0.52);
+        }
+        body.dark-mode .auth-brand img {
+            filter: drop-shadow(0 16px 26px rgba(0, 0, 0, 0.28));
+        }
+        body.dark-mode h2 {
+            color: #f5f3ef;
+        }
+        body.dark-mode .subtitle,
+        body.dark-mode label,
+        body.dark-mode .helper-text,
+        body.dark-mode .links,
+        body.dark-mode .links span {
+            color: #d7d2c8;
+        }
+        body.dark-mode input {
+            background: rgba(245, 243, 239, 0.08);
+            border-color: rgba(150, 174, 160, 0.24);
+            color: #f5f3ef;
+        }
+        body.dark-mode input:focus {
+            background: rgba(245, 243, 239, 0.12);
+            border-color: #2D6A4F;
+            box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.2);
+        }
+        body.dark-mode .theme-toggle {
+            background: rgba(17, 24, 20, 0.92);
+            border-color: rgba(84, 107, 95, 0.5);
+            color: #f5f3ef;
+        }
+        body.dark-mode .language-selector .lang-btn {
+            border-color: rgba(84, 107, 95, 0.45) !important;
+            background: rgba(17, 24, 20, 0.92) !important;
+            color: #d7d2c8 !important;
+        }
+        body.dark-mode .language-selector .lang-btn.active {
+            background: #2D6A4F !important;
+            color: #fdfcfa !important;
+        }
+        @media (max-width: 640px) {
+            .theme-toggle {
+                top: 14px;
+                left: 14px;
+                width: 40px;
+                height: 40px;
+            }
+            .auth-shell {
+                gap: 18px;
+            }
+            .auth-brand img {
+                width: min(260px, 68vw);
+            }
+            .container {
+                padding: 34px 24px;
+            }
+        }
         .back-to-top {
             position: fixed;
             right: 20px;
@@ -102,7 +216,14 @@
             box-shadow: 0 14px 28px rgba(18, 46, 34, 0.18);
             transform: translateY(-2px);
         }
-        .back-to-top .material-icons { font-size: 22px; }
+        .back-to-top .material-icons {
+            font-size: 22px;
+        }
+        body.dark-mode .back-to-top {
+            background: rgba(17, 24, 20, 0.92);
+            border-color: rgba(84, 107, 95, 0.5);
+            color: #f5f3ef;
+        }
         @media (max-width: 640px) {
             .back-to-top {
                 right: 14px;
@@ -115,6 +236,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode" title="Toggle theme">
+        <span class="material-icons" id="themeIcon">dark_mode</span>
+    </button>
     <button class="back-to-top" id="backToTop" type="button" aria-label="Back to top" title="Back to top">
         <span class="material-icons">arrow_upward</span>
     </button>
@@ -124,29 +248,32 @@
         <button class="lang-btn active" data-lang="ht" style="padding: 8px 12px; margin: 0 2px; border: 1px solid #dad7cd; background: #1B4332; color: #fdfcfa; cursor: pointer; border-radius: 999px;">HT</button>
     </div>
 
-    <div class="container">
-        <div class="logo">
-            <h1>Pyebwa</h1>
-            <p data-i18n="tagline">Your Family Tree</p>
+    <div class="auth-shell">
+        <div class="auth-brand">
+            <a class="auth-brand-link" href="https://pyebwa.com" aria-label="Back to homepage">
+                <img src="/app/images/pyebwa-title.png" alt="Pyebwa">
+            </a>
         </div>
-        <div id="loginView">
-            <h2 data-i18n="signIn">Sign In</h2>
-            <p class="subtitle" data-i18n="loginSubtitle">Enter your email and we'll send you a secure sign-in link.</p>
-            <div id="message" class="message" style="display: none;"></div>
-            <form id="magicLinkForm">
-                <div class="form-group">
-                    <label for="email" data-i18n="emailAddress">Email Address</label>
-                    <input type="email" id="email" required placeholder="your@email.com" autocomplete="email">
+        <div class="container">
+            <div id="loginView">
+                <h2 data-i18n="signIn">Sign In</h2>
+                <p class="subtitle" data-i18n="loginSubtitle">Enter your email and we'll send you a secure sign-in link.</p>
+                <div id="message" class="message" style="display: none;"></div>
+                <form id="magicLinkForm">
+                    <div class="form-group">
+                        <label for="email" data-i18n="emailAddress">Email Address</label>
+                        <input type="email" id="email" required placeholder="your@email.com" autocomplete="email">
+                    </div>
+                    <button type="submit" class="btn-primary" id="magicLinkBtn">
+                        <i class="material-icons">mail</i>
+                        <span data-i18n="sendMagicLink">Email Me a Sign-In Link</span>
+                    </button>
+                </form>
+                <p class="helper-text" data-i18n="magicLinkHelp">Open the email on this device and tap the link to sign in automatically.</p>
+                <div class="links">
+                    <span data-i18n="noAccount">Don't have an account?</span> <a href="/signup.html?lang=en" id="signupLink" data-i18n="signUp">Sign Up</a><br>
+                    <a href="https://pyebwa.com" data-i18n="backToHomepage">&larr; Back to Homepage</a>
                 </div>
-                <button type="submit" class="btn-primary" id="magicLinkBtn">
-                    <i class="material-icons">mail</i>
-                    <span data-i18n="sendMagicLink">Email Me a Sign-In Link</span>
-                </button>
-            </form>
-            <p class="helper-text" data-i18n="magicLinkHelp">Open the email on this device and tap the link to sign in automatically.</p>
-            <div class="links">
-                <span data-i18n="noAccount">Don't have an account?</span> <a href="/signup.html" data-i18n="signUp">Sign Up</a><br>
-                <a href="https://pyebwa.com" data-i18n="backToHomepage">&larr; Back to Homepage</a>
             </div>
         </div>
     </div>
@@ -155,7 +282,7 @@
         const translations = {
             en: { tagline: "Your Family Tree", signIn: "Sign In", loginSubtitle: "Enter your email and we'll send you a secure sign-in link.", emailAddress: "Email Address", noAccount: "Don't have an account?", signUp: "Sign Up", backToHomepage: "\u2190 Back to Homepage", sendMagicLink: "Email Me a Sign-In Link", magicLinkHelp: "Open the email on this device and tap the link to sign in automatically.", sendingMagicLink: "Sending link...", alreadyLoggedIn: "Already logged in as", redirecting: "Redirecting...", loginSuccess: "Success! Welcome back,", magicLinkSent: "Check your email for your sign-in link.", loginFailed: "Login failed. Please try again.", invalidEmail: "Please enter a valid email address.", networkError: "Network error. Please check your connection and try again.", magicLinkFailed: "Failed to send sign-in link. Please try again.", backToTop: "Back to top" },
             fr: { tagline: "Votre Arbre G\u00e9n\u00e9alogique", signIn: "Se Connecter", loginSubtitle: "Entrez votre email et nous vous enverrons un lien de connexion s\u00e9curis\u00e9.", emailAddress: "Adresse Email", noAccount: "Vous n'avez pas de compte?", signUp: "S'inscrire", backToHomepage: "\u2190 Retour \u00e0 l'Accueil", sendMagicLink: "M'envoyer un lien de connexion", magicLinkHelp: "Ouvrez l'email sur cet appareil et appuyez sur le lien pour vous connecter automatiquement.", sendingMagicLink: "Envoi du lien...", alreadyLoggedIn: "D\u00e9j\u00e0 connect\u00e9 en tant que", redirecting: "Redirection...", loginSuccess: "Succ\u00e8s! Bon retour,", magicLinkSent: "V\u00e9rifiez votre email pour votre lien de connexion.", loginFailed: "\u00c9chec de la connexion.", invalidEmail: "Veuillez saisir une adresse email valide.", networkError: "Erreur r\u00e9seau.", magicLinkFailed: "Impossible d'envoyer le lien de connexion.", backToTop: "Retour en haut" },
-            ht: { tagline: "Pyebwa Fanmi w", signIn: "Konekte", loginSubtitle: "Antre email ou epi n ap voye yon lyen sekirize pou konekte.", emailAddress: "Adres Email", noAccount: "Ou pa gen kont?", signUp: "Enskri", backToHomepage: "\u2190 Retounen nan Ak\u00e8y", sendMagicLink: "Voye lyen koneksyon an ba mwen", magicLinkHelp: "Louvri imel la sou aparèy sa a epi peze lyen an pou konekte otomatikman.", sendingMagicLink: "K ap voye lyen an...", alreadyLoggedIn: "Deja konekte k\u00f2m", redirecting: "K ap redirije...", loginSuccess: "Sikse! Byenveni ank\u00f2,", magicLinkSent: "Tcheke imel ou pou lyen koneksyon an.", loginFailed: "Koneksyon echwe.", invalidEmail: "Tanpri antre yon bon adres imel.", networkError: "Er\u00e8 rezo.", magicLinkFailed: "Pa kapab voye lyen koneksyon an.", backToTop: "Retounen anlè" }
+            ht: { tagline: "Pyebwa Fanmi w", signIn: "Konekte", loginSubtitle: "Antre email ou epi n ap voye yon lyen sekirize pou konekte.", emailAddress: "Adres Email", noAccount: "Ou pa gen kont?", signUp: "Enskri", backToHomepage: "\u2190 Retounen nan Ak\u00e8y", sendMagicLink: "Voye lyen koneksyon an ba mwen", magicLinkHelp: "Louvri imel la sou aparèy sa a epi peze lyen an pou konekte otomatikman.", sendingMagicLink: "K ap voye lyen an...", alreadyLoggedIn: "Deja konekte k\u00f2m", redirecting: "K ap redirije...", loginSuccess: "Sikse! Byenveni ank\u00f2,", magicLinkSent: "Tcheke imel ou pou lyen koneksyon an.", loginFailed: "Koneksyon echwe.", invalidEmail: "Tanpri antre yon bon adres imel.", networkError: "Er\u00e8 rezo.", magicLinkFailed: "Pa kapab voye lyen koneksyon an.", backToTop: "Retounen anl\u00e8" }
         };
 
         function setLanguageCookie(lang) {
@@ -164,20 +291,73 @@
             document.cookie = `pyebwa_lang=${lang};expires=${expires};path=/;SameSite=Lax`;
         }
 
+        function getCookie(name) {
+            const nameEQ = name + '=';
+            const cookies = document.cookie.split(';');
+            for (const rawCookie of cookies) {
+                const cookie = rawCookie.trim();
+                if (cookie.indexOf(nameEQ) === 0) {
+                    return cookie.substring(nameEQ.length);
+                }
+            }
+            return null;
+        }
+
+        function detectBrowserLanguage() {
+            const browserLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+            const langCode = browserLang.split('-')[0];
+            if (supportedLangs.includes(langCode)) {
+                return langCode;
+            }
+            if (browserLang.includes('ht')) return 'ht';
+            if (browserLang.includes('fr')) return 'fr';
+            if (browserLang.includes('en')) return 'en';
+            return 'en';
+        }
+
         const supportedLangs = ['en', 'fr', 'ht'];
         const langFromQuery = new URLSearchParams(window.location.search).get('lang');
-        let currentLang = supportedLangs.includes(langFromQuery)
-            ? langFromQuery
-            : (localStorage.getItem('pyebwaLang') || 'ht');
+        const cookieLang = getCookie('pyebwa_lang');
+        const storedLang = localStorage.getItem('pyebwaLang') || localStorage.getItem('language');
+        let currentLang =
+            (supportedLangs.includes(langFromQuery) && langFromQuery) ||
+            (supportedLangs.includes(cookieLang) && cookieLang) ||
+            (supportedLangs.includes(storedLang) && storedLang) ||
+            detectBrowserLanguage();
+
+        function getStoredTheme() {
+            return localStorage.getItem('theme') || localStorage.getItem('pyebwaTheme') || 'light';
+        }
+
+        function syncThemeToggle() {
+            const isDark = document.body.classList.contains('dark-mode');
+            const icon = document.getElementById('themeIcon');
+            const toggle = document.getElementById('themeToggle');
+            if (icon) icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+            if (toggle) {
+                toggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+                toggle.setAttribute('title', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+            }
+        }
+
+        function applyTheme(theme) {
+            document.body.classList.toggle('dark-mode', theme === 'dark');
+            localStorage.setItem('theme', theme);
+            localStorage.setItem('pyebwaTheme', theme);
+            syncThemeToggle();
+        }
 
         localStorage.setItem('pyebwaLang', currentLang);
+        localStorage.setItem('language', currentLang);
         setLanguageCookie(currentLang);
+        applyTheme(getStoredTheme());
 
         function t(key) { return (translations[currentLang] || translations.en)[key] || translations.en[key] || key; }
         function updateTranslations() {
             document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
             document.querySelectorAll('.lang-btn').forEach(btn => {
                 const isActive = btn.getAttribute('data-lang') === currentLang;
+                btn.classList.toggle('active', isActive);
                 btn.style.background = isActive ? '#1B4332' : 'white';
                 btn.style.color = isActive ? 'white' : 'black';
             });
@@ -186,16 +366,24 @@
                 backToTopBtn.setAttribute('aria-label', t('backToTop'));
                 backToTopBtn.setAttribute('title', t('backToTop'));
             }
+            const signupLink = document.getElementById('signupLink');
+            if (signupLink) {
+                signupLink.href = '/signup.html?lang=' + encodeURIComponent(currentLang);
+            }
         }
         document.querySelectorAll('.lang-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 currentLang = btn.getAttribute('data-lang');
                 localStorage.setItem('pyebwaLang', currentLang);
+                localStorage.setItem('language', currentLang);
                 setLanguageCookie(currentLang);
                 updateTranslations();
             });
         });
         document.addEventListener('DOMContentLoaded', updateTranslations);
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            applyTheme(document.body.classList.contains('dark-mode') ? 'light' : 'dark');
+        });
         const backToTopBtn = document.getElementById('backToTop');
         function syncBackToTopVisibility() {
             backToTopBtn.classList.toggle('visible', window.scrollY > 160);

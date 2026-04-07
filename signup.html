@@ -51,6 +51,32 @@
             justify-content: center;
             padding: 20px;
         }
+        .auth-shell {
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 22px;
+        }
+        .auth-brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+        .auth-brand-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+        .auth-brand img {
+            width: min(320px, 72vw);
+            height: auto;
+            display: block;
+            filter: drop-shadow(0 12px 24px rgba(18, 46, 34, 0.14));
+        }
 
         body.dark-mode {
             --white: #101C17;
@@ -178,21 +204,8 @@
             background: rgba(16, 28, 23, 0.92);
             border: 1px solid rgba(37, 58, 48, 0.84);
         }
-        
-        .logo {
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        
-        .logo h1 {
-            color: var(--primary-blue);
-            font-size: 32px;
-            font-weight: 700;
-        }
-        
-        .logo p {
-            color: var(--gray-700);
-            font-size: 14px;
+        body.dark-mode .auth-brand img {
+            filter: drop-shadow(0 16px 26px rgba(0, 0, 0, 0.28));
         }
         
         h2 {
@@ -583,6 +596,15 @@
                 left: 12px;
                 justify-content: center;
             }
+            .auth-shell {
+                gap: 18px;
+            }
+            .auth-brand img {
+                width: min(260px, 68vw);
+            }
+            .container {
+                padding: 34px 24px;
+            }
         }
         
         .back-to-top {
@@ -654,76 +676,79 @@
         <button class="lang-btn active" type="button" data-lang="ht" onclick="switchLanguage('ht')">HT</button>
     </div>
 
-    <div class="container">
-        <div class="logo">
-            <h1>Pyebwa</h1>
-            <p data-i18n="tagline">Your Family Tree</p>
+    <div class="auth-shell">
+        <div class="auth-brand">
+            <a class="auth-brand-link" href="https://pyebwa.com" aria-label="Back to homepage">
+                <img src="/app/images/pyebwa-title.png" alt="Pyebwa">
+            </a>
         </div>
-        
-        <div id="signupView">
-            <h2 data-i18n="createAccount">Create Your Account</h2>
-            <p class="subtitle" data-i18n="signupSubtitle">Start building your family tree today</p>
-            
-            <div id="message" class="message" style="display: none;"></div>
-            
-            <form id="signupForm">
-                <div class="form-group">
-                    <label for="fullName" data-i18n="fullName">Full Name</label>
-                    <input type="text" id="fullName" required data-i18n-placeholder="fullNamePlaceholder" placeholder="John Doe" autocomplete="name">
+        <div class="container">
+            <div id="signupView">
+                <h2 data-i18n="createAccount">Create Your Account</h2>
+                <p class="subtitle" data-i18n="signupSubtitle">Start building your family tree today</p>
+                
+                <div id="message" class="message" style="display: none;"></div>
+                
+                <form id="signupForm">
+                    <div class="form-group">
+                        <label for="fullName" data-i18n="fullName">Full Name</label>
+                        <input type="text" id="fullName" required data-i18n-placeholder="fullNamePlaceholder" placeholder="John Doe" autocomplete="name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email" data-i18n="emailAddress">Email Address</label>
+                        <input type="email" id="email" required data-i18n-placeholder="emailPlaceholder" placeholder="your@email.com" autocomplete="email">
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="signupBtn">
+                        <i class="material-icons">mail</i>
+                        <span data-i18n="createAccount">Create Account</span>
+                    </button>
+                </form>
+                
+                <div class="benefits">
+                    <div class="benefit">
+                        <i class="material-icons">security</i>
+                        <div class="benefit-text">
+                            <div class="benefit-title" data-i18n="magicLinkTitle">Magic Link Sign-In</div>
+                            <div class="benefit-desc" data-i18n="magicLinkDesc">No password to remember. We'll email you a secure sign-in link.</div>
+                        </div>
+                    </div>
+                    <div class="benefit">
+                        <i class="material-icons">family_restroom</i>
+                        <div class="benefit-text">
+                            <div class="benefit-title" data-i18n="buildTree">Build Your Tree</div>
+                            <div class="benefit-desc" data-i18n="buildTreeDesc">Add unlimited family members</div>
+                        </div>
+                    </div>
+                    <div class="benefit">
+                        <i class="material-icons">photo_library</i>
+                        <div class="benefit-text">
+                            <div class="benefit-title" data-i18n="preserveMemories">Preserve Memories</div>
+                            <div class="benefit-desc" data-i18n="preserveMemoriesDesc">Store photos and stories</div>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="email" data-i18n="emailAddress">Email Address</label>
-                    <input type="email" id="email" required data-i18n-placeholder="emailPlaceholder" placeholder="your@email.com" autocomplete="email">
+                <div class="links">
+                    <span data-i18n="alreadyHaveAccount">Already have an account?</span> <a href="/login.html" data-i18n="signIn">Sign In</a><br>
+                    <a href="https://pyebwa.com" data-i18n="backToHomepage">&larr; Back to Homepage</a>
                 </div>
 
-                <button type="submit" class="btn-primary" id="signupBtn">
-                    <i class="material-icons">mail</i>
-                    <span data-i18n="createAccount">Create Account</span>
-                </button>
-            </form>
-            
-            <div class="benefits">
-                <div class="benefit">
-                    <i class="material-icons">security</i>
-                    <div class="benefit-text">
-                        <div class="benefit-title" data-i18n="magicLinkTitle">Magic Link Sign-In</div>
-                        <div class="benefit-desc" data-i18n="magicLinkDesc">No password to remember. We'll email you a secure sign-in link.</div>
+                <div class="signup-success-state" id="signupSuccessState">
+                    <div class="signup-success-icon">
+                        <span class="material-icons">mark_email_read</span>
                     </div>
-                </div>
-                <div class="benefit">
-                    <i class="material-icons">family_restroom</i>
-                    <div class="benefit-text">
-                        <div class="benefit-title" data-i18n="buildTree">Build Your Tree</div>
-                        <div class="benefit-desc" data-i18n="buildTreeDesc">Add unlimited family members</div>
+                    <h3 class="signup-success-title" id="successTitle">Check your email</h3>
+                    <p class="signup-success-copy" id="successCopy">We sent a secure sign-in link to the email address below.</p>
+                    <div class="signup-success-email">
+                        <span class="material-icons">alternate_email</span>
+                        <span id="successEmail"></span>
                     </div>
-                </div>
-                <div class="benefit">
-                    <i class="material-icons">photo_library</i>
-                    <div class="benefit-text">
-                        <div class="benefit-title" data-i18n="preserveMemories">Preserve Memories</div>
-                        <div class="benefit-desc" data-i18n="preserveMemoriesDesc">Store photos and stories</div>
+                    <div class="signup-success-note">
+                        <span class="material-icons">info</span>
+                        <span id="successNote">Open the message on this device and tap the link to finish signing in.</span>
                     </div>
-                </div>
-            </div>
-            
-            <div class="links">
-                <span data-i18n="alreadyHaveAccount">Already have an account?</span> <a href="/login.html" data-i18n="signIn">Sign In</a>
-            </div>
-
-            <div class="signup-success-state" id="signupSuccessState">
-                <div class="signup-success-icon">
-                    <span class="material-icons">mark_email_read</span>
-                </div>
-                <h3 class="signup-success-title" id="successTitle">Check your email</h3>
-                <p class="signup-success-copy" id="successCopy">We sent a secure sign-in link to the email address below.</p>
-                <div class="signup-success-email">
-                    <span class="material-icons">alternate_email</span>
-                    <span id="successEmail"></span>
-                </div>
-                <div class="signup-success-note">
-                    <span class="material-icons">info</span>
-                    <span id="successNote">Open the message on this device and tap the link to finish signing in.</span>
                 </div>
             </div>
         </div>
@@ -754,6 +779,7 @@
                 preserveMemoriesDesc: "Store photos and stories",
                 alreadyHaveAccount: "Already have an account?",
                 signIn: "Sign In",
+                backToHomepage: "\u2190 Back to Homepage",
                 creatingAccount: "Creating Account...",
                 accountCreated: "Account created successfully! Check your email for your sign-in link.",
                 emailSent: "We've sent a sign-in link to",
@@ -783,6 +809,7 @@
                 preserveMemoriesDesc: "Stockez des photos et des histoires",
                 alreadyHaveAccount: "Vous avez déjà un compte?",
                 signIn: "Se Connecter",
+                backToHomepage: "\u2190 Retour \u00e0 l'Accueil",
                 creatingAccount: "Création du Compte...",
                 accountCreated: "Compte créé avec succès! Vérifiez votre email pour votre lien de connexion.",
                 emailSent: "Nous avons envoyé un lien de connexion à",
@@ -812,6 +839,7 @@
                 preserveMemoriesDesc: "Depo foto ak istwa",
                 alreadyHaveAccount: "Ou deja gen yon kont?",
                 signIn: "Konekte",
+                backToHomepage: "\u2190 Retounen nan Ak\u00e8y",
                 creatingAccount: "K ap Kreye Kont...",
                 accountCreated: "Kont kreye avèk siksè! Tcheke imel ou pou lyen koneksyon an.",
                 emailSent: "Nou voye lyen koneksyon an nan",
