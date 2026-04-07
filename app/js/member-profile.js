@@ -235,9 +235,11 @@
         // Populate profile with member data
         populateProfile(member) {
             const modal = document.getElementById('memberProfileModal');
+            const displayName = window.getMemberDisplayName ? window.getMemberDisplayName(member) : `${member.firstName} ${member.lastName}`.trim();
+            const fullName = window.getMemberFullName ? window.getMemberFullName(member) : `${member.firstName} ${member.lastName}`.trim();
             
             // Header info
-            modal.querySelector('.profile-name').textContent = `${member.firstName} ${member.lastName}`;
+            modal.querySelector('.profile-name').textContent = displayName;
             
             // Dates
             const dates = [];
@@ -350,8 +352,14 @@
                     <div class="info-grid">
                         <div class="info-item">
                             <div class="info-label">${t('fullName') || 'Full Name'}</div>
-                            <div class="info-value">${member.firstName} ${member.lastName}</div>
+                            <div class="info-value">${fullName}</div>
                         </div>
+                        ${member.nickname ? `
+                            <div class="info-item">
+                                <div class="info-label">Nickname</div>
+                                <div class="info-value">${member.nickname}${member.useNickname ? ' • Used in tree' : ''}</div>
+                            </div>
+                        ` : ''}
                         ${member.gender ? `
                             <div class="info-item">
                                 <div class="info-label">${t('gender') || 'Gender'}</div>

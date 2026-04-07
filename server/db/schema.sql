@@ -50,6 +50,8 @@ CREATE TABLE IF NOT EXISTS persons (
     family_tree_id UUID NOT NULL REFERENCES family_trees(id) ON DELETE CASCADE,
     first_name VARCHAR(255) NOT NULL,
     last_name VARCHAR(255) DEFAULT '',
+    nickname VARCHAR(255) DEFAULT '',
+    use_nickname BOOLEAN DEFAULT false,
     birth_date DATE,
     death_date DATE,
     biography TEXT DEFAULT '',
@@ -65,6 +67,9 @@ CREATE TABLE IF NOT EXISTS persons (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+ALTER TABLE persons ADD COLUMN IF NOT EXISTS nickname VARCHAR(255) DEFAULT '';
+ALTER TABLE persons ADD COLUMN IF NOT EXISTS use_nickname BOOLEAN DEFAULT false;
 
 -- Invites table
 CREATE TABLE IF NOT EXISTS invites (

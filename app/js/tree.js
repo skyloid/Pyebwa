@@ -128,6 +128,7 @@ function getDirectFamilyMembers(member) {
 }
 
 function renderTreeFocusDetailMember(member, relationshipLabel) {
+    const memberName = window.getMemberDisplayName ? window.getMemberDisplayName(member) : `${member.firstName} ${member.lastName}`.trim();
     const photoHtml = member.photoUrl
         ? `<div class="focus-member-photo" style="background-image:url('${member.photoUrl.replace(/'/g, "\\'")}')"></div>`
         : `<div class="focus-member-photo"><span class="material-icons">${member.gender === 'female' ? 'face_3' : 'face'}</span></div>`;
@@ -136,7 +137,7 @@ function renderTreeFocusDetailMember(member, relationshipLabel) {
         <button type="button" class="focus-member-card" data-member-id="${member.id}">
             ${photoHtml}
             <div>
-                <div class="focus-member-name">${member.firstName} ${member.lastName}</div>
+                <div class="focus-member-name">${memberName}</div>
                 ${relationshipLabel ? `<div class="focus-member-rel">${relationshipLabel}</div>` : ''}
             </div>
         </button>
@@ -244,6 +245,7 @@ function applyTreeFocusState() {
     const photoHtml = focusMember.photoUrl
         ? `<img class="focus-detail-photo" src="${focusMember.photoUrl}" alt="${focusMember.firstName} ${focusMember.lastName}">`
         : `<div class="focus-detail-avatar"><span class="material-icons">${focusMember.gender === 'female' ? 'face_3' : 'face'}</span></div>`;
+    const focusMemberName = window.getMemberDisplayName ? window.getMemberDisplayName(focusMember) : `${focusMember.firstName} ${focusMember.lastName}`.trim();
 
     const family = getDirectFamilyMembers(focusMember);
     const sectionsHtml = [
@@ -258,7 +260,7 @@ function applyTreeFocusState() {
             <div class="focus-detail-profile">
                 ${photoHtml}
                 <div>
-                    <h3>${focusMember.firstName} ${focusMember.lastName}</h3>
+                    <h3>${focusMemberName}</h3>
                     <p class="focus-detail-info">${t('familyTree') || 'Family Tree'} ${state.mode === 'view' ? '• View Mode' : ''}</p>
                 </div>
             </div>
@@ -283,11 +285,21 @@ function applyTreeFocusState() {
     });
     detail.querySelectorAll('.focus-member-card').forEach(button => {
         button.addEventListener('click', () => {
-            state.focusPersonId = button.getAttribute('data-member-id');
-            localStorage.setItem('pyebwaTreeFocusPerson', state.focusPersonId);
-            applyTreeFocusState();
+            const memberId = button.getAttribute('data-member-id');
+            focusTreeMember(memberId, { zoom: 82 });
         });
     });
+}
+
+function focusTreeMember(memberId, options = {}) {
+    const state = getTreeInteractionState();
+    state.focusPersonId = memberId;
+    localStorage.setItem('pyebwaTreeFocusPerson', memberId);
+    applyTreeFocusState();
+
+    if (options.navigate !== false && window.pyebwaTreeControls?.focusOnMember) {
+        window.pyebwaTreeControls.focusOnMember(memberId, options);
+    }
 }
 
 function setTreeInteractionMode(mode) {
@@ -339,9 +351,7 @@ function handleTreeCardClick(member) {
         return;
     }
 
-    state.focusPersonId = member.id;
-    localStorage.setItem('pyebwaTreeFocusPerson', member.id);
-    applyTreeFocusState();
+    focusTreeMember(member.id, { zoom: 85 });
 }
 
 function getDirectChildTreeNodes(nodeElement) {
@@ -468,9 +478,7 @@ function getTreeMembersMotionState(element) {
             dragY: 0,
             bounceX: 0,
             bounceY: 0,
-            hoverLift: 0,
-            rotateX: 0,
-            rotateY: 0,
+            hoverScale: 1,
             bounceFrame: null,
             hoverFrame: null
         };
@@ -483,12 +491,11 @@ function getTreeMembersMotionState(element) {
 function applyTreeMembersTransform(element) {
     const state = getTreeMembersMotionState(element);
     const translateX = state.dragX + state.bounceX;
-    const translateY = state.dragY + state.bounceY + state.hoverLift;
+    const translateY = state.dragY + state.bounceY;
 
     element.style.transform = `
         translate(${translateX}px, ${translateY}px)
-        rotateX(${state.rotateX}deg)
-        rotateY(${state.rotateY}deg)
+        scale(${state.hoverScale})
     `;
 }
 
@@ -508,22 +515,23 @@ function tweenTreeMembersHover(element, target) {
         cancelAnimationFrame(state.hoverFrame);
     }
 
-    const start = {
-        hoverLift: state.hoverLift,
-        rotateX: state.rotateX,
-        rotateY: state.rotateY
-    };
+    const startScale = state.hoverScale;
+    const targetScale = target.scale || 1;
     const startTime = performance.now();
-    const duration = 180;
+    const duration = target.duration || 260;
     const easeOut = progress => 1 - Math.pow(1 - progress, 3);
+    const easeOutBack = progress => {
+        const c1 = 1.70158;
+        const c3 = c1 + 1;
+        return 1 + c3 * Math.pow(progress - 1, 3) + c1 * Math.pow(progress - 1, 2);
+    };
+    const easing = target.overshoot ? easeOutBack : easeOut;
 
     const frame = now => {
         const progress = Math.min(1, (now - startTime) / duration);
-        const eased = easeOut(progress);
+        const eased = easing(progress);
 
-        state.hoverLift = start.hoverLift + ((target.hoverLift || 0) - start.hoverLift) * eased;
-        state.rotateX = start.rotateX + ((target.rotateX || 0) - start.rotateX) * eased;
-        state.rotateY = start.rotateY + ((target.rotateY || 0) - start.rotateY) * eased;
+        state.hoverScale = startScale + ((targetScale - startScale) * eased);
 
         applyTreeMembersTransform(element);
         redrawTreeConnectionsNow();
@@ -640,9 +648,7 @@ function initializeTreeNodeDragging() {
 
             motionState.dragX = 0;
             motionState.dragY = 0;
-            motionState.rotateX = 0;
-            motionState.rotateY = 0;
-            motionState.hoverLift = 0;
+            motionState.hoverScale = 1;
             membersContainer.classList.remove('tree-members-hovered');
             membersContainer.style.setProperty('--tree-hover-x', '50%');
             membersContainer.style.setProperty('--tree-hover-y', '50%');
@@ -717,15 +723,13 @@ function initializeTreeNodeDragging() {
             const rect = membersContainer.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
-            const offsetX = (x / rect.width) - 0.5;
-            const offsetY = (y / rect.height) - 0.5;
 
             membersContainer.style.setProperty('--tree-hover-x', `${x}px`);
             membersContainer.style.setProperty('--tree-hover-y', `${y}px`);
             tweenTreeMembersHover(membersContainer, {
-                hoverLift: -8,
-                rotateX: Math.max(-5, Math.min(5, -offsetY * 8)),
-                rotateY: Math.max(-7, Math.min(7, offsetX * 10))
+                scale: 1.08,
+                duration: 280,
+                overshoot: true
             });
         });
         membersContainer.addEventListener('pointerleave', () => {
@@ -734,9 +738,8 @@ function initializeTreeNodeDragging() {
             membersContainer.style.setProperty('--tree-hover-y', '50%');
             if (dragState.activeElement === membersContainer) return;
             tweenTreeMembersHover(membersContainer, {
-                hoverLift: 0,
-                rotateX: 0,
-                rotateY: 0
+                scale: 1,
+                duration: 220
             });
         });
     });
@@ -1186,7 +1189,7 @@ function createMemberCard(node) {
     // Name
     const name = document.createElement('div');
     name.className = 'member-name';
-    name.textContent = `${member.firstName} ${member.lastName}`;
+    name.textContent = window.getMemberDisplayName ? window.getMemberDisplayName(member) : `${member.firstName} ${member.lastName}`.trim();
     card.appendChild(name);
     
     // Birth year
@@ -1340,3 +1343,5 @@ function buildHourglassTree(focusPerson, memberMap) {
 // Export functions for global use
 window.renderFamilyTree = renderFamilyTree;
 window.renderTreeNode = renderTreeNode;
+window.requestTreeConnectionRedraw = requestTreeConnectionRedraw;
+window.redrawTreeConnectionsNow = redrawTreeConnectionsNow;

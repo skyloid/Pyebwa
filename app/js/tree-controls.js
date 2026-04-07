@@ -17,7 +17,8 @@
             originPanX: 0,
             originPanY: 0,
             viewMode: 'full', // full, ancestors, descendants, hourglass
-            isFullscreen: false
+            isFullscreen: false,
+            focusAnimationFrame: null
         },
         
         // Initialize controls
@@ -255,6 +256,7 @@
         startPan(e) {
             if (e.button && e.button !== 0) return; // Only left click
             if (this.shouldIgnorePanStart(e.target)) return;
+            this.stopFocusAnimation();
 
             const point = this.getEventPoint(e);
             
@@ -291,6 +293,7 @@
         
         // Zoom functionality
         zoom(delta) {
+            this.stopFocusAnimation();
             const newZoom = Math.max(
                 this.state.minZoom,
                 Math.min(this.state.maxZoom, this.state.zoom + delta)
@@ -319,6 +322,10 @@
             
             // Update mini-map
             this.updateMiniMap();
+
+            if (window.requestTreeConnectionRedraw) {
+                window.requestTreeConnectionRedraw();
+            }
         },
         
         // Update zoom slider position
@@ -337,6 +344,7 @@
         
         // Reset zoom
         resetZoom() {
+            this.stopFocusAnimation();
             this.state.zoom = 50;
             this.state.panX = 0;
             this.state.panY = 0;
@@ -351,6 +359,7 @@
             if (!container || !tree) return;
             
             setTimeout(() => {
+                this.stopFocusAnimation();
                 this.state.panX = 0;
                 this.state.panY = 0;
                 const containerWidth = container.clientWidth;
@@ -364,6 +373,171 @@
                 
                 this.updateMiniMapViewport();
             }, 100);
+        },
+
+        stopFocusAnimation() {
+            if (this.state.focusAnimationFrame) {
+                cancelAnimationFrame(this.state.focusAnimationFrame);
+                this.state.focusAnimationFrame = null;
+            }
+        },
+
+        getMemberCard(memberId) {
+            const cards = this.elements.treeContainer?.querySelectorAll('.member-card') || [];
+            return Array.from(cards).find(card => card.getAttribute('data-member-id') === String(memberId)) || null;
+        },
+
+        focusOnMember(memberId, options = {}) {
+            this.refreshElementRefs();
+
+            const container = this.elements.treeContainer;
+            const card = this.getMemberCard(memberId);
+            if (!container || !card) return;
+
+            this.stopFocusAnimation();
+
+            const targetElement = card.closest('.tree-members') || card;
+            const targetZoom = Math.max(
+                this.state.zoom,
+                Math.min(this.state.maxZoom, options.zoom || 85)
+            );
+            const zoomStart = this.state.zoom;
+            const startPanX = this.state.panX;
+            const startPanY = this.state.panY;
+            const startScrollLeft = container.scrollLeft;
+            const startScrollTop = container.scrollTop;
+            const duration = options.duration || 520;
+            const startTime = performance.now();
+            const easeInOutCubic = progress => (
+                progress < 0.5
+                    ? 4 * progress * progress * progress
+                    : 1 - Math.pow(-2 * progress + 2, 3) / 2
+            );
+
+            const getViewportDelta = () => {
+                const containerRect = container.getBoundingClientRect();
+                const targetRect = targetElement.getBoundingClientRect();
+                const paddingX = Math.min(80, container.clientWidth * 0.12);
+                const paddingY = Math.min(96, container.clientHeight * 0.16);
+                const targetCenterX = targetRect.left - containerRect.left + (targetRect.width / 2);
+                const targetCenterY = targetRect.top - containerRect.top + (targetRect.height / 2);
+                const targetLeft = targetRect.left - containerRect.left;
+                const targetRight = targetRect.right - containerRect.left;
+                const targetTop = targetRect.top - containerRect.top;
+                const targetBottom = targetRect.bottom - containerRect.top;
+
+                let deltaX = targetCenterX - (container.clientWidth / 2);
+                let deltaY = targetCenterY - (container.clientHeight * 0.42);
+
+                const projectedLeft = targetLeft - deltaX;
+                const projectedRight = targetRight - deltaX;
+                const projectedTop = targetTop - deltaY;
+                const projectedBottom = targetBottom - deltaY;
+
+                if (projectedLeft < paddingX) {
+                    deltaX = targetLeft - paddingX;
+                } else if (projectedRight > container.clientWidth - paddingX) {
+                    deltaX = targetRight - (container.clientWidth - paddingX);
+                }
+
+                if (projectedTop < paddingY) {
+                    deltaY = targetTop - paddingY;
+                } else if (projectedBottom > container.clientHeight - paddingY) {
+                    deltaY = targetBottom - (container.clientHeight - paddingY);
+                }
+
+                return {
+                    x: deltaX,
+                    y: deltaY
+                };
+            };
+
+            const resolveFocusTargetState = () => {
+                const originalState = {
+                    zoom: this.state.zoom,
+                    panX: this.state.panX,
+                    panY: this.state.panY,
+                    scrollLeft: container.scrollLeft,
+                    scrollTop: container.scrollTop
+                };
+
+                this.state.zoom = targetZoom;
+                this.state.panX = startPanX;
+                this.state.panY = startPanY;
+                this.applyZoom();
+                container.scrollLeft = startScrollLeft;
+                container.scrollTop = startScrollTop;
+
+                const delta = getViewportDelta();
+                const beforeScrollLeft = container.scrollLeft;
+                const beforeScrollTop = container.scrollTop;
+
+                container.scrollLeft += delta.x;
+                container.scrollTop += delta.y;
+
+                const scrolledX = container.scrollLeft - beforeScrollLeft;
+                const scrolledY = container.scrollTop - beforeScrollTop;
+                const remainingX = delta.x - scrolledX;
+                const remainingY = delta.y - scrolledY;
+
+                if (Math.abs(remainingX) > 0.5 || Math.abs(remainingY) > 0.5) {
+                    this.state.panX -= remainingX;
+                    this.state.panY -= remainingY;
+                    this.applyZoom();
+                }
+
+                const resolved = {
+                    zoom: this.state.zoom,
+                    panX: this.state.panX,
+                    panY: this.state.panY,
+                    scrollLeft: container.scrollLeft,
+                    scrollTop: container.scrollTop
+                };
+
+                this.state.zoom = originalState.zoom;
+                this.state.panX = originalState.panX;
+                this.state.panY = originalState.panY;
+                this.applyZoom();
+                container.scrollLeft = originalState.scrollLeft;
+                container.scrollTop = originalState.scrollTop;
+
+                return resolved;
+            };
+
+            const targetState = resolveFocusTargetState();
+
+            const frame = now => {
+                const progress = Math.min(1, (now - startTime) / duration);
+                const eased = easeInOutCubic(progress);
+
+                this.state.zoom = zoomStart + ((targetState.zoom - zoomStart) * eased);
+                this.state.panX = startPanX + ((targetState.panX - startPanX) * eased);
+                this.state.panY = startPanY + ((targetState.panY - startPanY) * eased);
+                this.applyZoom();
+                container.scrollLeft = startScrollLeft + ((targetState.scrollLeft - startScrollLeft) * eased);
+                container.scrollTop = startScrollTop + ((targetState.scrollTop - startScrollTop) * eased);
+
+                if (window.redrawTreeConnectionsNow) {
+                    window.redrawTreeConnectionsNow();
+                }
+
+                if (progress < 1) {
+                    this.state.focusAnimationFrame = requestAnimationFrame(frame);
+                } else {
+                    this.state.zoom = targetState.zoom;
+                    this.state.panX = targetState.panX;
+                    this.state.panY = targetState.panY;
+                    this.applyZoom();
+                    container.scrollLeft = targetState.scrollLeft;
+                    container.scrollTop = targetState.scrollTop;
+                    this.state.focusAnimationFrame = null;
+                    if (window.redrawTreeConnectionsNow) {
+                        window.redrawTreeConnectionsNow();
+                    }
+                }
+            };
+
+            this.state.focusAnimationFrame = requestAnimationFrame(frame);
         },
         
         // Change view mode
@@ -381,6 +555,7 @@
         
         // Filter tree by view mode
         filterTreeByMode() {
+            this.stopFocusAnimation();
             // Store current zoom and position
             const currentZoom = this.state.zoom;
             const currentPanX = this.state.panX;

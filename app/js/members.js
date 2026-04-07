@@ -172,7 +172,7 @@ function createMemberListCard(member, rel) {
     // Name
     const name = document.createElement('div');
     name.className = 'member-name';
-    name.textContent = `${member.firstName} ${member.lastName}`;
+    name.textContent = window.getMemberDisplayName ? window.getMemberDisplayName(member) : `${member.firstName} ${member.lastName}`.trim();
     info.appendChild(name);
     
     // Computed relationship badge

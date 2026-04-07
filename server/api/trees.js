@@ -203,6 +203,8 @@ router.post('/:id/persons', async (req, res) => {
             family_tree_id: id,
             first_name: req.body.firstName,
             last_name: req.body.lastName || '',
+            nickname: req.body.nickname || '',
+            use_nickname: req.body.useNickname === true,
             birth_date: req.body.birthDate || null,
             death_date: req.body.deathDate || null,
             biography: req.body.biography || '',
@@ -238,6 +240,7 @@ router.put('/:id/persons/:pid', async (req, res) => {
         const updateData = {};
         const fieldMap = {
             firstName: 'first_name', lastName: 'last_name',
+            nickname: 'nickname', useNickname: 'use_nickname',
             birthDate: 'birth_date', deathDate: 'death_date',
             biography: 'biography', email: 'email', phone: 'phone',
             gender: 'gender', photos: 'photos', relationships: 'relationships'

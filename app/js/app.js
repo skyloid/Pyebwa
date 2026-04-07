@@ -9,6 +9,8 @@ let currentUser = null;
 let userFamilyTreeId = null;
 let familyMembers = [];
 let editingMemberId = null;
+let appBootStarted = false;
+let authInitializationPromise = null;
 
 window.familyMembers = familyMembers;
 window.currentUser = currentUser;
@@ -16,6 +18,22 @@ window.userFamilyTreeId = null;
 window.editingMemberId = null;
 
 const log = window.pyebwaLog || console.log;
+
+function getMemberFullName(member) {
+    if (!member) return '';
+    return `${member.firstName || ''} ${member.lastName || ''}`.trim();
+}
+
+function getMemberDisplayName(member) {
+    if (!member) return '';
+    if (member.useNickname && member.nickname) {
+        return member.nickname.trim();
+    }
+    return getMemberFullName(member);
+}
+
+window.getMemberFullName = getMemberFullName;
+window.getMemberDisplayName = getMemberDisplayName;
 
 // Redirect cooldown
 const REDIRECT_COOLDOWN = window.DeviceDetection && window.DeviceDetection.isTablet() ? 60000 : 30000;
@@ -68,6 +86,11 @@ function getPreferredLanguage() {
 }
 
 function bootApp() {
+    if (appBootStarted) {
+        return;
+    }
+    appBootStarted = true;
+    document.body.dataset.appReady = 'false';
     initializeAuth();
     initializeEventListeners();
     setLanguage(getPreferredLanguage());
@@ -84,6 +107,11 @@ if (document.readyState === 'loading') {
 // ==================== AUTH ====================
 
 async function initializeAuth() {
+    if (authInitializationPromise) {
+        return authInitializationPromise;
+    }
+
+    authInitializationPromise = (async () => {
     log('=== App initialization started ===');
 
     if (window.DeviceDetection) {
@@ -136,15 +164,18 @@ async function initializeAuth() {
                     window.showOnboarding();
                 }
                 showView('dashboard');
+                document.body.dataset.appReady = 'true';
                 log('App initialized successfully');
             } catch (error) {
                 log(`Error initializing app: ${error.message}`);
                 hideLoadingState();
+                document.body.dataset.appReady = 'false';
                 showError('Error loading your family tree. Please try again.');
             }
         } else {
             // Not authenticated - redirect to login
             hideLoadingState();
+            document.body.dataset.appReady = 'false';
             if (canRedirect()) {
                 window.location.href = '/login.html';
             } else {
@@ -154,8 +185,16 @@ async function initializeAuth() {
     } catch (error) {
         log(`Auth check error: ${error.message}`);
         hideLoadingState();
+        document.body.dataset.appReady = 'false';
         showError('Authentication error. Please login again.');
         setTimeout(() => { window.location.href = '/login.html'; }, 3000);
+    }
+    })();
+
+    try {
+        await authInitializationPromise;
+    } finally {
+        authInitializationPromise = null;
     }
 }
 
@@ -212,6 +251,8 @@ async function loadFamilyMembers() {
             treeId: userFamilyTreeId,
             firstName: p.first_name || p.firstName || '',
             lastName: p.last_name || p.lastName || '',
+            nickname: p.nickname || '',
+            useNickname: p.use_nickname === true || p.useNickname === true,
             birthDate: p.birth_date || p.birthDate || null,
             deathDate: p.death_date || p.deathDate || null,
             gender: p.gender || null,
@@ -359,6 +400,7 @@ function renderDashboard() {
     container.innerHTML = '';
     if (window.createDashboard) {
         container.appendChild(window.createDashboard());
+        window.dispatchEvent(new CustomEvent('pyebwaDashboardRendered'));
     } else {
         container.innerHTML = '<div class="empty-state"><div class="empty-icon">Loading...</div></div>';
     }
@@ -383,6 +425,8 @@ function showAddMemberModal(member = null) {
         submitBtn.textContent = t('update') || 'Update';
         form.firstName.value = member.firstName || '';
         form.lastName.value = member.lastName || '';
+        form.nickname.value = member.nickname || '';
+        form.useNickname.checked = !!member.useNickname;
         form.gender.value = member.gender || '';
         form.birthDate.value = member.birthDate ? member.birthDate.substring(0, 10) : '';
         form.deathDate.value = member.deathDate ? member.deathDate.substring(0, 10) : '';
@@ -416,7 +460,7 @@ function populatePersonSelect(select, excludeIds) {
         if (excludeIds.indexOf(member.id) !== -1) return;
         var option = document.createElement('option');
         option.value = member.id;
-        option.textContent = member.firstName + ' ' + member.lastName;
+        option.textContent = getMemberDisplayName(member);
         select.appendChild(option);
     });
 }
@@ -533,8 +577,12 @@ async function handleAddMember(e) {
         const memberData = {
             firstName: form.firstName.value,
             lastName: form.lastName.value,
+            nickname: form.nickname.value || '',
+            useNickname: !!form.useNickname.checked,
             gender: form.gender.value,
+            birthDate: form.birthDate.value || null,
             birth_date: form.birthDate.value || null,
+            deathDate: form.deathDate.value || null,
             death_date: form.deathDate.value || null,
             email: form.email.value || null,
             biography: form.biography.value || ''

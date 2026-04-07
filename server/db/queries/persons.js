@@ -33,14 +33,16 @@ async function create(data) {
     const searchTerms = buildSearchTerms(data);
     const result = await query(
         `INSERT INTO persons (family_tree_id, first_name, last_name, birth_date, death_date,
-            biography, email, phone, gender, photos, relationships, search_terms, user_id)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+            biography, email, phone, gender, nickname, use_nickname, photos, relationships, search_terms, user_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
          RETURNING *`,
         [
             data.family_tree_id, data.first_name, data.last_name || '',
             data.birth_date || null, data.death_date || null,
             data.biography || '', data.email || null, data.phone || null,
             data.gender || null,
+            data.nickname || '',
+            data.use_nickname === true,
             JSON.stringify(data.photos || []),
             JSON.stringify(data.relationships || []),
             JSON.stringify(searchTerms),
@@ -56,7 +58,7 @@ async function update(id, data) {
     let paramIndex = 1;
 
     const allowedFields = ['first_name', 'last_name', 'birth_date', 'death_date',
-        'biography', 'email', 'phone', 'gender', 'photos', 'relationships',
+        'biography', 'email', 'phone', 'gender', 'nickname', 'use_nickname', 'photos', 'relationships',
         'user_id', 'claimed_at', 'claimed_via_invite'];
 
     for (const [key, value] of Object.entries(data)) {
@@ -70,7 +72,7 @@ async function update(id, data) {
     if (fields.length === 0) return null;
 
     // Rebuild search terms if name changed
-    if (data.first_name || data.last_name) {
+    if (data.first_name || data.last_name || data.nickname !== undefined) {
         const existing = await findById(id);
         const merged = { ...existing, ...data };
         const searchTerms = buildSearchTerms(merged);
@@ -98,7 +100,7 @@ async function search(treeId, searchQuery) {
     const result = await query(
         `SELECT * FROM persons
          WHERE family_tree_id = $1
-           AND (first_name ILIKE $2 OR last_name ILIKE $2 OR
+           AND (first_name ILIKE $2 OR last_name ILIKE $2 OR nickname ILIKE $2 OR
                 (first_name || ' ' || last_name) ILIKE $2)
          ORDER BY first_name, last_name
          LIMIT 20`,
@@ -131,6 +133,9 @@ function buildSearchTerms(data) {
     }
     if (data.first_name && data.last_name) {
         terms.push(`${data.first_name} ${data.last_name}`.toLowerCase());
+    }
+    if (data.nickname) {
+        terms.push(data.nickname.toLowerCase());
     }
     return terms;
 }
