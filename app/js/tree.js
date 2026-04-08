@@ -24,6 +24,14 @@ function getRelationshipList(member) {
     return relationships;
 }
 
+function getTreeDisplayName(member) {
+    if (!member) return '';
+    if (member.useNickname && member.nickname) {
+        return member.nickname.trim();
+    }
+    return (member.firstName || '').trim();
+}
+
 function isInLawRelationship(rel) {
     return !!(rel && rel.isInLaw);
 }
@@ -151,7 +159,7 @@ function getDirectFamilyMembers(member) {
 }
 
 function renderTreeFocusDetailMember(member, relationshipLabel) {
-    const memberName = window.getMemberDisplayName ? window.getMemberDisplayName(member) : `${member.firstName} ${member.lastName}`.trim();
+    const memberName = getTreeDisplayName(member);
     const photoHtml = member.photoUrl
         ? `<div class="focus-member-photo" style="background-image:url('${member.photoUrl.replace(/'/g, "\\'")}')"></div>`
         : `<div class="focus-member-photo"><span class="material-icons">${member.gender === 'female' ? 'face_3' : 'face'}</span></div>`;
@@ -364,7 +372,7 @@ function applyTreeFocusState(options = {}) {
     const photoHtml = focusMember.photoUrl
         ? `<img class="focus-detail-photo" src="${focusMember.photoUrl}" alt="${focusMember.firstName} ${focusMember.lastName}">`
         : `<div class="focus-detail-avatar"><span class="material-icons">${focusMember.gender === 'female' ? 'face_3' : 'face'}</span></div>`;
-    const focusMemberName = window.getMemberDisplayName ? window.getMemberDisplayName(focusMember) : `${focusMember.firstName} ${focusMember.lastName}`.trim();
+    const focusMemberName = getTreeDisplayName(focusMember);
     const slideshowPhotos = getFocusSlideshowPhotos(focusMember);
     const family = getDirectFamilyMembers(focusMember);
     const sectionsHtml = [
@@ -1337,7 +1345,7 @@ function createMemberCard(node) {
     // Name
     const name = document.createElement('div');
     name.className = 'member-name';
-    name.textContent = window.getMemberDisplayName ? window.getMemberDisplayName(member) : `${member.firstName} ${member.lastName}`.trim();
+    name.textContent = getTreeDisplayName(member);
     card.appendChild(name);
     
     // Birth year
