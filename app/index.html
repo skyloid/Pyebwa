@@ -211,7 +211,9 @@
             <div class="header-container">
                 <div class="header-left">
                     <div class="app-logo-container">
-                        <img src="/app/images/pyebwa-title.png" alt="Pyebwa" class="app-logo-img">
+                        <a href="https://pyebwa.com" aria-label="Pyebwa home">
+                            <img src="/app/images/pyebwa-title.png" alt="Pyebwa" class="app-logo-img">
+                        </a>
                     </div>
                     <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">
                         <span class="material-icons">menu</span>
@@ -249,17 +251,12 @@
                         </button>
                         <div class="user-dropdown">
                             <div class="user-dropdown-inner">
-                                <a href="#" data-i18n="profile">Pwofil</a>
-                                <a href="#" data-i18n="settings">Paramèt</a>
-                                <a href="/admin" id="adminLink" style="display:none;">
+                                <a href="#" id="profileLink" data-i18n="profile">Pwofil</a>
+                                <a href="#" id="settingsLink" data-i18n="settings">Paramèt</a>
+                                <a href="/app/admin/" id="adminLink" style="display:none;">
                                     <span class="material-icons" style="font-size: 16px; margin-right: 4px;">admin_panel_settings</span>
                                     Admin Dashboard
                                 </a>
-                                <hr>
-                                <a href="https://pyebwa.com">Home</a>
-                                <a href="https://pyebwa.com/about.html">About</a>
-                                <a href="https://pyebwa.com/mission.html">Our Mission</a>
-                                <a href="https://pyebwa.com/contact.html">Contact</a>
                                 <hr>
                                 <a href="#" id="logoutBtn" data-i18n="logout">Dekonekte</a>
                             </div>
@@ -452,12 +449,45 @@
                 </form>
             </div>
         </div>
+
+        <div class="modal" id="settingsModal">
+            <div class="modal-content settings-modal-content">
+                <div class="modal-header">
+                    <h3 data-i18n="settings">Settings</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="settings-modal-body">
+                    <div class="settings-section">
+                        <h4 data-i18n="chooseLanguage">Choose Language</h4>
+                        <div class="settings-choice-row">
+                            <button type="button" class="btn btn-secondary settings-lang-btn" data-lang="en">English</button>
+                            <button type="button" class="btn btn-secondary settings-lang-btn" data-lang="fr">Français</button>
+                            <button type="button" class="btn btn-secondary settings-lang-btn" data-lang="ht">Kreyòl</button>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <h4 data-i18n="appearance">Appearance</h4>
+                        <div class="settings-choice-row">
+                            <button type="button" class="btn btn-secondary settings-theme-btn" data-theme="light" data-i18n="lightMode">Light</button>
+                            <button type="button" class="btn btn-secondary settings-theme-btn" data-theme="dark" data-i18n="darkMode">Dark</button>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <h4 data-i18n="quickLinks">Quick Links</h4>
+                        <div class="settings-choice-row">
+                            <a class="btn btn-secondary" href="https://pyebwa.com" target="_blank" rel="noopener noreferrer" data-i18n="openHomepage">Open Homepage</a>
+                            <a class="btn btn-secondary" href="/app/admin/" id="settingsAdminLink" style="display:none;" data-i18n="openAdminDashboard">Open Admin Dashboard</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- Footer -->
     <footer class="app-footer">
         <div class="footer-container">
-            <p>&copy; 2026 Pyebwa version <span data-build-version>1.0.73</span> - <span data-i18n="poweredBy">Powered by</span> <a class="footer-company-link" href="https://humanlevel.ai" target="_blank" rel="noopener noreferrer" data-i18n="humanLevelTech">Technologies Humanitaires Inc.</a></p>
+            <p>&copy; 2026 Pyebwa version <span data-build-version>1.0.79</span> - <span data-i18n="poweredBy">Powered by</span> <a class="footer-company-link" href="https://humanlevel.ai" target="_blank" rel="noopener noreferrer" data-i18n="humanLevelTech">Technologies Humanitaires Inc.</a></p>
         </div>
     </footer>
 

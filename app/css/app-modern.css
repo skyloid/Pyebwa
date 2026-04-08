@@ -1524,6 +1524,44 @@ input[type="file"] {
     flex-direction: column;
 }
 
+.settings-modal-content {
+    max-width: 560px;
+}
+
+.settings-modal-body {
+    display: grid;
+    gap: 20px;
+    padding: 0 32px 32px;
+}
+
+.settings-section {
+    display: grid;
+    gap: 12px;
+}
+
+.settings-section h4 {
+    margin: 0;
+    font-size: 0.98rem;
+    color: var(--gray-900);
+}
+
+.settings-choice-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.settings-choice-row .btn {
+    min-width: 140px;
+    justify-content: center;
+}
+
+.settings-choice-row .btn.active {
+    background: var(--accent-green);
+    border-color: var(--accent-green);
+    color: var(--accent-cream);
+}
+
 @keyframes slideUp {
     from {
         opacity: 0;

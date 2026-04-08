@@ -196,6 +196,9 @@ app.use('/api/backup', apiLimiter, backupRoutes);
 const systemRoutes = require('./server/api/system');
 app.use('/api/system', apiLimiter, systemRoutes);
 
+const adminRoutes = require('./server/api/admin');
+app.use('/api/admin', apiLimiter, adminRoutes);
+
 const inviteRoutes = require('./server/api/invites');
 app.use('/api/invites', apiLimiter, inviteRoutes);
 

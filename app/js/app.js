@@ -158,6 +158,47 @@ function updateFooterVersionLabel() {
     });
 }
 
+function applyThemePreference(theme) {
+    const normalizedTheme = theme === 'dark' ? 'dark' : 'light';
+    document.body.classList.toggle('dark-mode', normalizedTheme === 'dark');
+    try {
+        localStorage.setItem('theme', normalizedTheme);
+    } catch (error) {
+        console.warn('Unable to persist theme preference:', error);
+    }
+    const themeIcon = document.getElementById('themeIcon');
+    if (themeIcon) {
+        themeIcon.textContent = normalizedTheme === 'dark' ? 'light_mode' : 'dark_mode';
+    }
+    syncSettingsModalState();
+}
+
+function syncSettingsModalState() {
+    const currentLang = window.currentLanguage || getPreferredLanguage();
+    const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+
+    document.querySelectorAll('.settings-lang-btn').forEach((btn) => {
+        btn.classList.toggle('active', btn.getAttribute('data-lang') === currentLang);
+    });
+
+    document.querySelectorAll('.settings-theme-btn').forEach((btn) => {
+        btn.classList.toggle('active', btn.getAttribute('data-theme') === currentTheme);
+    });
+
+    const adminLink = document.getElementById('adminLink');
+    const settingsAdminLink = document.getElementById('settingsAdminLink');
+    if (settingsAdminLink) {
+        settingsAdminLink.style.display = adminLink && adminLink.style.display !== 'none' ? 'inline-flex' : 'none';
+    }
+}
+
+function openSettingsModal() {
+    const modal = document.getElementById('settingsModal');
+    if (!modal) return;
+    syncSettingsModalState();
+    modal.classList.add('active');
+}
+
 function bootApp() {
     if (appBootStarted) {
         return;
@@ -294,6 +335,7 @@ async function checkAdminStatus(user) {
         if (adminLink) {
             const isAdmin = user.role === 'admin' || user.role === 'superadmin' || user.role === 'moderator';
             adminLink.style.display = isAdmin ? 'flex' : 'none';
+            syncSettingsModalState();
         }
     } catch (error) {
         console.error('Error checking admin status:', error);
@@ -406,6 +448,58 @@ function initializeEventListeners() {
         });
     }
 
+    const profileLink = document.getElementById('profileLink');
+    if (profileLink) {
+        profileLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelector('.user-menu')?.classList.remove('active');
+            if (!currentUser?.email || !window.familyMembers || window.familyMembers.length === 0) {
+                showView('members');
+                return;
+            }
+
+            const claimedMember = window.familyMembers.find(member => member.email && member.email.toLowerCase() === currentUser.email.toLowerCase());
+            if (claimedMember && window.viewMemberProfile) {
+                window.viewMemberProfile(claimedMember.id);
+            } else {
+                showView('members');
+            }
+        });
+    }
+
+    const settingsLink = document.getElementById('settingsLink');
+    if (settingsLink) {
+        settingsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelector('.user-menu')?.classList.remove('active');
+            openSettingsModal();
+        });
+    }
+
+    document.querySelectorAll('.settings-lang-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const lang = btn.getAttribute('data-lang');
+            if (lang && typeof window.setLanguage === 'function') {
+                window.setLanguage(lang);
+                syncSettingsModalState();
+            }
+        });
+    });
+
+    document.querySelectorAll('.settings-theme-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const theme = btn.getAttribute('data-theme');
+            applyThemePreference(theme);
+        });
+    });
+
+    const adminLink = document.getElementById('adminLink');
+    if (adminLink) {
+        adminLink.addEventListener('click', () => {
+            document.querySelector('.user-menu')?.classList.remove('active');
+        });
+    }
+
     // Add member
     const addMemberBtn = document.getElementById('addMemberBtn');
     if (addMemberBtn) {
@@ -479,7 +573,14 @@ function showView(viewName) {
 
     switch (viewName) {
         case 'dashboard': renderDashboard(); break;
-        case 'tree': renderFamilyTree(); break;
+        case 'tree':
+            if (window.setTreeInteractionMode) {
+                window.setTreeInteractionMode('view');
+            } else if (window.pyebwaTreeInteractionState) {
+                window.pyebwaTreeInteractionState.mode = 'view';
+            }
+            renderFamilyTree();
+            break;
         case 'members': renderMembersList(); break;
         case 'stories': loadStories(); break;
     }

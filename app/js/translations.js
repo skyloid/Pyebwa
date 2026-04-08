@@ -10,6 +10,13 @@ const translations = {
         // User menu
         profile: "Profile",
         settings: "Settings",
+        chooseLanguage: "Choose Language",
+        appearance: "Appearance",
+        quickLinks: "Quick Links",
+        lightMode: "Light",
+        darkMode: "Dark",
+        openHomepage: "Open Homepage",
+        openAdminDashboard: "Open Admin Dashboard",
         logout: "Logout",
         
         // Common
@@ -567,6 +574,13 @@ const translations = {
         // User menu
         profile: "Profil",
         settings: "Paramètres",
+        chooseLanguage: "Choisir la langue",
+        appearance: "Apparence",
+        quickLinks: "Liens rapides",
+        lightMode: "Clair",
+        darkMode: "Sombre",
+        openHomepage: "Ouvrir l'accueil",
+        openAdminDashboard: "Ouvrir l'administration",
         logout: "Déconnexion",
         
         // Common
@@ -906,6 +920,13 @@ const translations = {
         // User menu
         profile: "Pwofil",
         settings: "Paramèt",
+        chooseLanguage: "Chwazi lang",
+        appearance: "Aparans",
+        quickLinks: "Lyen rapid",
+        lightMode: "Limyè",
+        darkMode: "Fènwa",
+        openHomepage: "Louvri paj dakèy",
+        openAdminDashboard: "Louvri panèl admin",
         logout: "Dekonekte",
         
         // Common
