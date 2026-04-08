@@ -58,18 +58,16 @@
     padding: 40px;
 }
 
-.stats-loading .spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid var(--gray-200);
-    border-top-color: var(--primary-moss, #2D6A4F);
-    border-radius: 50%;
+.stats-loading-spinner {
     margin: 0 auto 16px;
-    animation: spin 1s linear infinite;
+    width: fit-content;
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
+.stats-loading .loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
 }
 
 /* Stats Overview Cards */

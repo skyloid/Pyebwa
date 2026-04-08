@@ -3,11 +3,28 @@
     'use strict';
     
     const FamilyStatistics = {
+        initialized: false,
+        pendingUpdatePromise: null,
+        fetchTimeoutMs: 8000,
+
         // Initialize statistics
         init() {
+            if (!this.isDashboardVisible()) return;
+
             this.createStatisticsWidget();
-            this.attachEventListeners();
+
+            if (!this.initialized) {
+                this.attachEventListeners();
+                this.initialized = true;
+            }
+
+            this.applyTranslations();
             this.updateStatistics();
+        },
+
+        isDashboardVisible() {
+            const dashboard = document.getElementById('dashboardView');
+            return !!dashboard && getComputedStyle(dashboard).display !== 'none';
         },
         
         // Create statistics widget
@@ -25,16 +42,18 @@
                 <div class="widget-header">
                     <h3>
                         <span class="material-icons">analytics</span>
-                        <span data-i18n="familyStatistics">Family Statistics</span>
+                        <span data-i18n="familyStatistics">${t('familyStatistics')}</span>
                     </h3>
-                    <button class="widget-refresh" title="Refresh Statistics">
+                    <button class="widget-refresh" title="${t('refreshStatistics')}" data-title-i18n="refreshStatistics">
                         <span class="material-icons">refresh</span>
                     </button>
                 </div>
                 <div class="widget-content">
                     <div class="stats-loading">
-                        <div class="spinner"></div>
-                        <p>Loading statistics...</p>
+                        <div class="loading-spinner stats-loading-spinner">
+                            <div class="spinner"></div>
+                        </div>
+                        <p data-i18n="loadingStatistics">${t('loadingStatistics')}</p>
                     </div>
                     <div class="stats-container" style="display: none;">
                         <!-- Overview Stats -->
@@ -45,7 +64,7 @@
                                 </div>
                                 <div class="stat-info">
                                     <div class="stat-value">0</div>
-                                    <div class="stat-label" data-i18n="totalMembers">Total Members</div>
+                                    <div class="stat-label" data-i18n="totalMembers">${t('totalMembers')}</div>
                                 </div>
                             </div>
                             <div class="stat-card living-members">
@@ -54,7 +73,7 @@
                                 </div>
                                 <div class="stat-info">
                                     <div class="stat-value">0</div>
-                                    <div class="stat-label" data-i18n="livingMembers">Living Members</div>
+                                    <div class="stat-label" data-i18n="livingMembers">${t('livingMembers')}</div>
                                 </div>
                             </div>
                             <div class="stat-card generations">
@@ -63,7 +82,7 @@
                                 </div>
                                 <div class="stat-info">
                                     <div class="stat-value">0</div>
-                                    <div class="stat-label" data-i18n="generations">Generations</div>
+                                    <div class="stat-label" data-i18n="generations">${t('generations')}</div>
                                 </div>
                             </div>
                             <div class="stat-card avg-lifespan">
@@ -72,14 +91,14 @@
                                 </div>
                                 <div class="stat-info">
                                     <div class="stat-value">0</div>
-                                    <div class="stat-label" data-i18n="avgLifespan">Avg. Lifespan</div>
+                                    <div class="stat-label" data-i18n="avgLifespan">${t('avgLifespan')}</div>
                                 </div>
                             </div>
                         </div>
                         
                         <!-- Gender Distribution -->
                         <div class="stats-section">
-                            <h4 data-i18n="genderDistribution">Gender Distribution</h4>
+                            <h4 data-i18n="genderDistribution">${t('genderDistribution')}</h4>
                             <div class="gender-chart">
                                 <div class="chart-bars">
                                     <div class="chart-bar male" style="width: 0%">
@@ -92,12 +111,12 @@
                                 <div class="chart-legend">
                                     <div class="legend-item">
                                         <span class="legend-color male"></span>
-                                        <span data-i18n="male">Male</span>
+                                        <span data-i18n="male">${t('male')}</span>
                                         <span class="legend-percent male-percent">0%</span>
                                     </div>
                                     <div class="legend-item">
                                         <span class="legend-color female"></span>
-                                        <span data-i18n="female">Female</span>
+                                        <span data-i18n="female">${t('female')}</span>
                                         <span class="legend-percent female-percent">0%</span>
                                     </div>
                                 </div>
@@ -106,7 +125,7 @@
                         
                         <!-- Age Distribution -->
                         <div class="stats-section">
-                            <h4 data-i18n="ageDistribution">Age Distribution</h4>
+                            <h4 data-i18n="ageDistribution">${t('ageDistribution')}</h4>
                             <div class="age-distribution">
                                 <div class="age-group">
                                     <span class="age-label">0-18</span>
@@ -148,9 +167,9 @@
                         
                         <!-- Recent Activity -->
                         <div class="stats-section">
-                            <h4 data-i18n="recentActivity">Recent Activity</h4>
+                            <h4 data-i18n="recentActivity">${t('recentActivity')}</h4>
                             <div class="activity-list">
-                                <div class="no-activity" data-i18n="noRecentActivity">No recent activity</div>
+                                <div class="no-activity" data-i18n="noRecentActivity">${t('noRecentActivity')}</div>
                             </div>
                         </div>
                         
@@ -158,11 +177,11 @@
                         <div class="stats-actions">
                             <button class="btn btn-secondary" onclick="window.pyebwaTreeControls?.printTree()">
                                 <span class="material-icons">print</span>
-                                <span data-i18n="printReport">Print Report</span>
+                                <span data-i18n="printReport">${t('printReport')}</span>
                             </button>
                             <button class="btn btn-primary" onclick="FamilyStatistics.exportStatistics()">
                                 <span class="material-icons">download</span>
-                                <span data-i18n="exportStats">Export Stats</span>
+                                <span data-i18n="exportStats">${t('exportStats')}</span>
                             </button>
                         </div>
                     </div>
@@ -191,22 +210,58 @@
             document.addEventListener('memberAdded', () => this.updateStatistics());
             document.addEventListener('memberUpdated', () => this.updateStatistics());
             document.addEventListener('memberDeleted', () => this.updateStatistics());
+            window.addEventListener('languagechanged', () => {
+                this.applyTranslations();
+                this.updateStatistics();
+            });
+        },
+
+        applyTranslations() {
+            const widget = document.getElementById('familyStatsWidget');
+            if (!widget) return;
+
+            if (typeof window.updateTranslations === 'function') {
+                window.updateTranslations();
+            }
+
+            widget.querySelectorAll('[data-title-i18n]').forEach(element => {
+                const key = element.getAttribute('data-title-i18n');
+                element.title = t(key);
+            });
         },
         
         // Update statistics
         async updateStatistics() {
+            if (this.pendingUpdatePromise) {
+                return this.pendingUpdatePromise;
+            }
+
+            this.pendingUpdatePromise = this.performUpdateStatistics();
+            try {
+                await this.pendingUpdatePromise;
+            } finally {
+                this.pendingUpdatePromise = null;
+            }
+        },
+
+        async performUpdateStatistics() {
             const widget = document.getElementById('familyStatsWidget');
             if (!widget) return;
-            
-            // Show loading
+
             const loading = widget.querySelector('.stats-loading');
             const container = widget.querySelector('.stats-container');
-            loading.style.display = 'block';
-            container.style.display = 'none';
-            
+
             try {
-                // Get family members
-                const members = await this.getFamilyMembers();
+                let members = Array.isArray(window.familyMembers) ? window.familyMembers : [];
+
+                if (members.length > 0) {
+                    loading.style.display = 'none';
+                    container.style.display = 'block';
+                } else {
+                    loading.style.display = 'block';
+                    container.style.display = 'none';
+                    members = await this.withTimeout(this.getFamilyMembers(), this.fetchTimeoutMs);
+                }
                 
                 // Calculate statistics
                 const stats = this.calculateStatistics(members);
@@ -223,33 +278,56 @@
                 
             } catch (error) {
                 console.error('Error updating statistics:', error);
-                loading.innerHTML = '<p class="error">Failed to load statistics</p>';
+                loading.innerHTML = `
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p class="error">${t('failedToLoadStatistics')}</p>
+                    </div>
+                `;
+                container.style.display = 'none';
             }
+        },
+
+        withTimeout(promise, timeoutMs) {
+            let timeoutId = null;
+            const timeoutPromise = new Promise((_, reject) => {
+                timeoutId = setTimeout(() => {
+                    reject(new Error('Family statistics request timed out'));
+                }, timeoutMs);
+            });
+
+            return Promise.race([promise, timeoutPromise]).finally(() => {
+                if (timeoutId) clearTimeout(timeoutId);
+            });
         },
         
         // Get family members from Firebase
         async getFamilyMembers() {
-            if (!window.currentUser || !window.db) return [];
-            
             try {
-                const familyTreeId = window.currentUser.familyTreeId;
-                if (!familyTreeId) return [];
-                
-                const membersRef = window.db.collection('familyTrees')
-                    .doc(familyTreeId)
-                    .collection('members');
-                
-                const snapshot = await membersRef.get();
-                const members = [];
-                
-                snapshot.forEach(doc => {
-                    members.push({ id: doc.id, ...doc.data() });
-                });
-                
-                return members;
+                if (Array.isArray(window.familyMembers) && window.familyMembers.length > 0) {
+                    return window.familyMembers;
+                }
+
+                if (!window.userFamilyTreeId || typeof window.PyebwaAPI === 'undefined') {
+                    return Array.isArray(window.familyMembers) ? window.familyMembers : [];
+                }
+
+                const result = await window.PyebwaAPI.getPersons(window.userFamilyTreeId);
+                const persons = result?.persons || [];
+
+                return persons.map(p => ({
+                    id: p.id,
+                    firstName: p.first_name || p.firstName || '',
+                    lastName: p.last_name || p.lastName || '',
+                    birthDate: p.birth_date || p.birthDate || null,
+                    deathDate: p.death_date || p.deathDate || null,
+                    gender: p.gender || null,
+                    createdAt: p.created_at || p.createdAt || null,
+                    updatedAt: p.updated_at || p.updatedAt || null
+                }));
             } catch (error) {
                 console.error('Error fetching family members:', error);
-                return [];
+                return Array.isArray(window.familyMembers) ? window.familyMembers : [];
             }
         },
         
@@ -341,7 +419,7 @@
             widget.querySelector('.living-members .stat-value').textContent = stats.living;
             widget.querySelector('.generations .stat-value').textContent = stats.generationCount;
             widget.querySelector('.avg-lifespan .stat-value').textContent = 
-                stats.avgLifespan > 0 ? `${stats.avgLifespan} yrs` : 'N/A';
+                stats.avgLifespan > 0 ? `${stats.avgLifespan} ${t('yearsShort')}` : t('notAvailable');
             
             // Update gender distribution
             const malePercent = stats.total > 0 ? Math.round((stats.male / stats.total) * 100) : 0;
@@ -390,12 +468,15 @@
             recentDate.setDate(recentDate.getDate() - 7);
             
             const recentMembers = members
-                .filter(m => m.createdAt && new Date(m.createdAt.toDate()) > recentDate)
-                .sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate())
+                .filter(m => {
+                    const createdAt = this.normalizeDate(m.createdAt);
+                    return createdAt && createdAt > recentDate;
+                })
+                .sort((a, b) => this.normalizeDate(b.createdAt) - this.normalizeDate(a.createdAt))
                 .slice(0, 5);
             
             if (recentMembers.length === 0) {
-                activityList.innerHTML = '<div class="no-activity" data-i18n="noRecentActivity">No recent activity</div>';
+                activityList.innerHTML = `<div class="no-activity" data-i18n="noRecentActivity">${t('noRecentActivity')}</div>`;
                 return;
             }
             
@@ -409,29 +490,40 @@
                 icon.textContent = 'person_add';
                 const text = document.createElement('span');
                 text.className = 'activity-text';
-                text.textContent = `Added ${member.firstName} ${member.lastName}`;
+                text.textContent = t('memberAddedActivity', {
+                    name: `${member.firstName} ${member.lastName}`.trim()
+                });
                 const time = document.createElement('span');
                 time.className = 'activity-time';
-                time.textContent = this.formatRelativeTime(member.createdAt.toDate());
+                time.textContent = this.formatRelativeTime(this.normalizeDate(member.createdAt));
                 item.appendChild(icon);
                 item.appendChild(text);
                 item.appendChild(time);
                 activityList.appendChild(item);
             });
         },
+
+        normalizeDate(value) {
+            if (!value) return null;
+            if (value instanceof Date) return value;
+            if (typeof value?.toDate === 'function') return value.toDate();
+            const parsed = new Date(value);
+            return Number.isNaN(parsed.getTime()) ? null : parsed;
+        },
         
         // Format relative time
         formatRelativeTime(date) {
+            if (!date) return '';
             const now = new Date();
             const diff = now - date;
             const minutes = Math.floor(diff / 60000);
             const hours = Math.floor(minutes / 60);
             const days = Math.floor(hours / 24);
             
-            if (days > 0) return `${days}d ago`;
-            if (hours > 0) return `${hours}h ago`;
-            if (minutes > 0) return `${minutes}m ago`;
-            return 'Just now';
+            if (days > 0) return t('daysAgoShort', { count: days });
+            if (hours > 0) return t('hoursAgoShort', { count: hours });
+            if (minutes > 0) return t('minutesAgoShort', { count: minutes });
+            return t('justNow');
         },
         
         // Export statistics
@@ -471,39 +563,58 @@
             
             // Show success message
             if (window.showSuccess) {
-                window.showSuccess('Statistics exported successfully!');
+                window.showSuccess(t('statisticsExported'));
             }
         },
         
         // Generate CSV from statistics
         generateCSV(stats) {
             const lines = [
-                'Family Statistics Report',
-                `Generated on: ${new Date().toLocaleDateString()}`,
+                t('familyStatisticsReport'),
+                `${t('generatedOn')}: ${new Date().toLocaleDateString()}`,
                 '',
-                'Overview',
-                `Total Members,${stats.overview.totalMembers}`,
-                `Living Members,${stats.overview.livingMembers}`,
-                `Generations,${stats.overview.generations}`,
-                `Average Lifespan,${stats.overview.avgLifespan}`,
+                `${t('familyName')},${stats.familyName}`,
                 '',
-                'Gender Distribution',
-                `Male,${stats.gender.male}`,
-                `Female,${stats.gender.female}`
+                t('overview'),
+                `${t('totalMembers')},${stats.overview.totalMembers}`,
+                `${t('livingMembers')},${stats.overview.livingMembers}`,
+                `${t('generations')},${stats.overview.generations}`,
+                `${t('avgLifespan')},${stats.overview.avgLifespan}`,
+                '',
+                t('genderDistribution'),
+                `${t('male')},${stats.gender.male}`,
+                `${t('female')},${stats.gender.female}`
             ];
             
             return lines.join('\n');
         }
     };
     
+    let dashboardInitScheduled = false;
+
+    function scheduleDashboardStatisticsInit() {
+        if (dashboardInitScheduled) return;
+        dashboardInitScheduled = true;
+
+        queueMicrotask(() => {
+            dashboardInitScheduled = false;
+            FamilyStatistics.init();
+        });
+    }
+
     // Initialize when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => FamilyStatistics.init(), 1000);
+            scheduleDashboardStatisticsInit();
         });
     } else {
-        setTimeout(() => FamilyStatistics.init(), 1000);
+        scheduleDashboardStatisticsInit();
     }
+
+    window.addEventListener('pyebwaDashboardRendered', scheduleDashboardStatisticsInit);
+    document.addEventListener('memberAdded', scheduleDashboardStatisticsInit);
+    document.addEventListener('memberUpdated', scheduleDashboardStatisticsInit);
+    document.addEventListener('memberDeleted', scheduleDashboardStatisticsInit);
     
     // Export for global use
     window.FamilyStatistics = FamilyStatistics;
