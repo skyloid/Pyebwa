@@ -17,6 +17,7 @@ const translations = {
         search: "Search...",
         save: "Save",
         cancel: "Cancel",
+        close: "Close",
         delete: "Delete",
         edit: "Edit",
         view: "View",
@@ -78,7 +79,9 @@ const translations = {
         selectRelationship: "Select relationship",
         relatedTo: "Related to",
         parent: "Parent",
+        parents: "Parents",
         child: "Child",
+        children: "Children",
         spouse: "Spouse",
         sibling: "Sibling",
         grandparent: "Grandparent",
@@ -571,6 +574,7 @@ const translations = {
         search: "Rechercher...",
         save: "Enregistrer",
         cancel: "Annuler",
+        close: "Fermer",
         delete: "Supprimer",
         edit: "Modifier",
         view: "Voir",
@@ -632,7 +636,9 @@ const translations = {
         selectRelationship: "Sélectionner la relation",
         relatedTo: "Lié à",
         parent: "Parent",
+        parents: "Parents",
         child: "Enfant",
+        children: "Enfants",
         spouse: "Conjoint(e)",
         sibling: "Fr\u00e8re/S\u0153ur",
         childOf: "Fils / Fille de",
@@ -907,6 +913,7 @@ const translations = {
         search: "Chèche...",
         save: "Anrejistre",
         cancel: "Anile",
+        close: "Fèmen",
         delete: "Efase",
         edit: "Modifye",
         view: "Gade",
@@ -968,7 +975,9 @@ const translations = {
         selectRelationship: "Chwazi relasyon",
         relatedTo: "An relasyon ak",
         parent: "Paran",
+        parents: "Paran yo",
         child: "Pitit",
+        children: "Timoun yo",
         spouse: "Mari/Madanm",
         sibling: "Fr\u00e8/S\u00e8",
         childOf: "Pitit gason / Pitit fi de",
@@ -1224,7 +1233,7 @@ const translations = {
         audioUploadError: "Pa kapab voye odyo a. Tanpri eseye ankò.",
         
         // Footer
-        poweredBy: "Powered by",
+        poweredBy: "Pwodwi pa",
         humanLevelTech: "Technologies Humanitaires Inc.",
         
         // Enhanced Onboarding
@@ -1340,8 +1349,8 @@ if (!storedLang) {
     }
 }
 
-// Only use 'ht' as default if there's truly no stored preference
-let currentLanguage = storedLang || 'ht';
+// Respect the early boot language when available so first paint and app state match.
+let currentLanguage = window.__PYEBWA_INITIAL_LANG__ || storedLang || 'ht';
 window.currentLanguage = currentLanguage;
 
 // Translation function

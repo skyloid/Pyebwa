@@ -5,6 +5,29 @@
     const SWManager = {
         registration: null,
         updateAvailable: false,
+
+        getCurrentLanguage() {
+            return window.currentLanguage
+                || localStorage.getItem('pyebwaLang')
+                || localStorage.getItem('language')
+                || 'en';
+        },
+
+        reloadPreservingLanguage() {
+            const url = new URL(window.location.href);
+            url.searchParams.set('lang', this.getCurrentLanguage());
+            window.location.replace(url.toString());
+        },
+
+        getText(key, fallback) {
+            if (typeof window.t === 'function') {
+                const translated = window.t(key);
+                if (translated && translated !== key) {
+                    return translated;
+                }
+            }
+            return fallback;
+        },
         
         // Initialize service worker
         async init() {
@@ -59,7 +82,7 @@
             // Handle controller change
             navigator.serviceWorker.addEventListener('controllerchange', () => {
                 // Service worker updated, reload page
-                window.location.reload();
+                this.reloadPreservingLanguage();
             });
         },
         
@@ -95,9 +118,9 @@
             notification.className = 'sw-update-notification';
             notification.innerHTML = `
                 <div class="sw-update-content">
-                    <span>A new version of Pyebwa is available!</span>
-                    <button onclick="window.swManager.applyUpdate()">Update Now</button>
-                    <button onclick="this.parentElement.parentElement.remove()">Later</button>
+                    <span>${this.getText('newVersionAvailable', 'A new version of Pyebwa is available.')}</span>
+                    <button onclick="window.swManager.applyUpdate()">${this.getText('updateNow', 'Update Now')}</button>
+                    <button onclick="this.parentElement.parentElement.remove()">${this.getText('later', 'Later')}</button>
                 </div>
             `;
             

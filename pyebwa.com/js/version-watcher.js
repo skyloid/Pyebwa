@@ -6,6 +6,20 @@
     let promptVisible = false;
     let lastSeenBuildId = window.__PYEBWA_BUILD_ID__ || null;
 
+    function getCurrentLanguage() {
+        return window.currentLang
+            || localStorage.getItem('pyebwaLang')
+            || localStorage.getItem('language')
+            || 'ht';
+    }
+
+    function reloadPreservingLanguage() {
+        const lang = getCurrentLanguage();
+        const url = new URL(window.location.href);
+        url.searchParams.set('lang', lang);
+        window.location.replace(url.toString());
+    }
+
     function getTranslations() {
         if (typeof pageTranslations !== 'undefined') {
             return pageTranslations;
@@ -80,7 +94,7 @@
 
         prompt.querySelector('.version-update-banner__action').addEventListener('click', () => {
             lastSeenBuildId = nextBuildId;
-            window.location.reload();
+            reloadPreservingLanguage();
         });
 
         (document.body || document.documentElement).appendChild(prompt);

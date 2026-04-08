@@ -6,6 +6,30 @@
     let promptVisible = false;
     let lastSeenBuildId = window.__PYEBWA_BUILD_ID__ || null;
 
+    function getCurrentLanguage() {
+        return window.currentLanguage
+            || localStorage.getItem('pyebwaLang')
+            || localStorage.getItem('language')
+            || 'en';
+    }
+
+    function reloadPreservingLanguage() {
+        const lang = getCurrentLanguage();
+        const url = new URL(window.location.href);
+        url.searchParams.set('lang', lang);
+        window.location.replace(url.toString());
+    }
+
+    function getText(key, fallback) {
+        if (typeof window.t === 'function') {
+            const translated = window.t(key);
+            if (translated && translated !== key) {
+                return translated;
+            }
+        }
+        return fallback;
+    }
+
     function showUpdatePrompt(nextBuildId) {
         if (promptVisible) {
             return;
@@ -17,8 +41,8 @@
         prompt.className = 'version-update-banner';
         prompt.innerHTML = `
             <div class="version-update-banner__content">
-                <span>A new version of Pyebwa is available.</span>
-                <button type="button" class="version-update-banner__action">Refresh</button>
+                <span>${getText('newVersionAvailable', 'A new version of Pyebwa is available.')}</span>
+                <button type="button" class="version-update-banner__action">${getText('refresh', 'Refresh')}</button>
             </div>
         `;
 
@@ -71,7 +95,7 @@
                 return;
             }
 
-            window.location.reload();
+            reloadPreservingLanguage();
         });
 
         (document.body || document.documentElement).appendChild(prompt);
