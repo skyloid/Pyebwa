@@ -790,11 +790,18 @@ body.dark-mode .mode-btn.active {
     transform: scale(1);
 }
 
+.tree-focus-layout {
+    display: none;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+    margin-top: 24px;
+}
+
 /* Focus detail panel — below the tree */
 .tree-focus-detail {
     display: none;
     padding: 24px;
-    margin-top: 24px;
     background: var(--accent-cream, #FDFCFA);
     border-radius: var(--border-radius-lg);
     border: 1px solid var(--gray-200);
@@ -865,6 +872,121 @@ body.dark-mode .tree-focus-detail {
     display: flex;
     flex-direction: column;
     gap: 20px;
+}
+
+.focus-member-detail-card {
+    display: none;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(245, 243, 239, 0.88));
+    border: 1px solid var(--gray-200);
+    border-radius: 18px;
+    padding: 18px;
+    flex-direction: column;
+    gap: 18px;
+    position: sticky;
+    top: 16px;
+    box-shadow: var(--shadow-md);
+}
+
+.focus-member-detail-intro h4 {
+    margin: 0 0 6px;
+    font-size: 20px;
+    color: var(--gray-900);
+}
+
+.focus-detail-facts {
+    display: grid;
+    gap: 10px;
+}
+
+.focus-detail-fact {
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(209, 213, 219, 0.7);
+}
+
+.focus-detail-fact-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--gray-500);
+    margin-bottom: 4px;
+}
+
+.focus-detail-fact-value {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-900);
+    word-break: break-word;
+}
+
+.focus-detail-bio h5 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    color: var(--gray-700);
+}
+
+.focus-detail-bio p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--gray-700);
+}
+
+.focus-detail-slideshow {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.focus-detail-slides {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: 16px;
+    overflow: hidden;
+    background: rgba(17, 24, 39, 0.08);
+}
+
+.focus-detail-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+}
+
+.focus-detail-slide.active {
+    opacity: 1;
+}
+
+.focus-detail-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.focus-detail-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.focus-detail-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(107, 114, 128, 0.35);
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.focus-detail-dot.active {
+    background: var(--primary-moss, #2D6A4F);
+    transform: scale(1.15);
 }
 
 .focus-section h4 {
@@ -943,6 +1065,39 @@ body.dark-mode .focus-detail-profile h3 {
     color: var(--text-primary);
 }
 
+body.dark-mode .focus-member-detail-card {
+    background: linear-gradient(180deg, rgba(26, 43, 35, 0.92), rgba(20, 32, 24, 0.96));
+    border-color: var(--border-color);
+}
+
+body.dark-mode .focus-member-detail-intro h4,
+body.dark-mode .focus-detail-fact-value {
+    color: var(--text-primary);
+}
+
+body.dark-mode .focus-detail-fact {
+    background: rgba(11, 20, 16, 0.4);
+    border-color: rgba(83, 112, 96, 0.35);
+}
+
+body.dark-mode .focus-detail-fact-label,
+body.dark-mode .focus-detail-bio h5,
+body.dark-mode .focus-detail-bio p {
+    color: var(--text-secondary);
+}
+
+body.dark-mode .focus-detail-slides {
+    background: rgba(11, 20, 16, 0.45);
+}
+
+body.dark-mode .focus-detail-dot {
+    background: rgba(150, 174, 160, 0.35);
+}
+
+body.dark-mode .focus-detail-dot.active {
+    background: var(--primary-moss, #40916C);
+}
+
 body.dark-mode .focus-section h4 {
     color: var(--text-secondary);
     border-bottom-color: var(--border-color);
@@ -962,6 +1117,9 @@ body.dark-mode .focus-member-name {
 }
 
 @media (max-width: 768px) {
+    .tree-focus-layout {
+        grid-template-columns: 1fr;
+    }
     .focus-detail-header {
         flex-direction: column;
         gap: 12px;

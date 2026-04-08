@@ -105,6 +105,25 @@ function persistSharedLanguagePreference(lang) {
     document.cookie = `pyebwa_lang=${lang};expires=${expires};path=/;domain=.pyebwa.com;SameSite=Lax`;
 }
 
+function normalizeMemberPhotos(memberId, photos) {
+    if (!Array.isArray(photos)) return [];
+
+    return photos
+        .filter(photo => photo && photo.url)
+        .map(photo => {
+            const taggedMemberIds = Array.isArray(photo.taggedMemberIds)
+                ? photo.taggedMemberIds.filter(Boolean)
+                : [];
+
+            return {
+                ...photo,
+                taggedMemberIds: taggedMemberIds.length > 0
+                    ? [...new Set(taggedMemberIds)]
+                    : (memberId ? [memberId] : [])
+            };
+        });
+}
+
 function hasRecentLogoutIntent() {
     const marker = sessionStorage.getItem('pyebwaLoggedOutAt') || localStorage.getItem('pyebwaLoggedOutAt');
     if (!marker) return false;
@@ -315,7 +334,9 @@ async function loadFamilyMembers() {
 
     try {
         const result = await PyebwaAPI.getPersons(userFamilyTreeId);
-        familyMembers = (result.persons || []).map(p => ({
+        familyMembers = (result.persons || []).map(p => {
+            const normalizedPhotos = normalizeMemberPhotos(p.id, p.photos || []);
+            return ({
             id: p.id,
             treeId: userFamilyTreeId,
             firstName: p.first_name || p.firstName || '',
@@ -327,8 +348,8 @@ async function loadFamilyMembers() {
             gender: p.gender || null,
             email: p.email || null,
             biography: p.biography || '',
-            photoUrl: p.photo_url || p.photoUrl || (p.photos && p.photos.length > 0 ? (p.photos.find(ph => ph.isProfile) || p.photos[0]).url : null),
-            photos: p.photos || [],
+            photoUrl: p.photo_url || p.photoUrl || (normalizedPhotos.length > 0 ? (normalizedPhotos.find(ph => ph.isProfile) || normalizedPhotos[0]).url : null),
+            photos: normalizedPhotos,
             relationships: p.relationships || [],
             relationship: p.relationship || ((p.relationships && p.relationships[0]) ? p.relationships[0].type : null),
             relatedTo: p.relatedTo || ((p.relationships && p.relationships[0]) ? p.relationships[0].personId : null),
@@ -336,7 +357,8 @@ async function loadFamilyMembers() {
             userId: p.user_id || p.userId || null,
             createdAt: p.created_at || p.createdAt || null,
             updatedAt: p.updated_at || p.updatedAt || null
-        }));
+            });
+        });
         window.familyMembers = familyMembers;
         window.allFamilyMembers = [...familyMembers];
         window.pyebwaRelationshipEngine?.invalidate();

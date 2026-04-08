@@ -188,7 +188,8 @@
                         url: photoUrl, 
                         caption: caption || '',
                         uploadedAt: firebase.firestore.Timestamp.now(),
-                        uploadedBy: window.currentUser?.uid || 'anonymous'
+                        uploadedBy: window.currentUser?.uid || 'anonymous',
+                        taggedMemberIds: this.currentMemberId ? [this.currentMemberId] : []
                     };
                 });
                 

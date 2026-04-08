@@ -2019,7 +2019,12 @@
                     } else {
                         // Add to gallery
                         var photos = member.photos ? member.photos.slice() : [];
-                        photos.push({ url: photoUrl, caption: '', uploadedAt: new Date().toISOString() });
+                        photos.push({
+                            url: photoUrl,
+                            caption: '',
+                            uploadedAt: new Date().toISOString(),
+                            taggedMemberIds: [member.id]
+                        });
                         await window.updateFamilyMember(member.id, { photos: photos });
                         member.photos = photos;
                         var galleryContainer = document.getElementById('gallery-tab');

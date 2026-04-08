@@ -8,6 +8,25 @@ const adminQueries = require('../db/queries/admin');
 // All routes require authentication
 router.use(verifySession);
 
+function normalizePhotos(photos, memberId = null) {
+    if (!Array.isArray(photos)) return [];
+
+    return photos
+        .filter(photo => photo && photo.url)
+        .map(photo => {
+            const taggedMemberIds = Array.isArray(photo.taggedMemberIds)
+                ? photo.taggedMemberIds.filter(Boolean)
+                : [];
+
+            return {
+                ...photo,
+                taggedMemberIds: taggedMemberIds.length > 0
+                    ? [...new Set(taggedMemberIds)]
+                    : (memberId ? [memberId] : [])
+            };
+        });
+}
+
 // List user's trees
 router.get('/', async (req, res) => {
     try {
@@ -211,7 +230,7 @@ router.post('/:id/persons', async (req, res) => {
             email: req.body.email || null,
             phone: req.body.phone || null,
             gender: req.body.gender || null,
-            photos: req.body.photos || [],
+            photos: normalizePhotos(req.body.photos, null),
             relationships: req.body.relationships || []
         });
 
@@ -248,7 +267,9 @@ router.put('/:id/persons/:pid', async (req, res) => {
 
         for (const [camel, snake] of Object.entries(fieldMap)) {
             if (req.body[camel] !== undefined) {
-                updateData[snake] = req.body[camel];
+                updateData[snake] = snake === 'photos'
+                    ? normalizePhotos(req.body[camel], pid)
+                    : req.body[camel];
             }
         }
 
@@ -259,9 +280,14 @@ router.put('/:id/persons/:pid', async (req, res) => {
             const filtered = currentPhotos.filter(p => !p.isProfile);
             if (req.body.photoUrl) {
                 // Add new profile photo at the front
-                filtered.unshift({ url: req.body.photoUrl, isProfile: true, caption: 'Profile Photo' });
+                filtered.unshift({
+                    url: req.body.photoUrl,
+                    isProfile: true,
+                    caption: 'Profile Photo',
+                    taggedMemberIds: [pid]
+                });
             }
-            updateData.photos = filtered;
+            updateData.photos = normalizePhotos(filtered, pid);
         }
 
         const person = await personQueries.update(pid, updateData);

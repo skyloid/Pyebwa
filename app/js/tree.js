@@ -167,6 +167,71 @@ function renderTreeFocusDetailMember(member, relationshipLabel) {
     `;
 }
 
+function formatFocusDetailDate(dateValue) {
+    if (!dateValue) return '—';
+    const parsed = new Date(dateValue);
+    if (Number.isNaN(parsed.getTime())) return '—';
+    return parsed.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+}
+
+function formatFocusDetailGender(gender) {
+    if (gender === 'female') return t('female') || 'Female';
+    if (gender === 'male') return t('male') || 'Male';
+    return '—';
+}
+
+function getFocusSlideshowPhotos(member) {
+    const seen = new Set();
+    const memberId = String(member.id);
+
+    return (member.photos || []).filter(photo => {
+        if (!photo || !photo.url || seen.has(photo.url)) return false;
+        seen.add(photo.url);
+        return Array.isArray(photo.taggedMemberIds) && photo.taggedMemberIds.map(String).includes(memberId);
+    });
+}
+
+function clearFocusSlideshowTimer() {
+    if (window.pyebwaFocusSlideshowTimer) {
+        clearInterval(window.pyebwaFocusSlideshowTimer);
+        window.pyebwaFocusSlideshowTimer = null;
+    }
+}
+
+function initializeFocusSlideshow() {
+    clearFocusSlideshowTimer();
+
+    const slideshow = document.querySelector('#treeFocusMemberCard .focus-detail-slideshow');
+    if (!slideshow) return;
+
+    const slides = Array.from(slideshow.querySelectorAll('.focus-detail-slide'));
+    const dots = Array.from(slideshow.querySelectorAll('.focus-detail-dot'));
+    if (slides.length <= 1) return;
+
+    let index = 0;
+    const render = nextIndex => {
+        index = nextIndex;
+        slides.forEach((slide, slideIndex) => {
+            slide.classList.toggle('active', slideIndex === index);
+        });
+        dots.forEach((dot, dotIndex) => {
+            dot.classList.toggle('active', dotIndex === index);
+        });
+    };
+
+    dots.forEach((dot, dotIndex) => {
+        dot.addEventListener('click', () => render(dotIndex));
+    });
+
+    window.pyebwaFocusSlideshowTimer = setInterval(() => {
+        render((index + 1) % slides.length);
+    }, 3500);
+}
+
 function buildTreeFocusSection(title, icon, members, computedRelationships) {
     if (!members || members.length === 0) return '';
 
@@ -184,25 +249,43 @@ function buildTreeFocusSection(title, icon, members, computedRelationships) {
     `;
 }
 
-function ensureTreeFocusDetail() {
+function ensureTreeFocusPanels() {
     const treeView = document.getElementById('treeView');
     const treeContainer = document.getElementById('treeContainer');
     if (!treeView || !treeContainer) return null;
+
+    let layout = document.getElementById('treeFocusLayout');
+    if (!layout) {
+        layout = document.createElement('div');
+        layout.id = 'treeFocusLayout';
+        layout.className = 'tree-focus-layout';
+        treeContainer.insertAdjacentElement('afterend', layout);
+    }
 
     let detail = document.getElementById('treeFocusDetail');
     if (!detail) {
         detail = document.createElement('div');
         detail.id = 'treeFocusDetail';
         detail.className = 'tree-focus-detail';
-        treeContainer.insertAdjacentElement('afterend', detail);
+        layout.appendChild(detail);
     }
 
-    return detail;
+    let memberCard = document.getElementById('treeFocusMemberCard');
+    if (!memberCard) {
+        memberCard = document.createElement('aside');
+        memberCard.id = 'treeFocusMemberCard';
+        memberCard.className = 'focus-member-detail-card';
+        layout.appendChild(memberCard);
+    }
+
+    return { layout, detail, memberCard };
 }
 
 function clearTreeFocusState() {
     const treeContainer = document.getElementById('treeContainer');
     const detail = document.getElementById('treeFocusDetail');
+    const memberCard = document.getElementById('treeFocusMemberCard');
+    const layout = document.getElementById('treeFocusLayout');
 
     if (treeContainer) {
         treeContainer.classList.remove('focus-active');
@@ -215,16 +298,28 @@ function clearTreeFocusState() {
         detail.style.display = 'none';
         detail.innerHTML = '';
     }
+
+    if (memberCard) {
+        memberCard.style.display = 'none';
+        memberCard.innerHTML = '';
+    }
+
+    if (layout) {
+        layout.style.display = 'none';
+    }
+
+    clearFocusSlideshowTimer();
 }
 
 function applyTreeFocusState(options = {}) {
     const state = getTreeInteractionState();
     const treeContainer = document.getElementById('treeContainer');
-    const detail = ensureTreeFocusDetail();
+    const panels = ensureTreeFocusPanels();
     const sourceMembers = window.allFamilyMembers || familyMembers;
     const shouldScrollDetailIntoView = options.scrollDetail === true;
 
-    if (!treeContainer || !detail) return;
+    if (!treeContainer || !panels) return;
+    const { layout, detail, memberCard } = panels;
 
     if (state.mode !== 'view' || !state.focusPersonId) {
         clearTreeFocusState();
@@ -270,7 +365,7 @@ function applyTreeFocusState(options = {}) {
         ? `<img class="focus-detail-photo" src="${focusMember.photoUrl}" alt="${focusMember.firstName} ${focusMember.lastName}">`
         : `<div class="focus-detail-avatar"><span class="material-icons">${focusMember.gender === 'female' ? 'face_3' : 'face'}</span></div>`;
     const focusMemberName = window.getMemberDisplayName ? window.getMemberDisplayName(focusMember) : `${focusMember.firstName} ${focusMember.lastName}`.trim();
-
+    const slideshowPhotos = getFocusSlideshowPhotos(focusMember);
     const family = getDirectFamilyMembers(focusMember);
     const sectionsHtml = [
         buildTreeFocusSection(t('children') || 'Children', 'north', family.children, computedRelationships),
@@ -297,7 +392,30 @@ function applyTreeFocusState(options = {}) {
             ${sectionsHtml || `<p class="focus-detail-info">${t('noFamilyMembers') || 'No related family members found.'}</p>`}
         </div>
     `;
+    memberCard.innerHTML = `
+        ${slideshowPhotos.length ? `
+            <div class="focus-detail-slideshow">
+                <div class="focus-detail-slides">
+                    ${slideshowPhotos.map((photo, index) => `
+                        <div class="focus-detail-slide ${index === 0 ? 'active' : ''}">
+                            <img src="${photo.url}" alt="${focusMemberName}">
+                        </div>
+                    `).join('')}
+                </div>
+                ${slideshowPhotos.length > 1 ? `
+                    <div class="focus-detail-dots">
+                        ${slideshowPhotos.map((_, index) => `
+                            <button type="button" class="focus-detail-dot ${index === 0 ? 'active' : ''}" aria-label="Photo ${index + 1}"></button>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            </div>
+        ` : ''}
+    `;
+    layout.style.display = 'grid';
     detail.style.display = 'block';
+    memberCard.style.display = 'flex';
+    initializeFocusSlideshow();
     if (shouldScrollDetailIntoView) {
         setTimeout(() => detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
     }
