@@ -56,6 +56,27 @@
             const controls = document.createElement('div');
             controls.className = 'tree-controls';
             controls.innerHTML = `
+                <div class="tree-toolbar-actions">
+                    <div class="tree-mode-toggle" id="treeModeToggle">
+                        <button class="mode-btn active" data-mode="view" title="View mode — click to explore">
+                            <span class="material-icons">visibility</span>
+                            <span data-i18n="view">${window.t ? window.t('view') : 'View'}</span>
+                        </button>
+                        <button class="mode-btn" data-mode="edit" title="Edit mode — click to edit profiles">
+                            <span class="material-icons">edit</span>
+                            <span data-i18n="edit">${window.t ? window.t('edit') : 'Edit'}</span>
+                        </button>
+                    </div>
+                    <button class="btn btn-primary tree-toolbar-btn" id="addMemberBtn" type="button">
+                        <span class="material-icons">person_add</span>
+                        <span data-i18n="add">${window.t ? window.t('add') : 'Add'}</span>
+                    </button>
+                    <button class="btn btn-secondary tree-toolbar-btn export" type="button">
+                        <span class="material-icons">download</span>
+                        <span data-i18n="export">${window.t ? window.t('export') : 'Export'}</span>
+                    </button>
+                </div>
+
                 <!-- Zoom Controls -->
                 <div class="zoom-controls">
                     <button class="control-btn zoom-out" title="Zoom Out (-)">
@@ -101,9 +122,6 @@
                     </button>
                     <button class="control-btn print" title="Print Tree">
                         <i class="material-icons">print</i>
-                    </button>
-                    <button class="control-btn export" title="Export Tree">
-                        <i class="material-icons">download</i>
                     </button>
                 </div>
                 
@@ -191,10 +209,28 @@
                 btn.addEventListener('click', () => this.changeViewMode(btn.dataset.mode));
             });
 
+            ctrl.querySelectorAll('#treeModeToggle .mode-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (window.setTreeInteractionMode) {
+                        window.setTreeInteractionMode(btn.dataset.mode);
+                    }
+                });
+            });
+
             // Action controls
             ctrl.querySelector('.fullscreen')?.addEventListener('click', () => this.toggleFullscreen());
             ctrl.querySelector('.print')?.addEventListener('click', () => this.printTree());
             ctrl.querySelector('.export')?.addEventListener('click', () => this.showExportOptions());
+            ctrl.querySelector('#addMemberBtn')?.addEventListener('click', () => {
+                if (window.showAddMemberModal) {
+                    window.showAddMemberModal();
+                }
+            });
+
+            if (window.setTreeInteractionMode) {
+                const savedMode = localStorage.getItem('pyebwaTreeMode') || 'view';
+                window.setTreeInteractionMode(savedMode);
+            }
             
             // Tree search
             const searchInput = ctrl.querySelector('.tree-search-input');
@@ -312,7 +348,7 @@
             if (!wrapper) return;
             
             wrapper.style.transform = `translate3d(${this.state.panX}px, ${this.state.panY}px, 0) scale(${this.state.zoom / 100})`;
-            wrapper.style.transformOrigin = 'center bottom';
+            wrapper.style.transformOrigin = 'center center';
             if (this.elements.zoomValue) {
                 this.elements.zoomValue.textContent = `${this.state.zoom}%`;
             }
@@ -368,7 +404,7 @@
                 const treeHeight = tree.offsetHeight * (this.state.zoom / 100);
                 
                 container.scrollLeft = (treeWidth - containerWidth) / 2;
-                container.scrollTop = Math.max(0, (treeHeight - containerHeight) / 4);
+                container.scrollTop = Math.max(0, (treeHeight - containerHeight) / 2);
                 this.applyZoom();
                 
                 this.updateMiniMapViewport();

@@ -3,7 +3,6 @@
 
 /* Dark Mode Variables */
 body.dark-mode {
-    --bg-primary: #0B1410;
     --bg-secondary: #101C17;
     --bg-tertiary: #1A2B23;
     --bg-card: #142018;

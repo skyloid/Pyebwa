@@ -217,11 +217,12 @@ function clearTreeFocusState() {
     }
 }
 
-function applyTreeFocusState() {
+function applyTreeFocusState(options = {}) {
     const state = getTreeInteractionState();
     const treeContainer = document.getElementById('treeContainer');
     const detail = ensureTreeFocusDetail();
     const sourceMembers = window.allFamilyMembers || familyMembers;
+    const shouldScrollDetailIntoView = options.scrollDetail === true;
 
     if (!treeContainer || !detail) return;
 
@@ -297,8 +298,9 @@ function applyTreeFocusState() {
         </div>
     `;
     detail.style.display = 'block';
-    // Scroll the panel into view so user doesn't have to scroll manually
-    setTimeout(() => detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+    if (shouldScrollDetailIntoView) {
+        setTimeout(() => detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+    }
 
     detail.querySelector('#treeFocusEditBtn')?.addEventListener('click', () => showAddMemberModal(focusMember));
     detail.querySelector('#treeFocusClearBtn')?.addEventListener('click', () => {
@@ -318,7 +320,7 @@ function focusTreeMember(memberId, options = {}) {
     const state = getTreeInteractionState();
     state.focusPersonId = memberId;
     localStorage.setItem('pyebwaTreeFocusPerson', memberId);
-    applyTreeFocusState();
+    applyTreeFocusState({ scrollDetail: options.scrollDetail !== false });
 
     if (options.navigate !== false && window.pyebwaTreeControls?.focusOnMember) {
         window.pyebwaTreeControls.focusOnMember(memberId, options);
@@ -851,12 +853,17 @@ function renderFamilyTree(viewMode = 'full') {
         }
     }
 
-    // Render family name ABOVE the tree container (not inside it)
+    // Render family name above the toolbar when controls exist
     let nameDisplay = document.getElementById('familyNameDisplay');
+    const treeView = container.closest('#treeView');
+    const controls = treeView?.querySelector('.tree-controls');
+    const anchor = controls || container;
     if (!nameDisplay) {
         nameDisplay = document.createElement('div');
         nameDisplay.id = 'familyNameDisplay';
-        container.insertAdjacentElement('beforebegin', nameDisplay);
+    }
+    if (nameDisplay.previousElementSibling !== anchor.previousElementSibling || nameDisplay.nextElementSibling !== anchor) {
+        anchor.insertAdjacentElement('beforebegin', nameDisplay);
     }
     if (familyNameHtml) {
         nameDisplay.className = 'family-name-header';
@@ -1368,3 +1375,4 @@ window.renderFamilyTree = renderFamilyTree;
 window.renderTreeNode = renderTreeNode;
 window.requestTreeConnectionRedraw = requestTreeConnectionRedraw;
 window.redrawTreeConnectionsNow = redrawTreeConnectionsNow;
+window.setTreeInteractionMode = setTreeInteractionMode;

@@ -9,11 +9,18 @@
     padding: 16px;
     box-shadow: var(--shadow-lg);
     overflow: auto;
+    height: 900px;
     min-height: 0;
     position: relative;
     background-image:
         radial-gradient(circle at 20% 80%, rgba(45, 106, 79, 0.03) 0%, transparent 50%),
         radial-gradient(circle at 80% 20%, rgba(27, 67, 50, 0.03) 0%, transparent 50%);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.tree-container::-webkit-scrollbar {
+    display: none;
 }
 
 body.dark-mode .tree-container {

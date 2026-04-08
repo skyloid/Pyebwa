@@ -7,13 +7,29 @@
     z-index: 10;
     background: var(--accent-cream, #FDFCFA);
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--gray-200);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--border-radius-xl);
     padding: 12px 16px;
     display: flex;
     align-items: center;
     gap: 16px;
     flex-wrap: wrap;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    margin-bottom: 5px;
+}
+
+.tree-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.tree-toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
 }
 
 .tree-controls.is-collapsed {
@@ -367,7 +383,7 @@
 /* Dark mode support */
 body.dark-mode .tree-controls {
     background: var(--bg-secondary, #101C17);
-    border-bottom-color: var(--border-color, #253A30);
+    border-color: var(--border-color, #253A30);
 }
 
 body.dark-mode .control-btn {

@@ -461,6 +461,32 @@ function showView(viewName) {
         case 'members': renderMembersList(); break;
         case 'stories': loadStories(); break;
     }
+
+    if (viewName === 'tree') {
+        const resetTreePageScroll = () => {
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+            const appMain = document.querySelector('.app-main');
+            if (appMain) {
+                appMain.scrollTop = 0;
+            }
+            const topAnchor = document.getElementById('familyNameDisplay')
+                || document.querySelector('#treeView .tree-controls')
+                || document.getElementById('treeView');
+            if (topAnchor) {
+                topAnchor.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'auto' });
+            }
+        };
+
+        resetTreePageScroll();
+        requestAnimationFrame(() => {
+            resetTreePageScroll();
+            requestAnimationFrame(resetTreePageScroll);
+        });
+        setTimeout(resetTreePageScroll, 180);
+        setTimeout(resetTreePageScroll, 360);
+    }
 }
 
 function renderDashboard() {

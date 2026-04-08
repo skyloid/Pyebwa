@@ -47,7 +47,7 @@
     
     /* Wider content on desktop */
     .app-main {
-        padding: 40px 32px;
+        padding: 0 32px 40px;
     }
     
     /* Desktop grid layouts */
