@@ -286,8 +286,31 @@ body.dark-mode .footer-container a:hover {
 
 /* Loading States */
 body.dark-mode .loading-spinner {
-    border-color: var(--border-color);
-    border-top-color: var(--primary);
+    background: linear-gradient(180deg, rgba(24, 36, 31, 0.94), rgba(17, 27, 23, 0.9));
+    border: 1px solid rgba(83, 112, 96, 0.35);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+}
+
+body.dark-mode .loading-spinner p {
+    color: #E4DED4;
+}
+
+body.dark-mode .spinner {
+    background:
+        radial-gradient(circle at center, rgba(36, 53, 45, 0.95) 0 28%, rgba(92, 120, 105, 0.24) 29% 44%, transparent 45%),
+        radial-gradient(circle at center, rgba(196, 167, 106, 0.08) 0 62%, transparent 63%);
+}
+
+body.dark-mode .spinner::before {
+    border-color: rgba(228, 222, 212, 0.14);
+    border-top-color: #DAD7CD;
+    border-right-color: rgba(196, 167, 106, 0.42);
+}
+
+body.dark-mode .spinner::after {
+    border-color: rgba(123, 156, 138, 0.14);
+    border-bottom-color: #7BA88A;
+    border-left-color: rgba(196, 167, 106, 0.34);
 }
 
 body.dark-mode .skeleton {

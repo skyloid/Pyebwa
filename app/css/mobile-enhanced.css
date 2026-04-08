@@ -72,6 +72,8 @@
     .app-logo-img {
         width: 74px;
         height: auto;
+        position: relative;
+        top: 2px;
     }
     
     /* Enhanced Mobile Menu Button */

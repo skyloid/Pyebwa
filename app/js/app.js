@@ -12,6 +12,7 @@ let editingMemberId = null;
 let appBootStarted = false;
 let authInitializationPromise = null;
 let logoutPromise = null;
+let dashboardRenderRetryTimer = null;
 
 window.familyMembers = familyMembers;
 window.currentUser = currentUser;
@@ -465,14 +466,40 @@ function showView(viewName) {
 function renderDashboard() {
     const container = document.getElementById('dashboardView');
     if (!container) return;
+
+    if (dashboardRenderRetryTimer) {
+        clearTimeout(dashboardRenderRetryTimer);
+        dashboardRenderRetryTimer = null;
+    }
+
     container.innerHTML = '';
     if (window.createDashboard) {
         container.appendChild(window.createDashboard());
         window.dispatchEvent(new CustomEvent('pyebwaDashboardRendered'));
     } else {
-        container.innerHTML = '<div class="empty-state"><div class="empty-icon">Loading...</div></div>';
+        container.innerHTML = `
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>${t('loading') || 'Loading...'}</p>
+            </div>
+        `;
+
+        dashboardRenderRetryTimer = window.setTimeout(() => {
+            dashboardRenderRetryTimer = null;
+            const dashboardView = document.getElementById('dashboardView');
+            if (dashboardView && getComputedStyle(dashboardView).display !== 'none') {
+                renderDashboard();
+            }
+        }, 150);
     }
 }
+
+window.addEventListener('pyebwaDashboardModuleReady', () => {
+    const dashboardView = document.getElementById('dashboardView');
+    if (dashboardView && getComputedStyle(dashboardView).display !== 'none') {
+        renderDashboard();
+    }
+});
 
 // ==================== MEMBERS ====================
 

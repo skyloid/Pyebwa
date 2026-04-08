@@ -828,6 +828,7 @@ document.head.insertAdjacentHTML('beforeend', dashboardStyles);
 
 // Export functions
 window.createDashboard = createDashboard;
+window.dispatchEvent(new CustomEvent('pyebwaDashboardModuleReady'));
 window.calculateFamilyStats = calculateFamilyStats;
 window.showExportOptions = showExportOptions;
 window.closeExportModal = closeExportModal;

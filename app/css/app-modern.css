@@ -214,6 +214,8 @@ body.dark-mode .app-header {
     width: clamp(85px, 7.5vw, 110px);
     height: auto;
     object-fit: contain;
+    position: relative;
+    top: 2px;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
     transition: transform var(--transition-base);
 }
