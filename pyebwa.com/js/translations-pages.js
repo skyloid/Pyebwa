@@ -8,6 +8,8 @@ const pageTranslations = {
         contact: "Contact",
         login: "Login",
         signup: "Sign Up",
+        newVersionAvailable: "A new version of Pyebwa is available.",
+        refresh: "Refresh",
         
         // Common footer
         poweredBy: "Powered by",
@@ -185,6 +187,8 @@ const pageTranslations = {
         contact: "Contact",
         login: "Connexion",
         signup: "S'inscrire",
+        newVersionAvailable: "Une nouvelle version de Pyebwa est disponible.",
+        refresh: "Actualiser",
         
         // Pied de page commun
         poweredBy: "Propulsé par",
@@ -362,6 +366,8 @@ const pageTranslations = {
         contact: "Kontak",
         login: "Konekte",
         signup: "Enskri",
+        newVersionAvailable: "Yon nouvo vèsyon Pyebwa disponib.",
+        refresh: "Rafrechi",
         
         // Pye paj komen
         poweredBy: "Pwodwi pa",
