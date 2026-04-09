@@ -164,7 +164,7 @@ const pageTranslations = {
         supportHours: "Support Hours",
         supportHoursDescription: "Monday - Friday: 9:00 AM - 6:00 PM EST\nSaturday - Sunday: 10:00 AM - 4:00 PM EST",
         languages: "Languages",
-        languagesDescription: "We provide support in:\nEnglish • Français • Kreyòl Ayisyen",
+        languagesDescription: "We provide support in:\nEnglish • Français • Kreyòl",
         
         frequentlyAskedQuestions: "Frequently Asked Questions",
         faq1Question: "How do I get started with Pyebwa?",
@@ -174,7 +174,7 @@ const pageTranslations = {
         faq3Question: "Can I invite family members to collaborate?",
         faq3Answer: "Absolutely! You can invite family members to view and contribute to your family tree. This makes it easy to gather information and stories from relatives near and far.",
         faq4Question: "What languages does Pyebwa support?",
-        faq4Answer: "Pyebwa currently supports English, French, and Haitian Creole.",
+        faq4Answer: "Pyebwa currently supports English, French, and Creole.",
         faq5Question: "Is Pyebwa free to use?",
         faq5Answer: "Yes! Pyebwa offers a free plan that includes all the essential features for building and sharing your family tree. We also offer premium plans with additional features for larger families."
     },
@@ -343,7 +343,7 @@ const pageTranslations = {
         supportHours: "Heures d'Assistance",
         supportHoursDescription: "Lundi - Vendredi: 9h00 - 18h00 EST\nSamedi - Dimanche: 10h00 - 16h00 EST",
         languages: "Langues",
-        languagesDescription: "Nous fournissons une assistance en:\nEnglish • Français • Kreyòl Ayisyen",
+        languagesDescription: "Nous fournissons une assistance en:\nEnglish • Français • Kreyòl",
         
         frequentlyAskedQuestions: "Questions Fréquemment Posées",
         faq1Question: "Comment commencer avec Pyebwa?",
@@ -353,7 +353,7 @@ const pageTranslations = {
         faq3Question: "Puis-je inviter des membres de la famille à collaborer?",
         faq3Answer: "Absolument! Vous pouvez inviter des membres de la famille à voir et à contribuer à votre arbre généalogique. Cela facilite la collecte d'informations et d'histoires de parents proches et lointains.",
         faq4Question: "Quelles langues Pyebwa prend-il en charge?",
-        faq4Answer: "Pyebwa prend actuellement en charge l'anglais, le français et le créole haïtien.",
+        faq4Answer: "Pyebwa prend actuellement en charge l'anglais, le français et le créole.",
         faq5Question: "Pyebwa est-il gratuit?",
         faq5Answer: "Oui! Pyebwa offre un plan gratuit qui inclut toutes les fonctionnalités essentielles pour construire et partager votre arbre généalogique. Nous proposons également des plans premium avec des fonctionnalités supplémentaires pour les familles plus nombreuses."
     },
@@ -522,7 +522,7 @@ const pageTranslations = {
         supportHours: "Lè Sipò",
         supportHoursDescription: "Lendi - Vandredi: 9:00 AM - 6:00 PM EST\nSamdi - Dimanch: 10:00 AM - 4:00 PM EST",
         languages: "Lang",
-        languagesDescription: "Nou bay sipò nan:\nEnglish • Français • Kreyòl Ayisyen",
+        languagesDescription: "Nou bay sipò nan:\nEnglish • Français • Kreyòl",
         
         frequentlyAskedQuestions: "Kesyon yo Poze Souvan",
         faq1Question: "Kijan mwen kòmanse ak Pyebwa?",
@@ -532,7 +532,7 @@ const pageTranslations = {
         faq3Question: "Èske mwen ka envite manm fanmi kolabore?",
         faq3Answer: "Absoliman! Ou ka envite manm fanmi pou wè epi kontribye nan pyebwa fanmi ou. Sa fè li fasil pou ranmase enfòmasyon ak istwa nan men fanmi pwòch ak lwen.",
         faq4Question: "Ki lang Pyebwa sipòte?",
-        faq4Answer: "Pyebwa kounye a sipòte angle, franse, ak kreyòl ayisyen.",
+        faq4Answer: "Pyebwa kounye a sipòte angle, franse, ak kreyòl.",
         faq5Question: "Èske Pyebwa gratis?",
         faq5Answer: "Wi! Pyebwa ofri yon plan gratis ki gen tout fonksyon esansyèl yo pou konstwi ak pataje pyebwa fanmi ou. Nou ofri tou plan premium ak fonksyon adisyonèl pou fanmi ki pi gwo."
     }

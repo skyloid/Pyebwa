@@ -11,7 +11,7 @@
         supportedLanguages: {
             'en': { name: 'English', variations: ['en-US', 'en-GB', 'en-CA', 'en-AU'] },
             'fr': { name: 'Français', variations: ['fr-FR', 'fr-CA', 'fr-BE', 'fr-CH'] },
-            'ht': { name: 'Kreyòl Ayisyen', variations: ['ht-HT'] }
+            'ht': { name: 'Kreyòl', variations: ['ht-HT'] }
         },
         
         // Storage keys

@@ -7,7 +7,7 @@
     const PAGE_CONTENT_LANG_LABELS = {
         en: 'English',
         fr: 'French',
-        ht: 'Haitian Creole'
+        ht: 'Creole'
     };
     const PAGE_CONTENT_SCHEMA = {
         home: [

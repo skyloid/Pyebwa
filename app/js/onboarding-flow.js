@@ -1,10 +1,17 @@
 // Enhanced 3-Step Onboarding Flow for Pyebwa Fanmi
 (function() {
     'use strict';
+
+    function getOnboardingStorageKey(type) {
+        const userId = window.currentUser?.id || window.currentUser?.uid || window.currentUser?.email || 'anonymous';
+        return `pyebwaOnboarding${type}:${userId}`;
+    }
     
     const OnboardingFlow = {
         currentStep: 1,
         totalSteps: 3,
+        initialized: false,
+        isCompleting: false,
         onboardingData: {
             fullName: '',
             email: '',
@@ -21,6 +28,14 @@
         
         // Initialize onboarding
         init() {
+            if (this.initialized || document.getElementById('onboardingFlowModal')) {
+                return;
+            }
+
+            this.initialized = true;
+            this.isCompleting = false;
+            sessionStorage.setItem('pyebwaOnboardingActive', 'true');
+
             // Detect browser language
             const browserLang = navigator.language || navigator.userLanguage;
             let detectedLang = 'en'; // default
@@ -113,7 +128,7 @@
                                         <label for="language">${t('preferredLanguage') || 'Preferred Language'}</label>
                                         <select id="language" name="language" onchange="pyebwaOnboarding.changeLanguage(this.value)">
                                             <option value="en" ${this.onboardingData.language === 'en' ? 'selected' : ''}>English</option>
-                                            <option value="ht" ${this.onboardingData.language === 'ht' ? 'selected' : ''}>Kreyòl Ayisyen</option>
+                                            <option value="ht" ${this.onboardingData.language === 'ht' ? 'selected' : ''}>Kreyòl</option>
                                             <option value="fr" ${this.onboardingData.language === 'fr' ? 'selected' : ''}>Français</option>
                                         </select>
                                     </div>
@@ -416,10 +431,9 @@
             this.onboardingData.language = lang;
             if (window.setLanguage) {
                 window.setLanguage(lang);
-                // Refresh the onboarding UI with new translations
-                this.refreshUI();
             }
             this.autoSave();
+            this.refreshUI();
         },
         
         // Set start choice
@@ -612,17 +626,11 @@
                 const previewEl = document.getElementById(`photoPreview_${index}`);
                 previewEl.innerHTML = '<div class="photo-loading">Uploading...</div>';
                 
-                // Create a temporary URL for preview
                 const tempUrl = URL.createObjectURL(file);
-                
-                // Upload to Firebase Storage
-                const storage = firebase.storage();
-                const timestamp = Date.now();
-                const fileName = `onboarding/${window.currentUser.uid}/member_${index}_${timestamp}.jpg`;
-                const storageRef = storage.ref(fileName);
-                
-                const snapshot = await storageRef.put(file);
-                const downloadUrl = await snapshot.ref.getDownloadURL();
+                const downloadUrl = await PyebwaAPI.uploadPhoto(file, {
+                    treeId: window.userFamilyTreeId,
+                    type: 'onboarding'
+                });
                 
                 // Update member data
                 this.onboardingData.familyMembers[index].photoUrl = downloadUrl;
@@ -758,6 +766,11 @@
                         data: this.onboardingData,
                         lastUpdated: new Date().toISOString()
                     }));
+                    localStorage.setItem(getOnboardingStorageKey('Progress'), JSON.stringify({
+                        currentStep: this.currentStep,
+                        data: this.onboardingData,
+                        lastUpdated: new Date().toISOString()
+                    }));
                 } catch (error) {
                     console.error('Error auto-saving onboarding progress:', error);
                 }
@@ -768,8 +781,10 @@
         async loadProgress() {
             try {
                 const saved = localStorage.getItem('pyebwaOnboardingProgress');
-                if (saved) {
-                    const progress = JSON.parse(saved);
+                const userScopedSaved = localStorage.getItem(getOnboardingStorageKey('Progress'));
+                const progressPayload = userScopedSaved || saved;
+                if (progressPayload) {
+                    const progress = JSON.parse(progressPayload);
                     this.currentStep = progress.currentStep || 1;
                     this.onboardingData = { ...this.onboardingData, ...progress.data };
                 }
@@ -781,6 +796,11 @@
         // Complete onboarding
         async completeOnboarding() {
             try {
+                if (this.isCompleting) {
+                    return;
+                }
+
+                this.isCompleting = true;
                 this.onboardingData.completedAt = new Date().toISOString();
                 
                 // Show loading
@@ -876,13 +896,16 @@
                 
                 // Clear saved progress
                 localStorage.removeItem('pyebwaOnboardingProgress');
-                localStorage.setItem('pyebwaOnboardingComplete', 'true');
+                localStorage.removeItem(getOnboardingStorageKey('Progress'));
+                localStorage.setItem(getOnboardingStorageKey('Complete'), 'true');
+                sessionStorage.removeItem('pyebwaOnboardingActive');
                 
                 // Remove onboarding modal
                 const modal = document.getElementById('onboardingFlowModal');
                 if (modal) {
                     modal.remove();
                 }
+                this.initialized = false;
                 
                 // Hide loading
                 if (window.hideLoadingState) {
@@ -906,6 +929,7 @@
                 
             } catch (error) {
                 console.error('Error completing onboarding:', error);
+                this.isCompleting = false;
                 if (window.hideLoadingState) {
                     window.hideLoadingState();
                 }
@@ -952,9 +976,13 @@
         
         // Refresh UI with new translations
         refreshUI() {
-            // This would ideally re-render the entire onboarding UI
-            // For now, we'll rely on page refresh
-            window.location.reload();
+            const existingModal = document.getElementById('onboardingFlowModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            this.createOnboardingModal();
+            this.showStep(this.currentStep);
         }
     };
     
@@ -964,6 +992,10 @@
     // Check if user needs onboarding
     window.shouldShowEnhancedOnboarding = async function() {
         try {
+            if (localStorage.getItem(getOnboardingStorageKey('Complete')) === 'true') {
+                return false;
+            }
+
             return window.familyMembers && window.familyMembers.length === 0;
         } catch (error) {
             return false;
