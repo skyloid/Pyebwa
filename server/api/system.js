@@ -1,6 +1,6 @@
 const express = require('express');
 const SystemService = require('../system-service');
-const { verifySession, requireAdmin, requireSuperAdmin } = require('../db/auth');
+const { verifySession, requireSuperAdmin } = require('../db/auth');
 const adminQueries = require('../db/queries/admin');
 
 const router = express.Router();
@@ -22,7 +22,7 @@ function recordMetrics(req, res, next) {
 router.use(recordMetrics);
 
 // Get system status
-router.get('/status', verifySession, requireAdmin, async (req, res) => {
+router.get('/status', verifySession, requireSuperAdmin, async (req, res) => {
     try {
         const status = await systemService.getSystemStatus();
         res.json(status);
@@ -33,7 +33,7 @@ router.get('/status', verifySession, requireAdmin, async (req, res) => {
 });
 
 // Get performance metrics
-router.get('/metrics', verifySession, requireAdmin, async (req, res) => {
+router.get('/metrics', verifySession, requireSuperAdmin, async (req, res) => {
     try {
         const { range } = req.query;
         const metrics = await systemService.getMetrics(range);
@@ -45,7 +45,7 @@ router.get('/metrics', verifySession, requireAdmin, async (req, res) => {
 });
 
 // Get system logs
-router.get('/logs', verifySession, requireAdmin, async (req, res) => {
+router.get('/logs', verifySession, requireSuperAdmin, async (req, res) => {
     try {
         const logs = await systemService.getSystemLogs();
         res.json(logs);
@@ -72,7 +72,7 @@ router.delete('/logs', verifySession, requireSuperAdmin, async (req, res) => {
 });
 
 // Get configuration
-router.get('/config', verifySession, requireAdmin, async (req, res) => {
+router.get('/config', verifySession, requireSuperAdmin, async (req, res) => {
     try {
         const config = await systemService.getConfiguration();
         res.json(config);
@@ -100,7 +100,7 @@ router.post('/config', verifySession, requireSuperAdmin, async (req, res) => {
 });
 
 // Maintenance mode
-router.post('/maintenance', verifySession, requireAdmin, async (req, res) => {
+router.post('/maintenance', verifySession, requireSuperAdmin, async (req, res) => {
     try {
         const { enabled, message, duration, allowAdmins } = req.body;
         const result = await systemService.setMaintenanceMode(enabled, {
@@ -150,7 +150,7 @@ router.post('/restart', verifySession, requireSuperAdmin, async (req, res) => {
 });
 
 // System info
-router.get('/info', verifySession, requireAdmin, async (req, res) => {
+router.get('/info', verifySession, requireSuperAdmin, async (req, res) => {
     try {
         const info = {
             node: {

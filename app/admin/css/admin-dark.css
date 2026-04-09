@@ -203,7 +203,8 @@ body.dark-theme .slideshow-meta span {
 }
 
 body.dark-theme .slideshow-list-panel .chart-header h3,
-body.dark-theme .slideshow-editor-panel .chart-header h3 {
+body.dark-theme .slideshow-editor-panel .chart-header h3,
+body.dark-theme #settingsView .chart-header h3 {
     color: var(--admin-text);
 }
 
@@ -259,6 +260,17 @@ body.dark-theme .page-content-tab:hover,
 body.dark-theme .page-content-language-tab:hover {
     background: rgba(64, 145, 108, 0.2);
     color: var(--admin-text);
+}
+
+body.dark-theme #settingsView .settings-toggle-row {
+    background: rgba(20, 32, 24, 0.95);
+    border-color: var(--admin-border);
+    color: var(--admin-text);
+}
+
+body.dark-theme #settingsView input[readonly] {
+    color: var(--admin-text);
+    background: rgba(20, 32, 24, 0.95);
 }
 
 body.dark-theme .page-content-status-bar,

@@ -91,9 +91,11 @@
             throw new Error('Failed to verify admin access');
         }
 
+        const summary = await response.json();
+
         const detail = {
             user: session.user,
-            role: session.user.user_metadata?.role || session.user.app_metadata?.role || 'admin',
+            role: summary.currentUserRole || session.user.user_metadata?.role || session.user.app_metadata?.role || 'admin',
             userData: {
                 displayName: session.user.user_metadata?.display_name || session.user.user_metadata?.full_name || session.user.email,
                 photoURL: session.user.user_metadata?.avatar_url || ''

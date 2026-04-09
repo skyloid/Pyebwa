@@ -4,6 +4,8 @@
     const VALID_SLIDESHOW_PAGES = ['home', 'about', 'mission', 'contact'];
     const VALID_PAGE_CONTENT_PAGES = ['home', 'about', 'mission', 'contact'];
     const VALID_PAGE_CONTENT_LANGS = ['en', 'fr', 'ht'];
+    const MANAGEMENT_VIEWS = ['dashboard', 'users', 'trees', 'content', 'slideshows', 'page-content', 'analytics', 'communications'];
+    const SUPERADMIN_VIEWS = ['settings', 'audit', 'backup', 'system'];
     const PAGE_CONTENT_LANG_LABELS = {
         en: 'English',
         fr: 'French',
@@ -206,9 +208,24 @@
         filteredUsers: [],
         currentPage: 1,
         pageSize: 20,
+        auditPage: 1,
+        auditPageSize: 20,
+        auditLogs: [],
+        auditTotal: 0,
+        allTrees: [],
+        filteredTrees: [],
+        treePage: 1,
+        treePageSize: 20,
         currentView: 'dashboard',
         summary: null,
         theme: 'light',
+        adminRole: 'admin',
+        settingsConfig: null,
+        settingsDirty: false,
+        settingsSaving: false,
+        backupHistory: [],
+        backupSchedule: null,
+        backupBusy: false,
         pageContentDraft: null,
         pageContentPublished: null,
         activePageContentPage: 'home',
@@ -226,8 +243,12 @@
         slideshowPublishing: false
     };
 
+    function normalizeAdminView(view) {
+        return String(view || '').trim();
+    }
+
     function getViewFromHash(hash = window.location.hash) {
-        const candidate = String(hash || '').replace(/^#/, '').trim();
+        const candidate = normalizeAdminView(String(hash || '').replace(/^#/, '').trim());
         if (!candidate) return 'dashboard';
         return document.getElementById(`${candidate}View`) ? candidate : 'dashboard';
     }
@@ -350,15 +371,52 @@
         const sessionData = JSON.parse(sessionStorage.getItem('adminUser') || '{}');
         const displayName = detail?.userData?.displayName || sessionData.displayName || detail?.user?.email || sessionData.email || 'Admin';
         const role = detail?.role || sessionData.role || 'admin';
+        state.adminRole = String(role || 'admin').toLowerCase();
         const nameEl = document.getElementById('adminName');
         const roleEl = document.getElementById('adminRole');
         const avatarEl = document.getElementById('adminAvatar');
         if (nameEl) nameEl.textContent = displayName;
-        if (roleEl) roleEl.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+        if (roleEl) {
+            roleEl.textContent = state.adminRole === 'superadmin'
+                ? 'Super Admin'
+                : state.adminRole.charAt(0).toUpperCase() + state.adminRole.slice(1);
+        }
         if (avatarEl) {
             const fallbackAvatar = '/app/images/default-avatar.png?v=1.0.98';
             const avatarUrl = detail?.userData?.photoURL || detail?.user?.user_metadata?.avatar_url || sessionData.photoURL || fallbackAvatar;
             avatarEl.src = avatarUrl || fallbackAvatar;
+        }
+        applyRoleAccess();
+    }
+
+    function canAccessView(view, role = state.adminRole) {
+        if (SUPERADMIN_VIEWS.includes(view)) {
+            return role === 'superadmin';
+        }
+        return MANAGEMENT_VIEWS.includes(view);
+    }
+
+    function applyRoleAccess() {
+        const role = state.adminRole || 'admin';
+        document.querySelectorAll('.menu-link').forEach((link) => {
+            const href = link.getAttribute('href') || '';
+            if (!href.startsWith('#')) return;
+            const view = href.slice(1);
+            const allowed = canAccessView(view, role);
+            const item = link.closest('.menu-item');
+            if (item) {
+                item.style.display = allowed ? '' : 'none';
+            }
+        });
+
+        const systemSection = document.querySelector('.menu-section');
+        if (systemSection) {
+            systemSection.style.display = role === 'superadmin' ? '' : 'none';
+        }
+
+        const settingsLink = document.getElementById('adminSettingsLink');
+        if (settingsLink) {
+            settingsLink.style.display = role === 'superadmin' ? '' : 'none';
         }
     }
 
@@ -390,6 +448,322 @@
             }
         }
         applyTheme(savedTheme);
+    }
+
+    function updateSettingsStatus(message) {
+        const status = document.getElementById('settingsStatus');
+        if (status) {
+            status.textContent = message || (state.settingsDirty ? 'Unsaved settings changes.' : 'Settings loaded.');
+        }
+    }
+
+    function setSettingsSaving(isSaving) {
+        state.settingsSaving = !!isSaving;
+        const saveButton = document.getElementById('saveSettings');
+        const refreshButton = document.getElementById('refreshSettings');
+        [saveButton, refreshButton].forEach((button) => {
+            if (!button) return;
+            button.disabled = state.settingsSaving;
+            button.classList.toggle('is-busy', state.settingsSaving);
+        });
+        if (saveButton) {
+            saveButton.innerHTML = state.settingsSaving
+                ? '<span class="btn-spinner" aria-hidden="true"></span><span>Saving...</span>'
+                : '<span class="material-icons">save</span><span>Save Settings</span>';
+        }
+    }
+
+    function updateBackupStatus(message) {
+        const status = document.getElementById('backupStatus');
+        if (status) {
+            status.textContent = message || 'Backup status unknown.';
+        }
+    }
+
+    function renderBackupView() {
+        const scheduleTarget = document.getElementById('backupScheduleForm');
+        const historyTarget = document.getElementById('backupHistoryList');
+        if (!scheduleTarget || !historyTarget) return;
+
+        const schedule = state.backupSchedule || {
+            frequency: 'disabled',
+            time: '02:00',
+            day: '0',
+            date: '1',
+            retention: '30'
+        };
+
+        scheduleTarget.innerHTML = `
+            <div class="page-content-fields">
+                <div class="form-group page-content-field">
+                    <label for="backupFrequency">Frequency</label>
+                    <select id="backupFrequency">
+                        <option value="disabled" ${schedule.frequency === 'disabled' ? 'selected' : ''}>Disabled</option>
+                        <option value="daily" ${schedule.frequency === 'daily' ? 'selected' : ''}>Daily</option>
+                        <option value="weekly" ${schedule.frequency === 'weekly' ? 'selected' : ''}>Weekly</option>
+                        <option value="monthly" ${schedule.frequency === 'monthly' ? 'selected' : ''}>Monthly</option>
+                    </select>
+                </div>
+                <div class="form-group page-content-field">
+                    <label for="backupTime">Time</label>
+                    <input id="backupTime" type="time" value="${escapeHtml(schedule.time || '02:00')}">
+                </div>
+                <div class="form-group page-content-field">
+                    <label for="backupDay">Day of Week</label>
+                    <select id="backupDay">
+                        <option value="0" ${String(schedule.day) === '0' ? 'selected' : ''}>Sunday</option>
+                        <option value="1" ${String(schedule.day) === '1' ? 'selected' : ''}>Monday</option>
+                        <option value="2" ${String(schedule.day) === '2' ? 'selected' : ''}>Tuesday</option>
+                        <option value="3" ${String(schedule.day) === '3' ? 'selected' : ''}>Wednesday</option>
+                        <option value="4" ${String(schedule.day) === '4' ? 'selected' : ''}>Thursday</option>
+                        <option value="5" ${String(schedule.day) === '5' ? 'selected' : ''}>Friday</option>
+                        <option value="6" ${String(schedule.day) === '6' ? 'selected' : ''}>Saturday</option>
+                    </select>
+                </div>
+                <div class="form-group page-content-field">
+                    <label for="backupDate">Day of Month</label>
+                    <input id="backupDate" type="number" min="1" max="31" value="${escapeHtml(String(schedule.date || '1'))}">
+                </div>
+                <div class="form-group page-content-field">
+                    <label for="backupRetention">Retention (days)</label>
+                    <input id="backupRetention" type="number" min="1" value="${escapeHtml(String(schedule.retention || '30'))}">
+                </div>
+            </div>
+        `;
+
+        if (!state.backupHistory.length) {
+            historyTarget.innerHTML = '<div class="empty-state"><span class="material-icons">backup</span><h3>No backups yet</h3><p>Create your first backup to populate history.</p></div>';
+            return;
+        }
+
+        historyTarget.innerHTML = state.backupHistory.map((backup) => `
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <span class="material-icons">${backup.status === 'completed' ? 'task_alt' : 'error'}</span>
+                </div>
+                <div class="activity-content">
+                    <p>${escapeHtml(backup.id || 'Backup')}</p>
+                    <small>${escapeHtml(formatDate(backup.created))} · ${escapeHtml((backup.tables || []).join(', '))} · ${escapeHtml(String(backup.format || '').toUpperCase())}</small>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function loadBackupData(force = false) {
+        if (state.backupHistory.length && state.backupSchedule && !force) {
+            renderBackupView();
+            return;
+        }
+
+        const [historyRes, scheduleRes] = await Promise.all([
+            authFetch('/api/backup/history'),
+            authFetch('/api/backup/schedule')
+        ]);
+
+        if (!historyRes.ok || !scheduleRes.ok) {
+            throw new Error('Failed to load backup data');
+        }
+
+        state.backupHistory = await historyRes.json();
+        state.backupSchedule = await scheduleRes.json();
+        renderBackupView();
+        updateBackupStatus(`Loaded ${state.backupHistory.length} backups.`);
+    }
+
+    async function createBackupNow() {
+        state.backupBusy = true;
+        updateBackupStatus('Creating backup...');
+        try {
+            const collections = Array.from(document.querySelectorAll('[data-backup-collection]:checked')).map((input) => input.getAttribute('data-backup-collection'));
+            const format = document.getElementById('backupFormat')?.value || 'json';
+            const response = await authFetch('/api/backup/create', {
+                method: 'POST',
+                body: JSON.stringify({ collections, format })
+            });
+            if (!response.ok) {
+                throw new Error('Failed to create backup');
+            }
+            await loadBackupData(true);
+            updateBackupStatus('Backup created successfully.');
+        } finally {
+            state.backupBusy = false;
+        }
+    }
+
+    async function saveBackupSchedule() {
+        updateBackupStatus('Saving backup schedule...');
+        const payload = {
+            frequency: document.getElementById('backupFrequency')?.value || 'disabled',
+            time: document.getElementById('backupTime')?.value || '02:00',
+            day: document.getElementById('backupDay')?.value || '0',
+            date: document.getElementById('backupDate')?.value || '1',
+            retention: document.getElementById('backupRetention')?.value || '30'
+        };
+        const response = await authFetch('/api/backup/schedule', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            throw new Error('Failed to save backup schedule');
+        }
+        state.backupSchedule = payload;
+        renderBackupView();
+        updateBackupStatus('Backup schedule saved.');
+    }
+
+    async function cleanupBackups() {
+        updateBackupStatus('Cleaning up old backups...');
+        const retentionDays = parseInt(document.getElementById('backupRetention')?.value || '30', 10) || 30;
+        const response = await authFetch('/api/backup/cleanup', {
+            method: 'POST',
+            body: JSON.stringify({ retentionDays })
+        });
+        if (!response.ok) {
+            throw new Error('Failed to clean up backups');
+        }
+        const result = await response.json();
+        await loadBackupData(true);
+        updateBackupStatus(`Deleted ${result.deleted || 0} old backups.`);
+    }
+
+    function renderSettings() {
+        const featuresTarget = document.getElementById('settingsFeatureToggles');
+        const maintenanceTarget = document.getElementById('settingsMaintenanceForm');
+        const envTarget = document.getElementById('settingsEnvInfo');
+        const config = state.settingsConfig;
+        if (!featuresTarget || !maintenanceTarget || !envTarget || !config) return;
+
+        const features = config.features || {};
+        const maintenance = config.maintenance || {};
+        const env = config.env || {};
+
+        featuresTarget.innerHTML = `
+            <div class="page-content-fields">
+                ${[
+                    ['emailNotifications', 'Email Notifications'],
+                    ['backupEnabled', 'Backup Enabled'],
+                    ['auditLogging', 'Audit Logging']
+                ].map(([key, label]) => `
+                    <label class="settings-toggle-row">
+                        <span>${escapeHtml(label)}</span>
+                        <input type="checkbox" data-settings-feature="${escapeHtml(key)}" ${features[key] ? 'checked' : ''}>
+                    </label>
+                `).join('')}
+            </div>
+        `;
+
+        maintenanceTarget.innerHTML = `
+            <div class="page-content-fields">
+                <label class="settings-toggle-row">
+                    <span>Enable Maintenance Mode</span>
+                    <input type="checkbox" id="settingsMaintenanceEnabled" ${maintenance.enabled ? 'checked' : ''}>
+                </label>
+                <div class="form-group page-content-field">
+                    <label for="settingsMaintenanceMessage">Maintenance Message</label>
+                    <textarea id="settingsMaintenanceMessage" rows="3">${escapeHtml(maintenance.message || 'Site is currently under maintenance')}</textarea>
+                </div>
+                <div class="form-group page-content-field">
+                    <label for="settingsMaintenanceDuration">Duration (minutes)</label>
+                    <input id="settingsMaintenanceDuration" type="number" min="1" value="${escapeHtml(String(maintenance.duration || 30))}">
+                </div>
+                <label class="settings-toggle-row">
+                    <span>Allow Admins During Maintenance</span>
+                    <input type="checkbox" id="settingsMaintenanceAllowAdmins" ${maintenance.allowAdmins !== false ? 'checked' : ''}>
+                </label>
+            </div>
+        `;
+
+        envTarget.innerHTML = `
+            <div class="page-content-fields">
+                ${Object.entries(env).map(([key, entry]) => `
+                    <div class="form-group page-content-field">
+                        <label>${escapeHtml(key)}</label>
+                        <input type="text" value="${escapeHtml(entry?.value ?? '')}" readonly>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+        updateSettingsStatus(state.settingsDirty ? 'Unsaved settings changes.' : 'Settings loaded.');
+    }
+
+    async function loadSettings(force = false) {
+        if (state.settingsConfig && !force) {
+            renderSettings();
+            return;
+        }
+
+        const [configRes, statusRes] = await Promise.all([
+            authFetch('/api/system/config'),
+            authFetch('/api/system/status')
+        ]);
+        if (!configRes.ok || !statusRes.ok) {
+            throw new Error('Failed to load settings');
+        }
+
+        const config = await configRes.json();
+        const status = await statusRes.json();
+        state.settingsConfig = {
+            env: config.env || {},
+            features: config.features || {},
+            maintenance: {
+                enabled: !!status.maintenanceMode,
+                message: 'Site is currently under maintenance',
+                duration: 30,
+                allowAdmins: true
+            }
+        };
+        state.settingsDirty = false;
+        renderSettings();
+    }
+
+    function collectSettingsForm() {
+        if (!state.settingsConfig) return null;
+        const features = { ...(state.settingsConfig.features || {}) };
+        document.querySelectorAll('[data-settings-feature]').forEach((input) => {
+            features[input.getAttribute('data-settings-feature')] = !!input.checked;
+        });
+
+        return {
+            features,
+            maintenance: {
+                enabled: !!document.getElementById('settingsMaintenanceEnabled')?.checked,
+                message: document.getElementById('settingsMaintenanceMessage')?.value?.trim() || 'Site is currently under maintenance',
+                duration: Math.max(1, parseInt(document.getElementById('settingsMaintenanceDuration')?.value || '30', 10) || 30),
+                allowAdmins: !!document.getElementById('settingsMaintenanceAllowAdmins')?.checked
+            }
+        };
+    }
+
+    async function saveSettings() {
+        setSettingsSaving(true);
+        try {
+            const payload = collectSettingsForm();
+            if (!payload) return;
+
+            const [configRes, maintenanceRes] = await Promise.all([
+                authFetch('/api/system/config', {
+                    method: 'POST',
+                    body: JSON.stringify({ features: payload.features })
+                }),
+                authFetch('/api/system/maintenance', {
+                    method: 'POST',
+                    body: JSON.stringify(payload.maintenance)
+                })
+            ]);
+
+            if (!configRes.ok || !maintenanceRes.ok) {
+                throw new Error('Failed to save settings');
+            }
+
+            state.settingsConfig.features = payload.features;
+            state.settingsConfig.maintenance = payload.maintenance;
+            state.settingsDirty = false;
+            renderSettings();
+            updateSettingsStatus('Settings saved.');
+        } finally {
+            setSettingsSaving(false);
+        }
     }
 
     function updateSlideStatusBar() {
@@ -1469,7 +1843,12 @@
     }
 
     function showView(view, options = {}) {
-        const { syncHash = true } = options;
+        view = normalizeAdminView(view);
+        let { syncHash = true } = options;
+        if (!canAccessView(view)) {
+            view = 'dashboard';
+            syncHash = true;
+        }
         document.querySelectorAll('.admin-view').forEach((el) => {
             el.style.display = 'none';
         });
@@ -1489,6 +1868,14 @@
 
         if (view === 'users') {
             renderUsers();
+        } else if (view === 'trees') {
+            loadTrees().catch((error) => showError(error.message));
+        } else if (view === 'audit') {
+            loadAuditLogs().catch((error) => showError(error.message));
+        } else if (view === 'backup') {
+            loadBackupData().catch((error) => showError(error.message));
+        } else if (view === 'settings') {
+            loadSettings().catch((error) => showError(error.message));
         } else if (view === 'system') {
             loadSystemInfo();
         } else if (view === 'slideshows') {
@@ -1550,8 +1937,8 @@
 
         document.getElementById('adminSettingsLink')?.addEventListener('click', (event) => {
             event.preventDefault();
-            showView('system');
-            loadSystemInfo();
+            showView('settings');
+            loadSettings().catch((error) => showError(error.message));
         });
 
         document.getElementById('navToggle')?.addEventListener('click', () => {
@@ -1567,6 +1954,95 @@
         document.getElementById('userStatusFilter')?.addEventListener('change', applyUserFilters);
         document.getElementById('userPrevPage')?.addEventListener('click', () => changePage(-1));
         document.getElementById('userNextPage')?.addEventListener('click', () => changePage(1));
+        document.getElementById('treeSearch')?.addEventListener('input', applyTreeFilters);
+        document.getElementById('treeStatusFilter')?.addEventListener('change', applyTreeFilters);
+        document.getElementById('treeSortFilter')?.addEventListener('change', applyTreeFilters);
+        document.getElementById('treeDateFilter')?.addEventListener('change', applyTreeFilters);
+        document.getElementById('treePrevPage')?.addEventListener('click', () => {
+            state.treePage = Math.max(1, state.treePage - 1);
+            renderTrees();
+        });
+        document.getElementById('treeNextPage')?.addEventListener('click', () => {
+            state.treePage += 1;
+            renderTrees();
+        });
+        document.getElementById('exportTrees')?.addEventListener('click', exportTrees);
+        document.getElementById('bulkArchiveTrees')?.addEventListener('click', async () => {
+            await updateSelectedTreesArchive(true);
+        });
+        document.getElementById('bulkDeleteTrees')?.addEventListener('click', async () => {
+            const ids = Array.from(document.querySelectorAll('.tree-select:checked')).map((input) => input.value);
+            for (const id of ids) {
+                await deleteTree(id);
+            }
+        });
+        document.getElementById('treesTableBody')?.addEventListener('click', async (event) => {
+            const archiveButton = event.target.closest('.tree-archive-btn');
+            if (archiveButton) {
+                await updateSelectedTreesArchive(archiveButton.getAttribute('data-tree-archived') !== '1');
+                return;
+            }
+            const deleteButton = event.target.closest('.tree-delete-btn');
+            if (deleteButton) {
+                await deleteTree(deleteButton.getAttribute('data-tree-id'));
+            }
+        });
+        document.getElementById('refreshAuditLogs')?.addEventListener('click', () => {
+            loadAuditLogs().catch((error) => showError(error.message));
+        });
+        document.getElementById('exportAuditLogs')?.addEventListener('click', exportAuditLogs);
+        document.getElementById('auditSearch')?.addEventListener('input', () => {
+            state.auditPage = 1;
+            loadAuditLogs().catch((error) => showError(error.message));
+        });
+        document.getElementById('auditActionFilter')?.addEventListener('change', () => {
+            state.auditPage = 1;
+            loadAuditLogs().catch((error) => showError(error.message));
+        });
+        document.getElementById('auditDateFrom')?.addEventListener('change', () => {
+            state.auditPage = 1;
+            loadAuditLogs().catch((error) => showError(error.message));
+        });
+        document.getElementById('auditDateTo')?.addEventListener('change', () => {
+            state.auditPage = 1;
+            loadAuditLogs().catch((error) => showError(error.message));
+        });
+        document.getElementById('auditPrevPage')?.addEventListener('click', () => {
+            state.auditPage = Math.max(1, state.auditPage - 1);
+            loadAuditLogs().catch((error) => showError(error.message));
+        });
+        document.getElementById('auditNextPage')?.addEventListener('click', () => {
+            state.auditPage += 1;
+            loadAuditLogs().catch((error) => showError(error.message));
+        });
+        document.getElementById('refreshBackup')?.addEventListener('click', () => {
+            loadBackupData(true).catch((error) => showError(error.message));
+        });
+        document.getElementById('createBackupButton')?.addEventListener('click', async () => {
+            await createBackupNow();
+        });
+        document.getElementById('saveBackupSchedule')?.addEventListener('click', async () => {
+            await saveBackupSchedule();
+        });
+        document.getElementById('cleanupBackups')?.addEventListener('click', async () => {
+            await cleanupBackups();
+        });
+        document.getElementById('refreshSettings')?.addEventListener('click', () => {
+            loadSettings(true).catch((error) => showError(error.message));
+        });
+        document.getElementById('saveSettings')?.addEventListener('click', async () => {
+            await saveSettings();
+        });
+        document.getElementById('settingsView')?.addEventListener('input', (event) => {
+            if (!event.target.closest('#settingsFeatureToggles, #settingsMaintenanceForm')) return;
+            state.settingsDirty = true;
+            updateSettingsStatus('Unsaved settings changes.');
+        });
+        document.getElementById('settingsView')?.addEventListener('change', (event) => {
+            if (!event.target.closest('#settingsFeatureToggles, #settingsMaintenanceForm')) return;
+            state.settingsDirty = true;
+            updateSettingsStatus('Unsaved settings changes.');
+        });
     }
 
     function renderSummary(summary) {
@@ -1672,6 +2148,244 @@
         document.getElementById('userNextPage').disabled = (startIndex + state.pageSize) >= state.filteredUsers.length;
     }
 
+    function renderTrees() {
+        const tbody = document.getElementById('treesTableBody');
+        if (!tbody) return;
+
+        const startIndex = (state.treePage - 1) * state.treePageSize;
+        const pageTrees = state.filteredTrees.slice(startIndex, startIndex + state.treePageSize);
+
+        if (!pageTrees.length) {
+            tbody.innerHTML = '<tr><td colspan="8" class="loading-cell">No family trees found.</td></tr>';
+        } else {
+            tbody.innerHTML = pageTrees.map((tree) => `
+                <tr>
+                    <td class="checkbox-col"><input type="checkbox" class="tree-select" value="${escapeHtml(tree.id)}"></td>
+                    <td>${escapeHtml(tree.name || 'Untitled tree')}</td>
+                    <td>${escapeHtml(tree.owner_display_name || tree.owner_email || 'Unknown')}</td>
+                    <td>${escapeHtml(String(tree.member_count || 0))}</td>
+                    <td><span class="badge badge-${escapeHtml(tree.status)}">${escapeHtml(tree.status)}</span></td>
+                    <td>${escapeHtml(formatDate(tree.created_at))}</td>
+                    <td>${escapeHtml(formatDate(tree.updated_at))}</td>
+                    <td>
+                        <button class="btn btn-secondary tree-archive-btn" data-tree-id="${escapeHtml(tree.id)}" data-tree-archived="${tree.status === 'archived' ? '1' : '0'}" style="padding:6px 10px; font-size:12px;">
+                            ${tree.status === 'archived' ? 'Unarchive' : 'Archive'}
+                        </button>
+                        <button class="btn btn-danger tree-delete-btn" data-tree-id="${escapeHtml(tree.id)}" style="padding:6px 10px; font-size:12px; margin-left:6px;">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        document.getElementById('treeStart').textContent = state.filteredTrees.length ? (startIndex + 1) : 0;
+        document.getElementById('treeEnd').textContent = Math.min(startIndex + pageTrees.length, state.filteredTrees.length);
+        document.getElementById('treeTotal').textContent = state.filteredTrees.length;
+        document.getElementById('treeCurrentPage').textContent = state.treePage;
+        document.getElementById('treePrevPage').disabled = state.treePage <= 1;
+        document.getElementById('treeNextPage').disabled = (startIndex + state.treePageSize) >= state.filteredTrees.length;
+    }
+
+    function applyTreeFilters() {
+        const search = (document.getElementById('treeSearch')?.value || '').trim().toLowerCase();
+        const status = (document.getElementById('treeStatusFilter')?.value || '').trim().toLowerCase();
+        const sort = (document.getElementById('treeSortFilter')?.value || 'createdAt-desc').trim();
+        const dateFilter = (document.getElementById('treeDateFilter')?.value || '').trim();
+
+        state.filteredTrees = state.allTrees.filter((tree) => {
+            const haystack = [tree.name, tree.owner_display_name, tree.owner_email].filter(Boolean).join(' ').toLowerCase();
+            if (search && !haystack.includes(search)) return false;
+            if (status && tree.status !== status) return false;
+            if (dateFilter) {
+                const created = new Date(tree.created_at);
+                const cutoff = new Date(`${dateFilter}T00:00:00`);
+                if (created < cutoff) return false;
+            }
+            return true;
+        });
+
+        const [sortKey, sortDirection] = sort.split('-');
+        state.filteredTrees.sort((a, b) => {
+            let left;
+            let right;
+            if (sortKey === 'name') {
+                left = String(a.name || '').toLowerCase();
+                right = String(b.name || '').toLowerCase();
+            } else if (sortKey === 'memberCount') {
+                left = Number(a.member_count || 0);
+                right = Number(b.member_count || 0);
+            } else {
+                left = new Date(a.created_at).getTime();
+                right = new Date(b.created_at).getTime();
+            }
+
+            if (left < right) return sortDirection === 'asc' ? -1 : 1;
+            if (left > right) return sortDirection === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        state.treePage = 1;
+        renderTrees();
+    }
+
+    async function loadTrees() {
+        const response = await authFetch('/api/admin/trees');
+        if (!response.ok) {
+            throw new Error('Failed to load family trees');
+        }
+        const data = await response.json();
+        state.allTrees = data.trees || [];
+        state.filteredTrees = [...state.allTrees];
+        applyTreeFilters();
+    }
+
+    async function updateSelectedTreesArchive(archived) {
+        const ids = Array.from(document.querySelectorAll('.tree-select:checked')).map((input) => input.value);
+        if (!ids.length) return;
+        const response = await authFetch('/api/admin/trees/archive', {
+            method: 'POST',
+            body: JSON.stringify({ ids, archived })
+        });
+        if (!response.ok) {
+            throw new Error('Failed to update selected trees');
+        }
+        await loadTrees();
+    }
+
+    async function deleteTree(treeId) {
+        const existingIndex = state.allTrees.findIndex((tree) => tree.id === treeId);
+        const existingTree = existingIndex >= 0 ? { ...state.allTrees[existingIndex] } : null;
+
+        if (!window.confirm('Delete this family tree? This cannot be undone.')) {
+            return;
+        }
+
+        if (existingIndex >= 0) {
+            state.allTrees.splice(existingIndex, 1);
+            state.filteredTrees = state.filteredTrees.filter((tree) => tree.id !== treeId);
+            renderTrees();
+        }
+
+        const response = await authFetch(`/api/admin/trees/${encodeURIComponent(treeId)}`, {
+            method: 'DELETE'
+        });
+        if (!response.ok) {
+            if (existingTree) {
+                state.allTrees.splice(existingIndex >= 0 ? existingIndex : state.allTrees.length, 0, existingTree);
+                applyTreeFilters();
+            }
+            throw new Error('Failed to delete tree');
+        }
+    }
+
+    function exportTrees() {
+        const headers = ['Tree Name', 'Owner', 'Members', 'Status', 'Created', 'Updated'];
+        const rows = state.filteredTrees.map((tree) => [
+            tree.name || '',
+            tree.owner_display_name || tree.owner_email || '',
+            tree.member_count || 0,
+            tree.status || '',
+            tree.created_at || '',
+            tree.updated_at || ''
+        ]);
+        const csv = [headers, ...rows]
+            .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(','))
+            .join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'pyebwa-admin-family-trees.csv';
+        link.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function renderAuditLogs() {
+        const tbody = document.getElementById('auditLogsTableBody');
+        if (!tbody) return;
+
+        if (!state.auditLogs.length) {
+            tbody.innerHTML = '<tr><td colspan="6" class="loading-cell">No audit logs found.</td></tr>';
+        } else {
+            tbody.innerHTML = state.auditLogs.map((log) => {
+                const actor = log.user_display_name || log.user_email || 'System';
+                const target = log.details?.targetUid || log.details?.targetId || log.user_email || 'N/A';
+                const details = typeof log.details === 'string'
+                    ? log.details
+                    : JSON.stringify(log.details || {});
+                return `
+                    <tr>
+                        <td>${escapeHtml(formatDate(log.created_at))}</td>
+                        <td>${escapeHtml(actor)}</td>
+                        <td><span class="badge badge-admin">${escapeHtml(log.action || 'unknown')}</span></td>
+                        <td>${escapeHtml(String(target))}</td>
+                        <td>${escapeHtml(details)}</td>
+                        <td>${escapeHtml(log.ip_address || '')}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        const startIndex = state.auditTotal ? ((state.auditPage - 1) * state.auditPageSize) + 1 : 0;
+        const endIndex = Math.min(state.auditPage * state.auditPageSize, state.auditTotal);
+        document.getElementById('auditStart').textContent = startIndex;
+        document.getElementById('auditEnd').textContent = endIndex;
+        document.getElementById('auditTotal').textContent = state.auditTotal;
+        document.getElementById('auditCurrentPage').textContent = state.auditPage;
+        document.getElementById('auditPrevPage').disabled = state.auditPage <= 1;
+        document.getElementById('auditNextPage').disabled = endIndex >= state.auditTotal;
+    }
+
+    async function loadAuditLogs() {
+        const params = new URLSearchParams({
+            page: String(state.auditPage),
+            limit: String(state.auditPageSize)
+        });
+
+        const search = (document.getElementById('auditSearch')?.value || '').trim();
+        const action = (document.getElementById('auditActionFilter')?.value || '').trim();
+        const dateFrom = (document.getElementById('auditDateFrom')?.value || '').trim();
+        const dateTo = (document.getElementById('auditDateTo')?.value || '').trim();
+
+        if (search) params.set('search', search);
+        if (action) params.set('action', action);
+        if (dateFrom) params.set('dateFrom', dateFrom);
+        if (dateTo) params.set('dateTo', dateTo);
+
+        const response = await authFetch(`/api/admin/audit?${params.toString()}`);
+        if (!response.ok) {
+            throw new Error('Failed to load audit logs');
+        }
+
+        const data = await response.json();
+        state.auditLogs = data.logs || [];
+        state.auditTotal = data.total || 0;
+        renderAuditLogs();
+    }
+
+    function exportAuditLogs() {
+        const headers = ['Timestamp', 'Admin', 'Action', 'Target', 'Details', 'IP'];
+        const rows = state.auditLogs.map((log) => [
+            log.created_at || '',
+            log.user_display_name || log.user_email || 'System',
+            log.action || '',
+            log.details?.targetUid || log.details?.targetId || log.user_email || '',
+            typeof log.details === 'string' ? log.details : JSON.stringify(log.details || {}),
+            log.ip_address || ''
+        ]);
+        const csv = [headers, ...rows]
+            .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(','))
+            .join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'pyebwa-admin-audit-logs.csv';
+        link.click();
+        URL.revokeObjectURL(url);
+    }
+
     async function loadUsers() {
         const response = await authFetch('/api/admin/users?limit=500');
         if (!response.ok) {
@@ -1693,18 +2407,123 @@
             ]);
             const status = statusRes.ok ? await statusRes.json() : null;
             const info = infoRes.ok ? await infoRes.json() : null;
-            container.innerHTML = `
-                <div class="chart-container" style="margin-bottom: 24px;">
-                    <div class="chart-header"><h3>System Status</h3></div>
-                    <pre style="white-space: pre-wrap;">${escapeHtml(JSON.stringify(status, null, 2))}</pre>
+
+            const formatBytes = (value) => {
+                const bytes = Number(value || 0);
+                if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
+                const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+                let size = bytes;
+                let unitIndex = 0;
+                while (size >= 1024 && unitIndex < units.length - 1) {
+                    size /= 1024;
+                    unitIndex += 1;
+                }
+                return `${size.toFixed(size >= 10 || unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`;
+            };
+
+            const formatUptime = (secondsValue) => {
+                const seconds = Math.max(0, Math.round(Number(secondsValue || 0)));
+                const days = Math.floor(seconds / 86400);
+                const hours = Math.floor((seconds % 86400) / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                if (days > 0) return `${days}d ${hours}h`;
+                if (hours > 0) return `${hours}h ${minutes}m`;
+                return `${minutes}m`;
+            };
+
+            const serviceRows = (status?.services || []).map((service) => `
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <span class="material-icons">${service.status === 'operational' ? 'check_circle' : (service.status === 'not_configured' ? 'info' : 'error')}</span>
+                    </div>
+                    <div class="activity-content">
+                        <p>${escapeHtml(service.name)}</p>
+                        <small>${escapeHtml(service.details || '')}</small>
+                    </div>
                 </div>
-                <div class="chart-container">
-                    <div class="chart-header"><h3>System Info</h3></div>
-                    <pre style="white-space: pre-wrap;">${escapeHtml(JSON.stringify(info, null, 2))}</pre>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="view-header">
+                    <div>
+                        <h1>System</h1>
+                        <p class="view-subtitle">Operational status, services, and environment details.</p>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon active"><span class="material-icons">dns</span></div>
+                        <div class="stat-content">
+                            <h3 class="stat-value">${escapeHtml(status?.server?.status || 'Unknown')}</h3>
+                            <p class="stat-label">Server Status</p>
+                            <span class="stat-change">${escapeHtml(formatUptime(status?.server?.uptime))} uptime</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon trees"><span class="material-icons">storage</span></div>
+                        <div class="stat-content">
+                            <h3 class="stat-value">${escapeHtml(status?.database?.status || 'Unknown')}</h3>
+                            <p class="stat-label">Database</p>
+                            <span class="stat-change">${escapeHtml(String(status?.database?.tables || 0))} tables available</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon storage"><span class="material-icons">memory</span></div>
+                        <div class="stat-content">
+                            <h3 class="stat-value">${escapeHtml(`${Math.round(status?.memory?.usage || 0)}%`)}</h3>
+                            <p class="stat-label">Memory Usage</p>
+                            <span class="stat-change">${escapeHtml(formatBytes(status?.memory?.used))} used</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon users"><span class="material-icons">speed</span></div>
+                        <div class="stat-content">
+                            <h3 class="stat-value">${escapeHtml(`${status?.api?.avgResponseTime || 0} ms`)}</h3>
+                            <p class="stat-label">API Response</p>
+                            <span class="stat-change">${escapeHtml(status?.api?.status || 'Unknown')}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <div class="chart-header"><h3>Services</h3></div>
+                        <div class="activity-list">${serviceRows || '<p>No service data available.</p>'}</div>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-header"><h3>Runtime</h3></div>
+                        <div class="page-content-fields">
+                            <div class="form-group page-content-field">
+                                <label>Node Version</label>
+                                <input type="text" value="${escapeHtml(info?.node?.version || '')}" readonly>
+                            </div>
+                            <div class="form-group page-content-field">
+                                <label>Platform</label>
+                                <input type="text" value="${escapeHtml(`${info?.node?.platform || ''} (${info?.node?.arch || ''})`)}" readonly>
+                            </div>
+                            <div class="form-group page-content-field">
+                                <label>Total Memory</label>
+                                <input type="text" value="${escapeHtml(formatBytes(info?.os?.totalMemory))}" readonly>
+                            </div>
+                            <div class="form-group page-content-field">
+                                <label>Free Memory</label>
+                                <input type="text" value="${escapeHtml(formatBytes(info?.os?.freeMemory))}" readonly>
+                            </div>
+                            <div class="form-group page-content-field">
+                                <label>CPU Cores</label>
+                                <input type="text" value="${escapeHtml(String(info?.os?.cpus || 0))}" readonly>
+                            </div>
+                            <div class="form-group page-content-field">
+                                <label>Maintenance Mode</label>
+                                <input type="text" value="${status?.maintenanceMode ? 'Enabled' : 'Disabled'}" readonly>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `;
         } catch (error) {
-            container.innerHTML = `<p>${escapeHtml(error.message)}</p>`;
+            container.innerHTML = `<div class="chart-container"><p>${escapeHtml(error.message)}</p></div>`;
         }
     }
 
@@ -1739,7 +2558,21 @@
             const summary = await response.json();
             renderSummary(summary);
             await loadUsers();
-            await loadSystemInfo();
+            if (canAccessView('trees')) {
+                await loadTrees();
+            }
+            if (canAccessView('audit')) {
+                await loadAuditLogs();
+            }
+            if (canAccessView('backup')) {
+                await loadBackupData();
+            }
+            if (canAccessView('settings')) {
+                await loadSettings();
+            }
+            if (canAccessView('system')) {
+                await loadSystemInfo();
+            }
         } catch (error) {
             console.error('Admin data load failed:', error);
             showError(error.message);

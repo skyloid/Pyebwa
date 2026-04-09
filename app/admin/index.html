@@ -7,12 +7,12 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     
     <!-- CSS -->
-    <link rel="stylesheet" href="/app/admin/css/admin-base.css?v=1.1.80">
-    <link rel="stylesheet" href="/app/admin/css/admin-components.css?v=1.1.80">
-    <link rel="stylesheet" href="/app/admin/css/admin-dark.css?v=1.1.80">
-    <link rel="stylesheet" href="/app/admin/css/content.css?v=1.1.80">
-    <link rel="stylesheet" href="/app/admin/css/communications.css?v=1.1.80">
-    <link rel="stylesheet" href="/app/admin/css/backup-system.css?v=1.1.80">
+    <link rel="stylesheet" href="/app/admin/css/admin-base.css?v=1.1.90">
+    <link rel="stylesheet" href="/app/admin/css/admin-components.css?v=1.1.90">
+    <link rel="stylesheet" href="/app/admin/css/admin-dark.css?v=1.1.90">
+    <link rel="stylesheet" href="/app/admin/css/content.css?v=1.1.90">
+    <link rel="stylesheet" href="/app/admin/css/communications.css?v=1.1.90">
+    <link rel="stylesheet" href="/app/admin/css/backup-system.css?v=1.1.90">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
@@ -1028,9 +1028,121 @@
                 </div>
 
                 <!-- Backup View -->
-                <div id="backupView" class="admin-view">
-                    <div id="content">
-                        <!-- Content will be dynamically loaded by backup module -->
+                <div id="backupView" class="admin-view" style="display: none;">
+                    <div class="view-header">
+                        <div>
+                            <h1>Backup</h1>
+                            <p class="view-subtitle">Create manual backups, manage retention, and review backup history.</p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn btn-secondary" id="refreshBackup">
+                                <span class="material-icons">refresh</span>
+                                <span>Reload</span>
+                            </button>
+                            <button class="btn btn-primary" id="createBackupButton">
+                                <span class="material-icons">backup</span>
+                                <span>Create Backup</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="page-content-status-bar">
+                        <span id="backupStatus">Backup status unknown.</span>
+                    </div>
+
+                    <div class="page-content-grid">
+                        <section class="chart-container page-content-sidebar">
+                            <div class="chart-header">
+                                <h3>Backup Options</h3>
+                            </div>
+                            <div class="page-content-fields">
+                                <div class="form-group page-content-field">
+                                    <label for="backupFormat">Format</label>
+                                    <select id="backupFormat">
+                                        <option value="json">JSON</option>
+                                        <option value="csv">CSV ZIP</option>
+                                    </select>
+                                </div>
+                                <div class="form-group page-content-field">
+                                    <label>Collections</label>
+                                    <label class="settings-toggle-row"><span>Users</span><input type="checkbox" data-backup-collection="users" checked></label>
+                                    <label class="settings-toggle-row"><span>Family Trees</span><input type="checkbox" data-backup-collection="family_trees" checked></label>
+                                    <label class="settings-toggle-row"><span>Persons</span><input type="checkbox" data-backup-collection="persons" checked></label>
+                                    <label class="settings-toggle-row"><span>Invites</span><input type="checkbox" data-backup-collection="invites"></label>
+                                    <label class="settings-toggle-row"><span>Content</span><input type="checkbox" data-backup-collection="content"></label>
+                                    <label class="settings-toggle-row"><span>Admin Logs</span><input type="checkbox" data-backup-collection="admin_logs"></label>
+                                    <label class="settings-toggle-row"><span>Announcements</span><input type="checkbox" data-backup-collection="announcements"></label>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="chart-container page-content-editor-panel">
+                            <div class="chart-header">
+                                <h3>Schedule</h3>
+                            </div>
+                            <div id="backupScheduleForm"></div>
+                            <div class="slideshow-editor-actions" style="margin-top: 16px;">
+                                <button class="btn btn-secondary" id="saveBackupSchedule" type="button">
+                                    <span class="material-icons">schedule</span>
+                                    <span>Save Schedule</span>
+                                </button>
+                                <button class="btn btn-secondary" id="cleanupBackups" type="button">
+                                    <span class="material-icons">auto_delete</span>
+                                    <span>Cleanup Old Backups</span>
+                                </button>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="chart-container" style="margin-top: 24px;">
+                        <div class="chart-header">
+                            <h3>Backup History</h3>
+                        </div>
+                        <div id="backupHistoryList"></div>
+                    </div>
+                </div>
+
+                <!-- Settings View -->
+                <div id="settingsView" class="admin-view" style="display: none;">
+                    <div class="view-header">
+                        <div>
+                            <h1>Settings</h1>
+                            <p class="view-subtitle">Manage feature flags, maintenance mode, and environment status.</p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn btn-secondary" id="refreshSettings">
+                                <span class="material-icons">refresh</span>
+                                <span>Reload</span>
+                            </button>
+                            <button class="btn btn-primary" id="saveSettings">
+                                <span class="material-icons">save</span>
+                                <span>Save Settings</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="page-content-status-bar">
+                        <span id="settingsStatus">Settings not loaded yet.</span>
+                    </div>
+
+                    <div class="page-content-grid">
+                        <section class="chart-container page-content-sidebar">
+                            <div class="chart-header">
+                                <h3>Feature Controls</h3>
+                            </div>
+                            <div id="settingsFeatureToggles"></div>
+                        </section>
+
+                        <section class="chart-container page-content-editor-panel">
+                            <div class="chart-header">
+                                <h3>Maintenance Mode</h3>
+                            </div>
+                            <div id="settingsMaintenanceForm"></div>
+                            <div class="chart-header" style="margin-top: 24px;">
+                                <h3>Environment</h3>
+                            </div>
+                            <div id="settingsEnvInfo"></div>
+                        </section>
                     </div>
                 </div>
 
@@ -1058,8 +1170,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/app/js/supabase-client.js"></script>
     <script src="/app/js/api-client.js"></script>
-    <script src="/app/js/back-to-top.js?v=1.1.80"></script>
-    <script src="/app/js/admin/auth-guard.js?v=1.1.80"></script>
-    <script src="/app/admin/js/simple-admin.js?v=1.1.80"></script>
+    <script src="/app/js/back-to-top.js?v=1.1.90"></script>
+    <script src="/app/js/admin/auth-guard.js?v=1.1.90"></script>
+    <script src="/app/admin/js/simple-admin.js?v=1.1.90"></script>
 </body>
 </html>

@@ -1017,6 +1017,23 @@
     color: var(--admin-text-secondary);
 }
 
+.settings-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 14px;
+    border: 1px solid var(--admin-border);
+    border-radius: 10px;
+    background: var(--admin-bg);
+    color: var(--admin-text);
+}
+
+.settings-toggle-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+}
+
 .slideshow-status-bar {
     display: flex;
     justify-content: space-between;

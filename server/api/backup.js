@@ -1,14 +1,14 @@
 const express = require('express');
 const BackupService = require('../backup-service');
 const path = require('path');
-const { verifySession, requireAdmin, requireSuperAdmin } = require('../db/auth');
+const { verifySession, requireSuperAdmin } = require('../db/auth');
 const adminQueries = require('../db/queries/admin');
 
 const router = express.Router();
 const backupService = new BackupService();
 
 // Create backup
-router.post('/create', verifySession, requireAdmin, async (req, res) => {
+router.post('/create', verifySession, requireSuperAdmin, async (req, res) => {
     try {
         const { collections, format } = req.body;
 
@@ -36,7 +36,7 @@ router.post('/create', verifySession, requireAdmin, async (req, res) => {
 });
 
 // Get backup history
-router.get('/history', verifySession, requireAdmin, async (req, res) => {
+router.get('/history', verifySession, requireSuperAdmin, async (req, res) => {
     try {
         const history = await backupService.getBackupHistory();
         res.json(history);
@@ -47,7 +47,7 @@ router.get('/history', verifySession, requireAdmin, async (req, res) => {
 });
 
 // Download backup
-router.get('/download/:backupId', verifySession, requireAdmin, async (req, res) => {
+router.get('/download/:backupId', verifySession, requireSuperAdmin, async (req, res) => {
     try {
         const { backupId } = req.params;
         const filePath = await backupService.downloadBackup(backupId);
@@ -78,7 +78,7 @@ router.delete('/delete/:backupId', verifySession, requireSuperAdmin, async (req,
 });
 
 // Get schedule configuration
-router.get('/schedule', verifySession, requireAdmin, async (req, res) => {
+router.get('/schedule', verifySession, requireSuperAdmin, async (req, res) => {
     try {
         const config = await backupService.getScheduleConfig();
         res.json(config);
@@ -89,7 +89,7 @@ router.get('/schedule', verifySession, requireAdmin, async (req, res) => {
 });
 
 // Save schedule configuration
-router.post('/schedule', verifySession, requireAdmin, async (req, res) => {
+router.post('/schedule', verifySession, requireSuperAdmin, async (req, res) => {
     try {
         const { frequency, time, day, date, retention } = req.body;
         if (!frequency || !['disabled', 'daily', 'weekly', 'monthly'].includes(frequency)) {

@@ -525,9 +525,10 @@ router.post('/user/:uid/claims', verifySession, async (req, res) => {
         const { claims } = req.body;
         const currentUser = req.user;
 
-        if (!(await isAdmin(currentUser.uid))) {
+        const currentUserRecord = await userQueries.findById(currentUser.uid);
+        if (!currentUserRecord || currentUserRecord.role !== 'superadmin') {
             await logUnauthorizedAccess(currentUser.uid, `user/${uid}/claims`, req.ip);
-            return res.status(403).json({ error: 'Admin access required' });
+            return res.status(403).json({ error: 'Superadmin access required' });
         }
 
         const allowedRoles = ['member', 'moderator', 'admin', 'superadmin'];
