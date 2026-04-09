@@ -80,6 +80,9 @@ const translations = {
         biography: "Biography",
         photo: "Photo",
         email: "Email",
+        nickname: "Nickname",
+        nicknamePlaceholder: "What family calls them",
+        useNicknameInTree: "Use nickname in tree",
         
         // Relationships
         relationship: "Relationship",
@@ -644,6 +647,9 @@ const translations = {
         biography: "Biographie",
         photo: "Photo",
         email: "Email",
+        nickname: "Surnom",
+        nicknamePlaceholder: "Comment la famille l'appelle",
+        useNicknameInTree: "Utiliser le surnom dans l'arbre",
         
         // Relationships
         relationship: "Relation",
@@ -990,6 +996,9 @@ const translations = {
         biography: "Biyografi",
         photo: "Foto",
         email: "Imèl",
+        nickname: "Ti non",
+        nicknamePlaceholder: "Kijan fanmi an rele li",
+        useNicknameInTree: "Itilize ti non an nan pyebwa a",
         
         // Relationships
         relationship: "Relasyon",

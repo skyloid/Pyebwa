@@ -215,7 +215,7 @@ body.dark-mode .app-header {
     height: auto;
     object-fit: contain;
     position: relative;
-    top: 2px;
+    top: 4px;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
     transition: transform var(--transition-base);
 }
@@ -805,15 +805,12 @@ body.dark-mode .mode-btn.active {
     background: var(--accent-cream, #FDFCFA);
     border-radius: var(--border-radius-lg);
     border: 1px solid var(--gray-200);
-    border-left: 4px solid var(--primary-moss, #2D6A4F);
     box-shadow: var(--shadow-md);
     animation: fadeInUp 0.3s ease;
 }
 
 body.dark-mode .tree-focus-detail {
     background: var(--bg-secondary);
-    border-color: var(--gray-700);
-    border-left-color: var(--primary-moss, #40916C);
 }
 
 .focus-detail-header {
