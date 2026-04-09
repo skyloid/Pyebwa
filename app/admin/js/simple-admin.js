@@ -17,7 +17,8 @@
         selectedSlideId: null,
         slideshowDirty: false,
         replacingSlideId: null,
-        slideshowDrag: null
+        slideshowDrag: null,
+        slideshowListDrag: null
     };
 
     function getViewFromHash(hash = window.location.hash) {
@@ -236,7 +237,7 @@
         }
 
         list.innerHTML = slides.map((slide, index) => `
-            <div class="slideshow-list-item${slide.id === state.selectedSlideId ? ' active' : ''}" data-slide-id="${escapeHtml(slide.id)}">
+            <div class="slideshow-list-item${slide.id === state.selectedSlideId ? ' active' : ''}" data-slide-id="${escapeHtml(slide.id)}" draggable="true">
                 <div class="slideshow-thumb">
                     <img src="${escapeHtml(getAdminPreviewUrl(slide.url))}" alt="Slide ${index + 1}">
                 </div>
@@ -254,7 +255,100 @@
                 renderSlideshowList();
                 renderSlideEditor();
             });
+            item.addEventListener('dragstart', handleSlideReorderDragStart);
+            item.addEventListener('dragover', handleSlideReorderDragOver);
+            item.addEventListener('dragenter', handleSlideReorderDragEnter);
+            item.addEventListener('dragleave', handleSlideReorderDragLeave);
+            item.addEventListener('drop', handleSlideReorderDrop);
+            item.addEventListener('dragend', handleSlideReorderDragEnd);
         });
+    }
+
+    function reorderSlidesForPage(page, fromIndex, toIndex) {
+        const slides = getSlidesForPage(page);
+        if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= slides.length || toIndex >= slides.length) {
+            return false;
+        }
+
+        const reordered = [...slides];
+        const [moved] = reordered.splice(fromIndex, 1);
+        reordered.splice(toIndex, 0, moved);
+        state.slideshowDraft.pages[page] = reordered.map((item, itemIndex) => ({
+            ...item,
+            order: itemIndex
+        }));
+        return true;
+    }
+
+    function clearSlideDropTargets() {
+        document.querySelectorAll('.slideshow-list-item').forEach((item) => {
+            item.classList.remove('drag-over', 'dragging');
+        });
+    }
+
+    function handleSlideReorderDragStart(event) {
+        const slideId = event.currentTarget.getAttribute('data-slide-id');
+        const slides = getSlidesForPage();
+        const fromIndex = slides.findIndex((item) => item.id === slideId);
+        if (fromIndex < 0) {
+            event.preventDefault();
+            return;
+        }
+        state.slideshowListDrag = {
+            slideId,
+            page: state.activeSlideshowPage,
+            fromIndex
+        };
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', slideId);
+        event.currentTarget.classList.add('dragging');
+    }
+
+    function handleSlideReorderDragOver(event) {
+        if (!state.slideshowListDrag) return;
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+    }
+
+    function handleSlideReorderDragEnter(event) {
+        if (!state.slideshowListDrag) return;
+        const target = event.currentTarget;
+        if (target.getAttribute('data-slide-id') === state.slideshowListDrag.slideId) return;
+        target.classList.add('drag-over');
+    }
+
+    function handleSlideReorderDragLeave(event) {
+        event.currentTarget.classList.remove('drag-over');
+    }
+
+    function handleSlideReorderDrop(event) {
+        const dragState = state.slideshowListDrag;
+        if (!dragState) return;
+        event.preventDefault();
+
+        const targetSlideId = event.currentTarget.getAttribute('data-slide-id');
+        const slides = getSlidesForPage(dragState.page);
+        const toIndex = slides.findIndex((item) => item.id === targetSlideId);
+        if (toIndex < 0) {
+            clearSlideDropTargets();
+            state.slideshowListDrag = null;
+            return;
+        }
+
+        if (reorderSlidesForPage(dragState.page, dragState.fromIndex, toIndex)) {
+            markSlideshowDirty();
+            renderSlideshowList();
+            renderSlideEditor();
+        } else {
+            clearSlideDropTargets();
+        }
+
+        state.slideshowListDrag = null;
+    }
+
+    function handleSlideReorderDragEnd() {
+        clearSlideDropTargets();
+        state.slideshowListDrag = null;
     }
 
     function syncPreviewCrop(slide) {
