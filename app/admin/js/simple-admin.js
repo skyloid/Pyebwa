@@ -1,6 +1,8 @@
 (function() {
     'use strict';
 
+    const VALID_SLIDESHOW_PAGES = ['home', 'about', 'mission', 'contact'];
+
     const state = {
         allUsers: [],
         filteredUsers: [],
@@ -8,8 +10,21 @@
         pageSize: 20,
         currentView: 'dashboard',
         summary: null,
-        theme: 'light'
+        theme: 'light',
+        slideshowDraft: null,
+        slideshowPublished: null,
+        activeSlideshowPage: 'home',
+        selectedSlideId: null,
+        slideshowDirty: false,
+        replacingSlideId: null,
+        slideshowDrag: null
     };
+
+    function getViewFromHash(hash = window.location.hash) {
+        const candidate = String(hash || '').replace(/^#/, '').trim();
+        if (!candidate) return 'dashboard';
+        return document.getElementById(`${candidate}View`) ? candidate : 'dashboard';
+    }
 
     async function getAccessToken() {
         const client = window.supabaseClient;
@@ -18,10 +33,16 @@
         return session?.access_token || null;
     }
 
-    async function authFetch(url) {
+    async function authFetch(url, options = {}) {
         const token = await getAccessToken();
-        const headers = token ? { Authorization: 'Bearer ' + token } : {};
-        return fetch(url, { headers });
+        const headers = { ...(options.headers || {}) };
+        if (token) {
+            headers.Authorization = 'Bearer ' + token;
+        }
+        if (!(options.body instanceof FormData) && !headers['Content-Type'] && options.body) {
+            headers['Content-Type'] = 'application/json';
+        }
+        return fetch(url, { ...options, headers });
     }
 
     function escapeHtml(value) {
@@ -31,6 +52,49 @@
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;');
+    }
+
+    function getAdminPreviewUrl(url) {
+        const value = String(url || '').trim();
+        if (!value) return '';
+        return `/api/admin/slideshows/preview?url=${encodeURIComponent(value)}`;
+    }
+
+    function getOverlayForSelectedSlide() {
+        const slide = findSelectedSlide();
+        if (!slide) {
+            return { color: '#000000', opacity: 0 };
+        }
+        if (!(slide.overlayExplicit === true && slide.overlayOverride)) {
+            const globalOverlay = state.slideshowDraft?.overlays?.[slide.page || state.activeSlideshowPage] || {};
+            return {
+                color: String(globalOverlay.color || '#000000'),
+                opacity: Number.isFinite(Number(globalOverlay.opacity)) ? Number(globalOverlay.opacity) : 0
+            };
+        }
+        const overlay = slide.overlay || {};
+        return {
+            color: String(overlay.color || '#000000'),
+            opacity: Number.isFinite(Number(overlay.opacity)) ? Number(overlay.opacity) : 0
+        };
+    }
+
+    function getPageSettings(page = state.activeSlideshowPage) {
+        if (!state.slideshowDraft) {
+            return { randomize: false };
+        }
+        return state.slideshowDraft.settings?.[page] || { randomize: false };
+    }
+
+    function getGlobalOverlayForPage(page = state.activeSlideshowPage) {
+        if (!state.slideshowDraft) {
+            return { color: '#000000', opacity: 0 };
+        }
+        const overlay = state.slideshowDraft.overlays?.[page] || {};
+        return {
+            color: String(overlay.color || '#000000'),
+            opacity: Number.isFinite(Number(overlay.opacity)) ? Number(overlay.opacity) : 0
+        };
     }
 
     function formatDate(value) {
@@ -122,17 +186,608 @@
         applyTheme(savedTheme);
     }
 
-    function showView(view) {
+    function updateSlideStatusBar() {
+        const draftStatus = document.getElementById('slideshowDraftStatus');
+        const publishedStatus = document.getElementById('slideshowPublishedStatus');
+        if (draftStatus) {
+            const updatedAt = state.slideshowDraft?.updatedAt ? formatDate(state.slideshowDraft.updatedAt) : 'Not loaded';
+            draftStatus.textContent = `${state.slideshowDirty ? 'Unsaved draft changes' : 'Draft saved'} · ${updatedAt}`;
+        }
+        if (publishedStatus) {
+            const publishedAt = state.slideshowPublished?.publishedAt ? formatDate(state.slideshowPublished.publishedAt) : 'Never published';
+            publishedStatus.textContent = `Published · ${publishedAt}`;
+        }
+    }
+
+    function getSlidesForPage(page = state.activeSlideshowPage) {
+        return state.slideshowDraft?.pages?.[page] || [];
+    }
+
+    function findSelectedSlide() {
+        if (!state.selectedSlideId || !state.slideshowDraft) return null;
+        for (const page of VALID_SLIDESHOW_PAGES) {
+            const slide = (state.slideshowDraft.pages?.[page] || []).find((item) => item.id === state.selectedSlideId);
+            if (slide) return slide;
+        }
+        return null;
+    }
+
+    function markSlideshowDirty() {
+        state.slideshowDirty = true;
+        if (state.slideshowDraft) {
+            state.slideshowDraft.updatedAt = new Date().toISOString();
+        }
+        updateSlideStatusBar();
+    }
+
+    function renderSlideshowList() {
+        const list = document.getElementById('slideshowList');
+        const title = document.getElementById('slideshowListTitle');
+        const count = document.getElementById('slideshowCount');
+        if (!list) return;
+
+        const slides = getSlidesForPage();
+        if (title) title.textContent = `${state.activeSlideshowPage.charAt(0).toUpperCase() + state.activeSlideshowPage.slice(1)} Slides`;
+        if (count) count.textContent = `${slides.length} ${slides.length === 1 ? 'slide' : 'slides'}`;
+
+        if (slides.length === 0) {
+            list.innerHTML = '<div class="slideshow-empty-state">No images yet for this page. Use Add Image to start the slideshow.</div>';
+            return;
+        }
+
+        list.innerHTML = slides.map((slide, index) => `
+            <div class="slideshow-list-item${slide.id === state.selectedSlideId ? ' active' : ''}" data-slide-id="${escapeHtml(slide.id)}">
+                <div class="slideshow-thumb">
+                    <img src="${escapeHtml(getAdminPreviewUrl(slide.url))}" alt="Slide ${index + 1}">
+                </div>
+                <div class="slideshow-meta">
+                    <strong>Slide ${index + 1}</strong>
+                    <span>${escapeHtml(slide.page)} · ${escapeHtml(slide.url)}</span>
+                </div>
+                <div class="slideshow-order">#${index + 1}</div>
+            </div>
+        `).join('');
+
+        list.querySelectorAll('.slideshow-list-item').forEach((item) => {
+            item.addEventListener('click', () => {
+                state.selectedSlideId = item.getAttribute('data-slide-id');
+                renderSlideshowList();
+                renderSlideEditor();
+            });
+        });
+    }
+
+    function syncPreviewCrop(slide) {
+        const previewImage = document.getElementById('slideshowPreviewImage');
+        const previewSurface = document.getElementById('slideshowPreviewSurface');
+        if (!previewImage || !slide) return;
+        const crop = slide.crop || { x: 50, y: 50, zoom: 100 };
+        const filters = slide.filters || { brightness: 100, contrast: 100, saturate: 100 };
+        previewImage.style.objectFit = slide.fit || 'cover';
+        previewImage.style.objectPosition = `${crop.x}% ${crop.y}%`;
+        previewImage.style.transform = `scale(${crop.zoom / 100})`;
+        previewImage.style.transformOrigin = `${crop.x}% ${crop.y}%`;
+        previewImage.style.filter = `brightness(${filters.brightness}%) contrast(${filters.contrast}%) saturate(${filters.saturate}%)`;
+        previewImage.style.cursor = crop.zoom > 100 ? 'grab' : 'default';
+        if (previewSurface) {
+            previewSurface.classList.toggle('is-draggable', crop.zoom > 100);
+        }
+    }
+
+    function syncCropInputs(slide) {
+        document.getElementById('slideshowCropX').value = slide.crop?.x ?? 50;
+        document.getElementById('slideshowCropY').value = slide.crop?.y ?? 50;
+        document.getElementById('slideshowCropZoom').value = slide.crop?.zoom ?? 100;
+    }
+
+    function syncPreviewOverlay() {
+        const previewOverlay = document.getElementById('slideshowPreviewOverlay');
+        if (!previewOverlay) return;
+        const overlay = getOverlayForSelectedSlide();
+        previewOverlay.style.background = overlay.color;
+        previewOverlay.style.opacity = String(Math.min(100, Math.max(0, overlay.opacity)) / 100);
+    }
+
+    function renderOverlayControls() {
+        const colorInput = document.getElementById('slideshowOverlayColor');
+        const opacityInput = document.getElementById('slideshowOverlayOpacity');
+        const overrideInput = document.getElementById('slideshowOverlayOverride');
+        const slide = findSelectedSlide();
+        const overlay = getOverlayForSelectedSlide();
+        const isOverride = !!(slide?.overlayExplicit === true && slide?.overlayOverride);
+        if (overrideInput) overrideInput.checked = isOverride;
+        if (colorInput) colorInput.value = overlay.color;
+        if (opacityInput) opacityInput.value = overlay.opacity;
+        if (colorInput) colorInput.disabled = !isOverride;
+        if (opacityInput) opacityInput.disabled = !isOverride;
+        syncPreviewOverlay();
+    }
+
+    function renderPageSettings() {
+        const toggle = document.getElementById('slideshowRandomizeToggle');
+        const colorInput = document.getElementById('slideshowGlobalOverlayColor');
+        const opacityInput = document.getElementById('slideshowGlobalOverlayOpacity');
+        if (toggle) {
+            toggle.checked = !!getPageSettings().randomize;
+        }
+        const overlay = getGlobalOverlayForPage();
+        if (colorInput) colorInput.value = overlay.color;
+        if (opacityInput) opacityInput.value = overlay.opacity;
+    }
+
+    function resetSlideImageState(slide) {
+        if (!slide) return;
+        slide.fit = 'cover';
+        slide.crop = { x: 50, y: 50, zoom: 100 };
+        slide.filters = { brightness: 100, contrast: 100, saturate: 100 };
+        slide.overlayExplicit = false;
+        slide.overlayOverride = false;
+        slide.overlay = { color: '#000000', opacity: 0 };
+    }
+
+    function renderSlideEditor() {
+        const emptyState = document.getElementById('slideshowEmptyState');
+        const editor = document.getElementById('slideshowEditor');
+        const slide = findSelectedSlide();
+
+        if (!slide) {
+            if (emptyState) emptyState.style.display = 'block';
+            if (editor) editor.style.display = 'none';
+            renderOverlayControls();
+            return;
+        }
+
+        if (emptyState) emptyState.style.display = 'none';
+        if (editor) editor.style.display = 'block';
+
+        const previewImage = document.getElementById('slideshowPreviewImage');
+        if (previewImage) {
+            previewImage.src = getAdminPreviewUrl(slide.url);
+            previewImage.alt = 'Slideshow image';
+            syncPreviewCrop(slide);
+        }
+
+        document.getElementById('slideshowPageAssign').value = slide.page || state.activeSlideshowPage;
+        document.getElementById('slideshowFitMode').value = slide.fit || 'cover';
+        syncCropInputs(slide);
+        document.getElementById('slideshowFilterBrightness').value = slide.filters?.brightness ?? 100;
+        document.getElementById('slideshowFilterContrast').value = slide.filters?.contrast ?? 100;
+        document.getElementById('slideshowFilterSaturate').value = slide.filters?.saturate ?? 100;
+        renderOverlayControls();
+    }
+
+    function selectFirstSlideForActivePage() {
+        const slides = getSlidesForPage();
+        state.selectedSlideId = slides[0]?.id || null;
+        renderSlideshowList();
+        renderSlideEditor();
+    }
+
+    async function loadSlideshows(force = false) {
+        if (state.slideshowDraft && !force) {
+            renderSlideshowList();
+            renderSlideEditor();
+            updateSlideStatusBar();
+            renderPageSettings();
+            return;
+        }
+
+        const response = await authFetch('/api/admin/slideshows');
+        if (!response.ok) {
+            throw new Error('Failed to load slideshows');
+        }
+
+        const payload = await response.json();
+        state.slideshowDraft = payload.draft;
+        state.slideshowPublished = payload.published;
+        state.slideshowDirty = false;
+
+        const activeSlides = getSlidesForPage();
+        if (!activeSlides.some((slide) => slide.id === state.selectedSlideId)) {
+            state.selectedSlideId = activeSlides[0]?.id || null;
+        }
+
+        updateSlideStatusBar();
+        renderSlideshowList();
+        renderSlideEditor();
+        renderOverlayControls();
+        renderPageSettings();
+    }
+
+    async function saveSlideshowDraft() {
+        if (!state.slideshowDraft) return;
+
+        const response = await authFetch('/api/admin/slideshows/draft', {
+            method: 'PUT',
+            body: JSON.stringify(state.slideshowDraft)
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to save slideshow draft');
+        }
+
+        const payload = await response.json();
+        state.slideshowDraft = payload.draft;
+        state.slideshowDirty = false;
+        updateSlideStatusBar();
+        renderSlideshowList();
+        renderSlideEditor();
+        renderPageSettings();
+    }
+
+    async function publishSlideshows() {
+        if (state.slideshowDirty) {
+            await saveSlideshowDraft();
+        }
+
+        const response = await authFetch('/api/admin/slideshows/publish', { method: 'POST' });
+        if (!response.ok) {
+            throw new Error('Failed to publish slideshows');
+        }
+
+        const payload = await response.json();
+        state.slideshowPublished = payload.published;
+        updateSlideStatusBar();
+    }
+
+    function updateSlideField(field, value) {
+        if (field === 'globalOverlay') {
+            if (!state.slideshowDraft.overlays) state.slideshowDraft.overlays = {};
+            state.slideshowDraft.overlays[state.activeSlideshowPage] = {
+                color: document.getElementById('slideshowGlobalOverlayColor').value || '#000000',
+                opacity: Number(document.getElementById('slideshowGlobalOverlayOpacity').value)
+            };
+            markSlideshowDirty();
+            renderPageSettings();
+            renderOverlayControls();
+            renderSlideshowList();
+            renderSlideEditor();
+            return;
+        }
+
+        if (field === 'randomize') {
+            if (!state.slideshowDraft.settings) {
+                state.slideshowDraft.settings = {};
+            }
+            state.slideshowDraft.settings[state.activeSlideshowPage] = {
+                ...getPageSettings(),
+                randomize: !!document.getElementById('slideshowRandomizeToggle')?.checked
+            };
+            markSlideshowDirty();
+            renderPageSettings();
+            renderSlideshowList();
+            renderSlideEditor();
+            return;
+        }
+
+        const slide = findSelectedSlide();
+        if (!slide) return;
+
+        if (field === 'page') {
+            const currentPage = slide.page;
+            const targetPage = VALID_SLIDESHOW_PAGES.includes(value) ? value : currentPage;
+            if (targetPage !== currentPage) {
+                const fromSlides = state.slideshowDraft.pages[currentPage];
+                state.slideshowDraft.pages[currentPage] = fromSlides.filter((item) => item.id !== slide.id)
+                    .map((item, index) => ({ ...item, order: index }));
+                slide.page = targetPage;
+                state.slideshowDraft.pages[targetPage] = [...state.slideshowDraft.pages[targetPage], slide]
+                    .map((item, index) => ({ ...item, order: index }));
+                state.activeSlideshowPage = targetPage;
+                document.querySelectorAll('.slideshow-page-tab').forEach((btn) => {
+                    btn.classList.toggle('active', btn.getAttribute('data-page') === targetPage);
+                });
+            }
+        } else if (field === 'crop') {
+            slide.crop = {
+                x: Number(document.getElementById('slideshowCropX').value),
+                y: Number(document.getElementById('slideshowCropY').value),
+                zoom: Number(document.getElementById('slideshowCropZoom').value)
+            };
+            syncPreviewCrop(slide);
+        } else if (field === 'fit') {
+            slide.fit = document.getElementById('slideshowFitMode').value || 'cover';
+            syncPreviewCrop(slide);
+        } else if (field === 'filters') {
+            slide.filters = {
+                brightness: Number(document.getElementById('slideshowFilterBrightness').value),
+                contrast: Number(document.getElementById('slideshowFilterContrast').value),
+                saturate: Number(document.getElementById('slideshowFilterSaturate').value)
+            };
+            syncPreviewCrop(slide);
+        } else if (field === 'overlay') {
+            slide.overlay = {
+                color: document.getElementById('slideshowOverlayColor').value || '#000000',
+                opacity: Number(document.getElementById('slideshowOverlayOpacity').value)
+            };
+            slide.overlayExplicit = true;
+            slide.overlayOverride = true;
+            syncPreviewOverlay();
+        } else if (field === 'overlayOverride') {
+            slide.overlayExplicit = true;
+            slide.overlayOverride = !!document.getElementById('slideshowOverlayOverride')?.checked;
+            if (!slide.overlayOverride) {
+                slide.overlay = { ...getGlobalOverlayForPage(slide.page || state.activeSlideshowPage) };
+            }
+            renderOverlayControls();
+        } else {
+            slide[field] = value;
+        }
+
+        markSlideshowDirty();
+        renderSlideshowList();
+        renderSlideEditor();
+    }
+
+    function beginSlideshowDrag(event) {
+        const slide = findSelectedSlide();
+        const surface = document.getElementById('slideshowPreviewSurface');
+        const image = document.getElementById('slideshowPreviewImage');
+        if (!slide || !surface || !image) return;
+        if ((slide.crop?.zoom ?? 100) <= 100) return;
+
+        state.slideshowDrag = {
+            pointerId: event.pointerId,
+            startX: event.clientX,
+            startY: event.clientY,
+            cropX: slide.crop?.x ?? 50,
+            cropY: slide.crop?.y ?? 50,
+            moved: false
+        };
+
+        surface.setPointerCapture?.(event.pointerId);
+        surface.classList.add('is-dragging');
+        image.style.cursor = 'grabbing';
+        event.preventDefault();
+    }
+
+    function moveSlideshowDrag(event) {
+        const drag = state.slideshowDrag;
+        const slide = findSelectedSlide();
+        const surface = document.getElementById('slideshowPreviewSurface');
+        if (!drag || !slide || !surface || drag.pointerId !== event.pointerId) return;
+
+        const rect = surface.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+
+        const deltaX = event.clientX - drag.startX;
+        const deltaY = event.clientY - drag.startY;
+        const nextX = Math.min(100, Math.max(0, drag.cropX - ((deltaX / rect.width) * 100)));
+        const nextY = Math.min(100, Math.max(0, drag.cropY - ((deltaY / rect.height) * 100)));
+
+        slide.crop = {
+            x: nextX,
+            y: nextY,
+            zoom: slide.crop?.zoom ?? 100
+        };
+        drag.moved = true;
+        syncCropInputs(slide);
+        syncPreviewCrop(slide);
+    }
+
+    function endSlideshowDrag(event) {
+        const drag = state.slideshowDrag;
+        const slide = findSelectedSlide();
+        const surface = document.getElementById('slideshowPreviewSurface');
+        const image = document.getElementById('slideshowPreviewImage');
+        if (!drag || drag.pointerId !== event.pointerId) return;
+
+        surface?.releasePointerCapture?.(event.pointerId);
+        surface?.classList.remove('is-dragging');
+        if (image && slide) {
+            image.style.cursor = (slide.crop?.zoom ?? 100) > 100 ? 'grab' : 'default';
+        }
+
+        const didMove = drag.moved;
+        state.slideshowDrag = null;
+
+        if (didMove) {
+            markSlideshowDirty();
+        }
+    }
+
+    async function uploadSlideshowImage(file, page) {
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('page', page);
+
+        const response = await authFetch('/api/admin/slideshows/upload', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to upload image');
+        }
+
+        return response.json();
+    }
+
+    async function handleSlideshowUpload(file) {
+        if (!file) return;
+
+        const page = state.replacingSlideId ? (findSelectedSlide()?.page || state.activeSlideshowPage) : state.activeSlideshowPage;
+        const uploadResult = await uploadSlideshowImage(file, page);
+
+        if (state.replacingSlideId) {
+            const slide = findSelectedSlide();
+            if (slide) {
+                slide.url = uploadResult.url;
+                slide.updatedAt = new Date().toISOString();
+            }
+            state.replacingSlideId = null;
+        } else {
+            const now = new Date().toISOString();
+            const slide = {
+                id: `slide-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+                page,
+                url: uploadResult.url,
+                title: '',
+                caption: '',
+                alt: '',
+                fit: 'cover',
+                crop: { x: 50, y: 50, zoom: 100 },
+                filters: { brightness: 100, contrast: 100, saturate: 100 },
+                overlayExplicit: false,
+                overlay: { color: '#000000', opacity: 0 },
+                overlayOverride: false,
+                order: getSlidesForPage(page).length,
+                createdAt: now,
+                updatedAt: now
+            };
+            state.slideshowDraft.pages[page].push(slide);
+            state.selectedSlideId = slide.id;
+        }
+
+        markSlideshowDirty();
+        renderSlideshowList();
+        renderSlideEditor();
+    }
+
+    function moveSelectedSlide(delta) {
+        const slide = findSelectedSlide();
+        if (!slide) return;
+
+        const slides = getSlidesForPage(slide.page);
+        const index = slides.findIndex((item) => item.id === slide.id);
+        const target = index + delta;
+        if (index < 0 || target < 0 || target >= slides.length) return;
+
+        const reordered = [...slides];
+        const [moved] = reordered.splice(index, 1);
+        reordered.splice(target, 0, moved);
+        state.slideshowDraft.pages[slide.page] = reordered.map((item, itemIndex) => ({
+            ...item,
+            order: itemIndex
+        }));
+
+        markSlideshowDirty();
+        renderSlideshowList();
+        renderSlideEditor();
+    }
+
+    function deleteSelectedSlide() {
+        const slide = findSelectedSlide();
+        if (!slide || !window.confirm('Delete this draft slide?')) return;
+
+        state.slideshowDraft.pages[slide.page] = state.slideshowDraft.pages[slide.page]
+            .filter((item) => item.id !== slide.id)
+            .map((item, index) => ({ ...item, order: index }));
+
+        const nextSlides = getSlidesForPage(slide.page);
+        state.selectedSlideId = nextSlides[0]?.id || null;
+        markSlideshowDirty();
+        renderSlideshowList();
+        renderSlideEditor();
+    }
+
+    function resetSelectedSlideImage() {
+        const slide = findSelectedSlide();
+        if (!slide) return;
+        resetSlideImageState(slide);
+        markSlideshowDirty();
+        renderSlideshowList();
+        renderSlideEditor();
+    }
+
+    function wireSlideshowManager() {
+        const previewSurface = document.getElementById('slideshowPreviewSurface');
+        previewSurface?.addEventListener('pointerdown', beginSlideshowDrag);
+        previewSurface?.addEventListener('pointermove', moveSlideshowDrag);
+        previewSurface?.addEventListener('pointerup', endSlideshowDrag);
+        previewSurface?.addEventListener('pointercancel', endSlideshowDrag);
+
+        document.querySelectorAll('.slideshow-page-tab').forEach((button) => {
+            button.addEventListener('click', async () => {
+                state.activeSlideshowPage = button.getAttribute('data-page');
+                document.querySelectorAll('.slideshow-page-tab').forEach((tab) => {
+                    tab.classList.toggle('active', tab === button);
+                });
+                selectFirstSlideForActivePage();
+                renderPageSettings();
+            });
+        });
+
+        document.getElementById('refreshSlideshows')?.addEventListener('click', async () => {
+            await loadSlideshows(true);
+        });
+
+        document.getElementById('saveSlideshowDraft')?.addEventListener('click', async () => {
+            await saveSlideshowDraft();
+        });
+
+        document.getElementById('publishSlideshows')?.addEventListener('click', async () => {
+            await publishSlideshows();
+        });
+
+        const uploadInput = document.getElementById('slideshowUploadInput');
+        document.getElementById('addSlideshowImage')?.addEventListener('click', () => {
+            state.replacingSlideId = null;
+            uploadInput?.click();
+        });
+
+        document.getElementById('replaceSlideshowImage')?.addEventListener('click', () => {
+            state.replacingSlideId = state.selectedSlideId;
+            uploadInput?.click();
+        });
+
+        uploadInput?.addEventListener('change', async (event) => {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            try {
+                await handleSlideshowUpload(file);
+            } finally {
+                event.target.value = '';
+            }
+        });
+
+        document.getElementById('deleteSlideshowImage')?.addEventListener('click', deleteSelectedSlide);
+        document.getElementById('resetSlideshowImage')?.addEventListener('click', resetSelectedSlideImage);
+        document.getElementById('moveSlideUp')?.addEventListener('click', () => moveSelectedSlide(-1));
+        document.getElementById('moveSlideDown')?.addEventListener('click', () => moveSelectedSlide(1));
+        document.getElementById('slideshowRandomizeToggle')?.addEventListener('change', () => updateSlideField('randomize'));
+        document.getElementById('slideshowGlobalOverlayColor')?.addEventListener('input', () => updateSlideField('globalOverlay'));
+        document.getElementById('slideshowGlobalOverlayOpacity')?.addEventListener('input', () => updateSlideField('globalOverlay'));
+
+        document.getElementById('slideshowPageAssign')?.addEventListener('change', (event) => updateSlideField('page', event.target.value));
+        document.getElementById('slideshowFitMode')?.addEventListener('change', () => updateSlideField('fit'));
+        document.getElementById('slideshowCropX')?.addEventListener('input', () => updateSlideField('crop'));
+        document.getElementById('slideshowCropY')?.addEventListener('input', () => updateSlideField('crop'));
+        document.getElementById('slideshowCropZoom')?.addEventListener('input', () => updateSlideField('crop'));
+        document.getElementById('slideshowFilterBrightness')?.addEventListener('input', () => updateSlideField('filters'));
+        document.getElementById('slideshowFilterContrast')?.addEventListener('input', () => updateSlideField('filters'));
+        document.getElementById('slideshowFilterSaturate')?.addEventListener('input', () => updateSlideField('filters'));
+        document.getElementById('slideshowOverlayOverride')?.addEventListener('change', () => updateSlideField('overlayOverride'));
+        document.getElementById('slideshowOverlayColor')?.addEventListener('input', () => updateSlideField('overlay'));
+        document.getElementById('slideshowOverlayOpacity')?.addEventListener('input', () => updateSlideField('overlay'));
+    }
+
+    function showView(view, options = {}) {
+        const { syncHash = true } = options;
         document.querySelectorAll('.admin-view').forEach((el) => {
             el.style.display = 'none';
         });
+
         const target = document.getElementById(`${view}View`);
         if (target) {
             target.style.display = 'block';
         }
+
         document.querySelectorAll('.menu-item').forEach((item) => item.classList.remove('active'));
         document.querySelector(`.menu-link[href="#${view}"]`)?.parentElement?.classList.add('active');
         state.currentView = view;
+
+        if (syncHash && window.location.hash !== `#${view}`) {
+            history.replaceState({ view }, '', `#${view}`);
+        }
+
+        if (view === 'users') {
+            renderUsers();
+        } else if (view === 'system') {
+            loadSystemInfo();
+        } else if (view === 'slideshows') {
+            loadSlideshows().catch((error) => showError(error.message));
+        }
     }
 
     function wireNavigation() {
@@ -143,12 +798,14 @@
                 event.preventDefault();
                 const view = href.slice(1);
                 showView(view);
-                if (view === 'users') {
-                    renderUsers();
-                } else if (view === 'system') {
-                    loadSystemInfo();
-                }
             });
+        });
+
+        window.addEventListener('hashchange', () => {
+            const view = getViewFromHash();
+            if (view !== state.currentView) {
+                showView(view, { syncHash: false });
+            }
         });
     }
 
@@ -186,7 +843,6 @@
         document.getElementById('adminSettingsLink')?.addEventListener('click', (event) => {
             event.preventDefault();
             showView('system');
-            history.replaceState({ view: 'system' }, '', '#system');
             loadSystemInfo();
         });
 
@@ -386,7 +1042,8 @@
         initializeTheme();
         wireNavigation();
         wireHeaderControls();
-        showView('dashboard');
+        wireSlideshowManager();
+        showView(getViewFromHash(), { syncHash: false });
 
         window.addEventListener('adminAuthSuccess', (event) => {
             updateAdminHeader(event.detail);

@@ -7,12 +7,12 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     
     <!-- CSS -->
-    <link rel="stylesheet" href="/app/admin/css/admin-base.css?v=1.1.02">
-    <link rel="stylesheet" href="/app/admin/css/admin-components.css?v=1.1.02">
-    <link rel="stylesheet" href="/app/admin/css/admin-dark.css?v=1.1.02">
-    <link rel="stylesheet" href="/app/admin/css/content.css?v=1.1.02">
-    <link rel="stylesheet" href="/app/admin/css/communications.css?v=1.1.02">
-    <link rel="stylesheet" href="/app/admin/css/backup-system.css?v=1.1.02">
+    <link rel="stylesheet" href="/app/admin/css/admin-base.css?v=1.1.26">
+    <link rel="stylesheet" href="/app/admin/css/admin-components.css?v=1.1.26">
+    <link rel="stylesheet" href="/app/admin/css/admin-dark.css?v=1.1.26">
+    <link rel="stylesheet" href="/app/admin/css/content.css?v=1.1.26">
+    <link rel="stylesheet" href="/app/admin/css/communications.css?v=1.1.26">
+    <link rel="stylesheet" href="/app/admin/css/backup-system.css?v=1.1.26">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
@@ -126,6 +126,12 @@
                             <a href="#content" class="menu-link">
                                 <span class="material-icons">photo_library</span>
                                 <span class="menu-text">Content</span>
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="#slideshows" class="menu-link">
+                                <span class="material-icons">view_carousel</span>
+                                <span class="menu-text">Slideshows</span>
                             </a>
                         </li>
                         <li class="menu-item">
@@ -543,6 +549,202 @@
                     </div>
                 </div>
 
+                <div id="slideshowsView" class="admin-view" style="display: none;">
+                    <div class="view-header">
+                        <div>
+                            <h1>Slideshow Manager</h1>
+                            <p class="view-subtitle">Manage staged slideshow images for home, about, mission, and contact. Changes only go live when you publish.</p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn btn-secondary" id="refreshSlideshows">
+                                <span class="material-icons">refresh</span>
+                                <span>Reload</span>
+                            </button>
+                            <button class="btn btn-secondary" id="saveSlideshowDraft">
+                                <span class="material-icons">save</span>
+                                <span>Save Draft</span>
+                            </button>
+                            <button class="btn btn-primary" id="publishSlideshows">
+                                <span class="material-icons">publish</span>
+                                <span>Publish</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="slideshow-status-bar">
+                        <span id="slideshowDraftStatus">Draft not loaded yet.</span>
+                        <span id="slideshowPublishedStatus">Published status unknown.</span>
+                    </div>
+
+                    <div class="slideshow-page-tabs" id="slideshowPageTabs">
+                        <button class="slideshow-page-tab active" data-page="home">Home</button>
+                        <button class="slideshow-page-tab" data-page="about">About</button>
+                        <button class="slideshow-page-tab" data-page="mission">Mission</button>
+                        <button class="slideshow-page-tab" data-page="contact">Contact</button>
+                    </div>
+
+                    <div class="slideshow-toolbar">
+                        <div class="search-box">
+                            <span class="material-icons">photo_library</span>
+                            <input type="text" id="slideshowSummary" value="Manage page-specific slideshow images, ordering, crop, and filters." readonly>
+                        </div>
+                        <div class="header-actions">
+                            <div class="slideshow-global-overlay" style="display:flex;align-items:center;gap:12px;">
+                                <label class="form-group" style="margin:0;">
+                                    <span>Global Overlay</span>
+                                    <input type="color" id="slideshowGlobalOverlayColor" value="#000000">
+                                </label>
+                                <label class="form-group" style="margin:0; min-width:180px;">
+                                    <span>Global Opacity</span>
+                                    <input type="range" id="slideshowGlobalOverlayOpacity" min="0" max="100" value="0">
+                                </label>
+                            </div>
+                            <input type="file" id="slideshowUploadInput" accept="image/*" hidden>
+                            <label class="btn btn-secondary" style="gap:8px;">
+                                <input type="checkbox" id="slideshowRandomizeToggle" style="margin:0;">
+                                <span>Randomize display order</span>
+                            </label>
+                            <button class="btn btn-primary" id="addSlideshowImage">
+                                <span class="material-icons">add_photo_alternate</span>
+                                <span>Add Image</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="slideshow-manager-grid">
+                        <section class="slideshow-list-panel chart-container">
+                            <div class="chart-header">
+                                <h3 id="slideshowListTitle">Home Slides</h3>
+                                <span class="slideshow-count" id="slideshowCount">0 slides</span>
+                            </div>
+                            <div class="slideshow-list" id="slideshowList"></div>
+                        </section>
+
+                        <section class="slideshow-editor-panel chart-container">
+                            <div class="chart-header">
+                                <h3>Slide Editor</h3>
+                            </div>
+                            <div id="slideshowEmptyState" class="slideshow-empty-state">
+                                Select a slide to edit its crop, filters, and page assignment.
+                            </div>
+                            <div id="slideshowEditor" style="display: none;">
+                                <div class="slideshow-preview-card">
+                                    <div class="slideshow-preview-surface" id="slideshowPreviewSurface">
+                                        <img id="slideshowPreviewImage" alt="">
+                                        <div id="slideshowPreviewOverlay" style="position:absolute;inset:0;pointer-events:none;"></div>
+                                    </div>
+                                </div>
+
+                                <div class="slideshow-crop-grid" style="margin-bottom: 12px;">
+                                    <div class="form-group">
+                                        <label style="display:flex;align-items:center;gap:8px;">
+                                            <input type="checkbox" id="slideshowOverlayOverride">
+                                            <span>Override global overlay</span>
+                                        </label>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="slideshowOverlayColor">Overlay Color</label>
+                                        <input type="color" id="slideshowOverlayColor" value="#000000">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="slideshowOverlayOpacity">Overlay Opacity</label>
+                                        <input type="range" id="slideshowOverlayOpacity" min="0" max="100" value="0">
+                                    </div>
+                                </div>
+
+                                <div class="slideshow-crop-grid" style="margin-bottom: 12px;">
+                                    <div class="form-group">
+                                        <label>Overlay</label>
+                                        <button class="btn btn-secondary" id="resetSlideshowImage" type="button">
+                                            <span class="material-icons">restart_alt</span>
+                                            <span>Reset Image</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="slideshow-form-grid">
+                                    <div class="form-group">
+                                        <label for="slideshowPageAssign">Page</label>
+                                        <select id="slideshowPageAssign">
+                                            <option value="home">Home</option>
+                                            <option value="about">About</option>
+                                            <option value="mission">Mission</option>
+                                            <option value="contact">Contact</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Image</label>
+                                        <div class="slideshow-editor-actions">
+                                            <button class="btn btn-secondary" id="replaceSlideshowImage" type="button">
+                                                <span class="material-icons">sync</span>
+                                                <span>Replace</span>
+                                            </button>
+                                            <button class="btn btn-danger" id="deleteSlideshowImage" type="button">
+                                                <span class="material-icons">delete</span>
+                                                <span>Delete</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="slideshow-form-grid" style="margin-top: 12px;">
+                                    <div class="form-group">
+                                        <label for="slideshowFitMode">Image Fit</label>
+                                        <select id="slideshowFitMode">
+                                            <option value="cover">Cover</option>
+                                            <option value="contain">Contain</option>
+                                            <option value="fill">Fill</option>
+                                            <option value="scale-down">Scale Down</option>
+                                            <option value="none">None</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="slideshow-crop-grid">
+                                    <div class="form-group">
+                                        <label for="slideshowCropX">Crop X</label>
+                                        <input type="range" id="slideshowCropX" min="0" max="100" value="50">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="slideshowCropY">Crop Y</label>
+                                        <input type="range" id="slideshowCropY" min="0" max="100" value="50">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="slideshowCropZoom">Zoom</label>
+                                        <input type="range" id="slideshowCropZoom" min="50" max="300" value="100">
+                                    </div>
+                                </div>
+
+                                <div class="slideshow-crop-grid" style="margin-top: 12px;">
+                                    <div class="form-group">
+                                        <label for="slideshowFilterBrightness">Brightness</label>
+                                        <input type="range" id="slideshowFilterBrightness" min="0" max="200" value="100">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="slideshowFilterContrast">Contrast</label>
+                                        <input type="range" id="slideshowFilterContrast" min="0" max="200" value="100">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="slideshowFilterSaturate">Saturation</label>
+                                        <input type="range" id="slideshowFilterSaturate" min="0" max="200" value="100">
+                                    </div>
+                                </div>
+
+                                <div class="slideshow-editor-actions" style="margin-top: 20px;">
+                                    <button class="btn btn-secondary" id="moveSlideUp" type="button">
+                                        <span class="material-icons">arrow_upward</span>
+                                        <span>Move Up</span>
+                                    </button>
+                                    <button class="btn btn-secondary" id="moveSlideDown" type="button">
+                                        <span class="material-icons">arrow_downward</span>
+                                        <span>Move Down</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
                 <!-- Audit View -->
                 <div id="auditView" class="admin-view" style="display: none;">
                     <div class="view-header">
@@ -792,7 +994,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/app/js/supabase-client.js"></script>
     <script src="/app/js/api-client.js"></script>
-    <script src="/app/js/admin/auth-guard.js"></script>
-    <script src="/app/admin/js/simple-admin.js"></script>
+    <script src="/app/js/admin/auth-guard.js?v=1.1.26"></script>
+    <script src="/app/admin/js/simple-admin.js?v=1.1.26"></script>
 </body>
 </html>
