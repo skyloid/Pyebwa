@@ -7,7 +7,8 @@
         currentPage: 1,
         pageSize: 20,
         currentView: 'dashboard',
-        summary: null
+        summary: null,
+        theme: 'light'
     };
 
     async function getAccessToken() {
@@ -81,8 +82,44 @@
         const role = detail?.role || sessionData.role || 'admin';
         const nameEl = document.getElementById('adminName');
         const roleEl = document.getElementById('adminRole');
+        const avatarEl = document.getElementById('adminAvatar');
         if (nameEl) nameEl.textContent = displayName;
         if (roleEl) roleEl.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+        if (avatarEl) {
+            const fallbackAvatar = '/app/images/default-avatar.png?v=1.0.98';
+            const avatarUrl = detail?.userData?.photoURL || detail?.user?.user_metadata?.avatar_url || sessionData.photoURL || fallbackAvatar;
+            avatarEl.src = avatarUrl || fallbackAvatar;
+        }
+    }
+
+    function updateThemeIcon() {
+        const icon = document.getElementById('adminThemeIcon');
+        if (!icon) return;
+        icon.textContent = state.theme === 'dark' ? 'light_mode' : 'dark_mode';
+    }
+
+    function applyTheme(theme) {
+        state.theme = theme === 'dark' ? 'dark' : 'light';
+        document.body.classList.toggle('dark-theme', state.theme === 'dark');
+        try {
+            localStorage.setItem('theme', state.theme);
+            localStorage.setItem('adminTheme', state.theme);
+        } catch (error) {
+            console.warn('Unable to persist admin theme preference:', error);
+        }
+        updateThemeIcon();
+    }
+
+    function initializeTheme() {
+        let savedTheme = window.__ADMIN_INITIAL_THEME__ || 'light';
+        if (!window.__ADMIN_INITIAL_THEME__) {
+            try {
+                savedTheme = localStorage.getItem('theme') || localStorage.getItem('adminTheme') || 'light';
+            } catch (error) {
+                savedTheme = 'light';
+            }
+        }
+        applyTheme(savedTheme);
     }
 
     function showView(view) {
@@ -136,8 +173,21 @@
             window.location.href = '/login.html';
         });
 
-        document.querySelector('.user-menu-toggle')?.addEventListener('click', () => {
-            document.querySelector('.nav-user')?.classList.toggle('dropdown-open');
+        document.getElementById('adminBackToAppLink')?.addEventListener('click', (event) => {
+            event.preventDefault();
+            window.location.assign('/app/');
+        });
+
+        document.getElementById('adminProfileLink')?.addEventListener('click', (event) => {
+            event.preventDefault();
+            window.location.assign('/app/');
+        });
+
+        document.getElementById('adminSettingsLink')?.addEventListener('click', (event) => {
+            event.preventDefault();
+            showView('system');
+            history.replaceState({ view: 'system' }, '', '#system');
+            loadSystemInfo();
         });
 
         document.getElementById('navToggle')?.addEventListener('click', () => {
@@ -145,7 +195,7 @@
         });
 
         document.getElementById('themeToggle')?.addEventListener('click', () => {
-            document.body.classList.toggle('dark-theme');
+            applyTheme(state.theme === 'dark' ? 'light' : 'dark');
         });
 
         document.getElementById('userSearch')?.addEventListener('input', applyUserFilters);
@@ -333,6 +383,7 @@
     }
 
     function init() {
+        initializeTheme();
         wireNavigation();
         wireHeaderControls();
         showView('dashboard');

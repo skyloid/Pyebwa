@@ -7,12 +7,12 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     
     <!-- CSS -->
-    <link rel="stylesheet" href="/app/admin/css/admin-base.css?v=1">
-    <link rel="stylesheet" href="/app/admin/css/admin-components.css?v=1">
-    <link rel="stylesheet" href="/app/admin/css/admin-dark.css?v=1">
-    <link rel="stylesheet" href="/app/admin/css/content.css?v=1">
-    <link rel="stylesheet" href="/app/admin/css/communications.css?v=1">
-    <link rel="stylesheet" href="/app/admin/css/backup-system.css?v=1">
+    <link rel="stylesheet" href="/app/admin/css/admin-base.css?v=1.1.02">
+    <link rel="stylesheet" href="/app/admin/css/admin-components.css?v=1.1.02">
+    <link rel="stylesheet" href="/app/admin/css/admin-dark.css?v=1.1.02">
+    <link rel="stylesheet" href="/app/admin/css/content.css?v=1.1.02">
+    <link rel="stylesheet" href="/app/admin/css/communications.css?v=1.1.02">
+    <link rel="stylesheet" href="/app/admin/css/backup-system.css?v=1.1.02">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
@@ -23,6 +23,19 @@
     <script src="/app/js/api-client.js"></script>
 </head>
 <body class="admin-body">
+    <script>
+        (function() {
+            try {
+                var savedTheme = localStorage.getItem('theme') || localStorage.getItem('adminTheme') || 'light';
+                window.__ADMIN_INITIAL_THEME__ = savedTheme === 'dark' ? 'dark' : 'light';
+                if (window.__ADMIN_INITIAL_THEME__ === 'dark') {
+                    document.body.classList.add('dark-theme');
+                }
+            } catch (error) {
+                window.__ADMIN_INITIAL_THEME__ = 'light';
+            }
+        })();
+    </script>
     <!-- Loading Screen -->
     <div id="adminLoader" class="admin-loader">
         <div class="loader-content">
@@ -39,21 +52,17 @@
                 <button class="nav-toggle" id="navToggle">
                     <span class="material-icons">menu</span>
                 </button>
-                <div class="nav-brand">
-                    <img src="/app/images/pyebwa-logo.png" alt="Pyebwa" class="nav-logo">
-                    <span class="nav-title">Admin Dashboard</span>
-                </div>
+                <a class="nav-brand" href="https://pyebwa.com" aria-label="Pyebwa homepage">
+                    <img src="/app/images/pyebwa-title.png" alt="Pyebwa" class="nav-logo">
+                </a>
             </div>
             <div class="nav-right">
-                <button class="nav-btn theme-toggle" id="themeToggle" title="Toggle theme">
-                    <span class="material-icons">dark_mode</span>
-                </button>
                 <button class="nav-btn notifications" id="notificationsBtn" title="Notifications">
                     <span class="material-icons">notifications</span>
                     <span class="notification-badge" style="display: none;">0</span>
                 </button>
                 <div class="nav-user">
-                    <img src="/app/images/default-avatar.png" alt="Admin" class="user-avatar" id="adminAvatar">
+                    <img src="/app/images/default-avatar.png?v=1.0.98" alt="Admin" class="user-avatar" id="adminAvatar" onerror="this.onerror=null;this.src='/app/images/default-avatar.png?v=1.0.98';">
                     <div class="user-info">
                         <span class="user-name" id="adminName">Admin</span>
                         <span class="user-role" id="adminRole">Super Admin</span>
@@ -62,15 +71,15 @@
                         <span class="material-icons">arrow_drop_down</span>
                     </button>
                     <div class="user-dropdown">
-                        <a href="/app/" class="dropdown-item">
+                        <a href="/app/" class="dropdown-item" id="adminBackToAppLink">
                             <span class="material-icons">home</span>
                             <span>Back to App</span>
                         </a>
-                        <a href="#profile" class="dropdown-item">
+                        <a href="/app/" class="dropdown-item" id="adminProfileLink">
                             <span class="material-icons">person</span>
                             <span>My Profile</span>
                         </a>
-                        <a href="#settings" class="dropdown-item">
+                        <a href="#system" class="dropdown-item" id="adminSettingsLink">
                             <span class="material-icons">settings</span>
                             <span>Settings</span>
                         </a>
@@ -81,6 +90,9 @@
                         </a>
                     </div>
                 </div>
+                <button class="nav-btn theme-toggle" id="themeToggle" title="Toggle theme" aria-label="Toggle dark mode">
+                    <span class="material-icons" id="adminThemeIcon">dark_mode</span>
+                </button>
             </div>
         </nav>
 

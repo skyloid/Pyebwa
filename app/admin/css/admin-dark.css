@@ -1,25 +1,29 @@
 /* Admin Dashboard Dark Mode Styles */
 
 body.dark-theme {
-    --admin-bg: #121212;
-    --admin-card-bg: #1e1e1e;
-    --admin-text: #ffffff;
-    --admin-text-secondary: #b3b3b3;
-    --admin-border: #333333;
+    --admin-bg: #0B1410;
+    --admin-card-bg: rgba(13, 24, 18, 0.95);
+    --admin-surface: #142018;
+    --admin-text: #DAD7CD;
+    --admin-text-secondary: #96AEA0;
+    --admin-border: #253A30;
 }
 
 /* Dark mode overrides */
 body.dark-theme .admin-nav {
     background: var(--admin-card-bg);
-    border-bottom: 1px solid var(--admin-border);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 body.dark-theme .nav-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(64, 145, 108, 0.16);
+    border-color: rgba(64, 145, 108, 0.24);
 }
 
-body.dark-theme .nav-user:hover {
-    background: rgba(255, 255, 255, 0.1);
+body.dark-theme .nav-user:hover,
+body.dark-theme .nav-user:focus-within {
+    background: rgba(64, 145, 108, 0.16);
+    border-color: rgba(64, 145, 108, 0.24);
 }
 
 body.dark-theme .user-dropdown {
@@ -28,7 +32,7 @@ body.dark-theme .user-dropdown {
 }
 
 body.dark-theme .dropdown-item:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(64, 145, 108, 0.12);
 }
 
 body.dark-theme .admin-sidebar {
@@ -37,11 +41,11 @@ body.dark-theme .admin-sidebar {
 }
 
 body.dark-theme .menu-link:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(64, 145, 108, 0.12);
 }
 
 body.dark-theme .menu-item.active .menu-link {
-    background: rgba(0, 33, 125, 0.3);
+    background: rgba(45, 106, 79, 0.24);
 }
 
 body.dark-theme .stat-card {
@@ -60,7 +64,7 @@ body.dark-theme .activity-section {
 }
 
 body.dark-theme .activity-item {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(64, 145, 108, 0.08);
 }
 
 body.dark-theme .filters-section {
@@ -69,7 +73,7 @@ body.dark-theme .filters-section {
 }
 
 body.dark-theme .search-box input {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(20, 32, 24, 0.95);
     border: 1px solid var(--admin-border);
     color: var(--admin-text);
 }
@@ -80,7 +84,7 @@ body.dark-theme .search-box input::placeholder {
 
 body.dark-theme .filter-group select,
 body.dark-theme .filter-group input[type="date"] {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(20, 32, 24, 0.95);
     border: 1px solid var(--admin-border);
     color: var(--admin-text);
 }
@@ -91,7 +95,7 @@ body.dark-theme .data-table-container {
 }
 
 body.dark-theme .data-table thead {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(64, 145, 108, 0.08);
 }
 
 body.dark-theme .data-table th {
@@ -103,31 +107,31 @@ body.dark-theme .data-table td {
 }
 
 body.dark-theme .data-table tbody tr:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(64, 145, 108, 0.08);
 }
 
 body.dark-theme .table-pagination {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(64, 145, 108, 0.08);
     border-top: 1px solid var(--admin-border);
 }
 
 body.dark-theme .pagination-btn {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(20, 32, 24, 0.95);
     border: 1px solid var(--admin-border);
     color: var(--admin-text);
 }
 
 body.dark-theme .pagination-btn:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(64, 145, 108, 0.16);
 }
 
 body.dark-theme .btn-secondary {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(20, 32, 24, 0.95);
     color: var(--admin-text);
 }
 
 body.dark-theme .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(64, 145, 108, 0.16);
 }
 
 body.dark-theme .admin-modal {
@@ -150,7 +154,7 @@ body.dark-theme .modal-footer {
 body.dark-theme .form-group input,
 body.dark-theme .form-group select,
 body.dark-theme .form-group textarea {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(20, 32, 24, 0.95);
     border: 1px solid var(--admin-border);
     color: var(--admin-text);
 }
@@ -163,7 +167,7 @@ body.dark-theme .form-group textarea::placeholder {
 body.dark-theme .form-group input:focus,
 body.dark-theme .form-group select:focus,
 body.dark-theme .form-group textarea:focus {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(20, 32, 24, 0.98);
 }
 
 /* Toast notifications dark mode */
@@ -197,7 +201,7 @@ body.dark-theme .status-badge.suspended {
 }
 
 body.dark-theme .role-badge.user {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(64, 145, 108, 0.12);
     color: var(--admin-text);
 }
 
@@ -212,21 +216,21 @@ body.dark-theme::-webkit-scrollbar {
 }
 
 body.dark-theme::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(20, 32, 24, 0.95);
 }
 
 body.dark-theme::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(64, 145, 108, 0.35);
     border-radius: 4px;
 }
 
 body.dark-theme::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(64, 145, 108, 0.5);
 }
 
 /* Selection dark mode */
 body.dark-theme::selection {
-    background: rgba(0, 33, 125, 0.5);
+    background: rgba(45, 106, 79, 0.35);
 }
 
 /* Focus outlines dark mode */

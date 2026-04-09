@@ -78,7 +78,7 @@
 }
 
 .announcement-card.status-scheduled {
-    border-left-color: #2196F3;
+    border-left-color: #6B4F3A;
 }
 
 .announcement-card.status-archived {
@@ -324,8 +324,8 @@ textarea.form-control {
 }
 
 .status-badge.status-scheduled {
-    background: #E3F2FD;
-    color: #1565C0;
+    background: #EFE7DF;
+    color: #6B4F3A;
 }
 
 .status-badge.status-archived {
@@ -465,7 +465,7 @@ textarea.form-control {
 }
 
 .dark-theme .status-badge.status-scheduled {
-    background: rgba(33, 150, 243, 0.2);
+    background: rgba(107, 79, 58, 0.2);
 }
 
 .dark-theme .status-badge.status-archived {

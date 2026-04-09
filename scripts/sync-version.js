@@ -8,6 +8,7 @@ const siteVersionFile = path.join(rootDir, 'pyebwa.com', 'version.json');
 
 const htmlFiles = [
     path.join(rootDir, 'app', 'index.html'),
+    path.join(rootDir, 'app', 'admin', 'index.html'),
     path.join(rootDir, 'pyebwa.com', 'index.html'),
     path.join(rootDir, 'pyebwa.com', 'about.html'),
     path.join(rootDir, 'pyebwa.com', 'contact.html'),
@@ -40,9 +41,14 @@ function updateVersionJson(filePath, version, buildId, deployedAt) {
 
 function updateHtmlFallback(filePath, version) {
     const original = fs.readFileSync(filePath, 'utf8');
-    const updated = original.replace(
+    let updated = original.replace(
         /(<span data-build-version>)(.*?)(<\/span>)/g,
         `$1${version}$3`
+    );
+
+    updated = updated.replace(
+        /(\/app\/admin\/css\/[^"?]+\?v=)([^"]+)/g,
+        `$1${version}`
     );
 
     if (updated !== original) {
