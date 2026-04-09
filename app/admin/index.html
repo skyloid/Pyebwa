@@ -7,19 +7,19 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     
     <!-- CSS -->
-    <link rel="stylesheet" href="/app/admin/css/admin-base.css?v=1.1.27">
-    <link rel="stylesheet" href="/app/admin/css/admin-components.css?v=1.1.27">
-    <link rel="stylesheet" href="/app/admin/css/admin-dark.css?v=1.1.27">
-    <link rel="stylesheet" href="/app/admin/css/content.css?v=1.1.27">
-    <link rel="stylesheet" href="/app/admin/css/communications.css?v=1.1.27">
-    <link rel="stylesheet" href="/app/admin/css/backup-system.css?v=1.1.27">
+    <link rel="stylesheet" href="/app/admin/css/admin-base.css?v=1.1.77">
+    <link rel="stylesheet" href="/app/admin/css/admin-components.css?v=1.1.77">
+    <link rel="stylesheet" href="/app/admin/css/admin-dark.css?v=1.1.77">
+    <link rel="stylesheet" href="/app/admin/css/content.css?v=1.1.77">
+    <link rel="stylesheet" href="/app/admin/css/communications.css?v=1.1.77">
+    <link rel="stylesheet" href="/app/admin/css/backup-system.css?v=1.1.77">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
     <!-- Chart.js for analytics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     
-    <!-- API Client (replaces Firebase SDK) -->
+    <!-- API Client -->
     <script src="/app/js/api-client.js"></script>
 </head>
 <body class="admin-body">
@@ -576,6 +576,14 @@
                         <span id="slideshowPublishedStatus">Published status unknown.</span>
                     </div>
 
+                    <div id="slideshowPublishOverlay" class="slideshow-publish-overlay" style="display: none;" aria-live="polite">
+                        <div class="slideshow-publish-card">
+                            <div class="spinner"></div>
+                            <h3>Publishing slideshow changes...</h3>
+                            <p>Syncing the updated slideshow files to the live site. This can take a few seconds.</p>
+                        </div>
+                    </div>
+
                     <div class="slideshow-page-tabs" id="slideshowPageTabs">
                         <button class="slideshow-page-tab active" data-page="home">Home</button>
                         <button class="slideshow-page-tab" data-page="about">About</button>
@@ -621,17 +629,35 @@
                         </section>
 
                         <section class="slideshow-editor-panel chart-container">
-                            <div class="chart-header">
-                                <h3>Slide Editor</h3>
-                            </div>
                             <div id="slideshowEmptyState" class="slideshow-empty-state">
                                 Select a slide to edit its crop, filters, and page assignment.
                             </div>
                             <div id="slideshowEditor" style="display: none;">
                                 <div class="slideshow-preview-card">
-                                    <div class="slideshow-preview-surface" id="slideshowPreviewSurface">
-                                        <img id="slideshowPreviewImage" alt="">
-                                        <div id="slideshowPreviewOverlay" style="position:absolute;inset:0;pointer-events:none;"></div>
+                                    <div class="slideshow-preview-layout">
+                                        <div class="slideshow-preview-surface" id="slideshowPreviewSurface">
+                                            <img id="slideshowPreviewImage" alt="">
+                                            <div id="slideshowPreviewOverlay" style="position:absolute;inset:0;pointer-events:none;z-index:1;"></div>
+                                            <div class="slideshow-preview-guides" aria-hidden="true">
+                                                <div class="guide-mask top"></div>
+                                                <div class="guide-mask bottom"></div>
+                                                <div class="guide-mask left"></div>
+                                                <div class="guide-mask right"></div>
+                                                <div class="guide-frame"></div>
+                                                <div class="guide-line edge vertical left"></div>
+                                                <div class="guide-line edge vertical right"></div>
+                                                <div class="guide-line vertical one"></div>
+                                                <div class="guide-line vertical two"></div>
+                                                <div class="guide-line horizontal one"></div>
+                                                <div class="guide-line horizontal two"></div>
+                                                <div class="guide-line center vertical"></div>
+                                                <div class="guide-line center horizontal"></div>
+                                            </div>
+                                        </div>
+                                        <div class="slideshow-zoom-rail">
+                                            <label for="slideshowCropZoom">Zoom</label>
+                                            <input type="range" id="slideshowCropZoom" min="50" max="300" value="100">
+                                        </div>
                                     </div>
                                 </div>
 
@@ -652,16 +678,6 @@
                                     </div>
                                 </div>
 
-                                <div class="slideshow-crop-grid" style="margin-bottom: 12px;">
-                                    <div class="form-group">
-                                        <label>Overlay</label>
-                                        <button class="btn btn-secondary" id="resetSlideshowImage" type="button">
-                                            <span class="material-icons">restart_alt</span>
-                                            <span>Reset Image</span>
-                                        </button>
-                                    </div>
-                                </div>
-
                                 <div class="slideshow-form-grid">
                                     <div class="form-group">
                                         <label for="slideshowPageAssign">Page</label>
@@ -679,24 +695,15 @@
                                                 <span class="material-icons">sync</span>
                                                 <span>Replace</span>
                                             </button>
+                                            <button class="btn btn-secondary" id="resetSlideshowImage" type="button">
+                                                <span class="material-icons">restart_alt</span>
+                                                <span>Reset Image</span>
+                                            </button>
                                             <button class="btn btn-danger" id="deleteSlideshowImage" type="button">
                                                 <span class="material-icons">delete</span>
                                                 <span>Delete</span>
                                             </button>
                                         </div>
-                                    </div>
-                                </div>
-
-                                <div class="slideshow-form-grid" style="margin-top: 12px;">
-                                    <div class="form-group">
-                                        <label for="slideshowFitMode">Image Fit</label>
-                                        <select id="slideshowFitMode">
-                                            <option value="cover">Cover</option>
-                                            <option value="contain">Contain</option>
-                                            <option value="fill">Fill</option>
-                                            <option value="scale-down">Scale Down</option>
-                                            <option value="none">None</option>
-                                        </select>
                                     </div>
                                 </div>
 
@@ -708,10 +715,6 @@
                                     <div class="form-group">
                                         <label for="slideshowCropY">Crop Y</label>
                                         <input type="range" id="slideshowCropY" min="0" max="100" value="50">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="slideshowCropZoom">Zoom</label>
-                                        <input type="range" id="slideshowCropZoom" min="50" max="300" value="100">
                                     </div>
                                 </div>
 
@@ -994,7 +997,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/app/js/supabase-client.js"></script>
     <script src="/app/js/api-client.js"></script>
-    <script src="/app/js/admin/auth-guard.js?v=1.1.27"></script>
-    <script src="/app/admin/js/simple-admin.js?v=1.1.27"></script>
+    <script src="/app/js/back-to-top.js?v=1.1.77"></script>
+    <script src="/app/js/admin/auth-guard.js?v=1.1.77"></script>
+    <script src="/app/admin/js/simple-admin.js?v=1.1.77"></script>
 </body>
 </html>

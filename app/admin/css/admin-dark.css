@@ -10,6 +10,24 @@ body.dark-theme {
 }
 
 /* Dark mode overrides */
+body.dark-theme .loader-content {
+    color: var(--admin-text);
+}
+
+body.dark-theme .spinner {
+    border-color: var(--admin-border);
+    border-top-color: var(--admin-primary-light);
+}
+
+body.dark-theme .slideshow-publish-overlay {
+    background: rgba(11, 20, 16, 0.72);
+}
+
+body.dark-theme .slideshow-publish-card {
+    background: var(--admin-card-bg);
+    border-color: var(--admin-border);
+}
+
 body.dark-theme .admin-nav {
     background: var(--admin-card-bg);
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
@@ -168,6 +186,76 @@ body.dark-theme .form-group input:focus,
 body.dark-theme .form-group select:focus,
 body.dark-theme .form-group textarea:focus {
     background: rgba(20, 32, 24, 0.98);
+}
+
+body.dark-theme .form-group label,
+body.dark-theme .slideshow-meta strong,
+body.dark-theme .slideshow-order,
+body.dark-theme .slideshow-count,
+body.dark-theme .slideshow-status-bar,
+body.dark-theme .slideshow-empty-state,
+body.dark-theme .view-subtitle {
+    color: var(--admin-text);
+}
+
+body.dark-theme .slideshow-meta span {
+    color: var(--admin-text-secondary);
+}
+
+body.dark-theme .slideshow-list-panel .chart-header h3,
+body.dark-theme .slideshow-editor-panel .chart-header h3 {
+    color: var(--admin-text);
+}
+
+body.dark-theme .slideshow-preview-surface {
+    background: rgba(20, 32, 24, 0.98);
+    border-color: var(--admin-border);
+}
+
+body.dark-theme .slideshow-preview-guides .guide-frame {
+    border-color: rgba(218, 215, 205, 0.64);
+    box-shadow: inset 0 0 0 1px rgba(11, 20, 16, 0.28);
+}
+
+body.dark-theme .slideshow-preview-guides .guide-mask {
+    background: var(--slideshow-preview-mask, rgba(0, 0, 0, 0.42));
+}
+
+body.dark-theme .slideshow-preview-guides .guide-line {
+    background: rgba(218, 215, 205, 0.38);
+}
+
+body.dark-theme .slideshow-preview-guides .guide-line.edge.vertical {
+    background: rgba(218, 215, 205, 0.54);
+}
+
+body.dark-theme .slideshow-preview-guides .guide-line.center.vertical,
+body.dark-theme .slideshow-preview-guides .guide-line.center.horizontal {
+    background: rgba(218, 215, 205, 0.2);
+}
+
+body.dark-theme .slideshow-page-tab {
+    background: rgba(20, 32, 24, 0.95);
+    border-color: var(--admin-border);
+    color: var(--admin-text);
+}
+
+body.dark-theme .slideshow-page-tab.active,
+body.dark-theme .slideshow-page-tab:hover {
+    background: rgba(64, 145, 108, 0.2);
+    color: var(--admin-text);
+}
+
+body.dark-theme input[type="range"] {
+    accent-color: var(--admin-primary-light);
+}
+
+body.dark-theme input[type="color"] {
+    background: rgba(20, 32, 24, 0.98);
+    border: 1px solid var(--admin-border);
+    border-radius: 10px;
+    min-height: 46px;
+    padding: 4px;
 }
 
 /* Toast notifications dark mode */

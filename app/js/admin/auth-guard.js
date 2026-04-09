@@ -1,154 +1,133 @@
-// Admin Authentication Guard - Supabase-based
 (function() {
     'use strict';
 
-    console.log('[AdminAuthGuard] Initializing admin authentication guard');
+    function getLoader() {
+        return document.getElementById('adminLoader');
+    }
 
-    class AdminAuthGuard {
-        constructor() {
-            this.currentUser = null;
-            this.userRole = null;
-            this.isAdmin = false;
-            this.initialized = false;
-        }
+    function getApp() {
+        return document.getElementById('adminApp');
+    }
 
-        async initialize() {
-            try {
-                console.log('[AdminAuthGuard] Checking authentication');
+    function getAccessDenied() {
+        return document.getElementById('accessDenied');
+    }
 
-                const client = window.supabaseClient;
-                if (!client) {
-                    this.redirectToLogin('Auth client not available');
-                    return;
-                }
-
-                const { data: { session } } = await client.auth.getSession();
-                if (!session) {
-                    this.redirectToLogin();
-                    return;
-                }
-
-                await this.validateAdminAccess(session);
-                this.initialized = true;
-            } catch (error) {
-                console.error('[AdminAuthGuard] Initialization error:', error);
-                this.handleError(error);
+    function showLoader(message) {
+        const loader = getLoader();
+        const app = getApp();
+        const denied = getAccessDenied();
+        if (loader) {
+            loader.style.display = 'flex';
+            const label = loader.querySelector('p');
+            if (label && message) {
+                label.textContent = message;
             }
         }
+        if (app) app.style.display = 'none';
+        if (denied) denied.style.display = 'none';
+    }
 
-        async validateAdminAccess(session) {
-            try {
-                console.log('[AdminAuthGuard] Validating admin access for:', session.user.email);
-
-                // Fetch user role from server API
-                const res = await fetch('/api/auth/me', {
-                    headers: { 'Authorization': 'Bearer ' + session.access_token }
-                });
-
-                if (!res.ok) {
-                    this.redirectToLogin('Could not verify user');
-                    return;
-                }
-
-                const userData = await res.json();
-                this.currentUser = session.user;
-                this.userRole = userData.role || 'member';
-                this.isAdmin = ['admin', 'superadmin', 'moderator'].includes(this.userRole);
-
-                console.log('[AdminAuthGuard] User role:', this.userRole, 'Is admin:', this.isAdmin);
-
-                if (!this.isAdmin) {
-                    console.warn('[AdminAuthGuard] Access denied - user is not an admin');
-                    this.showAccessDenied();
-                    return;
-                }
-
-                console.log('[AdminAuthGuard] Admin access granted');
-                this.setupAdminSession(userData);
-
-                window.dispatchEvent(new CustomEvent('adminAuthSuccess', {
-                    detail: { user: session.user, userData, role: this.userRole }
-                }));
-
-            } catch (error) {
-                console.error('[AdminAuthGuard] Validation error:', error);
-                this.handleError(error);
-            }
-        }
-
-        setupAdminSession(userData) {
-            sessionStorage.setItem('adminUser', JSON.stringify({
-                uid: this.currentUser.id,
-                email: this.currentUser.email,
-                displayName: userData.displayName || '',
-                role: this.userRole,
-                isAdmin: this.isAdmin
-            }));
-
-            document.body.classList.add('admin-mode');
-
-            if (window.adminDashboard && window.adminDashboard.initialize) {
-                window.adminDashboard.initialize();
-            }
-        }
-
-        checkAdminAccess() {
-            const adminData = sessionStorage.getItem('adminUser');
-            if (!adminData) return false;
-            try {
-                return JSON.parse(adminData).isAdmin === true;
-            } catch { return false; }
-        }
-
-        getAdminUser() {
-            try {
-                return JSON.parse(sessionStorage.getItem('adminUser'));
-            } catch { return null; }
-        }
-
-        showAccessDenied() {
-            document.body.innerHTML = `
-                <div class="admin-access-denied">
-                    <div class="access-denied-content">
-                        <h1>Access Denied</h1>
-                        <p>You do not have permission to access the admin area.</p>
-                        <a href="/app/" class="btn btn-primary">Return to App</a>
-                    </div>
-                </div>
-            `;
-        }
-
-        redirectToLogin(message = '') {
-            const params = new URLSearchParams({ redirect: window.location.pathname, admin: 'true' });
-            if (message) params.append('error', message);
-            window.location.href = '/login.html?' + params.toString();
-        }
-
-        handleError(error) {
-            console.error('[AdminAuthGuard] Error:', error);
-            const el = document.createElement('div');
-            el.className = 'admin-error-message';
-            el.innerHTML = `<div class="error-content"><h2>Authentication Error</h2><p>${error.message || 'An error occurred'}</p><button onclick="location.reload()">Retry</button></div>`;
-            document.body.appendChild(el);
-        }
-
-        async signOut() {
-            try {
-                const client = window.supabaseClient;
-                if (client) await client.auth.signOut();
-                sessionStorage.removeItem('adminUser');
-                window.location.href = '/';
-            } catch (error) {
-                console.error('[AdminAuthGuard] Sign out error:', error);
+    function showDenied(message) {
+        const loader = getLoader();
+        const denied = getAccessDenied();
+        if (loader) loader.style.display = 'none';
+        if (denied) {
+            denied.style.display = 'flex';
+            const label = denied.querySelector('p');
+            if (label && message) {
+                label.textContent = message;
             }
         }
     }
 
-    window.adminAuthGuard = new AdminAuthGuard();
+    function redirectToLogin() {
+        const url = new URL('/login.html', window.location.origin);
+        const params = new URLSearchParams(window.location.search);
+        const lang = params.get('lang');
+        if (lang) {
+            url.searchParams.set('lang', lang);
+        }
+        url.searchParams.set('redirect', '/app/admin/');
+        window.location.replace(url.toString());
+    }
 
-    if (window.location.pathname.includes('/admin')) {
-        document.addEventListener('DOMContentLoaded', () => {
-            window.adminAuthGuard.initialize();
+    async function waitForSupabaseClient() {
+        for (let i = 0; i < 50; i += 1) {
+            if (window.supabaseClient) {
+                return window.supabaseClient;
+            }
+            await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+        throw new Error('Supabase client unavailable');
+    }
+
+    async function validateAdminAccess() {
+        const client = await waitForSupabaseClient();
+        const { data: { session } } = await client.auth.getSession();
+
+        if (!session?.user) {
+            redirectToLogin();
+            return;
+        }
+
+        const response = await fetch('/api/admin/summary', {
+            headers: {
+                Authorization: `Bearer ${session.access_token}`
+            }
         });
+
+        if (response.status === 401) {
+            redirectToLogin();
+            return;
+        }
+
+        if (response.status === 403) {
+            showDenied("You don't have permission to access the admin dashboard.");
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error('Failed to verify admin access');
+        }
+
+        const detail = {
+            user: session.user,
+            role: session.user.user_metadata?.role || session.user.app_metadata?.role || 'admin',
+            userData: {
+                displayName: session.user.user_metadata?.display_name || session.user.user_metadata?.full_name || session.user.email,
+                photoURL: session.user.user_metadata?.avatar_url || ''
+            }
+        };
+
+        try {
+            sessionStorage.setItem('adminUser', JSON.stringify({
+                email: session.user.email || '',
+                displayName: detail.userData.displayName,
+                photoURL: detail.userData.photoURL,
+                role: detail.role
+            }));
+        } catch (error) {
+            console.warn('[AdminAuthGuard] Unable to persist admin user session data', error);
+        }
+
+        window.dispatchEvent(new CustomEvent('adminAuthSuccess', { detail }));
+    }
+
+    async function init() {
+        try {
+            console.log('[AdminAuthGuard] Initializing admin authentication guard');
+            showLoader('Verifying admin access...');
+            await validateAdminAccess();
+        } catch (error) {
+            console.error('[AdminAuthGuard] Admin guard failed:', error);
+            showDenied('Unable to verify admin access. Please refresh and try again.');
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init, { once: true });
+    } else {
+        init();
     }
 })();

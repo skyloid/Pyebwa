@@ -51,6 +51,21 @@ function updateHtmlFallback(filePath, version) {
         `$1${version}`
     );
 
+    updated = updated.replace(
+        /(\/app\/js\/back-to-top\.js\?v=)([^"]+)/g,
+        `$1${version}`
+    );
+
+    updated = updated.replace(
+        /(\/app\/js\/admin\/auth-guard\.js\?v=)([^"]+)/g,
+        `$1${version}`
+    );
+
+    updated = updated.replace(
+        /(\/app\/admin\/js\/simple-admin\.js\?v=)([^"]+)/g,
+        `$1${version}`
+    );
+
     if (updated !== original) {
         fs.writeFileSync(filePath, updated);
     }

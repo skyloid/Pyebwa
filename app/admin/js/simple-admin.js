@@ -18,7 +18,8 @@
         slideshowDirty: false,
         replacingSlideId: null,
         slideshowDrag: null,
-        slideshowListDrag: null
+        slideshowListDrag: null,
+        slideshowPublishing: false
     };
 
     function getViewFromHash(hash = window.location.hash) {
@@ -195,9 +196,40 @@
             draftStatus.textContent = `${state.slideshowDirty ? 'Unsaved draft changes' : 'Draft saved'} · ${updatedAt}`;
         }
         if (publishedStatus) {
+            if (state.slideshowPublishing) {
+                publishedStatus.textContent = 'Publishing to live site...';
+                return;
+            }
             const publishedAt = state.slideshowPublished?.publishedAt ? formatDate(state.slideshowPublished.publishedAt) : 'Never published';
             publishedStatus.textContent = `Published · ${publishedAt}`;
         }
+    }
+
+    function setSlideshowPublishing(isPublishing) {
+        state.slideshowPublishing = !!isPublishing;
+
+        const publishButton = document.getElementById('publishSlideshows');
+        const saveButton = document.getElementById('saveSlideshowDraft');
+        const refreshButton = document.getElementById('refreshSlideshows');
+        const overlay = document.getElementById('slideshowPublishOverlay');
+
+        [publishButton, saveButton, refreshButton].forEach((button) => {
+            if (!button) return;
+            button.disabled = state.slideshowPublishing;
+            button.classList.toggle('is-busy', state.slideshowPublishing);
+        });
+
+        if (publishButton) {
+            publishButton.innerHTML = state.slideshowPublishing
+                ? '<span class="btn-spinner" aria-hidden="true"></span><span>Publishing...</span>'
+                : '<span class="material-icons">publish</span><span>Publish</span>';
+        }
+
+        if (overlay) {
+            overlay.style.display = state.slideshowPublishing ? 'flex' : 'none';
+        }
+
+        updateSlideStatusBar();
     }
 
     function getSlidesForPage(page = state.activeSlideshowPage) {
@@ -357,14 +389,48 @@
         if (!previewImage || !slide) return;
         const crop = slide.crop || { x: 50, y: 50, zoom: 100 };
         const filters = slide.filters || { brightness: 100, contrast: 100, saturate: 100 };
-        previewImage.style.objectFit = slide.fit || 'cover';
-        previewImage.style.objectPosition = `${crop.x}% ${crop.y}%`;
-        previewImage.style.transform = `scale(${crop.zoom / 100})`;
-        previewImage.style.transformOrigin = `${crop.x}% ${crop.y}%`;
+        const fitMode = 'cover';
+        const effectiveZoom = Math.max(100, crop.zoom ?? 100);
+        const scale = effectiveZoom / 100;
+        let translateX = 0;
+        let translateY = 0;
+
+        previewImage.style.objectFit = fitMode;
+        previewImage.style.objectPosition = '50% 50%';
+        previewImage.style.transformOrigin = '50% 50%';
+
+        const naturalWidth = previewImage.naturalWidth;
+        const naturalHeight = previewImage.naturalHeight;
+        const surfaceWidth = previewSurface.clientWidth;
+        const surfaceHeight = previewSurface.clientHeight;
+
+        if (naturalWidth > 0 && naturalHeight > 0 && surfaceWidth > 0 && surfaceHeight > 0) {
+            const imageRatio = naturalWidth / naturalHeight;
+            const surfaceRatio = surfaceWidth / surfaceHeight;
+            let baseWidth = surfaceWidth;
+            let baseHeight = surfaceHeight;
+
+            if (imageRatio > surfaceRatio) {
+                baseHeight = surfaceHeight;
+                baseWidth = surfaceHeight * imageRatio;
+            } else {
+                baseWidth = surfaceWidth;
+                baseHeight = surfaceWidth / imageRatio;
+            }
+
+            const scaledWidth = baseWidth * scale;
+            const scaledHeight = baseHeight * scale;
+            const overflowX = Math.max(0, scaledWidth - surfaceWidth);
+            const overflowY = Math.max(0, scaledHeight - surfaceHeight);
+            translateX = ((50 - crop.x) / 50) * (overflowX / 2);
+            translateY = ((50 - crop.y) / 50) * (overflowY / 2);
+        }
+
+        previewImage.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
         previewImage.style.filter = `brightness(${filters.brightness}%) contrast(${filters.contrast}%) saturate(${filters.saturate}%)`;
-        previewImage.style.cursor = crop.zoom > 100 ? 'grab' : 'default';
+        previewImage.style.cursor = 'grab';
         if (previewSurface) {
-            previewSurface.classList.toggle('is-draggable', crop.zoom > 100);
+            previewSurface.classList.add('is-draggable');
         }
     }
 
@@ -376,10 +442,15 @@
 
     function syncPreviewOverlay() {
         const previewOverlay = document.getElementById('slideshowPreviewOverlay');
+        const previewSurface = document.getElementById('slideshowPreviewSurface');
         if (!previewOverlay) return;
         const overlay = getOverlayForSelectedSlide();
-        previewOverlay.style.background = overlay.color;
-        previewOverlay.style.opacity = String(Math.min(100, Math.max(0, overlay.opacity)) / 100);
+        previewOverlay.style.background = overlay.color || '#000000';
+        previewOverlay.style.opacity = String(Math.min(100, Math.max(0, Number(overlay.opacity) || 0)) / 100);
+
+        if (previewSurface) {
+            previewSurface.style.setProperty('--slideshow-preview-mask', 'rgba(11, 20, 16, 0.7)');
+        }
     }
 
     function renderOverlayControls() {
@@ -411,7 +482,6 @@
 
     function resetSlideImageState(slide) {
         if (!slide) return;
-        slide.fit = 'cover';
         slide.crop = { x: 50, y: 50, zoom: 100 };
         slide.filters = { brightness: 100, contrast: 100, saturate: 100 };
         slide.overlayExplicit = false;
@@ -423,26 +493,38 @@
         const emptyState = document.getElementById('slideshowEmptyState');
         const editor = document.getElementById('slideshowEditor');
         const slide = findSelectedSlide();
+        const previewSurface = document.getElementById('slideshowPreviewSurface');
 
         if (!slide) {
             if (emptyState) emptyState.style.display = 'block';
             if (editor) editor.style.display = 'none';
+            if (previewSurface) {
+                delete previewSurface.dataset.page;
+            }
             renderOverlayControls();
             return;
         }
 
         if (emptyState) emptyState.style.display = 'none';
         if (editor) editor.style.display = 'block';
+        if (previewSurface) {
+            previewSurface.dataset.page = slide.page || state.activeSlideshowPage;
+        }
 
         const previewImage = document.getElementById('slideshowPreviewImage');
         if (previewImage) {
             previewImage.src = getAdminPreviewUrl(slide.url);
             previewImage.alt = 'Slideshow image';
+            previewImage.onload = () => {
+                const currentSlide = findSelectedSlide();
+                if (currentSlide && currentSlide.id === slide.id) {
+                    syncPreviewCrop(currentSlide);
+                }
+            };
             syncPreviewCrop(slide);
         }
 
         document.getElementById('slideshowPageAssign').value = slide.page || state.activeSlideshowPage;
-        document.getElementById('slideshowFitMode').value = slide.fit || 'cover';
         syncCropInputs(slide);
         document.getElementById('slideshowFilterBrightness').value = slide.filters?.brightness ?? 100;
         document.getElementById('slideshowFilterContrast').value = slide.filters?.contrast ?? 100;
@@ -491,6 +573,9 @@
     async function saveSlideshowDraft() {
         if (!state.slideshowDraft) return;
 
+        await flushPendingSlideshowInputs();
+        syncSlideshowControlsToState();
+
         const response = await authFetch('/api/admin/slideshows/draft', {
             method: 'PUT',
             body: JSON.stringify(state.slideshowDraft)
@@ -510,18 +595,103 @@
     }
 
     async function publishSlideshows() {
-        if (state.slideshowDirty) {
-            await saveSlideshowDraft();
+        setSlideshowPublishing(true);
+        try {
+            await flushPendingSlideshowInputs();
+            syncSlideshowControlsToState();
+
+            if (state.slideshowDirty) {
+                await saveSlideshowDraft();
+            }
+
+            const response = await authFetch('/api/admin/slideshows/publish', { method: 'POST' });
+            if (!response.ok) {
+                throw new Error('Failed to publish slideshows');
+            }
+
+            const payload = await response.json();
+            state.slideshowPublished = payload.published;
+            updateSlideStatusBar();
+        } finally {
+            setSlideshowPublishing(false);
+        }
+    }
+
+    async function flushPendingSlideshowInputs() {
+        const activeElement = document.activeElement;
+        if (activeElement && typeof activeElement.blur === 'function' && (
+            activeElement.id === 'slideshowGlobalOverlayColor' ||
+            activeElement.id === 'slideshowOverlayColor' ||
+            activeElement.id === 'slideshowGlobalOverlayOpacity' ||
+            activeElement.id === 'slideshowOverlayOpacity' ||
+            activeElement.id === 'slideshowCropX' ||
+            activeElement.id === 'slideshowCropY' ||
+            activeElement.id === 'slideshowCropZoom' ||
+            activeElement.id === 'slideshowFilterBrightness' ||
+            activeElement.id === 'slideshowFilterContrast' ||
+            activeElement.id === 'slideshowFilterSaturate'
+        )) {
+            activeElement.blur();
         }
 
-        const response = await authFetch('/api/admin/slideshows/publish', { method: 'POST' });
-        if (!response.ok) {
-            throw new Error('Failed to publish slideshows');
+        await new Promise((resolve) => {
+            window.requestAnimationFrame(() => resolve());
+        });
+    }
+
+    function syncSlideshowControlsToState() {
+        if (!state.slideshowDraft) return;
+
+        const globalOverlayColor = document.getElementById('slideshowGlobalOverlayColor');
+        const globalOverlayOpacity = document.getElementById('slideshowGlobalOverlayOpacity');
+        if (globalOverlayColor && globalOverlayOpacity) {
+            if (!state.slideshowDraft.overlays) state.slideshowDraft.overlays = {};
+            state.slideshowDraft.overlays[state.activeSlideshowPage] = {
+                color: globalOverlayColor.value || '#000000',
+                opacity: Number(globalOverlayOpacity.value)
+            };
         }
 
-        const payload = await response.json();
-        state.slideshowPublished = payload.published;
-        updateSlideStatusBar();
+        const randomizeToggle = document.getElementById('slideshowRandomizeToggle');
+        if (randomizeToggle) {
+            if (!state.slideshowDraft.settings) state.slideshowDraft.settings = {};
+            state.slideshowDraft.settings[state.activeSlideshowPage] = {
+                ...getPageSettings(),
+                randomize: !!randomizeToggle.checked
+            };
+        }
+
+        const slide = findSelectedSlide();
+        if (!slide) return;
+
+        const pageAssign = document.getElementById('slideshowPageAssign');
+        if (pageAssign && VALID_SLIDESHOW_PAGES.includes(pageAssign.value)) {
+            slide.page = pageAssign.value;
+        }
+
+        slide.crop = {
+            x: Number(document.getElementById('slideshowCropX')?.value ?? slide.crop?.x ?? 50),
+            y: Number(document.getElementById('slideshowCropY')?.value ?? slide.crop?.y ?? 50),
+            zoom: Number(document.getElementById('slideshowCropZoom')?.value ?? slide.crop?.zoom ?? 100)
+        };
+
+        slide.filters = {
+            brightness: Number(document.getElementById('slideshowFilterBrightness')?.value ?? slide.filters?.brightness ?? 100),
+            contrast: Number(document.getElementById('slideshowFilterContrast')?.value ?? slide.filters?.contrast ?? 100),
+            saturate: Number(document.getElementById('slideshowFilterSaturate')?.value ?? slide.filters?.saturate ?? 100)
+        };
+
+        const overlayOverride = document.getElementById('slideshowOverlayOverride');
+        const overlayColor = document.getElementById('slideshowOverlayColor');
+        const overlayOpacity = document.getElementById('slideshowOverlayOpacity');
+        if (overlayOverride && overlayColor && overlayOpacity) {
+            slide.overlayExplicit = true;
+            slide.overlayOverride = !!overlayOverride.checked;
+            slide.overlay = {
+                color: overlayColor.value || '#000000',
+                opacity: Number(overlayOpacity.value)
+            };
+        }
     }
 
     function updateSlideField(field, value) {
@@ -579,9 +749,6 @@
                 zoom: Number(document.getElementById('slideshowCropZoom').value)
             };
             syncPreviewCrop(slide);
-        } else if (field === 'fit') {
-            slide.fit = document.getElementById('slideshowFitMode').value || 'cover';
-            syncPreviewCrop(slide);
         } else if (field === 'filters') {
             slide.filters = {
                 brightness: Number(document.getElementById('slideshowFilterBrightness').value),
@@ -618,7 +785,6 @@
         const surface = document.getElementById('slideshowPreviewSurface');
         const image = document.getElementById('slideshowPreviewImage');
         if (!slide || !surface || !image) return;
-        if ((slide.crop?.zoom ?? 100) <= 100) return;
 
         state.slideshowDrag = {
             pointerId: event.pointerId,
@@ -669,7 +835,7 @@
         surface?.releasePointerCapture?.(event.pointerId);
         surface?.classList.remove('is-dragging');
         if (image && slide) {
-            image.style.cursor = (slide.crop?.zoom ?? 100) > 100 ? 'grab' : 'default';
+            image.style.cursor = 'grab';
         }
 
         const didMove = drag.moved;
@@ -678,6 +844,28 @@
         if (didMove) {
             markSlideshowDirty();
         }
+    }
+
+    function handleSlideshowWheelZoom(event) {
+        const slide = findSelectedSlide();
+        const surface = document.getElementById('slideshowPreviewSurface');
+        if (!slide || !surface) return;
+
+        event.preventDefault();
+
+        const currentZoom = Number(slide.crop?.zoom ?? 100);
+        const nextZoom = Math.min(300, Math.max(50, currentZoom + (event.deltaY < 0 ? 5 : -5)));
+        if (nextZoom === currentZoom) return;
+
+        slide.crop = {
+            x: slide.crop?.x ?? 50,
+            y: slide.crop?.y ?? 50,
+            zoom: nextZoom
+        };
+
+        syncCropInputs(slide);
+        syncPreviewCrop(slide);
+        markSlideshowDirty();
     }
 
     async function uploadSlideshowImage(file, page) {
@@ -719,7 +907,6 @@
                 title: '',
                 caption: '',
                 alt: '',
-                fit: 'cover',
                 crop: { x: 50, y: 50, zoom: 100 },
                 filters: { brightness: 100, contrast: 100, saturate: 100 },
                 overlayExplicit: false,
@@ -790,6 +977,7 @@
         previewSurface?.addEventListener('pointermove', moveSlideshowDrag);
         previewSurface?.addEventListener('pointerup', endSlideshowDrag);
         previewSurface?.addEventListener('pointercancel', endSlideshowDrag);
+        previewSurface?.addEventListener('wheel', handleSlideshowWheelZoom, { passive: false });
 
         document.querySelectorAll('.slideshow-page-tab').forEach((button) => {
             button.addEventListener('click', async () => {
@@ -841,10 +1029,10 @@
         document.getElementById('moveSlideDown')?.addEventListener('click', () => moveSelectedSlide(1));
         document.getElementById('slideshowRandomizeToggle')?.addEventListener('change', () => updateSlideField('randomize'));
         document.getElementById('slideshowGlobalOverlayColor')?.addEventListener('input', () => updateSlideField('globalOverlay'));
+        document.getElementById('slideshowGlobalOverlayColor')?.addEventListener('change', () => updateSlideField('globalOverlay'));
         document.getElementById('slideshowGlobalOverlayOpacity')?.addEventListener('input', () => updateSlideField('globalOverlay'));
 
         document.getElementById('slideshowPageAssign')?.addEventListener('change', (event) => updateSlideField('page', event.target.value));
-        document.getElementById('slideshowFitMode')?.addEventListener('change', () => updateSlideField('fit'));
         document.getElementById('slideshowCropX')?.addEventListener('input', () => updateSlideField('crop'));
         document.getElementById('slideshowCropY')?.addEventListener('input', () => updateSlideField('crop'));
         document.getElementById('slideshowCropZoom')?.addEventListener('input', () => updateSlideField('crop'));
@@ -853,6 +1041,7 @@
         document.getElementById('slideshowFilterSaturate')?.addEventListener('input', () => updateSlideField('filters'));
         document.getElementById('slideshowOverlayOverride')?.addEventListener('change', () => updateSlideField('overlayOverride'));
         document.getElementById('slideshowOverlayColor')?.addEventListener('input', () => updateSlideField('overlay'));
+        document.getElementById('slideshowOverlayColor')?.addEventListener('change', () => updateSlideField('overlay'));
         document.getElementById('slideshowOverlayOpacity')?.addEventListener('input', () => updateSlideField('overlay'));
     }
 
