@@ -246,6 +246,26 @@ body.dark-theme .slideshow-page-tab:hover {
     color: var(--admin-text);
 }
 
+body.dark-theme .page-content-tab,
+body.dark-theme .page-content-language-tab {
+    background: rgba(20, 32, 24, 0.95);
+    border-color: var(--admin-border);
+    color: var(--admin-text);
+}
+
+body.dark-theme .page-content-tab.active,
+body.dark-theme .page-content-language-tab.active,
+body.dark-theme .page-content-tab:hover,
+body.dark-theme .page-content-language-tab:hover {
+    background: rgba(64, 145, 108, 0.2);
+    color: var(--admin-text);
+}
+
+body.dark-theme .page-content-status-bar,
+body.dark-theme .page-content-sidebar-text {
+    color: var(--admin-text-secondary);
+}
+
 body.dark-theme input[type="range"] {
     accent-color: var(--admin-primary-light);
 }

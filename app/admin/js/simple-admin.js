@@ -2,6 +2,204 @@
     'use strict';
 
     const VALID_SLIDESHOW_PAGES = ['home', 'about', 'mission', 'contact'];
+    const VALID_PAGE_CONTENT_PAGES = ['home', 'about', 'mission', 'contact'];
+    const VALID_PAGE_CONTENT_LANGS = ['en', 'fr', 'ht'];
+    const PAGE_CONTENT_LANG_LABELS = {
+        en: 'English',
+        fr: 'French',
+        ht: 'Haitian Creole'
+    };
+    const PAGE_CONTENT_SCHEMA = {
+        home: [
+            {
+                title: 'Hero',
+                fields: [
+                    { key: 'heroTitle', label: 'Hero Title', type: 'textarea', rows: 2 },
+                    { key: 'heroSubtitle', label: 'Hero Subtitle', type: 'textarea', rows: 3 },
+                    { key: 'getStarted', label: 'Hero CTA Label' }
+                ]
+            },
+            {
+                title: 'Features',
+                fields: [
+                    { key: 'featuresTitle', label: 'Section Title' },
+                    { key: 'feature1Title', label: 'Feature 1 Title' },
+                    { key: 'feature1Desc', label: 'Feature 1 Text', type: 'textarea', rows: 2 },
+                    { key: 'feature2Title', label: 'Feature 2 Title' },
+                    { key: 'feature2Desc', label: 'Feature 2 Text', type: 'textarea', rows: 2 },
+                    { key: 'feature3Title', label: 'Feature 3 Title' },
+                    { key: 'feature3Desc', label: 'Feature 3 Text', type: 'textarea', rows: 2 }
+                ]
+            }
+        ],
+        about: [
+            {
+                title: 'Hero',
+                fields: [
+                    { key: 'aboutPageTitle', label: 'Browser Page Title', type: 'textarea', rows: 2 },
+                    { key: 'aboutTitle', label: 'Hero Title' },
+                    { key: 'aboutSubtitle', label: 'Hero Subtitle', type: 'textarea', rows: 2 }
+                ]
+            },
+            {
+                title: 'Mission',
+                fields: [
+                    { key: 'aboutMissionTitle', label: 'Mission Section Title' },
+                    { key: 'aboutMissionText', label: 'Mission Section Text', type: 'textarea', rows: 5 }
+                ]
+            },
+            {
+                title: 'Values',
+                fields: [
+                    { key: 'ourValues', label: 'Values Section Title' },
+                    { key: 'heritage', label: 'Heritage Title' },
+                    { key: 'heritageText', label: 'Heritage Text', type: 'textarea', rows: 2 },
+                    { key: 'connection', label: 'Connection Title' },
+                    { key: 'connectionText', label: 'Connection Text', type: 'textarea', rows: 2 },
+                    { key: 'privacy', label: 'Privacy Title' },
+                    { key: 'privacyText', label: 'Privacy Text', type: 'textarea', rows: 2 },
+                    { key: 'inclusivity', label: 'Inclusivity Title' },
+                    { key: 'inclusivityText', label: 'Inclusivity Text', type: 'textarea', rows: 2 }
+                ]
+            },
+            {
+                title: 'Story and Team',
+                fields: [
+                    { key: 'ourStory', label: 'Story Section Title' },
+                    { key: 'story2023Text', label: '2023 Story Text', type: 'textarea', rows: 2 },
+                    { key: 'storyEarly2024Text', label: 'Early 2024 Story Text', type: 'textarea', rows: 2 },
+                    { key: 'storyMid2024Text', label: 'Mid 2024 Story Text', type: 'textarea', rows: 2 },
+                    { key: 'storyTodayText', label: 'Today Story Text', type: 'textarea', rows: 2 },
+                    { key: 'meetOurTeam', label: 'Team Section Title' },
+                    { key: 'teamDescription', label: 'Team Intro Text', type: 'textarea', rows: 2 },
+                    { key: 'founderDescription', label: 'Founder Description', type: 'textarea', rows: 2 },
+                    { key: 'leadDeveloperDescription', label: 'Lead Developer Description', type: 'textarea', rows: 2 },
+                    { key: 'communityManagerDescription', label: 'Community Manager Description', type: 'textarea', rows: 2 }
+                ]
+            },
+            {
+                title: 'Call To Action',
+                fields: [
+                    { key: 'readyToStart', label: 'CTA Title' },
+                    { key: 'joinThousands', label: 'CTA Text', type: 'textarea', rows: 2 },
+                    { key: 'getStartedFree', label: 'CTA Button Label' }
+                ]
+            }
+        ],
+        mission: [
+            {
+                title: 'Hero',
+                fields: [
+                    { key: 'missionPageTitle', label: 'Browser Page Title', type: 'textarea', rows: 2 },
+                    { key: 'oneBillionTrees', label: 'Hero Title' },
+                    { key: 'missionSubtitle', label: 'Hero Subtitle', type: 'textarea', rows: 2 }
+                ]
+            },
+            {
+                title: 'Why Haiti Needs This',
+                fields: [
+                    { key: 'whyHaitiNeeds', label: 'Section Title' },
+                    { key: 'whyHaitiNeedsText', label: 'Section Text', type: 'textarea', rows: 5 },
+                    { key: 'treesPlantedSoFar', label: 'Counter Title' },
+                    { key: 'outOfGoal', label: 'Counter Subtitle' }
+                ]
+            },
+            {
+                title: 'Impact',
+                fields: [
+                    { key: 'impactOnHaiti', label: 'Impact Section Title' },
+                    { key: 'impactDescription', label: 'Impact Intro Text', type: 'textarea', rows: 3 },
+                    { key: 'erosionReductionText', label: 'Erosion Text', type: 'textarea', rows: 2 },
+                    { key: 'floodPreventionText', label: 'Flood Text', type: 'textarea', rows: 2 },
+                    { key: 'agriculturalYieldText', label: 'Agriculture Text', type: 'textarea', rows: 2 },
+                    { key: 'haitianJobsText', label: 'Jobs Text', type: 'textarea', rows: 2 }
+                ]
+            },
+            {
+                title: 'Approach',
+                fields: [
+                    { key: 'howWeMakeItHappen', label: 'Approach Section Title' },
+                    { key: 'comprehensiveApproach', label: 'Approach Intro Text', type: 'textarea', rows: 3 },
+                    { key: 'strategicPartnershipsText', label: 'Partnerships Text', type: 'textarea', rows: 3 },
+                    { key: 'communityEngagementText', label: 'Community Text', type: 'textarea', rows: 3 },
+                    { key: 'monitoringCareText', label: 'Monitoring Text', type: 'textarea', rows: 3 }
+                ]
+            },
+            {
+                title: 'Journey and Regions',
+                fields: [
+                    { key: 'ourJourney', label: 'Journey Section Title' },
+                    { key: 'treesPlantedInHaiti', label: 'Journey Text', type: 'textarea', rows: 2 },
+                    { key: 'workingWithCommunities', label: 'Communities Section Title' },
+                    { key: 'partnershipDescription', label: 'Communities Text', type: 'textarea', rows: 3 },
+                    { key: 'strategicPlantingRegions', label: 'Regions Section Title' },
+                    { key: 'northernMountainsText', label: 'Northern Mountains Text', type: 'textarea', rows: 2 },
+                    { key: 'coastalAreasText', label: 'Coastal Areas Text', type: 'textarea', rows: 2 },
+                    { key: 'agriculturalZonesText', label: 'Agricultural Zones Text', type: 'textarea', rows: 2 }
+                ]
+            },
+            {
+                title: 'Call To Action',
+                fields: [
+                    { key: 'helpUsReforest', label: 'CTA Title' },
+                    { key: 'bePartOfTransformation', label: 'CTA Text', type: 'textarea', rows: 3 },
+                    { key: 'getInvolved', label: 'Primary Button Label' },
+                    { key: 'donatePlantTrees', label: 'Secondary Button Label' }
+                ]
+            }
+        ],
+        contact: [
+            {
+                title: 'Hero',
+                fields: [
+                    { key: 'contactPageTitle', label: 'Browser Page Title', type: 'textarea', rows: 2 },
+                    { key: 'getInTouch', label: 'Hero Title' },
+                    { key: 'contactSubtitle', label: 'Hero Subtitle', type: 'textarea', rows: 2 }
+                ]
+            },
+            {
+                title: 'Contact Form',
+                fields: [
+                    { key: 'sendMessage', label: 'Form Section Title' },
+                    { key: 'messageIntro', label: 'Form Intro Text', type: 'textarea', rows: 3 },
+                    { key: 'successMessage', label: 'Success Message', type: 'textarea', rows: 2 },
+                    { key: 'errorMessage', label: 'Error Message', type: 'textarea', rows: 2 },
+                    { key: 'fullName', label: 'Full Name Label' },
+                    { key: 'emailAddress', label: 'Email Label' },
+                    { key: 'subject', label: 'Subject Label' },
+                    { key: 'message', label: 'Message Label' },
+                    { key: 'messagePlaceholder', label: 'Message Placeholder', type: 'textarea', rows: 2 },
+                    { key: 'sendMessageButton', label: 'Submit Button Label' }
+                ]
+            },
+            {
+                title: 'Support Details',
+                fields: [
+                    { key: 'otherWaysToReach', label: 'Reach Us Title' },
+                    { key: 'emailDescription', label: 'Email Description', type: 'textarea', rows: 3 },
+                    { key: 'addressDescription', label: 'Address Description', type: 'textarea', rows: 3 },
+                    { key: 'supportHoursDescription', label: 'Support Hours Description', type: 'textarea', rows: 3 },
+                    { key: 'languagesDescription', label: 'Languages Description', type: 'textarea', rows: 3 }
+                ]
+            },
+            {
+                title: 'FAQ',
+                fields: [
+                    { key: 'frequentlyAskedQuestions', label: 'FAQ Section Title' },
+                    { key: 'faq1Question', label: 'FAQ 1 Question', type: 'textarea', rows: 2 },
+                    { key: 'faq1Answer', label: 'FAQ 1 Answer', type: 'textarea', rows: 4 },
+                    { key: 'faq2Question', label: 'FAQ 2 Question', type: 'textarea', rows: 2 },
+                    { key: 'faq2Answer', label: 'FAQ 2 Answer', type: 'textarea', rows: 5 },
+                    { key: 'faq3Question', label: 'FAQ 3 Question', type: 'textarea', rows: 2 },
+                    { key: 'faq3Answer', label: 'FAQ 3 Answer', type: 'textarea', rows: 3 },
+                    { key: 'faq4Question', label: 'FAQ 4 Question', type: 'textarea', rows: 2 },
+                    { key: 'faq4Answer', label: 'FAQ 4 Answer', type: 'textarea', rows: 2 },
+                    { key: 'faq5Question', label: 'FAQ 5 Question', type: 'textarea', rows: 2 },
+                    { key: 'faq5Answer', label: 'FAQ 5 Answer', type: 'textarea', rows: 3 }
+                ]
+            }
+        ]
+    };
 
     const state = {
         allUsers: [],
@@ -11,6 +209,12 @@
         currentView: 'dashboard',
         summary: null,
         theme: 'light',
+        pageContentDraft: null,
+        pageContentPublished: null,
+        activePageContentPage: 'home',
+        activePageContentLang: 'en',
+        pageContentDirty: false,
+        pageContentPublishing: false,
         slideshowDraft: null,
         slideshowPublished: null,
         activeSlideshowPage: 'home',
@@ -1045,6 +1249,225 @@
         document.getElementById('slideshowOverlayOpacity')?.addEventListener('input', () => updateSlideField('overlay'));
     }
 
+    function getPageContentCopy(page = state.activePageContentPage, lang = state.activePageContentLang) {
+        return state.pageContentDraft?.pages?.[page]?.[lang] || {};
+    }
+
+    function updatePageContentStatusBar() {
+        const draftStatus = document.getElementById('pageContentDraftStatus');
+        const publishedStatus = document.getElementById('pageContentPublishedStatus');
+        if (draftStatus) {
+            const updatedAt = state.pageContentDraft?.updatedAt ? formatDate(state.pageContentDraft.updatedAt) : 'Not loaded';
+            draftStatus.textContent = `${state.pageContentDirty ? 'Unsaved draft changes' : 'Draft saved'} · ${updatedAt}`;
+        }
+        if (publishedStatus) {
+            if (state.pageContentPublishing) {
+                publishedStatus.textContent = 'Publishing to live site...';
+                return;
+            }
+            const publishedAt = state.pageContentPublished?.publishedAt ? formatDate(state.pageContentPublished.publishedAt) : 'Never published';
+            publishedStatus.textContent = `Published · ${publishedAt}`;
+        }
+    }
+
+    function setPageContentPublishing(isPublishing) {
+        state.pageContentPublishing = !!isPublishing;
+        const publishButton = document.getElementById('publishPageContent');
+        const saveButton = document.getElementById('savePageContentDraft');
+        const refreshButton = document.getElementById('refreshPageContent');
+
+        [publishButton, saveButton, refreshButton].forEach((button) => {
+            if (!button) return;
+            button.disabled = state.pageContentPublishing;
+            button.classList.toggle('is-busy', state.pageContentPublishing);
+        });
+
+        if (publishButton) {
+            publishButton.innerHTML = state.pageContentPublishing
+                ? '<span class="btn-spinner" aria-hidden="true"></span><span>Publishing...</span>'
+                : '<span class="material-icons">publish</span><span>Publish</span>';
+        }
+
+        updatePageContentStatusBar();
+    }
+
+    function markPageContentDirty() {
+        state.pageContentDirty = true;
+        if (state.pageContentDraft) {
+            state.pageContentDraft.updatedAt = new Date().toISOString();
+        }
+        updatePageContentStatusBar();
+    }
+
+    function renderPageContentEditor() {
+        const editor = document.getElementById('pageContentEditor');
+        const currentPageTitle = document.getElementById('pageContentCurrentPageTitle');
+        const currentLanguage = document.getElementById('pageContentCurrentLanguage');
+        if (!editor) return;
+
+        const groups = PAGE_CONTENT_SCHEMA[state.activePageContentPage] || [];
+        const values = getPageContentCopy();
+
+        if (currentPageTitle) {
+            currentPageTitle.textContent = `${state.activePageContentPage.charAt(0).toUpperCase() + state.activePageContentPage.slice(1)} Content`;
+        }
+        if (currentLanguage) {
+            currentLanguage.textContent = `Editing ${PAGE_CONTENT_LANG_LABELS[state.activePageContentLang] || state.activePageContentLang} copy`;
+        }
+
+        editor.innerHTML = groups.map((group) => `
+            <section class="page-content-group">
+                <div class="chart-header">
+                    <h3>${escapeHtml(group.title)}</h3>
+                </div>
+                <div class="page-content-fields">
+                    ${group.fields.map((field) => {
+                        const value = values[field.key] || '';
+                        const rows = field.rows || 3;
+                        if (field.type === 'textarea') {
+                            return `
+                                <div class="form-group page-content-field">
+                                    <label for="pageContent-${escapeHtml(field.key)}">${escapeHtml(field.label)}</label>
+                                    <textarea
+                                        id="pageContent-${escapeHtml(field.key)}"
+                                        data-page-content-key="${escapeHtml(field.key)}"
+                                        rows="${rows}"
+                                    >${escapeHtml(value)}</textarea>
+                                </div>
+                            `;
+                        }
+
+                        return `
+                            <div class="form-group page-content-field">
+                                <label for="pageContent-${escapeHtml(field.key)}">${escapeHtml(field.label)}</label>
+                                <input
+                                    id="pageContent-${escapeHtml(field.key)}"
+                                    type="text"
+                                    value="${escapeHtml(value)}"
+                                    data-page-content-key="${escapeHtml(field.key)}"
+                                >
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </section>
+        `).join('');
+    }
+
+    function renderPageContentTabs() {
+        document.querySelectorAll('[data-page-content-page]').forEach((button) => {
+            button.classList.toggle('active', button.getAttribute('data-page-content-page') === state.activePageContentPage);
+        });
+        document.querySelectorAll('[data-page-content-lang]').forEach((button) => {
+            button.classList.toggle('active', button.getAttribute('data-page-content-lang') === state.activePageContentLang);
+        });
+    }
+
+    async function loadPageContent(force = false) {
+        if (state.pageContentDraft && !force) {
+            renderPageContentTabs();
+            renderPageContentEditor();
+            updatePageContentStatusBar();
+            return;
+        }
+
+        const response = await authFetch('/api/admin/page-content');
+        if (!response.ok) {
+            throw new Error('Failed to load page content');
+        }
+
+        const payload = await response.json();
+        state.pageContentDraft = payload.draft;
+        state.pageContentPublished = payload.published;
+        state.pageContentDirty = false;
+
+        renderPageContentTabs();
+        renderPageContentEditor();
+        updatePageContentStatusBar();
+    }
+
+    async function savePageContentDraft() {
+        if (!state.pageContentDraft) return;
+
+        const response = await authFetch('/api/admin/page-content/draft', {
+            method: 'PUT',
+            body: JSON.stringify(state.pageContentDraft)
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to save page content draft');
+        }
+
+        const payload = await response.json();
+        state.pageContentDraft = payload.draft;
+        state.pageContentDirty = false;
+        renderPageContentEditor();
+        updatePageContentStatusBar();
+    }
+
+    async function publishPageContent() {
+        setPageContentPublishing(true);
+        try {
+            if (state.pageContentDirty) {
+                await savePageContentDraft();
+            }
+
+            const response = await authFetch('/api/admin/page-content/publish', { method: 'POST' });
+            if (!response.ok) {
+                throw new Error('Failed to publish page content');
+            }
+
+            const payload = await response.json();
+            state.pageContentPublished = payload.published;
+            updatePageContentStatusBar();
+        } finally {
+            setPageContentPublishing(false);
+        }
+    }
+
+    function wirePageContentManager() {
+        document.getElementById('refreshPageContent')?.addEventListener('click', async () => {
+            await loadPageContent(true);
+        });
+
+        document.getElementById('savePageContentDraft')?.addEventListener('click', async () => {
+            await savePageContentDraft();
+        });
+
+        document.getElementById('publishPageContent')?.addEventListener('click', async () => {
+            await publishPageContent();
+        });
+
+        document.getElementById('pageContentPageTabs')?.addEventListener('click', (event) => {
+            const button = event.target.closest('[data-page-content-page]');
+            if (!button) return;
+            state.activePageContentPage = button.getAttribute('data-page-content-page');
+            renderPageContentTabs();
+            renderPageContentEditor();
+        });
+
+        document.getElementById('pageContentLanguageTabs')?.addEventListener('click', (event) => {
+            const button = event.target.closest('[data-page-content-lang]');
+            if (!button) return;
+            state.activePageContentLang = button.getAttribute('data-page-content-lang');
+            renderPageContentTabs();
+            renderPageContentEditor();
+        });
+
+        document.getElementById('pageContentEditor')?.addEventListener('input', (event) => {
+            const field = event.target.closest('[data-page-content-key]');
+            if (!field || !state.pageContentDraft) return;
+            const key = field.getAttribute('data-page-content-key');
+            if (!key) return;
+
+            if (!state.pageContentDraft.pages?.[state.activePageContentPage]?.[state.activePageContentLang]) {
+                state.pageContentDraft.pages[state.activePageContentPage][state.activePageContentLang] = {};
+            }
+            state.pageContentDraft.pages[state.activePageContentPage][state.activePageContentLang][key] = field.value;
+            markPageContentDirty();
+        });
+    }
+
     function showView(view, options = {}) {
         const { syncHash = true } = options;
         document.querySelectorAll('.admin-view').forEach((el) => {
@@ -1070,6 +1493,8 @@
             loadSystemInfo();
         } else if (view === 'slideshows') {
             loadSlideshows().catch((error) => showError(error.message));
+        } else if (view === 'page-content') {
+            loadPageContent().catch((error) => showError(error.message));
         }
     }
 
@@ -1326,6 +1751,7 @@
         wireNavigation();
         wireHeaderControls();
         wireSlideshowManager();
+        wirePageContentManager();
         showView(getViewFromHash(), { syncHash: false });
 
         window.addEventListener('adminAuthSuccess', (event) => {

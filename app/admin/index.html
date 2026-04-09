@@ -7,12 +7,12 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     
     <!-- CSS -->
-    <link rel="stylesheet" href="/app/admin/css/admin-base.css?v=1.1.77">
-    <link rel="stylesheet" href="/app/admin/css/admin-components.css?v=1.1.77">
-    <link rel="stylesheet" href="/app/admin/css/admin-dark.css?v=1.1.77">
-    <link rel="stylesheet" href="/app/admin/css/content.css?v=1.1.77">
-    <link rel="stylesheet" href="/app/admin/css/communications.css?v=1.1.77">
-    <link rel="stylesheet" href="/app/admin/css/backup-system.css?v=1.1.77">
+    <link rel="stylesheet" href="/app/admin/css/admin-base.css?v=1.1.78">
+    <link rel="stylesheet" href="/app/admin/css/admin-components.css?v=1.1.78">
+    <link rel="stylesheet" href="/app/admin/css/admin-dark.css?v=1.1.78">
+    <link rel="stylesheet" href="/app/admin/css/content.css?v=1.1.78">
+    <link rel="stylesheet" href="/app/admin/css/communications.css?v=1.1.78">
+    <link rel="stylesheet" href="/app/admin/css/backup-system.css?v=1.1.78">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
@@ -132,6 +132,12 @@
                             <a href="#slideshows" class="menu-link">
                                 <span class="material-icons">view_carousel</span>
                                 <span class="menu-text">Slideshows</span>
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="#page-content" class="menu-link">
+                                <span class="material-icons">article</span>
+                                <span class="menu-text">Page Content</span>
                             </a>
                         </li>
                         <li class="menu-item">
@@ -748,6 +754,61 @@
                     </div>
                 </div>
 
+                <div id="page-contentView" class="admin-view" style="display: none;">
+                    <div class="view-header">
+                        <div>
+                            <h1>Page Content</h1>
+                            <p class="view-subtitle">Edit the titles and text for the public pages. Changes only go live when you publish.</p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn btn-secondary" id="refreshPageContent">
+                                <span class="material-icons">refresh</span>
+                                <span>Reload</span>
+                            </button>
+                            <button class="btn btn-secondary" id="savePageContentDraft">
+                                <span class="material-icons">save</span>
+                                <span>Save Draft</span>
+                            </button>
+                            <button class="btn btn-primary" id="publishPageContent">
+                                <span class="material-icons">publish</span>
+                                <span>Publish</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="page-content-status-bar">
+                        <span id="pageContentDraftStatus">Draft not loaded yet.</span>
+                        <span id="pageContentPublishedStatus">Published status unknown.</span>
+                    </div>
+
+                    <div class="page-content-tabs" id="pageContentPageTabs">
+                        <button class="page-content-tab active" data-page-content-page="home">Home</button>
+                        <button class="page-content-tab" data-page-content-page="about">About</button>
+                        <button class="page-content-tab" data-page-content-page="mission">Mission</button>
+                        <button class="page-content-tab" data-page-content-page="contact">Contact</button>
+                    </div>
+
+                    <div class="page-content-language-tabs" id="pageContentLanguageTabs">
+                        <button class="page-content-language-tab active" data-page-content-lang="en">English</button>
+                        <button class="page-content-language-tab" data-page-content-lang="fr">French</button>
+                        <button class="page-content-language-tab" data-page-content-lang="ht">Haitian Creole</button>
+                    </div>
+
+                    <div class="page-content-grid">
+                        <section class="chart-container page-content-sidebar">
+                            <div class="chart-header">
+                                <h3 id="pageContentCurrentPageTitle">Home Content</h3>
+                            </div>
+                            <p class="page-content-sidebar-text" id="pageContentCurrentLanguage">Editing English copy</p>
+                            <p class="page-content-sidebar-text">This editor is for page-specific public copy only. Shared navigation and footer labels remain in the translation layer.</p>
+                        </section>
+
+                        <section class="chart-container page-content-editor-panel">
+                            <div id="pageContentEditor"></div>
+                        </section>
+                    </div>
+                </div>
+
                 <!-- Audit View -->
                 <div id="auditView" class="admin-view" style="display: none;">
                     <div class="view-header">
@@ -997,8 +1058,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/app/js/supabase-client.js"></script>
     <script src="/app/js/api-client.js"></script>
-    <script src="/app/js/back-to-top.js?v=1.1.77"></script>
-    <script src="/app/js/admin/auth-guard.js?v=1.1.77"></script>
-    <script src="/app/admin/js/simple-admin.js?v=1.1.77"></script>
+    <script src="/app/js/back-to-top.js?v=1.1.78"></script>
+    <script src="/app/js/admin/auth-guard.js?v=1.1.78"></script>
+    <script src="/app/admin/js/simple-admin.js?v=1.1.78"></script>
 </body>
 </html>

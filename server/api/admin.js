@@ -2,8 +2,28 @@ const express = require('express');
 const { verifySession, requireAdmin } = require('../db/auth');
 const { query } = require('../db/pool');
 const userQueries = require('../db/queries/users');
+const multer = require('multer');
+const { saveFile } = require('../services/file-storage');
+const slideshowManager = require('../services/slideshow-manager');
+const pageContentManager = require('../services/page-content-manager');
+const { URL } = require('url');
 
 const router = express.Router();
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 10 * 1024 * 1024,
+        files: 1
+    },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only image files are allowed'));
+        }
+    }
+});
 
 function normalizeLimit(value, fallback = 50, max = 200) {
     const parsed = parseInt(value, 10);
@@ -97,6 +117,134 @@ router.get('/users', verifySession, requireAdmin, async (req, res) => {
     } catch (error) {
         console.error('Admin users error:', error);
         res.status(500).json({ error: 'Failed to load users' });
+    }
+});
+
+router.get('/slideshows', verifySession, requireAdmin, async (req, res) => {
+    try {
+        const [draft, published] = await Promise.all([
+            slideshowManager.getDraft(),
+            slideshowManager.getPublished()
+        ]);
+
+        res.json({
+            draft,
+            published,
+            pages: slideshowManager.VALID_PAGES
+        });
+    } catch (error) {
+        console.error('Admin slideshow load error:', error);
+        res.status(500).json({ error: 'Failed to load slideshow data' });
+    }
+});
+
+router.get('/page-content', verifySession, requireAdmin, async (req, res) => {
+    try {
+        const [draft, published] = await Promise.all([
+            pageContentManager.getDraft(),
+            pageContentManager.getPublished()
+        ]);
+
+        res.json({
+            draft,
+            published,
+            pages: pageContentManager.VALID_PAGES,
+            languages: pageContentManager.VALID_LANGS
+        });
+    } catch (error) {
+        console.error('Admin page content load error:', error);
+        res.status(500).json({ error: 'Failed to load page content' });
+    }
+});
+
+router.put('/page-content/draft', verifySession, requireAdmin, async (req, res) => {
+    try {
+        const saved = await pageContentManager.saveDraft(req.body || {});
+        res.json({ success: true, draft: saved });
+    } catch (error) {
+        console.error('Admin page content save error:', error);
+        res.status(500).json({ error: 'Failed to save page content draft' });
+    }
+});
+
+router.post('/page-content/publish', verifySession, requireAdmin, async (req, res) => {
+    try {
+        const published = await pageContentManager.publishDraft();
+        res.json({ success: true, published });
+    } catch (error) {
+        console.error('Admin page content publish error:', error);
+        res.status(500).json({ error: 'Failed to publish page content changes' });
+    }
+});
+
+router.put('/slideshows/draft', verifySession, requireAdmin, async (req, res) => {
+    try {
+        const saved = await slideshowManager.saveDraft(req.body || {});
+        res.json({ success: true, draft: saved });
+    } catch (error) {
+        console.error('Admin slideshow save error:', error);
+        res.status(500).json({ error: 'Failed to save slideshow draft' });
+    }
+});
+
+router.post('/slideshows/publish', verifySession, requireAdmin, async (req, res) => {
+    try {
+        const published = await slideshowManager.publishDraft();
+        res.json({ success: true, published });
+    } catch (error) {
+        console.error('Admin slideshow publish error:', error);
+        res.status(500).json({ error: 'Failed to publish slideshow changes' });
+    }
+});
+
+router.post('/slideshows/upload', verifySession, requireAdmin, upload.single('image'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No image uploaded' });
+        }
+
+        const page = slideshowManager.VALID_PAGES.includes(req.body.page) ? req.body.page : 'home';
+        const url = await saveFile('slideshows', page, req.file.buffer, req.file.originalname);
+        res.json({ success: true, url });
+    } catch (error) {
+        console.error('Admin slideshow upload error:', error);
+        res.status(500).json({ error: 'Failed to upload slideshow image' });
+    }
+});
+
+router.get('/slideshows/preview', async (req, res) => {
+    try {
+        const source = String(req.query.url || '').trim();
+        if (!source) {
+            return res.status(400).json({ error: 'Preview URL is required' });
+        }
+
+        const target = new URL(source);
+        const allowedHosts = new Set([
+            'pyebwa.com',
+            'www.pyebwa.com',
+            'images.unsplash.com',
+            'rasin.pyebwa.com'
+        ]);
+
+        if (!allowedHosts.has(target.hostname)) {
+            return res.status(400).json({ error: 'Preview host is not allowed' });
+        }
+
+        const response = await fetch(target.toString());
+        if (!response.ok) {
+            return res.status(response.status).json({ error: 'Unable to fetch preview image' });
+        }
+
+        const contentType = response.headers.get('content-type') || 'application/octet-stream';
+        const buffer = Buffer.from(await response.arrayBuffer());
+
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Cache-Control', 'private, max-age=300');
+        res.send(buffer);
+    } catch (error) {
+        console.error('Admin slideshow preview error:', error);
+        res.status(500).json({ error: 'Failed to load preview image' });
     }
 });
 

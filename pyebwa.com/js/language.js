@@ -87,6 +87,43 @@
             translations[lang] = { ...translations[lang], ...pageTranslations[lang] };
         });
     }
+
+    async function loadPageContentOverrides() {
+        try {
+            const baseUrl = typeof window.__PYEBWA_assetUrl === 'function'
+                ? window.__PYEBWA_assetUrl('data/page-content.published.json')
+                : 'data/page-content.published.json';
+            const url = new URL(baseUrl, window.location.href);
+            url.searchParams.set('t', String(Date.now()));
+
+            const response = await fetch(url.toString(), {
+                cache: 'no-store',
+                headers: { 'Cache-Control': 'no-cache' }
+            });
+
+            if (!response.ok) {
+                return null;
+            }
+
+            return response.json();
+        } catch (error) {
+            console.warn('Unable to load page content overrides:', error);
+            return null;
+        }
+    }
+
+    function mergePageContentOverrides(payload) {
+        if (!payload || typeof payload !== 'object') return;
+        const pages = payload.pages || {};
+
+        Object.values(pages).forEach((pageValue) => {
+            if (!pageValue || typeof pageValue !== 'object') return;
+            Object.entries(pageValue).forEach(([lang, overrides]) => {
+                if (!translations[lang] || !overrides || typeof overrides !== 'object') return;
+                translations[lang] = { ...translations[lang], ...overrides };
+            });
+        });
+    }
     
     // Get current language with proper persistence
     // Priority: URL param > cookie > localStorage > browser detection > default (ht)
@@ -239,16 +276,24 @@
     window.currentLang = currentLang;
     window.translations = translations;
     
+    async function initializeLanguageSystem() {
+        const overrides = await loadPageContentOverrides();
+        if (overrides) {
+            console.log('Merging page content overrides...');
+            mergePageContentOverrides(overrides);
+        }
+        updateLanguage();
+        initLanguageSelector();
+    }
+    
     // Initialize on DOMContentLoaded
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
             console.log('DOMContentLoaded - initializing language system');
-            updateLanguage();
-            initLanguageSelector();
+            initializeLanguageSystem();
         });
     } else {
         console.log('DOM already loaded - initializing language system immediately');
-        updateLanguage();
-        initLanguageSelector();
+        initializeLanguageSystem();
     }
 })();
