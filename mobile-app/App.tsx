@@ -18,10 +18,6 @@ import StoriesScreen from './src/screens/StoriesScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import AddMemberScreen from './src/screens/AddMemberScreen';
 
-// Services
-import { AuthService } from './src/services/AuthService';
-import { FirebaseService } from './src/services/FirebaseService';
-
 // Theme
 import { theme } from './src/theme/theme';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
@@ -172,18 +168,7 @@ export default function App() {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    async function initializeApp() {
-      try {
-        // Initialize Firebase
-        await FirebaseService.initialize();
-        setIsReady(true);
-      } catch (error) {
-        console.error('Failed to initialize app:', error);
-        setIsReady(true); // Still show the app even if Firebase fails
-      }
-    }
-
-    initializeApp();
+    setIsReady(true);
   }, []);
 
   if (!isReady) {

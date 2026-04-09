@@ -1,219 +1,219 @@
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut as firebaseSignOut,
-  sendPasswordResetEmail,
-  updateProfile,
-  onAuthStateChanged as firebaseOnAuthStateChanged,
-  User,
-  UserCredential,
-} from 'firebase/auth';
-import {
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  serverTimestamp,
-} from 'firebase/firestore';
-import { FirebaseService } from './FirebaseService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+export interface MobileUser {
+  uid: string;
+  email: string;
+  displayName: string;
+  photoURL?: string;
+  phoneNumber?: string;
+}
 
 export interface UserProfile {
   uid: string;
   email: string;
   displayName: string;
   familyTreeId: string;
-  createdAt: any;
-  updatedAt: any;
+  createdAt: string;
+  updatedAt: string;
   photoURL?: string;
   phoneNumber?: string;
   birthDate?: string;
   location?: string;
 }
 
+interface StoredAuthState {
+  user: MobileUser | null;
+  profile: UserProfile | null;
+}
+
+const STORAGE_KEYS = {
+  AUTH_STATE: 'pyebwa_mobile_auth_state',
+  USER_PROFILES: 'pyebwa_mobile_user_profiles',
+};
+
+type AuthListener = (user: MobileUser | null) => void;
+
 class AuthServiceClass {
-  async signIn(email: string, password: string): Promise<UserCredential> {
-    try {
-      const auth = FirebaseService.getAuth();
-      const result = await signInWithEmailAndPassword(auth, email, password);
-      console.log('User signed in successfully');
-      return result;
-    } catch (error: any) {
-      console.error('Sign in error:', error);
-      throw this.handleAuthError(error);
+  private currentUser: MobileUser | null = null;
+  private currentProfile: UserProfile | null = null;
+  private listeners = new Set<AuthListener>();
+  private initialized = false;
+
+  private async ensureInitialized(): Promise<void> {
+    if (this.initialized) {
+      return;
     }
+    const authState = await AsyncStorage.getItem(STORAGE_KEYS.AUTH_STATE);
+    if (authState) {
+      const parsed = JSON.parse(authState) as StoredAuthState;
+      this.currentUser = parsed.user;
+      this.currentProfile = parsed.profile;
+    }
+    this.initialized = true;
   }
 
-  async signUp(email: string, password: string, displayName: string): Promise<UserCredential> {
-    try {
-      const auth = FirebaseService.getAuth();
-      const result = await createUserWithEmailAndPassword(auth, email, password);
-      
-      // Update the user's display name
-      await updateProfile(result.user, { displayName });
+  private async loadProfiles(): Promise<Record<string, UserProfile>> {
+    const raw = await AsyncStorage.getItem(STORAGE_KEYS.USER_PROFILES);
+    return raw ? JSON.parse(raw) : {};
+  }
 
-      // Create user profile document
-      await this.createUserProfile(result.user, { displayName });
+  private async saveProfiles(profiles: Record<string, UserProfile>): Promise<void> {
+    await AsyncStorage.setItem(STORAGE_KEYS.USER_PROFILES, JSON.stringify(profiles));
+  }
 
-      console.log('User signed up successfully');
-      return result;
-    } catch (error: any) {
-      console.error('Sign up error:', error);
-      throw this.handleAuthError(error);
+  private async persistAuthState(): Promise<void> {
+    await AsyncStorage.setItem(
+      STORAGE_KEYS.AUTH_STATE,
+      JSON.stringify({
+        user: this.currentUser,
+        profile: this.currentProfile,
+      } satisfies StoredAuthState)
+    );
+  }
+
+  private emitAuthState(): void {
+    this.listeners.forEach((listener) => listener(this.currentUser));
+  }
+
+  private buildUserFromProfile(profile: UserProfile): MobileUser {
+    return {
+      uid: profile.uid,
+      email: profile.email,
+      displayName: profile.displayName,
+      photoURL: profile.photoURL,
+      phoneNumber: profile.phoneNumber,
+    };
+  }
+
+  async signIn(email: string, password: string): Promise<{ user: MobileUser }> {
+    await this.ensureInitialized();
+
+    if (!password) {
+      throw new Error('Password is required');
     }
+
+    const profiles = await this.loadProfiles();
+    const profile = Object.values(profiles).find(
+      (candidate) => candidate.email.toLowerCase() === email.toLowerCase()
+    );
+
+    if (!profile) {
+      throw new Error('No account found with this email address');
+    }
+
+    this.currentProfile = profile;
+    this.currentUser = this.buildUserFromProfile(profile);
+    await this.persistAuthState();
+    this.emitAuthState();
+
+    return { user: this.currentUser };
+  }
+
+  async signUp(email: string, password: string, displayName: string): Promise<{ user: MobileUser }> {
+    await this.ensureInitialized();
+
+    if (!password || password.length < 6) {
+      throw new Error('Password must be at least 6 characters');
+    }
+
+    const profiles = await this.loadProfiles();
+    const existingProfile = Object.values(profiles).find(
+      (candidate) => candidate.email.toLowerCase() === email.toLowerCase()
+    );
+
+    if (existingProfile) {
+      throw new Error('An account with this email already exists');
+    }
+
+    const uid = `mobile_${Date.now()}`;
+    const timestamp = new Date().toISOString();
+    const profile: UserProfile = {
+      uid,
+      email,
+      displayName,
+      familyTreeId: `tree_${uid}`,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    };
+
+    profiles[uid] = profile;
+    await this.saveProfiles(profiles);
+
+    this.currentProfile = profile;
+    this.currentUser = this.buildUserFromProfile(profile);
+    await this.persistAuthState();
+    this.emitAuthState();
+
+    return { user: this.currentUser };
   }
 
   async signOut(): Promise<void> {
-    try {
-      const auth = FirebaseService.getAuth();
-      await firebaseSignOut(auth);
-      console.log('User signed out successfully');
-    } catch (error: any) {
-      console.error('Sign out error:', error);
-      throw this.handleAuthError(error);
-    }
+    await this.ensureInitialized();
+    this.currentUser = null;
+    this.currentProfile = null;
+    await this.persistAuthState();
+    this.emitAuthState();
   }
 
   async resetPassword(email: string): Promise<void> {
-    try {
-      const auth = FirebaseService.getAuth();
-      await sendPasswordResetEmail(auth, email);
-      console.log('Password reset email sent');
-    } catch (error: any) {
-      console.error('Password reset error:', error);
-      throw this.handleAuthError(error);
+    await this.ensureInitialized();
+    const profiles = await this.loadProfiles();
+    const profile = Object.values(profiles).find(
+      (candidate) => candidate.email.toLowerCase() === email.toLowerCase()
+    );
+
+    if (!profile) {
+      throw new Error('No account found with this email address');
     }
   }
 
-  onAuthStateChanged(callback: (user: User | null) => void): () => void {
-    const auth = FirebaseService.getAuth();
-    return firebaseOnAuthStateChanged(auth, callback);
+  onAuthStateChanged(callback: AuthListener): () => void {
+    void this.ensureInitialized().then(() => callback(this.currentUser));
+    this.listeners.add(callback);
+    return () => {
+      this.listeners.delete(callback);
+    };
   }
 
-  getCurrentUser(): User | null {
-    const auth = FirebaseService.getAuth();
-    return auth.currentUser;
-  }
-
-  async createUserProfile(user: User, additionalData: any = {}): Promise<UserProfile> {
-    try {
-      const db = FirebaseService.getFirestore();
-      const userRef = doc(db, 'users', user.uid);
-      
-      // Generate a unique family tree ID
-      const familyTreeId = `tree_${user.uid}_${Date.now()}`;
-      
-      const userProfile: UserProfile = {
-        uid: user.uid,
-        email: user.email || '',
-        displayName: user.displayName || additionalData.displayName || '',
-        familyTreeId,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        ...additionalData,
-      };
-
-      await setDoc(userRef, userProfile);
-      
-      // Create the family tree document
-      const treeRef = doc(db, 'familyTrees', familyTreeId);
-      await setDoc(treeRef, {
-        id: familyTreeId,
-        ownerId: user.uid,
-        name: `${userProfile.displayName}'s Family Tree`,
-        description: 'My family genealogy',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        members: {},
-        settings: {
-          isPublic: false,
-          allowComments: true,
-          allowCollaboration: false,
-        },
-      });
-
-      console.log('User profile created successfully');
-      return userProfile;
-    } catch (error) {
-      console.error('Error creating user profile:', error);
-      throw error;
-    }
+  getCurrentUser(): MobileUser | null {
+    return this.currentUser;
   }
 
   async getUserProfile(uid: string): Promise<UserProfile | null> {
-    try {
-      const db = FirebaseService.getFirestore();
-      const userRef = doc(db, 'users', uid);
-      const userSnap = await getDoc(userRef);
-      
-      if (userSnap.exists()) {
-        return userSnap.data() as UserProfile;
-      } else {
-        console.log('No user profile found');
-        return null;
-      }
-    } catch (error) {
-      console.error('Error getting user profile:', error);
-      throw error;
-    }
+    await this.ensureInitialized();
+    const profiles = await this.loadProfiles();
+    return profiles[uid] || null;
   }
 
   async updateUserProfile(uid: string, data: Partial<UserProfile>): Promise<void> {
-    try {
-      const db = FirebaseService.getFirestore();
-      const userRef = doc(db, 'users', uid);
-      
-      await updateDoc(userRef, {
-        ...data,
-        updatedAt: serverTimestamp(),
-      });
-      
-      console.log('User profile updated successfully');
-    } catch (error) {
-      console.error('Error updating user profile:', error);
-      throw error;
+    await this.ensureInitialized();
+    const profiles = await this.loadProfiles();
+    const existingProfile = profiles[uid];
+
+    if (!existingProfile) {
+      throw new Error('User profile not found');
+    }
+
+    const updatedProfile: UserProfile = {
+      ...existingProfile,
+      ...data,
+      updatedAt: new Date().toISOString(),
+    };
+
+    profiles[uid] = updatedProfile;
+    await this.saveProfiles(profiles);
+
+    if (this.currentUser?.uid === uid) {
+      this.currentProfile = updatedProfile;
+      this.currentUser = this.buildUserFromProfile(updatedProfile);
+      await this.persistAuthState();
+      this.emitAuthState();
     }
   }
 
   async getFamilyTreeId(uid: string): Promise<string | null> {
-    try {
-      const profile = await this.getUserProfile(uid);
-      return profile?.familyTreeId || null;
-    } catch (error) {
-      console.error('Error getting family tree ID:', error);
-      return null;
-    }
-  }
-
-  private handleAuthError(error: any): Error {
-    let message = 'An unexpected error occurred';
-    
-    switch (error.code) {
-      case 'auth/user-not-found':
-        message = 'No account found with this email address';
-        break;
-      case 'auth/wrong-password':
-        message = 'Incorrect password';
-        break;
-      case 'auth/email-already-in-use':
-        message = 'An account with this email already exists';
-        break;
-      case 'auth/weak-password':
-        message = 'Password should be at least 6 characters';
-        break;
-      case 'auth/invalid-email':
-        message = 'Invalid email address';
-        break;
-      case 'auth/too-many-requests':
-        message = 'Too many failed attempts. Please try again later';
-        break;
-      case 'auth/network-request-failed':
-        message = 'Network error. Please check your connection';
-        break;
-      default:
-        message = error.message || message;
-    }
-    
-    return new Error(message);
+    const profile = await this.getUserProfile(uid);
+    return profile?.familyTreeId || null;
   }
 }
 

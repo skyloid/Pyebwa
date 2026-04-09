@@ -16,7 +16,6 @@ import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FieldMappingService } from '../services/FieldMappingService';
 import { Coordinate, MappingSession } from '../types';
-import firebaseFieldService from '../services/firebaseFieldService';
 import offlineSync from '../services/offlineSync';
 import authService from '../services/authService';
 import { ManualFieldMapper } from '../components/ManualFieldMapper';
@@ -120,15 +119,15 @@ export const FieldMapperScreen: React.FC = () => {
     const asyncUserType = await AsyncStorage.getItem('userType');
     const asyncIsLoggedIn = await AsyncStorage.getItem('isLoggedIn');
     
-    // Check Firebase auth
+    // Check authenticated local session
     const user = authService.getCurrentUser();
     const userProfile = authService.getUserProfile();
     
-    // Allow demo validators or Firebase authenticated validators
+    // Allow demo validators or authenticated validators
     const isDemoValidator = asyncIsLoggedIn === 'true' && asyncUserType === 'validator';
-    const isFirebaseValidator = user && userProfile && userProfile.userType === 'validator';
+    const isAuthenticatedValidator = user && userProfile && userProfile.userType === 'validator';
     
-    if (!isDemoValidator && !isFirebaseValidator) {
+    if (!isDemoValidator && !isAuthenticatedValidator) {
       if (!asyncIsLoggedIn && !user) {
         Alert.alert(t('common.error'), t('auth.pleaseLogin'));
       } else {
@@ -153,7 +152,7 @@ export const FieldMapperScreen: React.FC = () => {
         description
       );
 
-      // Also queue for Firebase sync
+      // Also queue for later sync when needed
       await offlineSync.createField(
         fieldName,
         currentSession.points,

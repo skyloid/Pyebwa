@@ -27,6 +27,14 @@ function normalizePhotos(photos, memberId = null) {
         });
 }
 
+function normalizeArrayField(value) {
+    return Array.isArray(value) ? value : [];
+}
+
+function normalizeObjectField(value) {
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+}
+
 // List user's trees
 router.get('/', async (req, res) => {
     try {
@@ -231,7 +239,13 @@ router.post('/:id/persons', async (req, res) => {
             phone: req.body.phone || null,
             gender: req.body.gender || null,
             photos: normalizePhotos(req.body.photos, null),
-            relationships: req.body.relationships || []
+            relationships: normalizeArrayField(req.body.relationships),
+            events: normalizeArrayField(req.body.events),
+            stories: normalizeArrayField(req.body.stories),
+            documents: normalizeArrayField(req.body.documents),
+            video_messages: normalizeArrayField(req.body.videoMessages),
+            related_stories: normalizeArrayField(req.body.relatedStories),
+            privacy: normalizeObjectField(req.body.privacy)
         });
 
         res.status(201).json({ success: true, person });
@@ -262,13 +276,20 @@ router.put('/:id/persons/:pid', async (req, res) => {
             nickname: 'nickname', useNickname: 'use_nickname',
             birthDate: 'birth_date', deathDate: 'death_date',
             biography: 'biography', email: 'email', phone: 'phone',
-            gender: 'gender', photos: 'photos', relationships: 'relationships'
+            gender: 'gender', photos: 'photos', relationships: 'relationships',
+            events: 'events', stories: 'stories', documents: 'documents',
+            videoMessages: 'video_messages', relatedStories: 'related_stories',
+            privacy: 'privacy'
         };
 
         for (const [camel, snake] of Object.entries(fieldMap)) {
             if (req.body[camel] !== undefined) {
                 updateData[snake] = snake === 'photos'
                     ? normalizePhotos(req.body[camel], pid)
+                    : ['relationships', 'events', 'stories', 'documents', 'video_messages', 'related_stories'].includes(snake)
+                        ? normalizeArrayField(req.body[camel])
+                        : snake === 'privacy'
+                            ? normalizeObjectField(req.body[camel])
                     : req.body[camel];
             }
         }

@@ -60,6 +60,12 @@ CREATE TABLE IF NOT EXISTS persons (
     gender VARCHAR(20),
     photos JSONB DEFAULT '[]',
     relationships JSONB DEFAULT '[]',
+    events JSONB DEFAULT '[]',
+    stories JSONB DEFAULT '[]',
+    documents JSONB DEFAULT '[]',
+    video_messages JSONB DEFAULT '[]',
+    related_stories JSONB DEFAULT '[]',
+    privacy JSONB DEFAULT '{}',
     search_terms JSONB DEFAULT '[]',
     user_id UUID REFERENCES users(id) ON DELETE SET NULL,
     claimed_at TIMESTAMPTZ,
@@ -70,6 +76,12 @@ CREATE TABLE IF NOT EXISTS persons (
 
 ALTER TABLE persons ADD COLUMN IF NOT EXISTS nickname VARCHAR(255) DEFAULT '';
 ALTER TABLE persons ADD COLUMN IF NOT EXISTS use_nickname BOOLEAN DEFAULT false;
+ALTER TABLE persons ADD COLUMN IF NOT EXISTS events JSONB DEFAULT '[]';
+ALTER TABLE persons ADD COLUMN IF NOT EXISTS stories JSONB DEFAULT '[]';
+ALTER TABLE persons ADD COLUMN IF NOT EXISTS documents JSONB DEFAULT '[]';
+ALTER TABLE persons ADD COLUMN IF NOT EXISTS video_messages JSONB DEFAULT '[]';
+ALTER TABLE persons ADD COLUMN IF NOT EXISTS related_stories JSONB DEFAULT '[]';
+ALTER TABLE persons ADD COLUMN IF NOT EXISTS privacy JSONB DEFAULT '{}';
 
 -- Invites table
 CREATE TABLE IF NOT EXISTS invites (

@@ -6,9 +6,9 @@ A multilingual family tree platform supporting English, French, and Haitian Creo
 
 - **Frontend**: Vanilla JavaScript, CSS3, Material Icons
 - **Backend**: Node.js, Express 4.x
-- **Database**: Firebase Firestore
-- **Storage**: Google Cloud Storage
-- **Auth**: Firebase Authentication
+- **Database**: PostgreSQL via Supabase
+- **Storage**: Local uploads and managed file storage via the Express API
+- **Auth**: Supabase Auth
 - **Email**: SendGrid
 
 ## Project Structure
@@ -21,8 +21,8 @@ A multilingual family tree platform supporting English, French, and Haitian Creo
 │   └── index.html        # App entry point
 ├── server/               # Express backend
 │   ├── api/              # API route handlers
-│   ├── middleware/        # Express middleware
-│   └── services/         # Business logic & Firebase
+│   ├── middleware/       # Express middleware
+│   └── services/         # Business logic and storage helpers
 ├── pyebwa.com/           # Public-facing website
 ├── mobile-app/           # React Native / Expo mobile app
 ├── __tests__/            # Jest test suites
@@ -38,8 +38,8 @@ A multilingual family tree platform supporting English, French, and Haitian Creo
 
 2. **Configure environment**
    ```bash
-   cp .env.example .env
-   # Edit .env with your Firebase credentials
+   cp .env.example .env  # if you maintain an example env locally
+   # Edit .env with your Postgres, Supabase, and mail credentials
    ```
 
 3. **Run development server**
@@ -54,9 +54,10 @@ A multilingual family tree platform supporting English, French, and Haitian Creo
 
 ## Environment Variables
 
-See `.env.example` for all required configuration. Key variables:
+Key variables:
 
-- `FIREBASE_*` - Firebase project config and admin credentials
+- `DATABASE_URL` - PostgreSQL connection string
+- `SUPABASE_URL` / `SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY` - Supabase project config
 - `SESSION_SECRET` / `JWT_SECRET` - Auth security
 - `SENDGRID_API_KEY` - Email service
 - `ADMIN_SETUP_KEY` - Admin promotion endpoint

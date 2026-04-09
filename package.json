@@ -6,11 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "setup": "node setup-environment.js",
     "db:init": "psql $DATABASE_URL < server/db/schema.sql",
     "db:init:supabase": "cat server/db/schema.sql | docker exec -i supabase-db psql -U postgres -d postgres",
-    "test-config": "node test-config.js",
-    "status": "node status.js",
     "version:sync": "node scripts/sync-version.js",
     "test": "jest",
     "test:watch": "jest --watch",

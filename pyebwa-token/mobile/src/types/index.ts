@@ -25,6 +25,28 @@ export interface PlantingField {
   description?: string;
 }
 
+export interface TreePlanting {
+  id: string;
+  planterId: string;
+  planterEmail?: string;
+  planterName?: string;
+  fieldId: string;
+  species: string;
+  location: Coordinate;
+  photoUrl?: string;
+  photoUri?: string;
+  notes?: string;
+  status: 'pending' | 'verified' | 'rejected' | 'deleted';
+  plantedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  validatorId?: string;
+  validatorEmail?: string;
+  validatorName?: string;
+  validatorNotes?: string;
+  validatedAt?: Date;
+}
+
 // Field mapping session
 export interface MappingSession {
   id: string;

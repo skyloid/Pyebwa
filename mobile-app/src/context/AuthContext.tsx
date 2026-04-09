@@ -1,9 +1,8 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User } from 'firebase/auth';
-import { AuthService } from '../services/AuthService';
+import { AuthService, MobileUser } from '../services/AuthService';
 
 interface AuthContextType {
-  user: User | null;
+  user: MobileUser | null;
   loading: boolean;
   familyTreeId: string | null;
   signIn: (email: string, password: string) => Promise<void>;
@@ -19,7 +18,7 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<MobileUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [familyTreeId, setFamilyTreeId] = useState<string | null>(null);
 

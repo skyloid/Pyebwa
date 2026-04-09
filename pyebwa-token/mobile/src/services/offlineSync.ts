@@ -1,8 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 import { PlantingField, TreePlanting } from '../types';
-import firebaseFieldService from './firebaseFieldService';
-import firebasePlantingService, { PlantingData } from './firebasePlantingService';
+import fieldService from './fieldService';
+import plantingRecordsService, { PlantingData } from './plantingRecordsService';
 
 interface PendingUpload {
   id: string;
@@ -227,10 +227,10 @@ class OfflineSyncService {
     }
   }
 
-  // Upload field to Firebase
+  // Upload field to the active field service
   private async uploadField(upload: PendingUpload): Promise<void> {
     const { name, polygon, capacity, allowedSpecies, description } = upload.data;
-    await firebaseFieldService.createField(
+    await fieldService.createField(
       name,
       polygon,
       capacity,
@@ -239,16 +239,16 @@ class OfflineSyncService {
     );
   }
 
-  // Upload planting to Firebase
+  // Upload planting to the active planting service
   private async uploadPlanting(upload: PendingUpload): Promise<void> {
-    await firebasePlantingService.createPlanting(upload.data);
+    await plantingRecordsService.createPlanting(upload.data);
   }
 
   // Get fields (online or cached)
   async getFields(): Promise<PlantingField[]> {
     try {
       if (await this.isDeviceOnline()) {
-        const fields = await firebaseFieldService.getUserFields();
+        const fields = await fieldService.getUserFields();
         await this.cacheFields(fields);
         return fields;
       } else {
@@ -265,7 +265,7 @@ class OfflineSyncService {
   async getPlantings(): Promise<TreePlanting[]> {
     try {
       if (await this.isDeviceOnline()) {
-        const plantings = await firebasePlantingService.getUserPlantings();
+        const plantings = await plantingRecordsService.getUserPlantings();
         await this.cachePlantings(plantings);
         return plantings;
       } else {
@@ -290,7 +290,7 @@ class OfflineSyncService {
 
     if (await this.isDeviceOnline()) {
       try {
-        return await firebaseFieldService.createField(
+        return await fieldService.createField(
           name,
           polygon,
           capacity,
@@ -311,7 +311,7 @@ class OfflineSyncService {
   async createPlanting(plantingData: PlantingData): Promise<string> {
     if (await this.isDeviceOnline()) {
       try {
-        return await firebasePlantingService.createPlanting(plantingData);
+        return await plantingRecordsService.createPlanting(plantingData);
       } catch (error) {
         console.error('Online planting creation failed, queuing for later:', error);
         return await this.queuePlantingUpload(plantingData);
@@ -355,10 +355,10 @@ class OfflineSyncService {
       
       // Refresh cached data
       try {
-        const fields = await firebaseFieldService.getUserFields();
+        const fields = await fieldService.getUserFields();
         await this.cacheFields(fields);
         
-        const plantings = await firebasePlantingService.getUserPlantings();
+        const plantings = await plantingRecordsService.getUserPlantings();
         await this.cachePlantings(plantings);
       } catch (error) {
         console.error('Error refreshing cached data:', error);

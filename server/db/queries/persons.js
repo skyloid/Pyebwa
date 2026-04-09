@@ -33,8 +33,9 @@ async function create(data) {
     const searchTerms = buildSearchTerms(data);
     const result = await query(
         `INSERT INTO persons (family_tree_id, first_name, last_name, birth_date, death_date,
-            biography, email, phone, gender, nickname, use_nickname, photos, relationships, search_terms, user_id)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+            biography, email, phone, gender, nickname, use_nickname, photos, relationships,
+            events, stories, documents, video_messages, related_stories, privacy, search_terms, user_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
          RETURNING *`,
         [
             data.family_tree_id, data.first_name, data.last_name || '',
@@ -45,6 +46,12 @@ async function create(data) {
             data.use_nickname === true,
             JSON.stringify(data.photos || []),
             JSON.stringify(data.relationships || []),
+            JSON.stringify(data.events || []),
+            JSON.stringify(data.stories || []),
+            JSON.stringify(data.documents || []),
+            JSON.stringify(data.video_messages || []),
+            JSON.stringify(data.related_stories || []),
+            JSON.stringify(data.privacy || {}),
             JSON.stringify(searchTerms),
             data.user_id || null
         ]
@@ -59,12 +66,15 @@ async function update(id, data) {
 
     const allowedFields = ['first_name', 'last_name', 'birth_date', 'death_date',
         'biography', 'email', 'phone', 'gender', 'nickname', 'use_nickname', 'photos', 'relationships',
+        'events', 'stories', 'documents', 'video_messages', 'related_stories', 'privacy',
         'user_id', 'claimed_at', 'claimed_via_invite'];
 
     for (const [key, value] of Object.entries(data)) {
         if (allowedFields.includes(key)) {
             fields.push(`${key} = $${paramIndex}`);
-            values.push(['photos', 'relationships'].includes(key) ? JSON.stringify(value) : value);
+            values.push(['photos', 'relationships', 'events', 'stories', 'documents', 'video_messages', 'related_stories', 'privacy'].includes(key)
+                ? JSON.stringify(value)
+                : value);
             paramIndex++;
         }
     }

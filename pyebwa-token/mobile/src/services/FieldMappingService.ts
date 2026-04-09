@@ -233,6 +233,36 @@ export class FieldMappingService {
     return field;
   }
 
+  async createField(
+    name: string,
+    polygon: Coordinate[],
+    capacity: number,
+    allowedSpecies: string[],
+    description?: string
+  ): Promise<PlantingField> {
+    if (polygon.length < 3) {
+      throw new Error('A field needs at least 3 points.');
+    }
+
+    const field: PlantingField = {
+      id: `field_${Date.now()}`,
+      validatorId: await this.getValidatorId(),
+      name,
+      polygon,
+      area: this.calculatePolygonArea(polygon),
+      capacity,
+      plantedCount: 0,
+      allowedSpecies,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      status: 'active',
+      description,
+    };
+
+    await this.saveField(field);
+    return field;
+  }
+
   // Calculate distance between two points (meters)
   calculateDistance(point1: Coordinate, point2: Coordinate): number {
     const R = 6371e3; // Earth's radius in meters

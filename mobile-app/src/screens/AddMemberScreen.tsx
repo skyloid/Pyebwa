@@ -123,7 +123,7 @@ export default function AddMemberScreen() {
 
     setLoading(true);
     try {
-      // Here you would save to Firebase
+      // Persist the new member through the active mobile data layer here
       console.log('Saving member:', formData);
       
       // Simulate API call

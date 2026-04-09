@@ -14,7 +14,7 @@ import * as MediaLibrary from 'expo-media-library';
 import { Ionicons } from '@expo/vector-icons';
 import { useOfflineQueue } from '../hooks/useOfflineQueue';
 import { PlantingField, Coordinate } from '../types';
-import firebaseFieldService from '../services/firebaseFieldService';
+import fieldService from '../services/fieldService';
 import offlineSync from '../services/offlineSync';
 import authService from '../services/authService';
 import { useTranslation } from 'react-i18next';
@@ -74,7 +74,7 @@ export const CameraScreen: React.FC = () => {
         accuracy: location.coords.accuracy
       };
 
-      const result = await firebaseFieldService.getNearbyFields(coordinate, 1000); // 1km radius
+      const result = await fieldService.getNearbyFields(coordinate, 1000); // 1km radius
       const allFields = [...result.fieldsInside, ...result.fieldsNearby.map(fn => fn.field)];
       
       setNearbyFields(allFields);

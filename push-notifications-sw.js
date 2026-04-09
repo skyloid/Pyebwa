@@ -1,5 +1,5 @@
 // Push Notification Service Worker (Web Push / VAPID)
-// Replaces Firebase Cloud Messaging
+// Service worker entry point for web push notifications
 
 // Handle push events
 self.addEventListener('push', (event) => {
