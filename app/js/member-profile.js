@@ -33,26 +33,35 @@
                                         <i class="material-icons">camera_alt</i>
                                     </button>
                                 </div>
-                                <div class="profile-info">
-                                    <h1 class="profile-name"></h1>
-                                    <div class="profile-dates"></div>
-                                    <div class="profile-relationship"></div>
+                                <div class="profile-identity">
+                                    <div class="profile-info">
+                                        <h1 class="profile-name"></h1>
+                                        <div class="profile-meta">
+                                            <div class="profile-dates"></div>
+                                            <div class="profile-relationship"></div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="profile-actions">
-                                    <button class="btn-icon edit-profile" title="Edit">
+                                    <button class="btn-icon profile-action edit-profile" title="${t('edit') || 'Edit'}" aria-label="${t('edit') || 'Edit'}">
                                         <i class="material-icons">edit</i>
+                                        <span>${t('edit') || 'Edit'}</span>
                                     </button>
-                                    <button class="btn-icon invite-member" title="${t('inviteMember') || 'Invite to claim profile'}">
+                                    <button class="btn-icon profile-action invite-member" title="${t('inviteMember') || 'Invite to claim profile'}" aria-label="${t('inviteMember') || 'Invite to claim profile'}">
                                         <i class="material-icons">person_add</i>
+                                        <span>${t('inviteMemberShort') || 'Invite'}</span>
                                     </button>
-                                    <button class="btn-icon privacy-settings" title="${t('documentPrivacy') || 'Document Privacy'}">
+                                    <button class="btn-icon profile-action privacy-settings" title="${t('documentPrivacy') || 'Document Privacy'}" aria-label="${t('documentPrivacy') || 'Document Privacy'}">
                                         <i class="material-icons">lock</i>
+                                        <span>${t('privacy') || 'Privacy'}</span>
                                     </button>
-                                    <button class="btn-icon share-profile" title="Share">
+                                    <button class="btn-icon profile-action share-profile" title="${t('share') || 'Share'}" aria-label="${t('share') || 'Share'}">
                                         <i class="material-icons">share</i>
+                                        <span>${t('share') || 'Share'}</span>
                                     </button>
-                                    <button class="btn-icon print-profile" title="Print">
+                                    <button class="btn-icon profile-action print-profile" title="${t('print') || 'Print'}" aria-label="${t('print') || 'Print'}">
                                         <i class="material-icons">print</i>
+                                        <span>${t('print') || 'Print'}</span>
                                     </button>
                                 </div>
                             </div>
@@ -229,7 +238,6 @@
         populateProfile(member) {
             const modal = document.getElementById('memberProfileModal');
             const displayName = window.getMemberDisplayName ? window.getMemberDisplayName(member) : `${member.firstName} ${member.lastName}`.trim();
-            const fullName = window.getMemberFullName ? window.getMemberFullName(member) : `${member.firstName} ${member.lastName}`.trim();
             
             // Header info
             modal.querySelector('.profile-name').textContent = displayName;
@@ -244,15 +252,24 @@
                 const deathYear = new Date(member.deathDate).getFullYear();
                 dates.push(`${t('died') || 'Died'} ${deathYear}`);
             }
-            modal.querySelector('.profile-dates').textContent = dates.join(' • ');
+            const datesElement = modal.querySelector('.profile-dates');
+            datesElement.textContent = dates.join(' • ');
+            datesElement.classList.toggle('is-empty', dates.length === 0);
             
             // Photo
             const photoUrl = member.photoUrl || '/app/images/default-avatar.svg';
-            modal.querySelector('.profile-photo').src = photoUrl;
+            const photo = modal.querySelector('.profile-photo');
+            photo.src = photoUrl;
+            photo.alt = `${displayName} ${t('profilePhoto') || 'profile photo'}`;
             
             // Relationship
+            const relationshipElement = modal.querySelector('.profile-relationship');
             if (member.relationship) {
-                modal.querySelector('.profile-relationship').textContent = t(member.relationship) || member.relationship;
+                relationshipElement.textContent = t(member.relationship) || member.relationship;
+                relationshipElement.classList.remove('is-empty');
+            } else {
+                relationshipElement.textContent = '';
+                relationshipElement.classList.add('is-empty');
             }
             
             // Show/hide invite button based on whether profile is claimed
