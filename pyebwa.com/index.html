@@ -33,6 +33,9 @@
         display: inline-flex !important;
         align-items: center !important;
     }
+    #dashboardBtn {
+        display: none !important;
+    }
     .nav-link,
     .nav-link:hover,
     .nav-link.active {
@@ -81,7 +84,7 @@
     }
     .find-roots-panel {
         width: min(760px, 100%);
-        margin: 28px auto 0;
+        margin: 40px auto 0;
         padding: 22px;
         border-radius: 24px;
         background: rgba(253, 252, 250, 0.9);
@@ -142,7 +145,11 @@
         color: #355248;
     }
     .find-roots-note {
-        margin-bottom: 20px;
+        width: min(760px, 100%);
+        margin: 4px auto 0;
+        font-size: 1.25rem;
+        line-height: 1.65;
+        text-align: center;
     }
     body.dark-mode .find-roots-note,
     body.dark-mode .find-roots-empty,
@@ -406,9 +413,19 @@
 <body>
     <script>
         (function() {
-            // Apply saved theme immediately (before DOM ready to prevent flash)
-            var savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark') {
+            function resolveThemePreference() {
+                try {
+                    var savedTheme = localStorage.getItem('theme');
+                    if (savedTheme === 'dark' || savedTheme === 'light') {
+                        return savedTheme;
+                    }
+                } catch (error) {}
+
+                var hour = new Date().getHours();
+                return (hour >= 19 || hour < 6) ? 'dark' : 'light';
+            }
+
+            if (resolveThemePreference() === 'dark') {
                 document.body.classList.add('dark-mode');
             }
 
@@ -460,6 +477,7 @@
                     <div class="nav-buttons">
                         <a href="https://rasin.pyebwa.com/login-standalone.html" class="btn btn-ghost" id="loginBtn" data-i18n="login">Konekte</a>
                         <a href="https://rasin.pyebwa.com/signup.html" class="btn btn-primary" id="signupBtn" data-i18n="signup">Enskri</a>
+                        <a href="https://rasin.pyebwa.com/app/" class="btn btn-primary nav-dashboard-btn" id="dashboardBtn" data-i18n="backToDashboard" style="display:none;">Back to Dashboard</a>
                     </div>
                 </div>
                 <div class="header-controls">
@@ -564,8 +582,8 @@
                 </div>
             </div>
             <h3 class="section-title find-roots-section-title" data-i18n="findYourRoots">Find Your Roots</h3>
+            <p class="find-roots-note find-roots-intro" data-i18n="findYourRootsIntro">Search by family surname and origin to see whether a family tree may already exist.</p>
             <div class="find-roots-panel">
-                <p class="find-roots-note" data-i18n="findYourRootsIntro">Search by family surname and origin to see whether a family tree may already exist.</p>
                 <form id="findRootsForm" class="find-roots-form">
                     <div class="find-roots-field">
                         <label for="findRootsSurname" data-i18n="surnameLabel">Surname</label>

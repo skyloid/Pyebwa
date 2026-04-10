@@ -288,39 +288,63 @@ body.dark-mode .app-header {
 
 /* Modern Language Selector */
 .language-selector {
-    background: var(--gray-100);
-    padding: 4px;
-    border-radius: 24px;
+    position: static;
+    z-index: auto;
     display: flex;
     gap: 2px;
+    background: rgba(255, 255, 255, 0.92);
+    padding: 4px;
+    border-radius: 999px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(84, 81, 74, 0.08);
 }
 
 .lang-btn {
-    background: none;
+    background: transparent;
     border: none;
-    padding: 8px 16px;
+    padding: 8px 14px;
     color: var(--gray-600);
-    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    transition: all var(--transition-base);
-    border-radius: 20px;
-    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 42px;
+    min-height: 38px;
+    line-height: 1;
+    transition: all 0.2s;
+    border-radius: 999px;
+    position: static;
 }
 
 .lang-btn:hover {
-    color: var(--primary-blue);
+    background: var(--gray-100);
+    color: var(--gray-900);
 }
 
 .lang-btn.active {
-    background: var(--white);
-    color: var(--primary-blue);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: var(--primary-blue);
+    color: var(--white);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+body.dark-mode .language-selector {
+    background: rgba(11, 20, 16, 0.92);
+    border: 1px solid rgba(150, 174, 160, 0.16);
+}
+
+body.dark-mode .lang-btn {
+    color: var(--gray-300);
+}
+
+body.dark-mode .lang-btn:hover {
+    background: var(--gray-800);
+    color: var(--gray-100);
 }
 
 body.dark-mode .lang-btn.active {
-    background: var(--gray-700);
-    color: var(--accent-yellow);
+    background: var(--primary-red);
+    color: #F5F3EF;
 }
 
 /* User Menu */
@@ -1661,6 +1685,10 @@ input[type="file"] {
     gap: 4px;
 }
 
+.tree-manager-section-header-discovery {
+    margin-bottom: 2px;
+}
+
 .tree-manager-section-header h4,
 .tree-manager-section-header p {
     margin: 0;
@@ -1674,6 +1702,13 @@ input[type="file"] {
 .tree-manager-section-header p {
     color: var(--gray-600);
     font-size: 0.95rem;
+}
+
+.tree-manager-section-intro {
+    margin: 0 0 4px;
+    color: var(--gray-600);
+    font-size: 0.95rem;
+    line-height: 1.6;
 }
 
 .tree-manager-list {
@@ -1853,6 +1888,42 @@ input[type="file"] {
     gap: 10px;
 }
 
+.settings-language-selector {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    gap: 2px;
+    width: fit-content;
+    padding: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(84, 81, 74, 0.08);
+    box-shadow: var(--shadow-sm);
+}
+
+.settings-segment-btn {
+    border: none;
+    background: transparent;
+    color: var(--gray-600);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.settings-segment-btn:hover {
+    background: var(--gray-100);
+    color: var(--gray-900);
+}
+
+.settings-language-selector .settings-segment-btn.active {
+    background: var(--primary-blue);
+    color: var(--white);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
 .settings-choice-row .btn {
     min-width: 140px;
     justify-content: center;
@@ -1870,12 +1941,32 @@ body.dark-mode .tree-manager-item {
     border-color: rgba(150, 174, 160, 0.18);
 }
 
+body.dark-mode .settings-language-selector {
+    background: rgba(11, 20, 16, 0.92);
+    border-color: rgba(150, 174, 160, 0.16);
+}
+
+body.dark-mode .settings-segment-btn {
+    color: var(--gray-300);
+}
+
+body.dark-mode .settings-segment-btn:hover {
+    background: var(--gray-800);
+    color: var(--gray-100);
+}
+
+body.dark-mode .settings-language-selector .settings-segment-btn.active {
+    background: var(--primary-red);
+    color: #F5F3EF;
+}
+
 body.dark-mode .settings-toggle-card p,
 body.dark-mode .tree-manager-item-meta,
 body.dark-mode .tree-manager-item-description,
 body.dark-mode .discovery-request-meta,
 body.dark-mode .discovery-request-message,
-body.dark-mode .tree-manager-section-header p {
+body.dark-mode .tree-manager-section-header p,
+body.dark-mode .tree-manager-section-intro {
     color: var(--gray-400);
 }
 
@@ -1891,6 +1982,16 @@ body.dark-mode .tree-manager-item-name {
 
     .settings-toggle-card {
         align-items: flex-start;
+    }
+
+    .settings-language-selector {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .settings-segment-btn {
+        flex: 1 1 0;
+        text-align: center;
     }
 }
 
@@ -1959,7 +2060,8 @@ body.dark-mode .tree-manager-item-name {
 body.dark-mode .tree-manager-section-header p,
 body.dark-mode .tree-manager-item-meta,
 body.dark-mode .tree-manager-item-description,
-body.dark-mode .tree-manager-empty {
+body.dark-mode .tree-manager-empty,
+body.dark-mode .tree-manager-section-intro {
     color: rgba(218, 215, 205, 0.74);
 }
 

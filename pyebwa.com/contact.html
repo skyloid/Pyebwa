@@ -475,7 +475,19 @@
 </head>
 <body>
     <script>
-        if (localStorage.getItem('theme') === 'dark') {
+        function resolveThemePreference() {
+            try {
+                var savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'dark' || savedTheme === 'light') {
+                    return savedTheme;
+                }
+            } catch (error) {}
+
+            var hour = new Date().getHours();
+            return (hour >= 19 || hour < 6) ? 'dark' : 'light';
+        }
+
+        if (resolveThemePreference() === 'dark') {
             document.body.classList.add('dark-mode');
         }
     </script>
@@ -495,6 +507,7 @@
                 <div class="nav-buttons">
                     <a href="https://rasin.pyebwa.com/login-standalone.html" class="btn btn-ghost" id="loginBtn" data-i18n="login">Login</a>
                     <a href="https://rasin.pyebwa.com/signup.html" class="btn btn-primary" id="signupBtn" data-i18n="signup">Sign Up</a>
+                    <a href="https://rasin.pyebwa.com/app/" class="btn btn-primary nav-dashboard-btn" id="dashboardBtn" data-i18n="backToDashboard" style="display:none;">Back to Dashboard</a>
                 </div>
             </div>
             <div class="header-controls">

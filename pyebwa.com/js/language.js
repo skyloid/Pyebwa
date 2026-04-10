@@ -24,6 +24,16 @@
         return null;
     }
 
+    function clearCookie(name) {
+        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
+        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;domain=.pyebwa.com;`;
+    }
+
+    function setButtonDisplay(element, value) {
+        if (!element) return;
+        element.style.setProperty('display', value, 'important');
+    }
+
     // Browser language detection
     function detectBrowserLanguage() {
         const browserLang = navigator.language || navigator.userLanguage || '';
@@ -55,6 +65,7 @@
                 contact: "Contact",
                 login: "Login",
                 signup: "Sign Up",
+                backToDashboard: "Back to Dashboard",
                 poweredBy: "Powered by",
                 humanLevelTech: "Technologies Humanitaires"
             },
@@ -65,6 +76,7 @@
                 contact: "Contact",
                 login: "Connexion",
                 signup: "S'inscrire",
+                backToDashboard: "Retour au tableau de bord",
                 poweredBy: "Propulsé par",
                 humanLevelTech: "Technologies Humanitaires"
             },
@@ -75,6 +87,7 @@
                 contact: "Kontak",
                 login: "Konekte",
                 signup: "Enskri",
+                backToDashboard: "Retounen nan Dashboard la",
                 poweredBy: "Pwodwi pa",
                 humanLevelTech: "Technologies Humanitaires"
             }
@@ -216,6 +229,7 @@
         const authTargets = [
             { id: 'loginBtn', fallback: 'https://rasin.pyebwa.com/login-standalone.html' },
             { id: 'signupBtn', fallback: 'https://rasin.pyebwa.com/signup.html' },
+            { id: 'dashboardBtn', fallback: 'https://rasin.pyebwa.com/app/' },
             { id: 'ctaBtn', fallback: 'https://rasin.pyebwa.com/signup.html' }
         ];
 
@@ -233,6 +247,26 @@
                 console.warn('Unable to update auth link language for', id, error);
             }
         });
+    }
+
+    function syncPublicAuthButtons() {
+        const params = new URLSearchParams(window.location.search);
+        const isLoggedOut = params.get('logged_out') === '1';
+
+        if (isLoggedOut) {
+            clearCookie('pyebwa_auth');
+            clearCookie('pyebwa_user_email');
+            clearCookie('pyebwa_user_name');
+        }
+
+        const loginBtn = document.getElementById('loginBtn');
+        const signupBtn = document.getElementById('signupBtn');
+        const dashboardBtn = document.getElementById('dashboardBtn');
+        const isAuthenticated = !isLoggedOut && getCookie('pyebwa_auth') === '1';
+
+        setButtonDisplay(loginBtn, isAuthenticated ? 'none' : 'inline-flex');
+        setButtonDisplay(signupBtn, isAuthenticated ? 'none' : 'inline-flex');
+        setButtonDisplay(dashboardBtn, isAuthenticated ? 'inline-flex' : 'none');
     }
 
     // Initialize language selector if it exists
@@ -284,6 +318,7 @@
         }
         updateLanguage();
         initLanguageSelector();
+        syncPublicAuthButtons();
     }
     
     // Initialize on DOMContentLoaded
@@ -296,4 +331,6 @@
         console.log('DOM already loaded - initializing language system immediately');
         initializeLanguageSystem();
     }
+
+    window.addEventListener('pageshow', syncPublicAuthButtons);
 })();

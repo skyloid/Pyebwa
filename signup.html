@@ -14,7 +14,6 @@
         sessionStorage.setItem('onSignupPage', 'true');
         sessionStorage.setItem('preventRedirect', 'true');
     </script>
-    <!-- Firebase removed - using session-based auth -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
@@ -759,7 +758,7 @@
         window.preventRedirect = true;
         window.isSignupPage = true;
         
-        // Firebase removed - using session-based auth
+        // Session-based auth
         
         // Translation system for signup page
         const translations = {
@@ -1056,9 +1055,29 @@
         // Initialize Supabase
         const _sb = supabase.createClient(window.location.origin + '/supabase', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzc1MTk5NDM4LCJleHAiOjE5MzI4Nzk0Mzh9.t_O46hoypu8qZjZgiM_GjMkwhDBhwFa-IXRMjnQ5m7o');
 
+        function setCrossDomainCookie(name, value, days = 30) {
+            const expiresAt = new Date();
+            expiresAt.setTime(expiresAt.getTime() + (days * 24 * 60 * 60 * 1000));
+            const expires = `expires=${expiresAt.toUTCString()}`;
+            document.cookie = `${name}=${value};${expires};path=/;SameSite=Lax;Secure`;
+            document.cookie = `${name}=${value};${expires};path=/;domain=.pyebwa.com;SameSite=Lax;Secure`;
+        }
+
+        function syncPublicWebsiteAuthState(session) {
+            if (!session || !session.user || !session.user.email) {
+                return;
+            }
+
+            const displayName = session.user.user_metadata?.display_name || session.user.email;
+            setCrossDomainCookie('pyebwa_auth', '1');
+            setCrossDomainCookie('pyebwa_user_email', encodeURIComponent(session.user.email));
+            setCrossDomainCookie('pyebwa_user_name', encodeURIComponent(displayName));
+        }
+
         // Check if user is already logged in
         _sb.auth.getSession().then(({ data: { session } }) => {
             if (session) {
+                syncPublicWebsiteAuthState(session);
                 const signoutLink = `<a href="#" onclick="_sb.auth.signOut().then(()=>window.location.reload());return false;" style="color: var(--primary-blue);">Sign out</a>`;
                 showMessage(`You're logged in as ${session.user.email}. ${signoutLink} to create a new account.`, 'info');
             }

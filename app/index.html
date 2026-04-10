@@ -59,9 +59,20 @@
         window.__PYEBWA_VERSION_URL__ = '/app/version.json';
         window.__PYEBWA_BUILD_ID__ = null;
         window.__PYEBWA_VERSION__ = null;
+        window.__PYEBWA_RESOLVE_THEME__ = function() {
+            try {
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'dark' || savedTheme === 'light') {
+                    return savedTheme;
+                }
+            } catch (error) {}
+
+            const hour = new Date().getHours();
+            return (hour >= 19 || hour < 6) ? 'dark' : 'light';
+        };
         window.__PYEBWA_INITIAL_THEME__ = (function() {
             try {
-                return localStorage.getItem('theme') === 'dark' ? 'dark' : 'light';
+                return window.__PYEBWA_RESOLVE_THEME__();
             } catch (error) {
                 return 'light';
             }
@@ -524,10 +535,10 @@
                 <div class="settings-modal-body">
                     <div class="settings-section">
                         <h4 data-i18n="chooseLanguage">Choose Language</h4>
-                        <div class="settings-choice-row">
-                            <button type="button" class="btn btn-secondary settings-lang-btn" data-lang="en">English</button>
-                            <button type="button" class="btn btn-secondary settings-lang-btn" data-lang="fr">Français</button>
-                            <button type="button" class="btn btn-secondary settings-lang-btn" data-lang="ht">Kreyòl</button>
+                        <div class="settings-choice-row settings-language-selector" role="group" aria-label="Choose language">
+                            <button type="button" class="settings-lang-btn settings-segment-btn" data-lang="en">English</button>
+                            <button type="button" class="settings-lang-btn settings-segment-btn" data-lang="fr">Français</button>
+                            <button type="button" class="settings-lang-btn settings-segment-btn" data-lang="ht">Kreyòl</button>
                         </div>
                     </div>
                     <div class="settings-section">
@@ -584,10 +595,10 @@
                         </form>
                     </div>
                     <div class="tree-manager-section">
-                        <div class="tree-manager-section-header">
+                        <div class="tree-manager-section-header tree-manager-section-header-discovery">
                             <h4 data-i18n="findYourRootsSettings">Find Your Roots</h4>
-                            <p data-i18n="discoverySettingsHelp">Control whether this tree can be found by surname and review new connection requests.</p>
                         </div>
+                        <p class="tree-manager-section-intro" data-i18n="discoverySettingsHelp">Control whether this tree can be found by surname and review new connection requests.</p>
                         <form id="discoverySettingsForm" class="tree-manager-form">
                             <div class="settings-toggle-row">
                                 <label class="settings-toggle-card" for="discoveryEnabled">

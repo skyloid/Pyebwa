@@ -15,8 +15,7 @@
             'js/translations-pages.js',
             'js/language.js',
             'js/theme-toggle.js',
-            'js/firebase-config.js',
-            'js/auth.js',
+            'js/page-slideshow-manager.js',
             'js/back-to-top.js',
             'js/version-watcher.js'
         ];
@@ -256,8 +255,8 @@
             text-align: center;
             position: relative;
             overflow: hidden;
-            background: #000;
-            min-height: 500px;
+            background: #1B1B18;
+            min-height: 620px;
         }
         
         /* Slideshow styles - Enhanced */
@@ -290,30 +289,6 @@
             opacity: 1;
             visibility: visible;
             transition: opacity 2s ease-in-out, visibility 0s;
-        }
-        
-        /* Ensure slideshow is behind overlay */
-        .forest-slide {
-            z-index: 0;
-        }
-        
-        .hero-overlay {
-            z-index: 1;
-        }
-        
-        .hero-content {
-            z-index: 2;
-        }
-        
-        /* Overlay for better text readability */
-        .hero-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(rgba(0, 33, 125, 0.7), rgba(0, 33, 125, 0.7));
-            z-index: 1;
         }
         
         /* Content above slideshow */
@@ -604,7 +579,19 @@
 </head>
 <body>
     <script>
-        if (localStorage.getItem('theme') === 'dark') {
+        function resolveThemePreference() {
+            try {
+                var savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'dark' || savedTheme === 'light') {
+                    return savedTheme;
+                }
+            } catch (error) {}
+
+            var hour = new Date().getHours();
+            return (hour >= 19 || hour < 6) ? 'dark' : 'light';
+        }
+
+        if (resolveThemePreference() === 'dark') {
             document.body.classList.add('dark-mode');
         }
     </script>
@@ -613,7 +600,7 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo nav-brand">
-                <img src="images/Pyebwa-title.png?v=20260407-logo-title-v3" alt="Pyebwa" class="logo-header">
+                <img src="images/Pyebwa-title.png?v=20260408-logo-title-v4" alt="Pyebwa" class="logo-header">
                 <span class="tagline" data-i18n="tagline">Know Your Roots</span>
             </div>
             <div class="nav-menu">
@@ -624,6 +611,7 @@
                 <div class="nav-buttons">
                     <a href="https://rasin.pyebwa.com/login-standalone.html" class="btn btn-ghost" id="loginBtn" data-i18n="login">Login</a>
                     <a href="https://rasin.pyebwa.com/signup.html" class="btn btn-primary" id="signupBtn" data-i18n="signup">Sign Up</a>
+                    <a href="https://rasin.pyebwa.com/app/" class="btn btn-primary nav-dashboard-btn" id="dashboardBtn" data-i18n="backToDashboard" style="display:none;">Back to Dashboard</a>
                 </div>
             </div>
             <div class="header-controls">
@@ -644,20 +632,6 @@
 
     <!-- Hero Section -->
     <section class="cause-hero">
-        <!-- Fixed: Using slideshow-container class name to match CSS -->
-        <div class="slideshow-container">
-            <!-- Community members planting trees together -->
-            <div class="forest-slide active" style="background-image: url('https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2000&q=80');"></div>
-            <!-- Person planting a young tree -->
-            <div class="forest-slide" style="background-image: url('https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2000&q=80');"></div>
-            <!-- Group of people working together in reforestation -->
-            <div class="forest-slide" style="background-image: url('https://images.unsplash.com/photo-1611348524140-53c9a25263d6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2000&q=80');"></div>
-            <!-- Hands planting a small tree seedling -->
-            <div class="forest-slide" style="background-image: url('https://images.unsplash.com/photo-1449665291896-3d64a1c8d413?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2000&q=80');"></div>
-            <!-- Community reforestation effort -->
-            <div class="forest-slide" style="background-image: url('https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2000&q=80');"></div>
-        </div>
-        <div class="hero-overlay"></div>
         <div class="hero-content">
             <h1 data-i18n="oneBillionTrees">One Billion Trees for Haiti</h1>
             <p class="subtitle" data-i18n="missionSubtitle">Our commitment to reforesting Haiti and restoring its natural beauty</p>
@@ -853,7 +827,7 @@
     <!-- Footer -->
     <footer class="footer" style="background: var(--primary-blue); color: white; padding: 40px 0;">
         <div class="container" style="text-align: center;">
-            <p>&copy; 2026 Pyebwa version <span data-build-version>1.0.73</span> - <span data-i18n="poweredBy">Powered by</span> <a href="https://humanlevel.ai" target="_blank" style="color: var(--accent-yellow); text-decoration: none; transition: all 0.3s;" data-i18n="humanLevelTech">Technologies Humanitaires Inc.</a></p>
+            <p>&copy; 2026 Pyebwa version <span data-build-version>1.1.99</span> - <span data-i18n="poweredBy">Powered by</span> <a href="https://humanlevel.ai" target="_blank" style="color: var(--accent-yellow); text-decoration: none; transition: all 0.3s;" data-i18n="humanLevelTech">Technologies Humanitaires Inc.</a></p>
         </div>
     </footer>
 
@@ -931,77 +905,6 @@
                         navMenu.classList.remove('active');
                     });
                 });
-            }
-        })();
-    </script>
-    
-    <!-- Forest Slideshow Script -->
-    <script>
-        // Enhanced forest slideshow with debugging
-        (function() {
-            console.log('[Slideshow] Initializing forest slideshow...');
-            
-            // Wait for all content to load
-            function initSlideshow() {
-                const slides = document.querySelectorAll('.forest-slide');
-                
-                if (!slides || slides.length === 0) {
-                    console.error('[Slideshow] No slides found!');
-                    return;
-                }
-                
-                console.log(`[Slideshow] Found ${slides.length} slides`);
-                
-                let currentSlide = 0;
-                let slideshowInterval = null;
-                
-                // Verify slides are visible
-                slides.forEach((slide, index) => {
-                    const styles = window.getComputedStyle(slide);
-                    console.log(`[Slideshow] Slide ${index + 1}: opacity=${styles.opacity}, position=${styles.position}`);
-                });
-                
-                function showSlide(index) {
-                    // Remove active from all slides
-                    slides.forEach(slide => {
-                        slide.classList.remove('active');
-                    });
-                    
-                    // Add active to current slide
-                    slides[index].classList.add('active');
-                    console.log(`[Slideshow] Showing slide ${index + 1}`);
-                }
-                
-                function showNextSlide() {
-                    currentSlide = (currentSlide + 1) % slides.length;
-                    showSlide(currentSlide);
-                }
-                
-                // Ensure first slide is active
-                showSlide(0);
-                
-                // Start slideshow
-                slideshowInterval = setInterval(showNextSlide, 5000);
-                console.log('[Slideshow] Started with 5-second intervals');
-                
-                // Pause when page is hidden
-                document.addEventListener('visibilitychange', () => {
-                    if (document.hidden) {
-                        clearInterval(slideshowInterval);
-                        console.log('[Slideshow] Paused');
-                    } else {
-                        slideshowInterval = setInterval(showNextSlide, 5000);
-                        console.log('[Slideshow] Resumed');
-                    }
-                });
-            }
-            
-            // Initialize when DOM is ready
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', initSlideshow);
-            } else {
-                // DOM already loaded
-                initSlideshow();
             }
         })();
     </script>

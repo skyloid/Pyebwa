@@ -151,14 +151,26 @@ body.dark-mode .btn-secondary:hover {
     border-color: var(--border-hover);
 }
 
+body.dark-mode .language-selector {
+    background: rgba(11, 20, 16, 0.92);
+    border: 1px solid rgba(150, 174, 160, 0.16);
+}
+
 body.dark-mode .lang-btn {
-    background-color: var(--bg-tertiary);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--gray-300);
+    border: none;
 }
 
 body.dark-mode .lang-btn:hover {
-    background-color: var(--border-color);
+    background: var(--gray-800);
+    color: var(--gray-100);
+}
+
+body.dark-mode .lang-btn.active {
+    background: var(--primary-red);
+    color: #F5F3EF;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 /* Search Box */

@@ -109,6 +109,33 @@ function getPreferredLanguage() {
     return candidates.find(lang => supportedLangs.includes(lang)) || 'en';
 }
 
+function setCrossDomainCookie(name, value, days = 30) {
+    const expiresAt = new Date();
+    expiresAt.setTime(expiresAt.getTime() + (days * 24 * 60 * 60 * 1000));
+    const expires = `expires=${expiresAt.toUTCString()}`;
+    document.cookie = `${name}=${value};${expires};path=/;SameSite=Lax;Secure`;
+    document.cookie = `${name}=${value};${expires};path=/;domain=.pyebwa.com;SameSite=Lax;Secure`;
+}
+
+function clearCrossDomainCookie(name) {
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;domain=.pyebwa.com;`;
+}
+
+function syncPublicWebsiteAuthState(user) {
+    if (user && user.email) {
+        const displayName = String(user.displayName || user.email || '').trim();
+        setCrossDomainCookie('pyebwa_auth', '1');
+        setCrossDomainCookie('pyebwa_user_email', encodeURIComponent(user.email));
+        setCrossDomainCookie('pyebwa_user_name', encodeURIComponent(displayName));
+        return;
+    }
+
+    clearCrossDomainCookie('pyebwa_auth');
+    clearCrossDomainCookie('pyebwa_user_email');
+    clearCrossDomainCookie('pyebwa_user_name');
+}
+
 function getFamilyTreeStorageKey() {
     const userId = currentUser?.id || currentUser?.uid || currentUser?.user?.id || currentUser?.email || 'anonymous';
     return `pyebwaActiveTree:${userId}`;
@@ -406,6 +433,20 @@ function updateFooterVersionLabel() {
     });
 }
 
+function resolveThemePreference() {
+    try {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark' || savedTheme === 'light') {
+            return savedTheme;
+        }
+    } catch (error) {
+        console.warn('Unable to read theme preference:', error);
+    }
+
+    const hour = new Date().getHours();
+    return (hour >= 19 || hour < 6) ? 'dark' : 'light';
+}
+
 function applyThemePreference(theme) {
     const normalizedTheme = theme === 'dark' ? 'dark' : 'light';
     document.body.classList.toggle('dark-mode', normalizedTheme === 'dark');
@@ -423,7 +464,9 @@ function applyThemePreference(theme) {
 
 function syncSettingsModalState() {
     const currentLang = window.currentLanguage || getPreferredLanguage();
-    const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+    const currentTheme = document.body.classList.contains('dark-mode')
+        ? 'dark'
+        : resolveThemePreference();
 
     document.querySelectorAll('.settings-lang-btn').forEach((btn) => {
         btn.classList.toggle('active', btn.getAttribute('data-lang') === currentLang);
@@ -519,6 +562,7 @@ async function initializeAuth() {
         if (user) {
             currentUser = user;
             window.currentUser = currentUser;
+            syncPublicWebsiteAuthState(currentUser);
             const userEmailEl = document.querySelector('.user-email');
             if (userEmailEl) userEmailEl.textContent = user.email;
             checkAdminStatus(user);
@@ -557,6 +601,7 @@ async function initializeAuth() {
             }
         } else {
             // Not authenticated - redirect to login
+            syncPublicWebsiteAuthState(null);
             hideLoadingState();
             document.body.dataset.appReady = 'false';
             if (canRedirect()) {
@@ -567,6 +612,7 @@ async function initializeAuth() {
         }
     } catch (error) {
         log(`Auth check error: ${error.message}`);
+        syncPublicWebsiteAuthState(null);
         hideLoadingState();
         document.body.dataset.appReady = 'false';
         showError('Authentication error. Please login again.');
@@ -1453,6 +1499,7 @@ async function logout() {
 
     const finalizeLogoutRedirect = () => {
         persistSharedLanguagePreference(logoutLang);
+        syncPublicWebsiteAuthState(null);
         try {
             sessionStorage.clear();
         } catch (error) {
