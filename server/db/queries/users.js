@@ -14,18 +14,18 @@ async function create(data) {
     if (data.id) {
         // Use provided ID (e.g., from Supabase Auth UUID)
         const result = await query(
-            `INSERT INTO users (id, email, password_hash, display_name, role, photo_url, primary_family_tree_id)
-             VALUES ($1, $2, $3, $4, $5, $6, $7)
+            `INSERT INTO users (id, email, password_hash, display_name, role, status, photo_url, primary_family_tree_id)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
              RETURNING *`,
-            [data.id, data.email, data.password_hash, data.display_name, data.role || 'member', data.photo_url || null, data.primary_family_tree_id || null]
+            [data.id, data.email, data.password_hash, data.display_name, data.role || 'member', data.status || 'active', data.photo_url || null, data.primary_family_tree_id || null]
         );
         return result.rows[0];
     }
     const result = await query(
-        `INSERT INTO users (email, password_hash, display_name, role, photo_url, primary_family_tree_id)
-         VALUES ($1, $2, $3, $4, $5, $6)
+        `INSERT INTO users (email, password_hash, display_name, role, status, photo_url, primary_family_tree_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
          RETURNING *`,
-        [data.email, data.password_hash, data.display_name, data.role || 'member', data.photo_url || null, data.primary_family_tree_id || null]
+        [data.email, data.password_hash, data.display_name, data.role || 'member', data.status || 'active', data.photo_url || null, data.primary_family_tree_id || null]
     );
     return result.rows[0];
 }
@@ -35,7 +35,7 @@ async function update(id, data) {
     const values = [];
     let paramIndex = 1;
 
-    const allowedFields = ['display_name', 'role', 'photo_url', 'primary_family_tree_id',
+    const allowedFields = ['display_name', 'role', 'status', 'photo_url', 'primary_family_tree_id',
         'email_verified', 'notifications_enabled', 'email_notifications_enabled',
         'notification_preferences', 'password_hash', 'reset_token', 'reset_token_expires',
         'last_active'];
@@ -61,7 +61,7 @@ async function update(id, data) {
 }
 
 async function findAll() {
-    const result = await query('SELECT id, email, display_name, role, photo_url, last_active, created_at FROM users ORDER BY created_at DESC');
+    const result = await query('SELECT id, email, display_name, role, status, photo_url, last_active, created_at FROM users ORDER BY created_at DESC');
     return result.rows;
 }
 

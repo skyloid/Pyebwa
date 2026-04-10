@@ -1954,6 +1954,46 @@
         document.getElementById('userStatusFilter')?.addEventListener('change', applyUserFilters);
         document.getElementById('userPrevPage')?.addEventListener('click', () => changePage(-1));
         document.getElementById('userNextPage')?.addEventListener('click', () => changePage(1));
+        document.getElementById('usersTableBody')?.addEventListener('click', async (event) => {
+            const saveButton = event.target.closest('.user-role-save-btn');
+            if (saveButton) {
+                const userId = saveButton.getAttribute('data-user-id');
+                const select = document.querySelector(`.user-role-select[data-user-id="${CSS.escape(userId)}"]`);
+                const nextRole = select?.value;
+                if (!userId || !nextRole) return;
+                saveButton.disabled = true;
+                const originalLabel = saveButton.textContent;
+                saveButton.textContent = 'Saving...';
+                try {
+                    await updateUserRole(userId, nextRole);
+                } catch (error) {
+                    alert(error.message);
+                } finally {
+                    saveButton.disabled = false;
+                    saveButton.textContent = originalLabel;
+                }
+                return;
+            }
+
+            const statusButton = event.target.closest('.user-status-save-btn');
+            if (statusButton) {
+                const userId = statusButton.getAttribute('data-user-id');
+                const select = document.querySelector(`.user-status-select[data-user-id="${CSS.escape(userId)}"]`);
+                const nextStatus = select?.value;
+                if (!userId || !nextStatus) return;
+                statusButton.disabled = true;
+                const originalLabel = statusButton.textContent;
+                statusButton.textContent = 'Saving...';
+                try {
+                    await updateUserStatus(userId, nextStatus);
+                } catch (error) {
+                    alert(error.message);
+                } finally {
+                    statusButton.disabled = false;
+                    statusButton.textContent = originalLabel;
+                }
+            }
+        });
         document.getElementById('treeSearch')?.addEventListener('input', applyTreeFilters);
         document.getElementById('treeStatusFilter')?.addEventListener('change', applyTreeFilters);
         document.getElementById('treeSortFilter')?.addEventListener('change', applyTreeFilters);
@@ -2117,6 +2157,8 @@
     function renderUsers() {
         const tbody = document.getElementById('usersTableBody');
         if (!tbody) return;
+        const canManageRoles = state.adminRole === 'superadmin';
+        const canManageStatuses = state.adminRole === 'admin' || state.adminRole === 'superadmin';
 
         const startIndex = (state.currentPage - 1) * state.pageSize;
         const pageUsers = state.filteredUsers.slice(startIndex, startIndex + state.pageSize);
@@ -2129,12 +2171,39 @@
                     <td class="checkbox-col"><input type="checkbox" value="${escapeHtml(user.id)}"></td>
                     <td>${escapeHtml(user.display_name || 'No name')}</td>
                     <td>${escapeHtml(user.email)}</td>
-                    <td><span class="badge badge-${escapeHtml(user.role)}">${escapeHtml(user.role)}</span></td>
-                    <td>${escapeHtml(user.status)}</td>
+                    <td>
+                        ${canManageRoles ? `
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <select class="user-role-select" data-user-id="${escapeHtml(user.id)}" style="min-width:130px;">
+                                    <option value="member" ${user.role === 'member' ? 'selected' : ''}>Member</option>
+                                    <option value="moderator" ${user.role === 'moderator' ? 'selected' : ''}>Moderator</option>
+                                    <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+                                    <option value="superadmin" ${user.role === 'superadmin' ? 'selected' : ''}>Super Admin</option>
+                                </select>
+                                <button class="btn btn-secondary user-role-save-btn" data-user-id="${escapeHtml(user.id)}" style="padding:6px 10px; font-size:12px;">Save</button>
+                            </div>
+                        ` : `
+                            <span class="badge badge-${escapeHtml(user.role)}">${escapeHtml(user.role)}</span>
+                        `}
+                    </td>
+                    <td>
+                        ${canManageStatuses ? `
+                            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                <span class="badge badge-${escapeHtml(user.status)}">${escapeHtml(user.status)}</span>
+                                <select class="user-status-select" data-user-id="${escapeHtml(user.id)}" style="min-width:130px;">
+                                    <option value="active" ${user.account_status === 'active' ? 'selected' : ''}>Active</option>
+                                    <option value="suspended" ${user.account_status === 'suspended' ? 'selected' : ''}>Suspended</option>
+                                </select>
+                                <button class="btn btn-secondary user-status-save-btn" data-user-id="${escapeHtml(user.id)}" style="padding:6px 10px; font-size:12px;">Save</button>
+                            </div>
+                        ` : `
+                            <span class="badge badge-${escapeHtml(user.status)}">${escapeHtml(user.status)}</span>
+                        `}
+                    </td>
                     <td>${escapeHtml(formatDate(user.created_at))}</td>
                     <td>${escapeHtml(formatDate(user.last_active))}</td>
                     <td>
-                        <a class="btn btn-secondary" href="/app/" style="padding:6px 10px; font-size:12px;">Open App</a>
+                        <a class="btn btn-secondary" href="/app/" style="padding:6px 10px; font-size:12px;">Open Dashboard</a>
                     </td>
                 </tr>
             `).join('');
@@ -2146,6 +2215,52 @@
         document.getElementById('userCurrentPage').textContent = String(state.currentPage);
         document.getElementById('userPrevPage').disabled = state.currentPage === 1;
         document.getElementById('userNextPage').disabled = (startIndex + state.pageSize) >= state.filteredUsers.length;
+    }
+
+    async function updateUserRole(userId, role) {
+        const response = await authFetch(`/api/auth/user/${encodeURIComponent(userId)}/claims`, {
+            method: 'POST',
+            body: JSON.stringify({ claims: { role } })
+        });
+        if (!response.ok) {
+            let message = 'Failed to update user role';
+            try {
+                const payload = await response.json();
+                if (payload?.error) message = payload.error;
+            } catch (_) {
+                // ignore parse failures
+            }
+            throw new Error(message);
+        }
+
+        const user = state.allUsers.find((item) => item.id === userId);
+        if (user) user.role = role;
+        const filteredUser = state.filteredUsers.find((item) => item.id === userId);
+        if (filteredUser) filteredUser.role = role;
+        renderUsers();
+    }
+
+    async function updateUserStatus(userId, status) {
+        const response = await authFetch(`/api/admin/users/${encodeURIComponent(userId)}/status`, {
+            method: 'POST',
+            body: JSON.stringify({ status })
+        });
+        if (!response.ok) {
+            let message = 'Failed to update user status';
+            try {
+                const payload = await response.json();
+                if (payload?.error) message = payload.error;
+            } catch (_) {
+                // ignore parse failures
+            }
+            throw new Error(message);
+        }
+
+        const user = state.allUsers.find((item) => item.id === userId);
+        if (user) user.account_status = status;
+        const filteredUser = state.filteredUsers.find((item) => item.id === userId);
+        if (filteredUser) filteredUser.account_status = status;
+        await loadUsers();
     }
 
     function renderTrees() {

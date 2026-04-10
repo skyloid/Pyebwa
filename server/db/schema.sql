@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL,
     display_name VARCHAR(255),
     role VARCHAR(50) DEFAULT 'member' CHECK (role IN ('member', 'moderator', 'admin', 'superadmin')),
+    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'suspended')),
     photo_url TEXT,
     primary_family_tree_id UUID,
     email_verified BOOLEAN DEFAULT false,
@@ -101,6 +102,23 @@ CREATE TABLE IF NOT EXISTS invites (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Public family discovery requests
+CREATE TABLE IF NOT EXISTS discovery_requests (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tree_id UUID NOT NULL REFERENCES family_trees(id) ON DELETE CASCADE,
+    searched_surname VARCHAR(255) NOT NULL,
+    requester_name VARCHAR(255) NOT NULL,
+    requester_email VARCHAR(255) NOT NULL,
+    requester_origin VARCHAR(255) DEFAULT '',
+    requester_message TEXT DEFAULT '',
+    requester_language VARCHAR(10) DEFAULT 'en',
+    status VARCHAR(20) DEFAULT 'new' CHECK (status IN ('new', 'reviewed', 'contacted', 'invited', 'declined', 'archived')),
+    reviewed_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    reviewed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Admin logs table
 CREATE TABLE IF NOT EXISTS admin_logs (
     id SERIAL PRIMARY KEY,
@@ -154,6 +172,19 @@ ALTER TABLE users
     REFERENCES family_trees(id)
     ON DELETE SET NULL;
 
+ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'active';
+
+UPDATE users
+SET status = 'active'
+WHERE status IS NULL;
+
+ALTER TABLE users
+    DROP CONSTRAINT IF EXISTS users_status_check;
+
+ALTER TABLE users
+    ADD CONSTRAINT users_status_check CHECK (status IN ('active', 'suspended'));
+
 -- Indexes for common queries
 CREATE INDEX IF NOT EXISTS idx_persons_family_tree ON persons(family_tree_id);
 CREATE INDEX IF NOT EXISTS idx_persons_user ON persons(user_id);
@@ -161,6 +192,9 @@ CREATE INDEX IF NOT EXISTS idx_persons_name ON persons(first_name, last_name);
 CREATE INDEX IF NOT EXISTS idx_invites_token ON invites(token);
 CREATE INDEX IF NOT EXISTS idx_invites_tree ON invites(tree_id);
 CREATE INDEX IF NOT EXISTS idx_invites_status ON invites(status);
+CREATE INDEX IF NOT EXISTS idx_discovery_requests_tree ON discovery_requests(tree_id);
+CREATE INDEX IF NOT EXISTS idx_discovery_requests_status ON discovery_requests(status);
+CREATE INDEX IF NOT EXISTS idx_discovery_requests_email ON discovery_requests(requester_email);
 CREATE INDEX IF NOT EXISTS idx_admin_logs_action ON admin_logs(action);
 CREATE INDEX IF NOT EXISTS idx_admin_logs_created ON admin_logs(created_at);
 CREATE INDEX IF NOT EXISTS idx_family_tree_members_user ON family_tree_members(user_id);

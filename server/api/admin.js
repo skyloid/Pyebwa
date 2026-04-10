@@ -31,6 +31,16 @@ function normalizeLimit(value, fallback = 50, max = 200) {
     return Math.min(parsed, max);
 }
 
+function deriveUserStatus(user) {
+    if (user.status === 'suspended') {
+        return 'suspended';
+    }
+
+    const lastActive = user.last_active ? new Date(user.last_active) : null;
+    const isActiveRecently = lastActive && ((Date.now() - lastActive.getTime()) <= (30 * 24 * 60 * 60 * 1000));
+    return isActiveRecently ? 'active' : 'inactive';
+}
+
 router.get('/summary', verifySession, requireAdmin, async (req, res) => {
     try {
         const [usersResult, activeUsersResult, treesResult, membersResult, recentUsersResult, recentTreesResult] = await Promise.all([
@@ -78,17 +88,16 @@ router.get('/users', verifySession, requireAdmin, async (req, res) => {
         let users = await userQueries.findAll();
 
         users = users.map((user) => {
-            const lastActive = user.last_active ? new Date(user.last_active) : null;
-            const isActiveRecently = lastActive && ((Date.now() - lastActive.getTime()) <= (30 * 24 * 60 * 60 * 1000));
             return {
                 id: user.id,
                 email: user.email,
                 display_name: user.display_name,
                 role: user.role || 'member',
+                account_status: user.status || 'active',
                 photo_url: user.photo_url || null,
                 last_active: user.last_active,
                 created_at: user.created_at,
-                status: isActiveRecently ? 'active' : 'inactive'
+                status: deriveUserStatus(user)
             };
         });
 
@@ -118,6 +127,69 @@ router.get('/users', verifySession, requireAdmin, async (req, res) => {
     } catch (error) {
         console.error('Admin users error:', error);
         res.status(500).json({ error: 'Failed to load users' });
+    }
+});
+
+router.post('/users/:userId/status', verifySession, requireAdmin, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const nextStatus = String(req.body?.status || '').trim().toLowerCase();
+        const allowedStatuses = ['active', 'suspended'];
+
+        if (!allowedStatuses.includes(nextStatus)) {
+            return res.status(400).json({ error: 'Invalid user status' });
+        }
+
+        const actor = await userQueries.findById(req.user.uid);
+        const target = await userQueries.findById(userId);
+
+        if (!actor || !target) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        if (!['admin', 'superadmin'].includes(actor.role)) {
+            return res.status(403).json({ error: 'Admin access required' });
+        }
+
+        if (target.role === 'superadmin' && actor.role !== 'superadmin') {
+            return res.status(403).json({ error: 'Only superadmins can change a superadmin status' });
+        }
+
+        if (req.user.uid === userId && nextStatus === 'suspended') {
+            return res.status(400).json({ error: 'You cannot suspend your own account' });
+        }
+
+        const updated = await userQueries.update(userId, { status: nextStatus });
+        if (!updated) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        await query(
+            `INSERT INTO admin_logs (action, user_id, details, ip_address)
+             VALUES ($1, $2, $3::jsonb, $4)`,
+            [
+                'user_status_updated',
+                req.user.uid,
+                JSON.stringify({
+                    targetUserId: userId,
+                    previousStatus: target.status || 'active',
+                    nextStatus
+                }),
+                req.ip || null
+            ]
+        );
+
+        res.json({
+            success: true,
+            user: {
+                id: updated.id,
+                status: deriveUserStatus(updated),
+                account_status: updated.status || 'active'
+            }
+        });
+    } catch (error) {
+        console.error('Admin user status update error:', error);
+        res.status(500).json({ error: 'Failed to update user status' });
     }
 });
 

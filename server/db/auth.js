@@ -17,14 +17,19 @@ async function verifySession(req, res, next) {
         }
 
         // Look up app-level user data from public.users
-        const result = await query('SELECT role, display_name FROM users WHERE id = $1', [user.id]);
+        const result = await query('SELECT role, display_name, status FROM users WHERE id = $1', [user.id]);
         const appUser = result.rows[0];
+
+        if (appUser?.status === 'suspended') {
+            return res.status(403).json({ error: 'Account suspended' });
+        }
 
         req.user = {
             uid: user.id,
             email: user.email,
             role: appUser ? appUser.role : (user.user_metadata?.role || 'member'),
-            displayName: appUser ? appUser.display_name : (user.user_metadata?.display_name || '')
+            displayName: appUser ? appUser.display_name : (user.user_metadata?.display_name || ''),
+            status: appUser ? appUser.status : 'active'
         };
         next();
     } catch (err) {
