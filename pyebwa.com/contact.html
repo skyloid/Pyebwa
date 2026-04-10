@@ -252,6 +252,7 @@
             background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-red) 100%);
             color: white;
             padding: 120px 20px;
+            min-height: 620px;
             text-align: center;
             position: relative;
             overflow: hidden;
@@ -267,13 +268,22 @@
             background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZmZmZjFhIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=');
             opacity: 0.1;
         }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
         
         .contact-hero h1 {
-            font-size: 3.5rem;
+            font-size: 4rem;
             margin-bottom: 20px;
             font-weight: 800;
-            position: relative;
-            z-index: 1;
+        }
+
+        .contact-hero .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
         }
         
         .contact-container {
@@ -505,8 +515,10 @@
 
     <!-- Hero Section -->
     <section class="contact-hero">
-        <h1 data-i18n="getInTouch">Get in Touch</h1>
-        <p class="hero-subtitle" style="font-size: 1.5rem; margin-bottom: 30px; opacity: 0.9; position: relative; z-index: 1;" data-i18n="contactSubtitle">We're here to help you preserve your family's story</p>
+        <div class="hero-content">
+            <h1 data-i18n="getInTouch">Get in Touch</h1>
+            <p class="subtitle" data-i18n="contactSubtitle">We're here to help you preserve your family's story</p>
+        </div>
     </section>
 
     <!-- Contact Section -->
@@ -668,7 +680,7 @@
     <!-- Footer -->
     <footer class="footer" style="background: var(--primary-blue); color: white; padding: 40px 0;">
         <div class="container" style="text-align: center;">
-            <p>&copy; 2026 Pyebwa version <span data-build-version>1.1.80</span> - <span data-i18n="poweredBy">Powered by</span> <a href="https://humanlevel.ai" target="_blank" style="color: var(--accent-yellow); text-decoration: none; transition: all 0.3s;" data-i18n="humanLevelTech">Technologies Humanitaires Inc.</a></p>
+            <p>&copy; 2026 Pyebwa version <span data-build-version>1.1.99</span> - <span data-i18n="poweredBy">Powered by</span> <a href="https://humanlevel.ai" target="_blank" style="color: var(--accent-yellow); text-decoration: none; transition: all 0.3s;" data-i18n="humanLevelTech">Technologies Humanitaires Inc.</a></p>
         </div>
     </footer>
 

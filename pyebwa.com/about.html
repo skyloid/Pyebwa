@@ -15,8 +15,7 @@
             'js/translations-pages.js',
             'js/language.js',
             'js/theme-toggle.js',
-            'js/firebase-config.js',
-            'js/auth.js',
+            'js/page-slideshow-manager.js',
             'js/back-to-top.js',
             'js/version-watcher.js'
         ];
@@ -253,6 +252,7 @@
             background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-blue) 100%);
             color: white;
             padding: 120px 20px;
+            min-height: 620px;
             text-align: center;
             position: relative;
             overflow: hidden;
@@ -268,13 +268,22 @@
             background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZmZmZjFhIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=');
             opacity: 0.1;
         }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
         
         .about-hero h1 {
-            font-size: 3.5rem;
+            font-size: 4rem;
             margin-bottom: 20px;
             font-weight: 800;
-            position: relative;
-            z-index: 1;
+        }
+
+        .about-hero .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
         }
         
         .about-section {
@@ -387,6 +396,11 @@
         }
         
         @media (max-width: 768px) {
+            .about-hero {
+                min-height: 620px;
+                padding: 120px 20px;
+            }
+
             .about-hero h1 {
                 font-size: 2rem;
             }
@@ -419,7 +433,7 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo nav-brand">
-                <img src="images/Pyebwa-title.png?v=20260407-logo-title-v3" alt="Pyebwa" class="logo-header">
+                <img src="images/Pyebwa-title.png?v=20260408-logo-title-v4" alt="Pyebwa" class="logo-header">
                 <span class="tagline" data-i18n="tagline">Know Your Roots</span>
             </div>
             <div class="nav-menu">
@@ -450,8 +464,10 @@
 
     <!-- Hero Section -->
     <section class="about-hero">
-        <h1 data-i18n="aboutTitle">About Pyebwa</h1>
-        <p class="hero-subtitle" style="font-size: 1.5rem; margin-bottom: 30px; opacity: 0.9; position: relative; z-index: 1;" data-i18n="aboutSubtitle">Connecting Families, Preserving Heritage</p>
+        <div class="hero-content">
+            <h1 data-i18n="aboutTitle">About Pyebwa</h1>
+            <p class="subtitle" data-i18n="aboutSubtitle">Connecting Families, Preserving Heritage</p>
+        </div>
     </section>
 
     <!-- Mission Section -->
@@ -552,7 +568,7 @@
     <!-- Footer -->
     <footer class="footer" style="background: var(--primary-blue); color: white; padding: 20px 0;">
         <div class="container" style="text-align: center;">
-            <p>&copy; 2026 Pyebwa version <span data-build-version>1.0.73</span> - <span data-i18n="poweredBy">Powered by</span> <a href="https://humanlevel.ai" target="_blank" style="color: var(--accent-yellow); text-decoration: none; transition: all 0.3s;" data-i18n="humanLevelTech">Technologies Humanitaires Inc.</a></p>
+            <p>&copy; 2026 Pyebwa version <span data-build-version>1.1.99</span> - <span data-i18n="poweredBy">Powered by</span> <a href="https://humanlevel.ai" target="_blank" style="color: var(--accent-yellow); text-decoration: none; transition: all 0.3s;" data-i18n="humanLevelTech">Technologies Humanitaires Inc.</a></p>
         </div>
     </footer>
 
