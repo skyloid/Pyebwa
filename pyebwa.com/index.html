@@ -79,6 +79,213 @@
         background: #2D6A4F !important;
         color: #F5F3EF !important;
     }
+    .find-roots-panel {
+        width: min(760px, 100%);
+        margin: 28px auto 0;
+        padding: 22px;
+        border-radius: 24px;
+        background: rgba(253, 252, 250, 0.9);
+        border: 1px solid rgba(27, 67, 50, 0.12);
+        box-shadow: 0 30px 60px rgba(11, 20, 16, 0.16);
+        backdrop-filter: blur(12px);
+    }
+    .find-roots-section-title {
+        margin-top: 56px;
+    }
+    body.dark-mode .find-roots-panel {
+        background: rgba(11, 20, 16, 0.78);
+        border-color: rgba(218, 215, 205, 0.12);
+    }
+    .find-roots-form {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: end;
+    }
+    .find-roots-field {
+        display: grid;
+        gap: 8px;
+        text-align: left;
+    }
+    .find-roots-field label,
+    .find-roots-results-title,
+    .find-roots-panel-title {
+        color: #1B4332;
+        font-weight: 700;
+    }
+    body.dark-mode .find-roots-field label,
+    body.dark-mode .find-roots-results-title,
+    body.dark-mode .find-roots-panel-title {
+        color: #DAD7CD;
+    }
+    .find-roots-field input,
+    .find-roots-request-form input,
+    .find-roots-request-form textarea {
+        width: 100%;
+        border: 1px solid rgba(27, 67, 50, 0.14);
+        border-radius: 14px;
+        padding: 14px 16px;
+        background: rgba(255, 255, 255, 0.86);
+        color: #1B4332;
+    }
+    body.dark-mode .find-roots-field input,
+    body.dark-mode .find-roots-request-form input,
+    body.dark-mode .find-roots-request-form textarea {
+        background: rgba(218, 215, 205, 0.08);
+        border-color: rgba(218, 215, 205, 0.12);
+        color: #FDFCFA;
+    }
+    .find-roots-note,
+    .find-roots-empty,
+    .find-roots-meta,
+    .find-roots-request-copy {
+        color: #355248;
+    }
+    body.dark-mode .find-roots-note,
+    body.dark-mode .find-roots-empty,
+    body.dark-mode .find-roots-meta,
+    body.dark-mode .find-roots-request-copy {
+        color: #B7C6BE;
+    }
+    .find-roots-results {
+        display: grid;
+        gap: 14px;
+        margin-top: 18px;
+        text-align: left;
+    }
+    .find-roots-results[hidden],
+    .find-roots-request-card[hidden] {
+        display: none !important;
+    }
+    .find-roots-result-card,
+    .find-roots-request-card {
+        padding: 18px;
+        border-radius: 18px;
+        border: 1px solid rgba(27, 67, 50, 0.12);
+        background: rgba(253, 252, 250, 0.92);
+    }
+    body.dark-mode .find-roots-result-card,
+    body.dark-mode .find-roots-request-card {
+        background: rgba(22, 34, 28, 0.88);
+        border-color: rgba(218, 215, 205, 0.1);
+    }
+    .find-roots-result-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 8px;
+    }
+    .find-roots-result-head h4,
+    .find-roots-request-card h4 {
+        margin: 0;
+        color: #1B4332;
+    }
+    body.dark-mode .find-roots-result-head h4,
+    body.dark-mode .find-roots-request-card h4 {
+        color: #F5F3EF;
+    }
+    .find-roots-result-actions,
+    .find-roots-request-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 14px;
+    }
+    .find-roots-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(64, 145, 108, 0.16);
+        color: #1B4332;
+        font-size: 0.82rem;
+        font-weight: 700;
+    }
+    body.dark-mode .find-roots-badge {
+        color: #DAD7CD;
+        background: rgba(64, 145, 108, 0.22);
+    }
+    .find-roots-request-form {
+        display: grid;
+        gap: 12px;
+        margin-top: 14px;
+    }
+    .find-roots-request-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+    .find-roots-status {
+        margin-top: 8px;
+        font-weight: 600;
+    }
+    .find-roots-cta {
+        display: flex;
+        justify-content: center;
+        margin-top: 36px;
+    }
+    .find-roots-divider {
+        margin-top: 28px;
+        text-align: center;
+    }
+    .site-toast-stack {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 1200;
+        display: grid;
+        gap: 12px;
+        pointer-events: none;
+    }
+    .site-toast {
+        min-width: 280px;
+        max-width: 360px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        border: 1px solid rgba(27, 67, 50, 0.12);
+        background: rgba(253, 252, 250, 0.96);
+        color: #1B4332;
+        box-shadow: 0 18px 40px rgba(11, 20, 16, 0.2);
+        opacity: 0;
+        transform: translateY(10px);
+        transition: opacity 180ms ease, transform 180ms ease;
+    }
+    .site-toast.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    .site-toast.is-success {
+        border-color: rgba(45, 106, 79, 0.28);
+    }
+    .site-toast.is-error {
+        border-color: rgba(188, 71, 73, 0.3);
+        color: #8F2D2E;
+    }
+    body.dark-mode .site-toast {
+        background: rgba(11, 20, 16, 0.94);
+        color: #F5F3EF;
+        border-color: rgba(218, 215, 205, 0.14);
+    }
+    body.dark-mode .site-toast.is-error {
+        color: #F2B6B6;
+        border-color: rgba(242, 182, 182, 0.24);
+    }
+    @media (max-width: 768px) {
+        .find-roots-form,
+        .find-roots-request-grid {
+            grid-template-columns: 1fr;
+        }
+        .site-toast-stack {
+            left: 16px;
+            right: 16px;
+            bottom: 16px;
+        }
+        .site-toast {
+            min-width: 0;
+            max-width: none;
+        }
+    }
     </style>
     <!-- Immediate inline fix for slideshow -->
     <style>
@@ -112,10 +319,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
-    <!-- Firebase SDK removed - auth handled on rasin.pyebwa.com -->
     <script>
         window.__PYEBWA_VERSION_URL__ = 'version.json';
-        window.__PYEBWA_BUILD_ID__ = null;
+        window.__PYEBWA_BUILD_ID__ = '20260410T113119Z-home-cta-copy';
         window.__PYEBWA_VERSION__ = null;
         window.__PYEBWA_LOCAL_CSS__ = [
             'css/styles.css',
@@ -127,7 +333,9 @@
         window.__PYEBWA_LOCAL_SCRIPTS__ = [
             'js/clean-url.js',
             'js/app-v2-fixed.js',
+            'js/public-discovery.js',
             'js/back-to-top.js',
+            'js/page-slideshow-manager.js',
             'js/slideshow-enhanced-v2.js',
             'js/slideshow-mobile-optimize.js',
             'js/mobile-nav-enhanced.js',
@@ -164,7 +372,7 @@
             });
         };
         window.__PYEBWA_headAssetsPromise = (async function() {
-            let payload = { buildId: String(Date.now()) };
+            let payload = { buildId: window.__PYEBWA_BUILD_ID__ };
 
             try {
                 const response = await fetch(`${window.__PYEBWA_VERSION_URL__}?t=${Date.now()}`, {
@@ -173,7 +381,10 @@
                 });
 
                 if (response.ok) {
-                    payload = await response.json();
+                    const remotePayload = await response.json();
+                    if (String(remotePayload?.buildId || '') >= String(window.__PYEBWA_BUILD_ID__ || '')) {
+                        payload = remotePayload;
+                    }
                 }
             } catch (error) {
                 console.warn('Falling back to timestamp build id:', error);
@@ -235,7 +446,7 @@
         <nav class="navbar">
             <div class="container">
                 <div class="nav-brand">
-                    <img src="https://pyebwa.com/images/Pyebwa-title.png?v=20260407-logo-title-v3" alt="Pyebwa" class="logo-header">
+                    <img src="https://pyebwa.com/images/Pyebwa-title.png?v=20260408-logo-title-v4" alt="Pyebwa" class="logo-header">
                     <span class="tagline" data-i18n="tagline">Know Your Roots</span>
                 </div>
                 <div class="nav-menu" id="navMenu">
@@ -325,7 +536,6 @@
                 <p class="hero-subtitle" data-i18n="heroSubtitle">
                     Kreye pyebwa fanmiy-ou, pataje istwa, epi konekte jenerasyon&nbsp;yo
                 </p>
-                <a href="https://rasin.pyebwa.com/signup.html" class="btn btn-cta" id="ctaBtn" data-i18n="getStarted">Kòmanse Kounye a</a>
             </div>
         </div>
     </header>
@@ -333,7 +543,6 @@
     <!-- Features Section -->
     <section class="features">
         <div class="container">
-            <h3 class="section-title" data-i18n="featuresTitle">Poukisa Pyebwa?</h3>
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon"><span class="material-icons">park</span></div>
@@ -341,15 +550,52 @@
                     <p data-i18n="feature1Desc">Ajoute manm fanmi, foto, ak dat enpòtan yo fasil</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon"><span class="material-icons">menu_book</span></div>
-                    <h4 data-i18n="feature2Title">Pataje Istwa</h4>
-                    <p data-i18n="feature2Desc">Prezève memwa ak istwa fanmi pou jenerasyon k ap vini yo</p>
-                </div>
-                <div class="feature-card">
                     <div class="feature-icon"><span class="material-icons">link</span></div>
                     <h4 data-i18n="feature3Title">Konekte Fanmi</h4>
                     <p data-i18n="feature3Desc">Jwenn ak konekte ak fanmi ou toupatou</p>
                 </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><span class="material-icons">menu_book</span></div>
+                    <h4 data-i18n="feature2Title">Pataje Istwa</h4>
+                    <p data-i18n="feature2Desc">Prezève memwa ak istwa fanmi pou jenerasyon k ap vini yo</p>
+                </div>
+            </div>
+            <h3 class="section-title find-roots-section-title" data-i18n="findYourRoots">Find Your Roots</h3>
+            <div class="find-roots-panel">
+                <p class="find-roots-note" data-i18n="findYourRootsIntro">Search by family surname and origin to see whether a family tree may already exist.</p>
+                <form id="findRootsForm" class="find-roots-form">
+                    <div class="find-roots-field">
+                        <label for="findRootsSurname" data-i18n="surnameLabel">Surname</label>
+                        <input id="findRootsSurname" name="surname" type="text" required data-i18n-placeholder="surnamePlaceholder" placeholder="ex: Belizaire">
+                    </div>
+                    <div class="find-roots-field">
+                        <label for="findRootsOrigin" data-i18n="originLabel">Origin</label>
+                        <input id="findRootsOrigin" name="origin" type="text" data-i18n-placeholder="originPlaceholder" placeholder="ex: Cap Haitien">
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="findRootsSubmit" data-i18n="searchRoots">Search</button>
+                </form>
+                <div id="findRootsStatus" class="find-roots-status" aria-live="polite"></div>
+                <div id="findRootsResults" class="find-roots-results" hidden></div>
+                <div id="findRootsRequestCard" class="find-roots-request-card" hidden>
+                    <h4 data-i18n="requestConnectionTitle">Request a Connection</h4>
+                    <p class="find-roots-request-copy" data-i18n="requestConnectionHelp">Introduce yourself and we’ll send your request to the members of this family tree.</p>
+                    <form id="findRootsRequestForm" class="find-roots-request-form">
+                        <div class="find-roots-request-grid">
+                            <input name="requesterName" type="text" required data-i18n-placeholder="yourNamePlaceholder" placeholder="Your name">
+                            <input name="requesterEmail" type="email" required data-i18n-placeholder="yourEmailPlaceholder" placeholder="Your email">
+                        </div>
+                        <input name="requesterOrigin" type="text" data-i18n-placeholder="yourOriginPlaceholder" placeholder="Where your branch is from">
+                        <textarea name="requesterMessage" rows="4" data-i18n-placeholder="requestMessagePlaceholder" placeholder="Explain how you may be connected to this family."></textarea>
+                        <div class="find-roots-request-actions">
+                            <button type="button" class="btn btn-ghost" id="cancelDiscoveryRequest" data-i18n="cancel">Cancel</button>
+                            <button type="submit" class="btn btn-primary" id="submitDiscoveryRequest" data-i18n="sendConnectionRequest">Send Request</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <h3 class="section-title find-roots-divider">OR</h3>
+            <div class="find-roots-cta">
+                <a href="https://rasin.pyebwa.com/signup.html" class="btn btn-cta" id="ctaBtn" data-i18n="createYourOwnTree">Create Your Own Family Tree</a>
             </div>
         </div>
     </section>
@@ -362,7 +608,7 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2026 Pyebwa version <span data-build-version>1.0.73</span> - <span data-i18n="poweredBy">Powered by</span> <a href="https://humanlevel.ai" target="_blank" rel="noopener noreferrer" data-i18n="humanLevelTech">Technologies Humanitaires Inc.</a></p>
+            <p>&copy; 2026 Pyebwa version <span data-build-version>1.1.99</span> - <span data-i18n="poweredBy">Powered by</span> <a href="https://humanlevel.ai" target="_blank" rel="noopener noreferrer" data-i18n="humanLevelTech">Technologies Humanitaires Inc.</a></p>
         </div>
     </footer>
     
@@ -370,6 +616,8 @@
     <button id="returnToTop" class="return-to-top" title="Return to top">
         <span class="material-icons">arrow_upward</span>
     </button>
+
+    <div id="siteToastStack" class="site-toast-stack" aria-live="polite" aria-atomic="true"></div>
 
     <script>
         (async function() {
