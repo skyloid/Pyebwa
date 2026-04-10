@@ -1,84 +1,13 @@
-// Firebase testing utilities (mock implementation for now)
+// Shared Jest setup utilities for the current Supabase/Postgres codebase.
 
-// Mock Firebase Admin SDK
-jest.mock('firebase-admin', () => {
-  // Mock apps array to fix admin.apps.length issue
-  const mockApps = [];
-  mockApps.length = 0;
-  const mockDoc = {
-    id: 'mock-doc-id',
-    exists: true,
-    get: jest.fn(() => Promise.resolve({
-      exists: true,
-      id: 'mock-doc-id',
-      data: () => ({ mockData: true })
-    })),
-    set: jest.fn(() => Promise.resolve()),
-    update: jest.fn(() => Promise.resolve()),
-    delete: jest.fn(() => Promise.resolve()),
-    collection: jest.fn(() => mockCollection)
-  };
-
-  const mockCollection = {
-    doc: jest.fn(() => mockDoc),
-    add: jest.fn(() => Promise.resolve({ id: 'new-doc-id' })),
-    where: jest.fn(() => ({
-      where: jest.fn(() => ({
-        get: jest.fn(() => Promise.resolve({
-          docs: []
-        }))
-      })),
-      get: jest.fn(() => Promise.resolve({
-        docs: []
-      }))
-    })),
-    get: jest.fn(() => Promise.resolve({
-      docs: []
-    }))
-  };
-
-  return {
-    apps: mockApps,
-    initializeApp: jest.fn(),
-    auth: jest.fn(() => ({
-      createUser: jest.fn(),
-      getUserByEmail: jest.fn(),
-      updateUser: jest.fn(),
-      deleteUser: jest.fn(),
-      setCustomUserClaims: jest.fn(),
-      generatePasswordResetLink: jest.fn()
-    })),
-    firestore: jest.fn(() => ({
-      collection: jest.fn(() => mockCollection),
-      FieldValue: {
-        serverTimestamp: jest.fn(() => new Date())
-      }
-    })),
-    // Add the FieldValue directly to admin for compatibility
-    FieldValue: {
-      serverTimestamp: jest.fn(() => new Date())
-    },
-    storage: jest.fn(() => ({
-      bucket: jest.fn(() => ({
-        file: jest.fn(() => ({
-          save: jest.fn(),
-          delete: jest.fn(),
-          getSignedUrl: jest.fn()
-        }))
-      }))
-    }))
-  };
-});
-
-// Mock SendGrid
-jest.mock('@sendgrid/mail', () => ({
-  setApiKey: jest.fn(),
-  send: jest.fn(() => Promise.resolve([{
-    statusCode: 202,
-    body: {},
-    headers: {}
-  }]))
-}));
+// Mock fetch for Resend-backed email requests in tests that don't override it.
+if (!global.fetch) {
+  global.fetch = jest.fn(() => Promise.resolve({
+    ok: true,
+    json: () => Promise.resolve({ id: 'test-email-id' }),
+    text: () => Promise.resolve('')
+  }));
+}
 
 // Mock Express request and response objects
 global.mockReq = (body = {}, params = {}, query = {}, headers = {}) => ({

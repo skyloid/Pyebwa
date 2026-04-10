@@ -230,6 +230,46 @@
             return data.persons;
         },
 
+        // --- Public discovery / find your roots ---
+        async searchDiscoverableTrees(surname, origin = '') {
+            const params = new URLSearchParams();
+            params.set('surname', surname);
+            if (origin) params.set('origin', origin);
+
+            const res = await fetch('/api/discovery/search?' + params.toString());
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            return data.results || [];
+        },
+
+        async submitDiscoveryRequest(payload) {
+            const res = await fetch('/api/discovery/request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            return data.request;
+        },
+
+        async listDiscoveryRequests(treeId) {
+            const res = await authFetch('/api/discovery/trees/' + treeId + '/requests');
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            return data.requests || [];
+        },
+
+        async updateDiscoveryRequest(treeId, requestId, status) {
+            const res = await authFetch('/api/discovery/trees/' + treeId + '/requests/' + requestId, {
+                method: 'PUT',
+                body: JSON.stringify({ status })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            return data;
+        },
+
         // --- Invites ---
         async generateInvite(treeId, personId) {
             const res = await authFetch('/api/invites/generate', {
@@ -284,6 +324,33 @@
             const data = await res.json();
             if (!res.ok) throw new Error(data.error);
             return data.url;
+        },
+
+        async uploadFile(file, options = {}) {
+            const formData = new FormData();
+            formData.append('file', file);
+            if (options.treeId) formData.append('treeId', options.treeId);
+            if (options.personId) formData.append('personId', options.personId);
+            if (options.type) formData.append('type', options.type);
+            if (options.category) formData.append('category', options.category);
+
+            const res = await authFetch('/api/uploads/file', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            return data.url;
+        },
+
+        async deleteUploadedFile(url) {
+            const res = await authFetch('/api/uploads/file', {
+                method: 'DELETE',
+                body: JSON.stringify({ url })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            return data;
         },
 
         // --- Admin ---

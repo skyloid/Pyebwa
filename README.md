@@ -9,7 +9,7 @@ A multilingual family tree platform supporting English, French, and Haitian Creo
 - **Database**: PostgreSQL via Supabase
 - **Storage**: Local uploads and managed file storage via the Express API
 - **Auth**: Supabase Auth
-- **Email**: SendGrid
+- **Email**: Resend
 
 ## Project Structure
 
@@ -59,7 +59,7 @@ Key variables:
 - `DATABASE_URL` - PostgreSQL connection string
 - `SUPABASE_URL` / `SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY` - Supabase project config
 - `SESSION_SECRET` / `JWT_SECRET` - Auth security
-- `SENDGRID_API_KEY` - Email service
+- `RESEND_API_KEY` - Email service
 - `ADMIN_SETUP_KEY` - Admin promotion endpoint
 
 ## Scripts

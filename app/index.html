@@ -284,6 +284,11 @@
                         <button class="lang-btn" data-lang="fr">FR</button>
                         <button class="lang-btn active" data-lang="ht">HT</button>
                     </div>
+                    <button id="discoveryNotificationsBtn" class="header-icon-btn" type="button" aria-label="Connection requests">
+                        <span class="material-icons">notifications</span>
+                        <span id="discoveryNotificationsBadge" class="header-notification-badge" style="display:none;">0</span>
+                        <span id="discoveryNotificationsTooltip" class="header-icon-tooltip">Connection requests</span>
+                    </button>
                     <div class="user-menu">
                         <button class="user-menu-btn">
                             <span class="material-icons">account_circle</span>
@@ -578,6 +583,58 @@
                             </div>
                         </form>
                     </div>
+                    <div class="tree-manager-section">
+                        <div class="tree-manager-section-header">
+                            <h4 data-i18n="findYourRootsSettings">Find Your Roots</h4>
+                            <p data-i18n="discoverySettingsHelp">Control whether this tree can be found by surname and review new connection requests.</p>
+                        </div>
+                        <form id="discoverySettingsForm" class="tree-manager-form">
+                            <div class="settings-toggle-row">
+                                <label class="settings-toggle-card" for="discoveryEnabled">
+                                    <div>
+                                        <strong data-i18n="discoverableTree">Discoverable Tree</strong>
+                                        <p data-i18n="discoverableTreeHelp">Allow visitors to find this tree by surname and origin.</p>
+                                    </div>
+                                    <input type="checkbox" id="discoveryEnabled" name="enabled" checked>
+                                </label>
+                            </div>
+                            <div class="tree-manager-grid">
+                                <div class="form-group">
+                                    <label for="discoveryOriginCountry" data-i18n="originCountry">Origin Country</label>
+                                    <input type="text" id="discoveryOriginCountry" name="originCountry" maxlength="120" data-i18n-placeholder="originCountryPlaceholder" placeholder="Haiti">
+                                </div>
+                                <div class="form-group">
+                                    <label for="discoveryOriginRegion" data-i18n="originRegion">Origin Region</label>
+                                    <input type="text" id="discoveryOriginRegion" name="originRegion" maxlength="120" data-i18n-placeholder="originRegionPlaceholder" placeholder="Artibonite">
+                                </div>
+                                <div class="form-group">
+                                    <label for="discoveryOriginCity" data-i18n="originCity">Origin City</label>
+                                    <input type="text" id="discoveryOriginCity" name="originCity" maxlength="120" data-i18n-placeholder="originCityPlaceholder" placeholder="Gonaïves">
+                                </div>
+                                <div class="form-group">
+                                    <label for="discoveryOriginDiaspora" data-i18n="diasporaLocation">Diaspora Location</label>
+                                    <input type="text" id="discoveryOriginDiaspora" name="originDiaspora" maxlength="120" data-i18n-placeholder="diasporaLocationPlaceholder" placeholder="Montreal">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="discoveryBlurb" data-i18n="publicDiscoveryMessage">Public Discovery Message</label>
+                                <textarea id="discoveryBlurb" name="blurb" rows="3" maxlength="280" data-i18n-placeholder="publicDiscoveryMessagePlaceholder" placeholder="Share a short message for visitors who may be related to this family."></textarea>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary" id="saveDiscoverySettingsBtn">
+                                    <span class="material-icons">save</span>
+                                    <span data-i18n="saveDiscoverySettings">Save Discovery Settings</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="tree-manager-section" id="discoveryRequestsSection">
+                        <div class="tree-manager-section-header">
+                            <h4 data-i18n="connectionRequests">Connection Requests</h4>
+                            <p data-i18n="connectionRequestsHelp">Visitors who find this surname can send a request to connect with your family tree.</p>
+                        </div>
+                        <div id="discoveryRequestsList" class="tree-manager-list"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -586,7 +643,7 @@
     <!-- Footer -->
     <footer class="app-footer">
         <div class="footer-container">
-            <p>&copy; 2026 Pyebwa version <span data-build-version>1.1.98</span> - <span data-i18n="poweredBy">Powered by</span> <a class="footer-company-link" href="https://humanlevel.ai" target="_blank" rel="noopener noreferrer" data-i18n="humanLevelTech">Technologies Humanitaires Inc.</a></p>
+            <p>&copy; 2026 Pyebwa version <span data-build-version>1.1.99</span> - <span data-i18n="poweredBy">Powered by</span> <a class="footer-company-link" href="https://humanlevel.ai" target="_blank" rel="noopener noreferrer" data-i18n="humanLevelTech">Technologies Humanitaires Inc.</a></p>
         </div>
     </footer>
 

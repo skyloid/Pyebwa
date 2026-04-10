@@ -170,7 +170,7 @@ router.get('/info', verifySession, requireSuperAdmin, async (req, res) => {
             environment: {
                 NODE_ENV: process.env.NODE_ENV,
                 hasDatabase: !!process.env.DATABASE_URL || !!process.env.PG_HOST,
-                hasSendGridKey: !!process.env.SENDGRID_API_KEY
+                hasResendKey: !!process.env.RESEND_API_KEY
             }
         };
         res.json(info);

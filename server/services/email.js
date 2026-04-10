@@ -1,4 +1,3 @@
-const sgMail = require('@sendgrid/mail');
 const path = require('path');
 const fs = require('fs').promises;
 const handlebars = require('handlebars');
@@ -8,13 +7,39 @@ handlebars.registerHelper('equals', function(a, b) {
     return a === b;
 });
 
-// Initialize SendGrid with API key
-const apiKey = process.env.SENDGRID_API_KEY;
-if (apiKey && !apiKey.includes('your_sendgrid_api_key_here')) {
-    sgMail.setApiKey(apiKey);
-    console.log('✅ SendGrid email service initialized');
+// Initialize Resend with API key
+const resendApiKey = process.env.RESEND_API_KEY;
+if (resendApiKey) {
+    console.log('✅ Resend email service initialized');
 } else {
-    console.warn('⚠️  SendGrid API key not configured - email sending disabled');
+    console.warn('⚠️  Resend API key not configured - email sending disabled');
+}
+
+async function sendViaResend(to, subject, html, from) {
+    if (!resendApiKey) {
+        return { success: false, reason: 'No email provider configured' };
+    }
+
+    const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${resendApiKey}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            from: from || process.env.AUTH_EMAIL_FROM || 'Pyebwa <noreply@pyebwa.com>',
+            to: [to],
+            subject,
+            html
+        })
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Resend send failed: ${response.status} ${errorText}`);
+    }
+
+    return { success: true };
 }
 
 // Email service class
@@ -25,7 +50,7 @@ class EmailService {
             email: process.env.SENDER_EMAIL || 'noreply@pyebwa.com',
             name: process.env.SENDER_NAME || 'Pyebwa Family Tree'
         };
-        this.isConfigured = apiKey && !apiKey.includes('your_sendgrid_api_key_here');
+        this.isConfigured = Boolean(resendApiKey);
     }
 
     // Load and compile email templates
@@ -54,36 +79,25 @@ class EmailService {
 
     // Send an email
     async sendEmail(to, subject, templateName, data = {}) {
-        if (!this.isConfigured) {
-            console.warn('SendGrid not configured - skipping email to:', to);
-            return { success: false, reason: 'Email service not configured' };
-        }
-
         try {
             // Load template
             const template = await this.loadTemplate(templateName);
             const html = template(data);
 
-            // Prepare email
-            const msg = {
-                to,
-                from: this.sender,
-                subject,
-                html,
-                // Add plain text version
-                text: this.htmlToText(html)
-            };
-
-            // Send email
-            const result = await sgMail.send(msg);
-            console.log(`✅ Email sent successfully to ${to}`);
-            return { success: true, messageId: result[0].headers['x-message-id'] };
+            if (this.isConfigured) {
+                const result = await sendViaResend(
+                    to,
+                    subject,
+                    html,
+                    `${this.sender.name} <${this.sender.email}>`
+                );
+                console.log(`✅ Email sent successfully via Resend to ${to}`);
+                return result;
+            }
+            return { success: false, error: 'Resend email service not configured' };
 
         } catch (error) {
             console.error('Error sending email:', error);
-            if (error.response) {
-                console.error('SendGrid error details:', error.response.body);
-            }
             return { success: false, error: error.message };
         }
     }
@@ -153,7 +167,7 @@ class EmailService {
     // Send bulk emails (with rate limiting)
     async sendBulkEmails(recipients, subject, templateName, commonData = {}) {
         const results = [];
-        const batchSize = 10; // SendGrid recommends batching
+        const batchSize = 10;
         
         for (let i = 0; i < recipients.length; i += batchSize) {
             const batch = recipients.slice(i, i + batchSize);

@@ -29,6 +29,21 @@ async function findByTreePaginated(treeId, limit = 20, offset = 0) {
     };
 }
 
+async function findByTreeAndEmail(treeId, email) {
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    if (!normalizedEmail) return null;
+
+    const result = await query(
+        `SELECT * FROM persons
+         WHERE family_tree_id = $1
+           AND LOWER(COALESCE(email, '')) = $2
+         ORDER BY created_at DESC
+         LIMIT 1`,
+        [treeId, normalizedEmail]
+    );
+    return result.rows[0] || null;
+}
+
 async function create(data) {
     const searchTerms = buildSearchTerms(data);
     const result = await query(
@@ -150,4 +165,4 @@ function buildSearchTerms(data) {
     return terms;
 }
 
-module.exports = { findById, findByTree, findByTreePaginated, create, update, remove, search, linkToUser, countByTree };
+module.exports = { findById, findByTree, findByTreePaginated, findByTreeAndEmail, create, update, remove, search, linkToUser, countByTree };

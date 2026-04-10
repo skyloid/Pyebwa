@@ -14,6 +14,8 @@ let appBootStarted = false;
 let authInitializationPromise = null;
 let logoutPromise = null;
 let dashboardRenderRetryTimer = null;
+let currentDiscoveryRequests = [];
+let discoveryNotificationRefreshTimer = null;
 
 window.familyMembers = familyMembers;
 window.currentUser = currentUser;
@@ -162,6 +164,149 @@ function refreshTreeSwitcherUI() {
 }
 
 window.refreshTreeSwitcherUI = refreshTreeSwitcherUI;
+
+function getTreeDiscoverySettings(tree) {
+    const settings = tree && typeof tree.settings === 'object' ? tree.settings : {};
+    const discovery = settings.discovery && typeof settings.discovery === 'object' ? settings.discovery : {};
+    return {
+        enabled: discovery.enabled !== false,
+        origin: {
+            country: discovery.origin?.country || '',
+            region: discovery.origin?.region || '',
+            city: discovery.origin?.city || '',
+            diaspora: discovery.origin?.diaspora || ''
+        },
+        blurb: discovery.blurb || ''
+    };
+}
+
+function fillDiscoverySettingsForm() {
+    const tree = getActiveFamilyTree();
+    const form = document.getElementById('discoverySettingsForm');
+    if (!tree || !form) {
+        return;
+    }
+
+    const discovery = getTreeDiscoverySettings(tree);
+    form.enabled.checked = discovery.enabled;
+    form.originCountry.value = discovery.origin.country;
+    form.originRegion.value = discovery.origin.region;
+    form.originCity.value = discovery.origin.city;
+    form.originDiaspora.value = discovery.origin.diaspora;
+    form.blurb.value = discovery.blurb;
+}
+
+function renderDiscoveryRequests(requests = []) {
+    const container = document.getElementById('discoveryRequestsList');
+    if (!container) {
+        return;
+    }
+
+    if (!requests.length) {
+        container.innerHTML = `<div class="tree-manager-empty">${t('noConnectionRequests') || 'No connection requests yet.'}</div>`;
+        return;
+    }
+
+    container.innerHTML = requests.map((request) => {
+        const createdAt = request.created_at
+            ? new Date(request.created_at).toLocaleDateString(window.currentLanguage || 'en')
+            : '';
+
+        return `
+            <div class="tree-manager-item">
+                <div class="tree-manager-item-main discovery-request-card">
+                    <div class="discovery-request-card-header">
+                        <h5>${request.requester_name}</h5>
+                        <span class="discovery-request-status">${request.status}</span>
+                    </div>
+                    <div class="discovery-request-meta">
+                        <span>${request.requester_email}</span>
+                        ${request.requester_origin ? `<span>${request.requester_origin}</span>` : ''}
+                        <span>${request.searched_surname}</span>
+                        ${createdAt ? `<span>${createdAt}</span>` : ''}
+                    </div>
+                    ${request.requester_message ? `<p class="discovery-request-message">${request.requester_message}</p>` : ''}
+                    <div class="discovery-request-actions">
+                        <button type="button" class="btn btn-secondary btn-sm discovery-request-action" data-request-id="${request.id}" data-status="reviewed">${t('markReviewed') || 'Mark Reviewed'}</button>
+                        <button type="button" class="btn btn-secondary btn-sm discovery-request-action" data-request-id="${request.id}" data-status="contacted">${t('markContacted') || 'Mark Contacted'}</button>
+                        <button type="button" class="btn btn-secondary btn-sm discovery-request-action" data-request-id="${request.id}" data-status="invited">${t('markInvited') || 'Mark Invited'}</button>
+                        <button type="button" class="btn btn-secondary btn-sm discovery-request-action" data-request-id="${request.id}" data-status="declined">${t('declineRequest') || 'Decline'}</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function getUnreadDiscoveryRequestCount(requests = []) {
+    return requests.filter((request) => request && request.status === 'new').length;
+}
+
+function updateDiscoveryNotificationBell(count = 0) {
+    const button = document.getElementById('discoveryNotificationsBtn');
+    const badge = document.getElementById('discoveryNotificationsBadge');
+    const tooltip = document.getElementById('discoveryNotificationsTooltip');
+    if (!button || !badge) {
+        return;
+    }
+
+    const normalizedCount = Math.max(0, Number(count) || 0);
+    const hasUnread = normalizedCount > 0;
+    button.classList.toggle('has-unread', hasUnread);
+    button.setAttribute('aria-label', `${normalizedCount} ${(t('connectionRequests') || 'Connection Requests')}`);
+    if (tooltip) {
+        tooltip.textContent = hasUnread
+            ? `${normalizedCount} ${(t('newConnectionRequests') || 'new connection requests')}`
+            : (t('connectionRequests') || 'Connection Requests');
+    }
+
+    if (hasUnread) {
+        badge.style.display = 'inline-flex';
+        badge.textContent = normalizedCount > 99 ? '99+' : String(normalizedCount);
+    } else {
+        badge.style.display = 'none';
+        badge.textContent = '0';
+    }
+}
+
+async function refreshDiscoveryNotifications() {
+    if (!window.PyebwaAPI || !Array.isArray(userFamilyTrees) || userFamilyTrees.length === 0) {
+        updateDiscoveryNotificationBell(0);
+        return;
+    }
+
+    try {
+        const requestLists = await Promise.all(
+            userFamilyTrees.map((tree) => PyebwaAPI.listDiscoveryRequests(tree.id).catch(() => []))
+        );
+
+        const unreadCount = requestLists.reduce((total, requests) => total + getUnreadDiscoveryRequestCount(requests), 0);
+        updateDiscoveryNotificationBell(unreadCount);
+    } catch (error) {
+        console.error('Error loading discovery notification count:', error);
+        updateDiscoveryNotificationBell(0);
+    }
+}
+
+async function refreshDiscoveryManager() {
+    fillDiscoverySettingsForm();
+
+    const activeTree = getActiveFamilyTree();
+    if (!activeTree?.id || !window.PyebwaAPI) {
+        renderDiscoveryRequests([]);
+        return;
+    }
+
+    try {
+        currentDiscoveryRequests = await PyebwaAPI.listDiscoveryRequests(activeTree.id);
+        renderDiscoveryRequests(currentDiscoveryRequests);
+        await refreshDiscoveryNotifications();
+    } catch (error) {
+        console.error('Error loading discovery requests:', error);
+        renderDiscoveryRequests([]);
+        await refreshDiscoveryNotifications();
+    }
+}
 
 function persistSharedLanguagePreference(lang) {
     const supportedLangs = ['en', 'fr', 'ht'];
@@ -363,6 +508,12 @@ async function initializeAuth() {
 
             try {
                 await initializeUserFamilyTree();
+                if (discoveryNotificationRefreshTimer) {
+                    clearInterval(discoveryNotificationRefreshTimer);
+                }
+                discoveryNotificationRefreshTimer = window.setInterval(() => {
+                    refreshDiscoveryNotifications();
+                }, 60000);
                 hideLoadingState();
                 const onboardingParams = new URLSearchParams(window.location.search);
                 const forceOnboarding = ['1', 'true', 'yes'].includes((onboardingParams.get('onboarding') || '').toLowerCase());
@@ -477,10 +628,13 @@ async function setActiveFamilyTree(treeId, options = {}) {
     }
 
     refreshTreeSwitcherUI();
+    fillDiscoverySettingsForm();
 
     if (reloadMembers) {
         await loadFamilyMembers();
     }
+
+    await refreshDiscoveryManager();
 
     if (!suppressToast && typeof window.showSuccess === 'function') {
         window.showSuccess(t('treeSwitched') || 'Family tree switched successfully.');
@@ -557,10 +711,21 @@ async function reloadUserFamilyTrees(options = {}) {
 }
 
 function openTreeManagerModal() {
+    openTreeManagerModalWithFocus(false);
+}
+
+function openTreeManagerModalWithFocus(focusRequests = false) {
     const modal = document.getElementById('treeManagerModal');
     if (!modal) return;
     refreshTreeSwitcherUI();
+    refreshDiscoveryManager();
     modal.classList.add('active');
+
+    if (focusRequests) {
+        requestAnimationFrame(() => {
+            document.getElementById('discoveryRequestsSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    }
 }
 
 // ==================== EVENT LISTENERS ====================
@@ -633,6 +798,14 @@ function initializeEventListeners() {
             e.preventDefault();
             document.querySelector('.user-menu')?.classList.remove('active');
             openTreeManagerModal();
+        });
+    }
+
+    const discoveryNotificationsBtn = document.getElementById('discoveryNotificationsBtn');
+    if (discoveryNotificationsBtn) {
+        discoveryNotificationsBtn.addEventListener('click', () => {
+            document.querySelector('.user-menu')?.classList.remove('active');
+            openTreeManagerModalWithFocus(true);
         });
     }
 
@@ -747,6 +920,98 @@ function initializeEventListeners() {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = `<span class="material-icons">add_circle</span><span>${t('createTree') || 'Create Tree'}</span>`;
                 }
+            }
+        });
+    }
+
+    const discoverySettingsForm = document.getElementById('discoverySettingsForm');
+    if (discoverySettingsForm) {
+        discoverySettingsForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const activeTree = getActiveFamilyTree();
+            if (!activeTree?.id) {
+                showError(t('treeLoadError') || 'Unable to load family trees right now.');
+                return;
+            }
+
+            const submitBtn = document.getElementById('saveDiscoverySettingsBtn');
+            const formData = new FormData(discoverySettingsForm);
+            const nextSettings = {
+                ...(activeTree.settings || {}),
+                discovery: {
+                    enabled: formData.get('enabled') === 'on',
+                    origin: {
+                        country: String(formData.get('originCountry') || '').trim(),
+                        region: String(formData.get('originRegion') || '').trim(),
+                        city: String(formData.get('originCity') || '').trim(),
+                        diaspora: String(formData.get('originDiaspora') || '').trim()
+                    },
+                    blurb: String(formData.get('blurb') || '').trim()
+                }
+            };
+
+            try {
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                }
+
+                const updatedTree = await PyebwaAPI.updateTree(activeTree.id, {
+                    settings: nextSettings
+                });
+
+                userFamilyTrees = userFamilyTrees.map((tree) => tree.id === updatedTree.id ? updatedTree : tree);
+                window.userFamilyTrees = userFamilyTrees;
+                refreshTreeSwitcherUI();
+                fillDiscoverySettingsForm();
+                showSuccess(t('discoverySettingsSaved') || 'Discovery settings saved.');
+            } catch (error) {
+                console.error('Error saving discovery settings:', error);
+                showError(error.message || (t('errorSaving') || 'Failed to save changes.'));
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                }
+            }
+        });
+    }
+
+    const discoveryRequestsList = document.getElementById('discoveryRequestsList');
+    if (discoveryRequestsList) {
+        discoveryRequestsList.addEventListener('click', async (event) => {
+            const button = event.target.closest('.discovery-request-action');
+            if (!button) {
+                return;
+            }
+
+            const activeTree = getActiveFamilyTree();
+            const requestId = button.getAttribute('data-request-id');
+            const status = button.getAttribute('data-status');
+            if (!activeTree?.id || !requestId || !status) {
+                return;
+            }
+
+            try {
+                button.disabled = true;
+                const response = await PyebwaAPI.updateDiscoveryRequest(activeTree.id, requestId, status);
+                const updated = response.request;
+                currentDiscoveryRequests = currentDiscoveryRequests.map((request) => request.id === updated.id ? updated : request);
+                renderDiscoveryRequests(currentDiscoveryRequests);
+                await refreshDiscoveryNotifications();
+                if (status === 'invited') {
+                    if (response.invitation?.emailSent) {
+                        showSuccess(t('invitationEmailSent') || 'Invitation email sent successfully.');
+                    } else {
+                        showError(t('invitationEmailFailed') || 'Invitation was created, but the email could not be sent.');
+                    }
+                } else {
+                    showSuccess(t('connectionRequestUpdated') || 'Connection request updated.');
+                }
+            } catch (error) {
+                console.error('Error updating discovery request:', error);
+                showError(error.message || (t('errorSaving') || 'Failed to save changes.'));
+            } finally {
+                button.disabled = false;
             }
         });
     }
@@ -1133,6 +1398,9 @@ async function updateFamilyMember(memberId, updateData) {
     if (memberIndex !== -1) {
         familyMembers[memberIndex] = { ...familyMembers[memberIndex], ...updateData };
         window.familyMembers = familyMembers;
+        document.dispatchEvent(new CustomEvent('memberUpdated', {
+            detail: { memberId, updateData, member: familyMembers[memberIndex] }
+        }));
     }
     if (window.pyebwaSearch && familyMembers[memberIndex]) {
         try { await window.pyebwaSearch.updateSearchIndex(familyMembers[memberIndex], userFamilyTreeId); } catch (e) { /* ignore */ }

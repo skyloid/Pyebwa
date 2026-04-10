@@ -33,7 +33,6 @@
   "author": "Pyebwa",
   "license": "MIT",
   "dependencies": {
-    "@sendgrid/mail": "^8.1.5",
     "@supabase/supabase-js": "^2.101.1",
     "archiver": "^5.3.2",
     "compression": "^1.7.4",

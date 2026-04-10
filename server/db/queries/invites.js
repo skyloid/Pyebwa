@@ -13,6 +13,23 @@ async function findByTree(treeId) {
     return result.rows;
 }
 
+async function findPendingByTreeAndEmail(treeId, email) {
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    if (!normalizedEmail) return null;
+
+    const result = await query(
+        `SELECT * FROM invites
+         WHERE tree_id = $1
+           AND LOWER(COALESCE(person_email, '')) = $2
+           AND status = 'pending'
+           AND expires_at > NOW()
+         ORDER BY created_at DESC
+         LIMIT 1`,
+        [treeId, normalizedEmail]
+    );
+    return result.rows[0] || null;
+}
+
 async function create(data) {
     const result = await query(
         `INSERT INTO invites (token, tree_id, person_id, person_name, person_email, created_by, expires_at, status)
@@ -51,4 +68,4 @@ async function isExpired(invite) {
     return new Date(invite.expires_at) < new Date();
 }
 
-module.exports = { findByToken, findByTree, create, accept, revoke, isExpired };
+module.exports = { findByToken, findByTree, findPendingByTreeAndEmail, create, accept, revoke, isExpired };

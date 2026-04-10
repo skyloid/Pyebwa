@@ -148,12 +148,12 @@ class SystemService {
             });
         }
 
-        // SendGrid
-        const sendGridKey = process.env.SENDGRID_API_KEY;
+        // Resend
+        const resendKey = process.env.RESEND_API_KEY;
         services.push({
-            name: 'SendGrid',
-            status: sendGridKey ? 'operational' : 'not_configured',
-            details: sendGridKey ? 'Email service configured' : 'API key not configured'
+            name: 'Resend',
+            status: resendKey ? 'operational' : 'not_configured',
+            details: resendKey ? 'Email service configured' : 'API key not configured'
         });
 
         return services;
@@ -309,7 +309,7 @@ class SystemService {
                 NODE_ENV: { value: process.env.NODE_ENV, sensitive: false, readonly: true },
                 PORT: { value: process.env.PORT, sensitive: false, readonly: true },
                 DATABASE_URL: { value: process.env.DATABASE_URL ? '••••••••' : 'Not set', sensitive: true, readonly: true },
-                SENDGRID_API_KEY: { value: process.env.SENDGRID_API_KEY ? '••••••••' : 'Not set', sensitive: true, readonly: false },
+                RESEND_API_KEY: { value: process.env.RESEND_API_KEY ? '••••••••' : 'Not set', sensitive: true, readonly: false },
                 SENDER_EMAIL: { value: process.env.SENDER_EMAIL, sensitive: false, readonly: false }
             };
 
