@@ -42,6 +42,11 @@ async function sendViaResend(to, subject, html, from) {
     return { success: true };
 }
 
+function formatTreeDisplayName(treeName) {
+    const normalized = String(treeName || '').trim().replace(/\s+/g, ' ');
+    return normalized || 'your family tree';
+}
+
 // Email service class
 class EmailService {
     constructor() {
@@ -104,12 +109,14 @@ class EmailService {
 
     // Send invite email
     async sendInviteEmail(to, inviteData) {
+        const treeDisplayName = formatTreeDisplayName(inviteData.familyName);
         const subject = inviteData.inviterName 
-            ? `${inviteData.inviterName} invited you to join the ${inviteData.familyName} family tree`
-            : `You're invited to join the ${inviteData.familyName} family tree`;
+            ? `${inviteData.inviterName} invited you to join ${treeDisplayName}`
+            : `You're invited to join ${treeDisplayName}`;
 
         return this.sendEmail(to, subject, 'invite', {
             ...inviteData,
+            treeDisplayName,
             currentYear: new Date().getFullYear()
         });
     }

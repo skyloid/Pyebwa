@@ -2,6 +2,21 @@
 (function() {
     'use strict';
 
+    function normalizeFamilyTreeTitle(rawFamilyName, fallbackFullName) {
+        const familyName = String(rawFamilyName || '').trim().replace(/\s+/g, ' ');
+        if (familyName) {
+            if (/\bfamily\b/i.test(familyName)) {
+                return familyName;
+            }
+            return `The ${familyName} Family`;
+        }
+
+        const normalizedFullName = String(fallbackFullName || '').trim().replace(/\s+/g, ' ');
+        const parts = normalizedFullName ? normalizedFullName.split(' ') : [];
+        const surname = parts.length > 1 ? parts[parts.length - 1] : (parts[0] || 'Family');
+        return `The ${surname} Family`;
+    }
+
     function getOnboardingStorageKey(type) {
         const userId = window.currentUser?.id || window.currentUser?.uid || window.currentUser?.email || 'anonymous';
         return `pyebwaOnboarding${type}:${userId}`;
@@ -888,7 +903,7 @@
                 }
 
                 await window.PyebwaAPI.updateTree(window.userFamilyTreeId, {
-                    name: this.onboardingData.familyName || `${this.onboardingData.fullName || 'Family'} Family Tree`,
+                    name: normalizeFamilyTreeTitle(this.onboardingData.familyName, this.onboardingData.fullName),
                     description: this.onboardingData.familyRegion
                         ? `Family region: ${this.onboardingData.familyRegion}`
                         : 'Created during onboarding'

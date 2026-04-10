@@ -38,6 +38,24 @@ function getMemberDisplayName(member) {
     return getMemberFullName(member);
 }
 
+function deriveFamilyTitleFromName(name) {
+    const normalized = String(name || '').trim().replace(/\s+/g, ' ');
+    if (!normalized) {
+        return 'My Family';
+    }
+
+    const parts = normalized.split(' ');
+    const surname = parts[parts.length - 1]
+        .replace(/^[^A-Za-zÀ-ÿ']+|[^A-Za-zÀ-ÿ'-]+$/g, '')
+        .trim();
+
+    if (!surname) {
+        return 'My Family';
+    }
+
+    return `The ${surname} Family`;
+}
+
 window.getMemberFullName = getMemberFullName;
 window.getMemberDisplayName = getMemberDisplayName;
 
@@ -588,7 +606,7 @@ async function initializeUserFamilyTree() {
             // Create a default family tree
             const displayName = currentUser.displayName || currentUser.email;
             const tree = await PyebwaAPI.createTree(
-                `${displayName}'s Family Tree`,
+                deriveFamilyTitleFromName(displayName),
                 'My family tree'
             );
             trees = [tree];
