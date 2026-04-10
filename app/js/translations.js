@@ -63,6 +63,21 @@ const translations = {
         
         // Family tree
         familyTree: "My Family Tree",
+        activeTree: "Active Tree",
+        manageFamilyTrees: "Manage Family Trees",
+        yourFamilyTrees: "Your Family Trees",
+        switchFamilyTreesHelp: "Switch between family branches or create a new tree.",
+        createFamilyTree: "Create Family Tree",
+        createTree: "Create Tree",
+        treeName: "Tree Name",
+        treeDescription: "Description",
+        treeDescriptionPlaceholder: "Optional description",
+        currentTree: "Current",
+        switchToTree: "Switch",
+        creatingTree: "Creating tree...",
+        treeCreated: "Family tree created successfully.",
+        treeSwitched: "Family tree switched successfully.",
+        treeLoadError: "Unable to load family trees right now.",
         familyNameFormat: "The {{name}} Family",
         addMember: "Add Member",
         addFamilyMember: "Add Family Member",
@@ -148,7 +163,7 @@ const translations = {
         familyTreeSummary: "Your family tree has",
         members: "members",
         acrossGenerations: "across",
-        generations: "generations",
+        generations: "Generations",
         totalMembers: "Total Members",
         males: "Males",
         females: "Females",
@@ -190,7 +205,7 @@ const translations = {
         genderDistribution: "Gender Distribution",
         ageDistribution: "Age Distribution",
         livingMembers: "Living Members",
-        avgLifespan: "Avg. Lifespan",
+        avgLifespan: "Average Lifespan",
         exportStats: "Export Stats",
         printReport: "Print Report",
         noRecentActivity: "No recent activity",
@@ -630,6 +645,21 @@ const translations = {
         
         // Family tree
         familyTree: "Mon Arbre Généalogique",
+        activeTree: "Arbre Actif",
+        manageFamilyTrees: "Gérer les Arbres Généalogiques",
+        yourFamilyTrees: "Vos Arbres Généalogiques",
+        switchFamilyTreesHelp: "Passez d'une branche familiale à l'autre ou créez un nouvel arbre.",
+        createFamilyTree: "Créer un Arbre Généalogique",
+        createTree: "Créer l'Arbre",
+        treeName: "Nom de l'Arbre",
+        treeDescription: "Description",
+        treeDescriptionPlaceholder: "Description facultative",
+        currentTree: "Actuel",
+        switchToTree: "Ouvrir",
+        creatingTree: "Création de l'arbre...",
+        treeCreated: "Arbre généalogique créé avec succès.",
+        treeSwitched: "Arbre généalogique changé avec succès.",
+        treeLoadError: "Impossible de charger les arbres généalogiques pour le moment.",
         familyNameFormat: "La Famille {{name}}",
         addMember: "Ajouter Membre",
         addFamilyMember: "Ajouter un Membre de la Famille",
@@ -979,6 +1009,21 @@ const translations = {
         
         // Family tree
         familyTree: "Pyebwa Fanmi Mwen",
+        activeTree: "Pyebwa Aktif",
+        manageFamilyTrees: "Jere Pyebwa Fanmi yo",
+        yourFamilyTrees: "Pyebwa Fanmi ou yo",
+        switchFamilyTreesHelp: "Chanje ant branch fanmi yo oswa kreye yon nouvo pyebwa.",
+        createFamilyTree: "Kreye yon Pyebwa Fanmi",
+        createTree: "Kreye Pyebwa a",
+        treeName: "Non Pyebwa a",
+        treeDescription: "Deskripsyon",
+        treeDescriptionPlaceholder: "Deskripsyon opsyonèl",
+        currentTree: "Aktif",
+        switchToTree: "Louvri",
+        creatingTree: "Kreyasyon pyebwa a...",
+        treeCreated: "Pyebwa fanmi an kreye avèk siksè.",
+        treeSwitched: "Pyebwa fanmi an chanje avèk siksè.",
+        treeLoadError: "Nou pa ka chaje pyebwa fanmi yo kounye a.",
         familyNameFormat: "Fanmi {{name}}",
         addMember: "Ajoute Manm",
         addFamilyMember: "Ajoute Manm Fanmi",
@@ -1407,6 +1452,10 @@ window.updateTranslations = function() {
         const key = element.getAttribute('data-i18n-placeholder');
         element.placeholder = t(key);
     });
+
+    if (typeof window.refreshTreeSwitcherUI === 'function') {
+        window.refreshTreeSwitcherUI();
+    }
 }
 
 // Change language

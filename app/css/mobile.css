@@ -83,6 +83,10 @@
     .header-left {
         gap: 16px;
     }
+
+    .header-right {
+        gap: 10px;
+    }
     
     .app-logo-img {
         width: 70px;
@@ -90,7 +94,7 @@
         position: relative;
         top: 4px;
     }
-    
+
     /* Mobile navigation header */
     .mobile-nav-header {
         display: flex;

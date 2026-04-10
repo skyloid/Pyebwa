@@ -24,6 +24,30 @@
                 display: block !important;
             }
         }
+
+        html.dark-mode-preload {
+            background: #0B1410;
+            color: #DAD7CD;
+        }
+
+        html.dark-mode-preload body {
+            background: #0B1410;
+            color: #DAD7CD;
+        }
+
+        html.dark-mode-preload #loadingView,
+        html.dark-mode-preload .view-container {
+            background: transparent;
+        }
+
+        html.dark-mode-preload .loading-spinner p {
+            color: #DAD7CD;
+        }
+
+        html.dark-mode-preload .loading-spinner .spinner {
+            border-color: #253A30;
+            border-top-color: #40916C;
+        }
     </style>
     
     <!-- Cross-domain auth scripts removed - using single-domain auth now -->
@@ -35,6 +59,16 @@
         window.__PYEBWA_VERSION_URL__ = '/app/version.json';
         window.__PYEBWA_BUILD_ID__ = null;
         window.__PYEBWA_VERSION__ = null;
+        window.__PYEBWA_INITIAL_THEME__ = (function() {
+            try {
+                return localStorage.getItem('theme') === 'dark' ? 'dark' : 'light';
+            } catch (error) {
+                return 'light';
+            }
+        })();
+        if (window.__PYEBWA_INITIAL_THEME__ === 'dark') {
+            document.documentElement.classList.add('dark-mode-preload');
+        }
         window.__PYEBWA_INITIAL_LANG__ = (function() {
             const supportedLangs = ['en', 'fr', 'ht'];
             const params = new URLSearchParams(window.location.search);
@@ -204,6 +238,13 @@
     </script>
 </head>
 <body>
+    <script>
+        if (window.__PYEBWA_INITIAL_THEME__ === 'dark') {
+            document.body.classList.add('dark-mode');
+            document.body.style.backgroundColor = '#0B1410';
+            document.body.style.color = '#DAD7CD';
+        }
+    </script>
     <!-- App Container -->
     <div id="app">
         <!-- Header Navigation -->
@@ -252,6 +293,10 @@
                         <div class="user-dropdown">
                             <div class="user-dropdown-inner">
                                 <a href="#" id="profileLink" data-i18n="profile">Pwofil</a>
+                                <a href="#" id="manageTreesLink">
+                                    <span class="material-icons" style="font-size: 16px; margin-right: 4px;">account_tree</span>
+                                    <span data-i18n="manageFamilyTrees">Manage Family Trees</span>
+                                </a>
                                 <a href="#" id="settingsLink" data-i18n="settings">Paramèt</a>
                                 <a href="/app/admin/" id="adminLink" style="display:none;">
                                     <span class="material-icons" style="font-size: 16px; margin-right: 4px;">admin_panel_settings</span>
@@ -317,10 +362,25 @@
             </div>
             <script>
                 (function() {
+                    const theme = window.__PYEBWA_INITIAL_THEME__ || 'light';
+                    const loadingView = document.getElementById('loadingView');
+                    const spinner = loadingView?.querySelector('.spinner');
                     const loadingMessage = document.querySelector('#loadingView [data-i18n="loading"]');
                     const lang = window.__PYEBWA_INITIAL_LANG__ || 'en';
+
+                    if (theme === 'dark' && loadingView) {
+                        loadingView.style.background = 'transparent';
+                        if (spinner) {
+                            spinner.style.borderColor = '#253A30';
+                            spinner.style.borderTopColor = '#40916C';
+                        }
+                    }
+
                     if (loadingMessage) {
                         loadingMessage.textContent = window.__PYEBWA_INITIAL_TEXT__?.[lang]?.loading || 'Loading...';
+                        if (theme === 'dark') {
+                            loadingMessage.style.color = '#DAD7CD';
+                        }
                     }
                 })();
             </script>
@@ -482,12 +542,51 @@
                 </div>
             </div>
         </div>
+
+        <div class="modal" id="treeManagerModal">
+            <div class="modal-content tree-manager-modal-content">
+                <div class="modal-header">
+                    <h3 data-i18n="manageFamilyTrees">Manage Family Trees</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="tree-manager-body">
+                    <div class="tree-manager-section">
+                        <div class="tree-manager-section-header">
+                            <h4 data-i18n="yourFamilyTrees">Your Family Trees</h4>
+                            <p data-i18n="switchFamilyTreesHelp">Switch between family branches or create a new tree.</p>
+                        </div>
+                        <div id="treeManagerList" class="tree-manager-list"></div>
+                    </div>
+                    <div class="tree-manager-section">
+                        <div class="tree-manager-section-header">
+                            <h4 data-i18n="createFamilyTree">Create Family Tree</h4>
+                        </div>
+                        <form id="createTreeForm" class="tree-manager-form">
+                            <div class="form-group">
+                                <label for="newTreeName" data-i18n="treeName">Tree Name</label>
+                                <input type="text" id="newTreeName" name="name" required maxlength="120">
+                            </div>
+                            <div class="form-group">
+                                <label for="newTreeDescription" data-i18n="treeDescription">Description</label>
+                                <textarea id="newTreeDescription" name="description" rows="3" data-i18n-placeholder="treeDescriptionPlaceholder" placeholder="Optional description"></textarea>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary" id="createTreeSubmitBtn">
+                                    <span class="material-icons">add_circle</span>
+                                    <span data-i18n="createTree">Create Tree</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- Footer -->
     <footer class="app-footer">
         <div class="footer-container">
-            <p>&copy; 2026 Pyebwa version <span data-build-version>1.0.85</span> - <span data-i18n="poweredBy">Powered by</span> <a class="footer-company-link" href="https://humanlevel.ai" target="_blank" rel="noopener noreferrer" data-i18n="humanLevelTech">Technologies Humanitaires Inc.</a></p>
+            <p>&copy; 2026 Pyebwa version <span data-build-version>1.1.98</span> - <span data-i18n="poweredBy">Powered by</span> <a class="footer-company-link" href="https://humanlevel.ai" target="_blank" rel="noopener noreferrer" data-i18n="humanLevelTech">Technologies Humanitaires Inc.</a></p>
         </div>
     </footer>
 

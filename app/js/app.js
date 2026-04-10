@@ -7,6 +7,7 @@ if (window.preventRedirect || window.isSignupPage || sessionStorage.getItem('onS
 
 let currentUser = null;
 let userFamilyTreeId = null;
+let userFamilyTrees = [];
 let familyMembers = [];
 let editingMemberId = null;
 let appBootStarted = false;
@@ -17,6 +18,7 @@ let dashboardRenderRetryTimer = null;
 window.familyMembers = familyMembers;
 window.currentUser = currentUser;
 window.userFamilyTreeId = null;
+window.userFamilyTrees = [];
 window.editingMemberId = null;
 
 const log = window.pyebwaLog || console.log;
@@ -87,6 +89,80 @@ function getPreferredLanguage() {
     return candidates.find(lang => supportedLangs.includes(lang)) || 'en';
 }
 
+function getFamilyTreeStorageKey() {
+    const userId = currentUser?.id || currentUser?.uid || currentUser?.user?.id || currentUser?.email || 'anonymous';
+    return `pyebwaActiveTree:${userId}`;
+}
+
+function getPersistedSelectedFamilyTreeId() {
+    try {
+        return localStorage.getItem(getFamilyTreeStorageKey());
+    } catch (error) {
+        return null;
+    }
+}
+
+function persistSelectedFamilyTreeId(treeId) {
+    try {
+        if (!treeId) {
+            localStorage.removeItem(getFamilyTreeStorageKey());
+            return;
+        }
+        localStorage.setItem(getFamilyTreeStorageKey(), treeId);
+    } catch (error) {
+        console.warn('Unable to persist selected family tree:', error);
+    }
+}
+
+function getActiveFamilyTree() {
+    return userFamilyTrees.find(tree => tree.id === userFamilyTreeId) || userFamilyTrees[0] || null;
+}
+
+function truncateTreeName(name) {
+    if (!name) return t('familyTree') || 'Family Tree';
+    return name.length > 32 ? `${name.slice(0, 29)}...` : name;
+}
+
+function refreshTreeSwitcherUI() {
+    const treeManagerList = document.getElementById('treeManagerList');
+    if (!treeManagerList) {
+        return;
+    }
+
+    if (!userFamilyTrees.length) {
+        treeManagerList.innerHTML = `<div class="tree-manager-empty">${t('treeLoadError') || 'Unable to load family trees right now.'}</div>`;
+        return;
+    }
+
+    treeManagerList.innerHTML = userFamilyTrees.map(tree => {
+        const isActive = tree.id === userFamilyTreeId;
+        const memberCount = typeof tree.member_count === 'number'
+            ? `${tree.member_count} ${(t('members') || 'members').toLowerCase()}`
+            : null;
+        return `
+            <div class="tree-manager-item ${isActive ? 'is-active' : ''}" data-tree-id="${tree.id}">
+                <div class="tree-manager-item-main">
+                    <div class="tree-manager-item-name">${tree.name || (t('familyTree') || 'Family Tree')}</div>
+                    <div class="tree-manager-item-meta">
+                        ${isActive ? `<span class="tree-manager-badge">${t('currentTree') || 'Current'}</span>` : ''}
+                        ${memberCount ? `<span>${memberCount}</span>` : ''}
+                    </div>
+                    ${tree.description ? `<div class="tree-manager-item-description">${tree.description}</div>` : ''}
+                </div>
+                <div class="tree-manager-item-actions">
+                    ${isActive ? '' : `
+                        <button type="button" class="btn btn-secondary btn-sm tree-switch-action" data-tree-id="${tree.id}">
+                            ${t('switchToTree') || 'Switch'}
+                        </button>
+                    `}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+window.refreshTreeSwitcherUI = refreshTreeSwitcherUI;
+
 function persistSharedLanguagePreference(lang) {
     const supportedLangs = ['en', 'fr', 'ht'];
     if (!supportedLangs.includes(lang)) {
@@ -149,6 +225,15 @@ async function waitForSessionToClear(timeoutMs = 4000) {
         }
         await new Promise(resolve => setTimeout(resolve, 150));
     }
+}
+
+function withTimeout(promise, timeoutMs, timeoutLabel) {
+    return Promise.race([
+        promise,
+        new Promise((_, reject) => {
+            setTimeout(() => reject(new Error(timeoutLabel || 'Operation timed out')), timeoutMs);
+        })
+    ]);
 }
 
 function updateFooterVersionLabel() {
@@ -346,28 +431,59 @@ async function checkAdminStatus(user) {
 
 async function initializeUserFamilyTree() {
     try {
-        // Get user's trees via API
-        const trees = await PyebwaAPI.getTrees();
+        let trees = await PyebwaAPI.getTrees();
 
-        if (trees && trees.length > 0) {
-            userFamilyTreeId = trees[0].id;
-        } else {
+        if (!trees || trees.length === 0) {
             // Create a default family tree
             const displayName = currentUser.displayName || currentUser.email;
             const tree = await PyebwaAPI.createTree(
                 `${displayName}'s Family Tree`,
                 'My family tree'
             );
-            userFamilyTreeId = tree.id;
+            trees = [tree];
         }
 
-        window.userFamilyTreeId = userFamilyTreeId;
-        window.currentFamilyTreeId = userFamilyTreeId;
-        await loadFamilyMembers();
+        userFamilyTrees = trees;
+        window.userFamilyTrees = userFamilyTrees;
+
+        const persistedTreeId = getPersistedSelectedFamilyTreeId();
+        const initialTreeId = userFamilyTrees.some(tree => tree.id === persistedTreeId)
+            ? persistedTreeId
+            : userFamilyTrees[0].id;
+
+        await setActiveFamilyTree(initialTreeId, { persist: true, reloadMembers: true, suppressToast: true });
     } catch (error) {
         console.error('Error initializing family tree:', error);
         userFamilyTreeId = null;
         window.userFamilyTreeId = null;
+        userFamilyTrees = [];
+        window.userFamilyTrees = [];
+    }
+}
+
+async function setActiveFamilyTree(treeId, options = {}) {
+    const { persist = true, reloadMembers = true, suppressToast = false } = options;
+    const nextTree = userFamilyTrees.find(tree => tree.id === treeId);
+    if (!nextTree) {
+        throw new Error('Selected family tree not found');
+    }
+
+    userFamilyTreeId = nextTree.id;
+    window.userFamilyTreeId = userFamilyTreeId;
+    window.currentFamilyTreeId = userFamilyTreeId;
+
+    if (persist) {
+        persistSelectedFamilyTreeId(userFamilyTreeId);
+    }
+
+    refreshTreeSwitcherUI();
+
+    if (reloadMembers) {
+        await loadFamilyMembers();
+    }
+
+    if (!suppressToast && typeof window.showSuccess === 'function') {
+        window.showSuccess(t('treeSwitched') || 'Family tree switched successfully.');
     }
 }
 
@@ -393,6 +509,12 @@ async function loadFamilyMembers() {
             photoUrl: p.photo_url || p.photoUrl || (normalizedPhotos.length > 0 ? (normalizedPhotos.find(ph => ph.isProfile) || normalizedPhotos[0]).url : null),
             photos: normalizedPhotos,
             relationships: p.relationships || [],
+            events: p.events || [],
+            stories: p.stories || [],
+            documents: p.documents || [],
+            videoMessages: p.video_messages || p.videoMessages || [],
+            relatedStories: p.related_stories || p.relatedStories || [],
+            privacy: p.privacy || {},
             relationship: p.relationship || ((p.relationships && p.relationships[0]) ? p.relationships[0].type : null),
             relatedTo: p.relatedTo || ((p.relationships && p.relationships[0]) ? p.relationships[0].personId : null),
             phone: p.phone || null,
@@ -404,12 +526,41 @@ async function loadFamilyMembers() {
         window.familyMembers = familyMembers;
         window.allFamilyMembers = [...familyMembers];
         window.pyebwaRelationshipEngine?.invalidate();
+        refreshTreeSwitcherUI();
 
         const activeView = document.querySelector('.nav-item.active')?.getAttribute('data-view') || 'dashboard';
         showView(activeView);
     } catch (error) {
         console.error('Error loading family members:', error);
     }
+}
+
+async function reloadUserFamilyTrees(options = {}) {
+    const { preserveSelection = true } = options;
+    const trees = await PyebwaAPI.getTrees();
+    userFamilyTrees = trees || [];
+    window.userFamilyTrees = userFamilyTrees;
+
+    if (!userFamilyTrees.length) {
+        userFamilyTreeId = null;
+        window.userFamilyTreeId = null;
+        refreshTreeSwitcherUI();
+        return;
+    }
+
+    const preferredTreeId = preserveSelection ? (userFamilyTreeId || getPersistedSelectedFamilyTreeId()) : null;
+    const nextTreeId = userFamilyTrees.some(tree => tree.id === preferredTreeId)
+        ? preferredTreeId
+        : userFamilyTrees[0].id;
+
+    await setActiveFamilyTree(nextTreeId, { persist: true, reloadMembers: true, suppressToast: true });
+}
+
+function openTreeManagerModal() {
+    const modal = document.getElementById('treeManagerModal');
+    if (!modal) return;
+    refreshTreeSwitcherUI();
+    modal.classList.add('active');
 }
 
 // ==================== EVENT LISTENERS ====================
@@ -476,6 +627,15 @@ function initializeEventListeners() {
         });
     }
 
+    const manageTreesLink = document.getElementById('manageTreesLink');
+    if (manageTreesLink) {
+        manageTreesLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelector('.user-menu')?.classList.remove('active');
+            openTreeManagerModal();
+        });
+    }
+
     document.querySelectorAll('.settings-lang-btn').forEach((btn) => {
         btn.addEventListener('click', () => {
             const lang = btn.getAttribute('data-lang');
@@ -528,6 +688,68 @@ function initializeEventListeners() {
             if (e.target === modal) modal.classList.remove('active');
         });
     });
+
+    const treeManagerList = document.getElementById('treeManagerList');
+    if (treeManagerList) {
+        treeManagerList.addEventListener('click', async (event) => {
+            const switchBtn = event.target.closest('.tree-switch-action');
+            if (!switchBtn) return;
+
+            const { treeId } = switchBtn.dataset;
+            if (!treeId || treeId === userFamilyTreeId) return;
+
+            try {
+                switchBtn.disabled = true;
+                await setActiveFamilyTree(treeId);
+                document.getElementById('treeManagerModal')?.classList.remove('active');
+            } catch (error) {
+                console.error('Error switching family tree:', error);
+                showError(t('treeLoadError') || 'Unable to load family trees right now.');
+            } finally {
+                switchBtn.disabled = false;
+            }
+        });
+    }
+
+    const createTreeForm = document.getElementById('createTreeForm');
+    if (createTreeForm) {
+        createTreeForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const submitBtn = document.getElementById('createTreeSubmitBtn');
+            const formData = new FormData(createTreeForm);
+            const name = String(formData.get('name') || '').trim();
+            const description = String(formData.get('description') || '').trim();
+
+            if (!name) {
+                showError(t('treeName') || 'Tree Name');
+                return;
+            }
+
+            try {
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = `<span class="material-icons">hourglass_top</span><span>${t('creatingTree') || 'Creating tree...'}</span>`;
+                }
+
+                const createdTree = await PyebwaAPI.createTree(name, description);
+                userFamilyTrees = [createdTree, ...userFamilyTrees];
+                window.userFamilyTrees = userFamilyTrees;
+                createTreeForm.reset();
+                await setActiveFamilyTree(createdTree.id, { persist: true, reloadMembers: true, suppressToast: true });
+                refreshTreeSwitcherUI();
+                showSuccess(t('treeCreated') || 'Family tree created successfully.');
+            } catch (error) {
+                console.error('Error creating tree:', error);
+                showError(error.message || (t('treeLoadError') || 'Unable to load family trees right now.'));
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = `<span class="material-icons">add_circle</span><span>${t('createTree') || 'Create Tree'}</span>`;
+                }
+            }
+        });
+    }
 
     // Add member form
     const addMemberForm = document.getElementById('addMemberForm');
@@ -888,7 +1110,7 @@ async function handleAddMember(e) {
     } catch (error) {
         console.error('Error adding member:', error);
         if (error.code === 'permission-denied') {
-            showError('Permission denied. Please check Firestore rules.');
+            showError('Permission denied. Please check your account permissions.');
         } else if (!userFamilyTreeId) {
             showError('No family tree found. Please refresh the page.');
         } else {
@@ -939,18 +1161,40 @@ async function logout() {
     }
 
     logoutPromise = (async () => {
+    const logoutMarker = Date.now().toString();
+    const logoutLang = window.currentLanguage || getPreferredLanguage();
+    const logoutDestination = `https://pyebwa.com/?logged_out=1&lang=${encodeURIComponent(logoutLang)}`;
+
+    const finalizeLogoutRedirect = () => {
+        persistSharedLanguagePreference(logoutLang);
+        try {
+            sessionStorage.clear();
+        } catch (error) {
+            console.warn('Unable to clear sessionStorage during logout:', error);
+        }
+        sessionStorage.setItem('pyebwaLoggedOutAt', logoutMarker);
+        localStorage.setItem('pyebwaLoggedOutAt', logoutMarker);
+        window.location.replace(logoutDestination);
+    };
+
     try {
         showLoadingState('Signing out...');
-        const logoutMarker = Date.now().toString();
-        const logoutLang = window.currentLanguage || getPreferredLanguage();
         persistSharedLanguagePreference(logoutLang);
         sessionStorage.setItem('pyebwaLoggedOutAt', logoutMarker);
         localStorage.setItem('pyebwaLoggedOutAt', logoutMarker);
-        await PyebwaAPI.logout();
-        await waitForSessionToClear();
-        sessionStorage.clear();
-        sessionStorage.setItem('pyebwaLoggedOutAt', logoutMarker);
-        window.location.replace(`https://pyebwa.com/?logged_out=1&lang=${encodeURIComponent(logoutLang)}`);
+        try {
+            await withTimeout(PyebwaAPI.logout(), 5000, 'Logout timed out');
+        } catch (error) {
+            console.warn('Proceeding with logout redirect after sign-out issue:', error);
+        }
+
+        try {
+            await withTimeout(waitForSessionToClear(), 3000, 'Session clear timed out');
+        } catch (error) {
+            console.warn('Proceeding with logout redirect before session fully cleared:', error);
+        }
+
+        finalizeLogoutRedirect();
     } catch (error) {
         console.error('Logout error:', error);
         hideLoadingState();

@@ -2,13 +2,6 @@
 (function() {
     'use strict';
     
-    // Load social media scripts if not already loaded
-    if (!window.socialConnect) {
-        const socialConnectScript = document.createElement('script');
-        socialConnectScript.src = '/app/js/social-connect.js';
-        document.head.appendChild(socialConnectScript);
-    }
-    
     const MemberProfile = {
         // Current member being viewed
         currentMember: null,
@@ -340,6 +333,9 @@
         // Load overview tab
         async loadOverview(container) {
             const member = this.currentMember;
+            const fullName = window.getMemberFullName
+                ? window.getMemberFullName(member)
+                : `${member.firstName || ''} ${member.lastName || ''}`.trim();
             
             container.innerHTML = `
                 <div class="content-section">
@@ -1320,9 +1316,7 @@
                     window.showLoading(t('generatingInvite') || 'Generating invite link...');
                 }
                 
-                // Get current user
-                const user = firebase.auth().currentUser;
-                if (!user) {
+                if (!window.currentUser) {
                     throw new Error('User not authenticated');
                 }
                 
@@ -1343,41 +1337,13 @@
                              window.userFamilyTreeId;
                 }
                 
-                // As last resort, try to get user's default tree
-                if (!treeId) {
-                    const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
-                    if (userDoc.exists) {
-                        const userData = userDoc.data();
-                        treeId = userData.familyTreeId || userData.lastTreeAccessed || (userData.familyTrees && userData.familyTrees[0]);
-                    }
-                }
-                
                 console.log('Final tree ID for invite:', treeId);
                 
                 if (!treeId) {
                     throw new Error('Could not determine family tree ID');
                 }
                 
-                // Generate invite link via API
-                const idToken = await user.getIdToken();
-                const response = await fetch('/api/invites/generate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${idToken}`
-                    },
-                    body: JSON.stringify({
-                        treeId: treeId,
-                        personId: this.currentMember.id
-                    })
-                });
-                
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || 'Failed to generate invite');
-                }
-                
-                const result = await response.json();
+                const result = await PyebwaAPI.generateInvite(treeId, this.currentMember.id);
                 
                 // Hide loading
                 if (window.hideLoading) {
@@ -1818,7 +1784,7 @@
             return titles[type] || '';
         },
         
-        // Save event to Firebase
+        // Save event
         async saveEvent(eventData, eventId = null) {
             try {
                 if (!this.currentMember.events) {
@@ -1837,7 +1803,7 @@
                     this.currentMember.events.push(eventData);
                 }
                 
-                // Update member in Firebase
+                // Update member
                 await window.updateFamilyMember(this.currentMember.id, {
                     events: this.currentMember.events
                 });
@@ -2326,7 +2292,7 @@
                             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                             const duration = Math.floor((Date.now() - recordingStartTime) / 1000);
                             
-                            // Upload audio to Firebase Storage
+                            // Upload audio to storage
                             const audioUrl = await this.uploadAudioBlob(audioBlob);
                             if (audioUrl) {
                                 audioUrlInput.value = audioUrl;
@@ -2540,23 +2506,18 @@
             form.querySelector('input[name="tags"]').value = tagsMap[template.id] || '';
         },
         
-        // Save story to Firebase
-        // Upload audio blob to Firebase Storage
+        // Save story
+        // Upload audio blob to storage
         async uploadAudioBlob(audioBlob) {
             try {
-                const storage = firebase.storage();
-                const timestamp = Date.now();
-                const fileName = `audio_stories/${window.userFamilyTreeId}/${this.currentMember.id}/story_${timestamp}.webm`;
-                const storageRef = storage.ref(fileName);
-                
-                // Upload the blob
-                const snapshot = await storageRef.put(audioBlob, {
-                    contentType: 'audio/webm'
+                const file = new File([audioBlob], `story_${Date.now()}.webm`, {
+                    type: audioBlob.type || 'audio/webm'
                 });
-                
-                // Get the download URL
-                const downloadUrl = await snapshot.ref.getDownloadURL();
-                return downloadUrl;
+                return await PyebwaAPI.uploadFile(file, {
+                    treeId: window.userFamilyTreeId,
+                    personId: this.currentMember.id,
+                    type: 'audio-stories'
+                });
             } catch (error) {
                 console.error('Error uploading audio:', error);
                 alert(t('audioUploadError') || 'Failed to upload audio. Please try again.');
@@ -2585,7 +2546,7 @@
                     this.currentMember.stories.push(storyData);
                 }
                 
-                // Update member in Firebase
+                // Update member
                 await window.updateFamilyMember(this.currentMember.id, {
                     stories: this.currentMember.stories
                 });
@@ -2618,7 +2579,7 @@
                                 relatedMember.relatedStories.push(storyReference);
                             }
                             
-                            // Update the related member in Firebase
+                            // Update the related member
                             await window.updateFamilyMember(memberId, {
                                 relatedStories: relatedMember.relatedStories
                             });

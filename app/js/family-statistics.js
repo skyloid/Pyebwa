@@ -301,7 +301,7 @@
             });
         },
         
-        // Get family members from Firebase
+        // Get family members from current app state
         async getFamilyMembers() {
             try {
                 if (Array.isArray(window.familyMembers) && window.familyMembers.length > 0) {
@@ -348,7 +348,8 @@
                     '51-65': 0,
                     '65+': 0
                 },
-                lifespans: []
+                lifespans: [],
+                livingAges: []
             };
             
             const today = new Date();
@@ -378,6 +379,9 @@
                     if (member.birthDate) {
                         const birth = new Date(member.birthDate);
                         const age = Math.floor((today - birth) / (365.25 * 24 * 60 * 60 * 1000));
+                        if (age >= 0 && age < 150) {
+                            stats.livingAges.push(age);
+                        }
                         
                         // Age groups
                         if (age <= 18) stats.ageGroups['0-18']++;
@@ -388,12 +392,6 @@
                     }
                 }
                 
-                // Track generation (simplified - based on birth year)
-                if (member.birthDate) {
-                    const birthYear = new Date(member.birthDate).getFullYear();
-                    const generation = Math.floor(birthYear / 25);
-                    stats.generations.add(generation);
-                }
             });
             
             // Calculate average lifespan
@@ -401,12 +399,92 @@
                 stats.avgLifespan = Math.round(
                     stats.lifespans.reduce((a, b) => a + b, 0) / stats.lifespans.length
                 );
+            } else if (stats.livingAges.length > 0) {
+                stats.avgLifespan = Math.round(
+                    stats.livingAges.reduce((a, b) => a + b, 0) / stats.livingAges.length
+                );
             }
             
-            // Calculate number of generations
-            stats.generationCount = stats.generations.size;
+            // Calculate number of generations from the actual parent/child graph
+            stats.generationCount = this.calculateGenerationCount(members);
             
             return stats;
+        },
+
+        getRelationshipsForMember(member) {
+            const relationships = Array.isArray(member?.relationships) ? [...member.relationships] : [];
+
+            if (member?.relationship && member?.relatedTo) {
+                const hasFlatRelationship = relationships.some(rel =>
+                    rel.type === member.relationship && rel.personId === member.relatedTo
+                );
+                if (!hasFlatRelationship) {
+                    relationships.push({ type: member.relationship, personId: member.relatedTo });
+                }
+            }
+
+            return relationships;
+        },
+
+        calculateGenerationCount(members) {
+            if (!Array.isArray(members) || members.length === 0) {
+                return 0;
+            }
+
+            const nodes = new Map();
+            members.forEach(member => {
+                nodes.set(member.id, {
+                    parents: new Set(),
+                    children: new Set()
+                });
+            });
+
+            members.forEach(member => {
+                const currentNode = nodes.get(member.id);
+                if (!currentNode) return;
+
+                this.getRelationshipsForMember(member).forEach(rel => {
+                    if (!rel?.personId || rel.isInLaw) return;
+                    const targetNode = nodes.get(rel.personId);
+                    if (!targetNode) return;
+
+                    if (rel.type === 'child') {
+                        currentNode.parents.add(rel.personId);
+                        targetNode.children.add(member.id);
+                    } else if (rel.type === 'parent') {
+                        currentNode.children.add(rel.personId);
+                        targetNode.parents.add(member.id);
+                    }
+                });
+            });
+
+            const roots = members
+                .filter(member => (nodes.get(member.id)?.parents.size || 0) === 0)
+                .map(member => member.id);
+
+            const startNodes = roots.length > 0 ? roots : members.map(member => member.id);
+            const memo = new Map();
+
+            const getDepth = (memberId, stack = new Set()) => {
+                if (memo.has(memberId)) {
+                    return memo.get(memberId);
+                }
+
+                if (stack.has(memberId)) {
+                    return 1;
+                }
+
+                stack.add(memberId);
+                const node = nodes.get(memberId);
+                const childDepths = node ? Array.from(node.children).map(childId => getDepth(childId, stack)) : [];
+                stack.delete(memberId);
+
+                const depth = 1 + (childDepths.length > 0 ? Math.max(...childDepths) : 0);
+                memo.set(memberId, depth);
+                return depth;
+            };
+
+            return Math.max(...startNodes.map(memberId => getDepth(memberId)), 1);
         },
         
         // Render statistics to UI
