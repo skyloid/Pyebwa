@@ -1077,42 +1077,39 @@ body.dark-mode select {
 #themeToggle {
     position: static;
     z-index: auto;
-    width: 44px;
-    height: 44px;
-    border-radius: 999px;
-    background: #ffffff;
-    border: 2px solid #e0e0e0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--gray-100);
+    border: 1px solid var(--gray-200);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0;
-    box-shadow: var(--shadow-sm);
-    transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-    user-select: none;
+    transition: all 0.2s;
+    color: var(--gray-600);
     flex-shrink: 0;
 }
 
 #themeToggle:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    background: var(--gray-200);
+    color: var(--gray-800);
 }
 
 #themeToggle .material-icons {
-    font-size: 24px;
-    color: #374151;
-    transition: color 0.3s ease;
+    font-size: 20px;
     pointer-events: none;
 }
 
 body.dark-mode #themeToggle {
-    background: #2a2a2a;
-    border-color: #444;
+    background: var(--gray-100);
+    border-color: var(--gray-200);
+    color: var(--accent-yellow);
 }
 
-body.dark-mode #themeToggle .material-icons {
-    color: #FFC72C;
+body.dark-mode #themeToggle:hover {
+    background: var(--gray-200);
 }
 
 /* End of main styles - Mobile styles moved to mobile.css */
