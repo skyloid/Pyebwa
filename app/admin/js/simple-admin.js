@@ -212,6 +212,9 @@
         auditPageSize: 20,
         auditLogs: [],
         auditTotal: 0,
+        auditReport: null,
+        auditTickets: [],
+        auditAssets: {},
         allTrees: [],
         filteredTrees: [],
         treePage: 1,
@@ -351,6 +354,11 @@
             }
         }
         return 'Just now';
+    }
+
+    function severityClass(value) {
+        const level = String(value || 'medium').trim().toLowerCase();
+        return `severity-${level}`;
     }
 
     function showAdminApp() {
@@ -1871,6 +1879,7 @@
         } else if (view === 'trees') {
             loadTrees().catch((error) => showError(error.message));
         } else if (view === 'audit') {
+            loadAuditReport().catch((error) => showError(error.message));
             loadAuditLogs().catch((error) => showError(error.message));
         } else if (view === 'backup') {
             loadBackupData().catch((error) => showError(error.message));
@@ -2030,7 +2039,65 @@
         document.getElementById('refreshAuditLogs')?.addEventListener('click', () => {
             loadAuditLogs().catch((error) => showError(error.message));
         });
+        document.getElementById('refreshAuditReport')?.addEventListener('click', () => {
+            loadAuditReport().catch((error) => showError(error.message));
+        });
+        document.getElementById('downloadAuditMarkdown')?.addEventListener('click', async () => {
+            try {
+                await downloadAuditAsset('markdown');
+            } catch (error) {
+                showError(error.message);
+            }
+        });
+        document.getElementById('downloadAuditHtml')?.addEventListener('click', async () => {
+            try {
+                await downloadAuditAsset('html');
+            } catch (error) {
+                showError(error.message);
+            }
+        });
+        document.getElementById('downloadAuditPdf')?.addEventListener('click', async () => {
+            try {
+                await downloadAuditAsset('pdf');
+            } catch (error) {
+                showError(error.message);
+            }
+        });
         document.getElementById('exportAuditLogs')?.addEventListener('click', exportAuditLogs);
+        document.getElementById('createManualAuditTicket')?.addEventListener('click', async () => {
+            try {
+                await createManualAuditTicket();
+            } catch (error) {
+                showError(error.message);
+            }
+        });
+        document.getElementById('auditFindingsList')?.addEventListener('click', async (event) => {
+            const button = event.target.closest('.audit-create-ticket-btn');
+            if (!button) return;
+            button.disabled = true;
+            try {
+                await createAuditTicketFromAction(
+                    button.getAttribute('data-finding-id'),
+                    button.getAttribute('data-action-id')
+                );
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                button.disabled = false;
+            }
+        });
+        document.getElementById('auditTicketsTableBody')?.addEventListener('click', async (event) => {
+            const button = event.target.closest('.audit-save-ticket-btn');
+            if (!button) return;
+            button.disabled = true;
+            try {
+                await saveAuditTicket(button.getAttribute('data-ticket-id'));
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                button.disabled = false;
+            }
+        });
         document.getElementById('auditSearch')?.addEventListener('input', () => {
             state.auditPage = 1;
             loadAuditLogs().catch((error) => showError(error.message));
@@ -2452,6 +2519,230 @@
         document.getElementById('auditNextPage').disabled = endIndex >= state.auditTotal;
     }
 
+    function renderAuditReport() {
+        const report = state.auditReport;
+        const summaryEl = document.getElementById('auditExecutiveSummary');
+        const topRisksEl = document.getElementById('auditTopRisks');
+        const findingsEl = document.getElementById('auditFindingsList');
+
+        if (!summaryEl || !topRisksEl || !findingsEl) return;
+
+        if (!report) {
+            summaryEl.innerHTML = '<p>Audit report not loaded.</p>';
+            topRisksEl.innerHTML = '';
+            findingsEl.innerHTML = '<div class="empty-state"><span class="material-icons">description</span><h3>No audit report loaded</h3><p>Refresh the report to load findings.</p></div>';
+            return;
+        }
+
+        const criticalCount = report.findings.filter((finding) => String(finding.severity || '').toLowerCase() === 'critical').length;
+        const resolvedCount = state.auditTickets.filter((ticket) => ['resolved', 'closed'].includes(String(ticket.status || '').toLowerCase())).length;
+        const openCount = state.auditTickets.filter((ticket) => !['resolved', 'closed'].includes(String(ticket.status || '').toLowerCase())).length;
+
+        document.getElementById('auditTicketOpenCount').textContent = String(openCount);
+        document.getElementById('auditCriticalCount').textContent = String(criticalCount);
+        document.getElementById('auditResolvedCount').textContent = String(resolvedCount);
+        document.getElementById('auditReportGeneratedAt').textContent = `Generated ${formatDate(report.generatedAt)}`;
+        document.getElementById('auditReportUpdatedAt').textContent = `Updated ${formatDate(report.updatedAt)}`;
+        document.getElementById('auditFindingCount').textContent = `${report.findings.length} findings`;
+
+        summaryEl.innerHTML = `<ul>${(report.executiveSummary || []).map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`;
+        topRisksEl.innerHTML = (report.topRisks || []).map((item) => `<li>${escapeHtml(item)}</li>`).join('');
+
+        findingsEl.innerHTML = (report.findings || []).map((finding) => {
+            const actions = Array.isArray(finding.actions) ? finding.actions : [];
+            return `
+                <article class="audit-finding-card">
+                    <div class="audit-finding-header">
+                        <div>
+                            <span class="badge ${severityClass(finding.severity)}">${escapeHtml(String(finding.severity || 'medium'))}</span>
+                            <h4>${escapeHtml(finding.title || 'Untitled finding')}</h4>
+                        </div>
+                        <div class="audit-finding-meta">${escapeHtml(finding.filePath || '')}</div>
+                    </div>
+                    <p><strong>Issue:</strong> ${escapeHtml(finding.issue || '')}</p>
+                    <p><strong>Why it matters:</strong> ${escapeHtml(finding.whyItMatters || '')}</p>
+                    <div>
+                        <strong>Evidence</strong>
+                        <ul class="audit-evidence-list">
+                            ${(finding.evidence || []).map((line) => `<li>${escapeHtml(line)}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <p><strong>Recommended fix:</strong> ${escapeHtml(finding.recommendedFix || '')}</p>
+                    <div>
+                        <strong>Actions</strong>
+                        <ul class="audit-action-list">
+                            ${actions.map((action) => `
+                                <li>
+                                    <div class="audit-action-row">
+                                        <div>
+                                            <div>${escapeHtml(action.title || 'Untitled action')}</div>
+                                            <div class="audit-action-meta">Priority ${escapeHtml(action.priority || 'P2')} • Owner ${escapeHtml(action.recommendedOwner || 'unassigned')}</div>
+                                            <div class="audit-ticket-links">
+                                                ${(action.linkedTickets || []).length
+                                                    ? action.linkedTickets.map((ticket) => `<span class="audit-ticket-pill">${escapeHtml(ticket.id)} • ${escapeHtml(ticket.status)}</span>`).join('')
+                                                    : '<span class="audit-ticket-pill">No ticket yet</span>'}
+                                            </div>
+                                        </div>
+                                        <button class="btn btn-secondary audit-create-ticket-btn" data-finding-id="${escapeHtml(finding.id)}" data-action-id="${escapeHtml(action.id)}">
+                                            <span class="material-icons">add_task</span>
+                                            <span>Create Ticket</span>
+                                        </button>
+                                    </div>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                </article>
+            `;
+        }).join('');
+    }
+
+    function renderAuditTickets() {
+        const tbody = document.getElementById('auditTicketsTableBody');
+        if (!tbody) return;
+
+        if (!state.auditTickets.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="loading-cell">No tickets created yet.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = state.auditTickets.map((ticket) => `
+            <tr data-ticket-id="${escapeHtml(ticket.id)}">
+                <td class="audit-ticket-cell">
+                    <strong>${escapeHtml(ticket.id)}</strong>
+                    <small>${escapeHtml(ticket.severity || 'medium')}</small>
+                </td>
+                <td class="audit-ticket-cell">
+                    <div><strong>${escapeHtml(ticket.title || '')}</strong></div>
+                    <small>${escapeHtml(ticket.summary || '')}</small>
+                    <textarea class="audit-inline-textarea audit-ticket-notes" placeholder="Notes">${escapeHtml(ticket.notes || '')}</textarea>
+                </td>
+                <td class="audit-ticket-cell">
+                    <select class="audit-inline-select audit-ticket-status">
+                        ${['open', 'in_progress', 'blocked', 'resolved', 'closed'].map((status) => `
+                            <option value="${status}" ${ticket.status === status ? 'selected' : ''}>${status}</option>
+                        `).join('')}
+                    </select>
+                </td>
+                <td class="audit-ticket-cell">${escapeHtml(ticket.priority || 'P2')}</td>
+                <td class="audit-ticket-cell">
+                    <input class="audit-inline-input audit-ticket-owner" type="text" value="${escapeHtml(ticket.owner || '')}" placeholder="owner">
+                </td>
+                <td class="audit-ticket-cell">${escapeHtml(formatRelativeTime(ticket.updatedAt))}</td>
+                <td class="audit-ticket-cell">
+                    <button class="btn btn-secondary audit-save-ticket-btn" data-ticket-id="${escapeHtml(ticket.id)}">
+                        <span class="material-icons">save</span>
+                        <span>Save</span>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async function loadAuditReport() {
+        const response = await authFetch('/api/admin/audit/report');
+        if (!response.ok) {
+            throw new Error('Failed to load audit report');
+        }
+
+        const data = await response.json();
+        state.auditReport = data.report || null;
+        state.auditTickets = data.tickets?.tickets || [];
+        state.auditAssets = data.assets || {};
+        renderAuditReport();
+        renderAuditTickets();
+    }
+
+    async function createAuditTicketFromAction(findingId, actionId) {
+        const response = await authFetch('/api/admin/audit/tickets', {
+            method: 'POST',
+            body: JSON.stringify({ findingId, actionId })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to create ticket');
+        }
+        await loadAuditReport();
+    }
+
+    async function createManualAuditTicket() {
+        const title = (document.getElementById('auditManualTicketTitle')?.value || '').trim();
+        const owner = (document.getElementById('auditManualTicketOwner')?.value || '').trim();
+        const severity = (document.getElementById('auditManualTicketSeverity')?.value || 'medium').trim();
+        const priority = (document.getElementById('auditManualTicketPriority')?.value || 'P2').trim();
+        const summary = (document.getElementById('auditManualTicketSummary')?.value || '').trim();
+
+        if (!title) {
+            throw new Error('Ticket title is required');
+        }
+
+        const response = await authFetch('/api/admin/audit/tickets', {
+            method: 'POST',
+            body: JSON.stringify({
+                title,
+                owner,
+                severity,
+                priority,
+                summary,
+                notes: summary
+            })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to create ticket');
+        }
+
+        document.getElementById('auditManualTicketTitle').value = '';
+        document.getElementById('auditManualTicketOwner').value = '';
+        document.getElementById('auditManualTicketSummary').value = '';
+        document.getElementById('auditManualTicketSeverity').value = 'medium';
+        document.getElementById('auditManualTicketPriority').value = 'P2';
+        await loadAuditReport();
+    }
+
+    async function saveAuditTicket(ticketId) {
+        const row = document.querySelector(`tr[data-ticket-id="${CSS.escape(ticketId)}"]`);
+        if (!row) {
+            throw new Error('Ticket row not found');
+        }
+
+        const status = row.querySelector('.audit-ticket-status')?.value || 'open';
+        const owner = row.querySelector('.audit-ticket-owner')?.value || '';
+        const notes = row.querySelector('.audit-ticket-notes')?.value || '';
+
+        const response = await authFetch(`/api/admin/audit/tickets/${encodeURIComponent(ticketId)}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status, owner, notes })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to update ticket');
+        }
+        await loadAuditReport();
+    }
+
+    async function downloadAuditAsset(format) {
+        const url = state.auditAssets?.[format];
+        if (!url) {
+            throw new Error(`No ${format} asset available`);
+        }
+        const response = await authFetch(url);
+        if (!response.ok) {
+            throw new Error(`Failed to download ${format} audit asset`);
+        }
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = objectUrl;
+        link.download = format === 'pdf'
+            ? 'pyebwa-audit-report.pdf'
+            : format === 'html'
+                ? 'pyebwa-audit-report.html'
+                : 'pyebwa-audit-report.md';
+        link.click();
+        URL.revokeObjectURL(objectUrl);
+    }
+
     async function loadAuditLogs() {
         const params = new URLSearchParams({
             page: String(state.auditPage),
@@ -2677,6 +2968,7 @@
                 await loadTrees();
             }
             if (canAccessView('audit')) {
+                await loadAuditReport();
                 await loadAuditLogs();
             }
             if (canAccessView('backup')) {

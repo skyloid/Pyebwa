@@ -7,12 +7,12 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     
     <!-- CSS -->
-    <link rel="stylesheet" href="/app/admin/css/admin-base.css?v=1.1.90">
-    <link rel="stylesheet" href="/app/admin/css/admin-components.css?v=1.1.90">
-    <link rel="stylesheet" href="/app/admin/css/admin-dark.css?v=1.1.90">
-    <link rel="stylesheet" href="/app/admin/css/content.css?v=1.1.90">
-    <link rel="stylesheet" href="/app/admin/css/communications.css?v=1.1.90">
-    <link rel="stylesheet" href="/app/admin/css/backup-system.css?v=1.1.90">
+    <link rel="stylesheet" href="/app/admin/css/admin-base.css?v=1.2.01">
+    <link rel="stylesheet" href="/app/admin/css/admin-components.css?v=1.2.01">
+    <link rel="stylesheet" href="/app/admin/css/admin-dark.css?v=1.2.01">
+    <link rel="stylesheet" href="/app/admin/css/content.css?v=1.2.01">
+    <link rel="stylesheet" href="/app/admin/css/communications.css?v=1.2.01">
+    <link rel="stylesheet" href="/app/admin/css/backup-system.css?v=1.2.01">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
@@ -312,7 +312,8 @@
                             </select>
                             <select id="userRoleFilter">
                                 <option value="">All Roles</option>
-                                <option value="user">User</option>
+                                <option value="member">Member</option>
+                                <option value="moderator">Moderator</option>
                                 <option value="admin">Admin</option>
                                 <option value="superadmin">Super Admin</option>
                             </select>
@@ -812,21 +813,166 @@
                 <!-- Audit View -->
                 <div id="auditView" class="admin-view" style="display: none;">
                     <div class="view-header">
-                        <h1>Audit Logs</h1>
-                        <div class="header-actions">
+                        <h1>Audit Center</h1>
+                        <div class="header-actions audit-header-actions">
+                            <button class="btn btn-secondary" id="refreshAuditReport">
+                                <span class="material-icons">task</span>
+                                <span>Refresh Report</span>
+                            </button>
+                            <button class="btn btn-secondary" id="downloadAuditMarkdown">
+                                <span class="material-icons">description</span>
+                                <span>Markdown</span>
+                            </button>
+                            <button class="btn btn-secondary" id="downloadAuditHtml">
+                                <span class="material-icons">language</span>
+                                <span>HTML</span>
+                            </button>
+                            <button class="btn btn-secondary" id="downloadAuditPdf">
+                                <span class="material-icons">picture_as_pdf</span>
+                                <span>PDF</span>
+                            </button>
                             <button class="btn btn-secondary" id="refreshAuditLogs">
                                 <span class="material-icons">refresh</span>
-                                <span>Refresh</span>
+                                <span>Refresh Logs</span>
                             </button>
                             <button class="btn btn-secondary" id="exportAuditLogs">
                                 <span class="material-icons">download</span>
-                                <span>Export</span>
+                                <span>Export Logs</span>
                             </button>
                         </div>
                     </div>
 
+                    <div class="audit-toolbar-note">
+                        Review the current audit report, create remediation tickets from any action, and keep a running queue for future issues.
+                    </div>
+
+                    <div class="stats-grid audit-stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon users">
+                                <span class="material-icons">assignment</span>
+                            </div>
+                            <div class="stat-content">
+                                <h3 class="stat-value" id="auditTicketOpenCount">0</h3>
+                                <p class="stat-label">Open Tickets</p>
+                                <span class="stat-change" id="auditReportUpdatedAt">Updated just now</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon trees">
+                                <span class="material-icons">warning</span>
+                            </div>
+                            <div class="stat-content">
+                                <h3 class="stat-value" id="auditCriticalCount">0</h3>
+                                <p class="stat-label">Critical Findings</p>
+                                <span class="stat-change" id="auditReportGeneratedAt">Generated just now</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon active">
+                                <span class="material-icons">playlist_add_check_circle</span>
+                            </div>
+                            <div class="stat-content">
+                                <h3 class="stat-value" id="auditResolvedCount">0</h3>
+                                <p class="stat-label">Resolved Tickets</p>
+                                <span class="stat-change" id="auditFindingCount">0 findings</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="audit-grid">
+                        <section class="chart-container audit-panel audit-overview-panel">
+                            <div class="chart-header">
+                                <h3>Executive Summary</h3>
+                            </div>
+                            <div id="auditExecutiveSummary" class="audit-summary-list"></div>
+                        </section>
+                        <section class="chart-container audit-panel audit-overview-panel">
+                            <div class="chart-header">
+                                <h3>Top Risks</h3>
+                            </div>
+                            <ol id="auditTopRisks" class="audit-risk-list"></ol>
+                        </section>
+                    </div>
+
+                    <section class="chart-container audit-panel audit-report-panel">
+                        <div class="chart-header">
+                            <h3>Findings And Actions</h3>
+                        </div>
+                        <div id="auditFindingsList" class="audit-findings-list">
+                            <div class="empty-state">
+                                <span class="material-icons">description</span>
+                                <h3>Loading audit report</h3>
+                                <p>Report findings and actions will appear here.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="chart-container audit-panel audit-ticket-panel">
+                        <div class="chart-header">
+                            <h3>Audit Tickets</h3>
+                        </div>
+                        <div class="audit-ticket-composer">
+                            <div class="form-group audit-ticket-field">
+                                <label for="auditManualTicketTitle">New Ticket Title</label>
+                                <input type="text" id="auditManualTicketTitle" placeholder="Describe the new issue or remediation task">
+                            </div>
+                            <div class="form-group audit-ticket-field">
+                                <label for="auditManualTicketOwner">Owner</label>
+                                <input type="text" id="auditManualTicketOwner" placeholder="team or person">
+                            </div>
+                            <div class="form-group audit-ticket-field">
+                                <label for="auditManualTicketSeverity">Severity</label>
+                                <select id="auditManualTicketSeverity">
+                                    <option value="critical">Critical</option>
+                                    <option value="high">High</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                            <div class="form-group audit-ticket-field">
+                                <label for="auditManualTicketPriority">Priority</label>
+                                <select id="auditManualTicketPriority">
+                                    <option value="P0">P0</option>
+                                    <option value="P1">P1</option>
+                                    <option value="P2" selected>P2</option>
+                                    <option value="P3">P3</option>
+                                </select>
+                            </div>
+                            <div class="form-group audit-ticket-field audit-ticket-field-wide">
+                                <label for="auditManualTicketSummary">Summary / Notes</label>
+                                <textarea id="auditManualTicketSummary" rows="3" placeholder="Capture context for a newly discovered issue."></textarea>
+                            </div>
+                            <div class="form-group audit-ticket-field audit-ticket-field-wide audit-ticket-actions">
+                                <button class="btn btn-primary" id="createManualAuditTicket">
+                                    <span class="material-icons">add_task</span>
+                                    <span>Create Manual Ticket</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="data-table-container audit-table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Ticket</th>
+                                        <th>Summary</th>
+                                        <th>Status</th>
+                                        <th>Priority</th>
+                                        <th>Owner</th>
+                                        <th>Updated</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="auditTicketsTableBody">
+                                    <tr>
+                                        <td colspan="7" class="loading-cell">No tickets yet.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
                     <!-- Filters -->
-                    <div class="filters-section">
+                    <div class="filters-section audit-filters-section">
                         <div class="search-box">
                             <span class="material-icons">search</span>
                             <input type="text" id="auditSearch" placeholder="Search logs...">
@@ -849,7 +995,7 @@
                     </div>
 
                     <!-- Audit Logs Table -->
-                    <div class="data-table-container">
+                    <div class="data-table-container audit-table-container">
                         <table class="data-table" id="auditLogsTable">
                             <thead>
                                 <tr>
@@ -858,7 +1004,7 @@
                                     <th>Action</th>
                                     <th>Target</th>
                                     <th>Details</th>
-                                    <th>Actions</th>
+                                    <th>IP Address</th>
                                 </tr>
                             </thead>
                             <tbody id="auditLogsTableBody">
@@ -1170,8 +1316,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/app/js/supabase-client.js"></script>
     <script src="/app/js/api-client.js"></script>
-    <script src="/app/js/back-to-top.js?v=1.1.90"></script>
-    <script src="/app/js/admin/auth-guard.js?v=1.1.90"></script>
-    <script src="/app/admin/js/simple-admin.js?v=1.1.90"></script>
+    <script src="/app/js/back-to-top.js?v=1.1.99"></script>
+    <script src="/app/js/admin/auth-guard.js?v=1.2.01"></script>
+    <script src="/app/admin/js/simple-admin.js?v=1.2.01"></script>
 </body>
 </html>

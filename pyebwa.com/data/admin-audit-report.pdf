@@ -1,0 +1,316 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Length 3638 >>
+stream
+BT /F1 10 Tf 40 790 Td (# Rasin Application Security and Reliability Audit) Tj ET
+BT /F1 10 Tf 40 774 Td () Tj ET
+BT /F1 10 Tf 40 758 Td (Generated: 2026-04-10T11:21:46.543Z) Tj ET
+BT /F1 10 Tf 40 742 Td (Updated: 2026-04-10T11:21:46.543Z) Tj ET
+BT /F1 10 Tf 40 726 Td (Target: https://rasin.pyebwa.com) Tj ET
+BT /F1 10 Tf 40 710 Td () Tj ET
+BT /F1 10 Tf 40 694 Td (## Executive summary) Tj ET
+BT /F1 10 Tf 40 678 Td () Tj ET
+BT /F1 10 Tf 40 662 Td (- The active application in this repository is an Express server plus static frontend assets using S) Tj ET
+BT /F1 10 Tf 40 646 Td (upabase Auth and a proxied Supabase gateway. It is not a Next.js application.) Tj ET
+BT /F1 10 Tf 40 630 Td (- The highest-risk findings are committed secrets, over-broad authorization, service_role-backed sto) Tj ET
+BT /F1 10 Tf 40 614 Td (rage actions reachable from user-controlled flows, an unsafe signup path, and multiple stored XSS pa) Tj ET
+BT /F1 10 Tf 40 598 Td (ths.) Tj ET
+BT /F1 10 Tf 40 582 Td (- This report is persisted in admin so findings can be tracked and converted into tickets over time.) Tj ET
+BT /F1 10 Tf 40 566 Td () Tj ET
+BT /F1 10 Tf 40 550 Td (## Top 10 risks) Tj ET
+BT /F1 10 Tf 40 534 Td () Tj ET
+BT /F1 10 Tf 40 518 Td (1. Committed live secrets and privileged Supabase credentials) Tj ET
+BT /F1 10 Tf 40 502 Td (2. Moderators are granted broad admin access) Tj ET
+BT /F1 10 Tf 40 486 Td (3. Service-role storage operations are reachable from user-controlled flows) Tj ET
+BT /F1 10 Tf 40 470 Td (4. Any tree member can email the entire tree) Tj ET
+BT /F1 10 Tf 40 454 Td (5. Public signup endpoint creates email-confirmed users and logs credentials) Tj ET
+BT /F1 10 Tf 40 438 Td (6. Stored XSS through unsanitized innerHTML rendering) Tj ET
+BT /F1 10 Tf 40 422 Td (7. Invite and discovery actions are too broadly available) Tj ET
+BT /F1 10 Tf 40 406 Td (8. Intended security middleware is not active) Tj ET
+BT /F1 10 Tf 40 390 Td (9. Admin list endpoints do full-table reads and filter in memory) Tj ET
+BT /F1 10 Tf 40 374 Td (10. No Supabase RLS or storage policy definitions are present in this repo) Tj ET
+BT /F1 10 Tf 40 358 Td () Tj ET
+BT /F1 10 Tf 40 342 Td (## Critical) Tj ET
+BT /F1 10 Tf 40 326 Td () Tj ET
+BT /F1 10 Tf 40 310 Td (### Committed live secrets and privileged Supabase credentials) Tj ET
+BT /F1 10 Tf 40 294 Td () Tj ET
+BT /F1 10 Tf 40 278 Td (- Severity: Critical) Tj ET
+BT /F1 10 Tf 40 262 Td (- File/path: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/.env) Tj ET
+BT /F1 10 Tf 40 246 Td (- Issue: The repository contains a committed .env with live-looking database credentials, Supabase s) Tj ET
+BT /F1 10 Tf 40 230 Td (ervice_role, VAPID private key, Resend API key, and webhook secret.) Tj ET
+BT /F1 10 Tf 40 214 Td (- Why it matters: Anyone with repository access can impersonate the backend, bypass storage and data) Tj ET
+BT /F1 10 Tf 40 198 Td (base protections via service_role, send email as the application, and forge webhook requests.) Tj ET
+BT /F1 10 Tf 40 182 Td (- Evidence:) Tj ET
+BT /F1 10 Tf 40 166 Td (  - .env contains DATABASE_URL, SUPABASE_SERVICE_ROLE_KEY, VAPID_PRIVATE_KEY, RESEND_API_KEY, and SE) Tj ET
+BT /F1 10 Tf 40 150 Td (ND_EMAIL_HOOK_SECRET.) Tj ET
+BT /F1 10 Tf 40 134 Td (  - server/services/supabase.js constructs a privileged Supabase client from SUPABASE_SERVICE_ROLE_K) Tj ET
+BT /F1 10 Tf 40 118 Td (EY.) Tj ET
+BT /F1 10 Tf 40 102 Td (- Recommended fix: Rotate all exposed secrets immediately, remove .env from version control, replace) Tj ET
+BT /F1 10 Tf 40 86 Td ( it with .env.example, and audit systems for misuse.) Tj ET
+BT /F1 10 Tf 40 70 Td (- Actions:) Tj ET
+endstream
+endobj
+3 0 obj
+<< /Type /Page /Parent 14 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 2 0 R >>
+endobj
+4 0 obj
+<< /Length 3710 >>
+stream
+BT /F1 10 Tf 40 790 Td (  - Rotate exposed secrets and remove committed .env \(P0, owner: platform\)) Tj ET
+BT /F1 10 Tf 40 774 Td () Tj ET
+BT /F1 10 Tf 40 758 Td (## High) Tj ET
+BT /F1 10 Tf 40 742 Td () Tj ET
+BT /F1 10 Tf 40 726 Td (### Moderators are granted broad admin access) Tj ET
+BT /F1 10 Tf 40 710 Td () Tj ET
+BT /F1 10 Tf 40 694 Td (- Severity: High) Tj ET
+BT /F1 10 Tf 40 678 Td (- File/path: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/server/db/auth.js) Tj ET
+BT /F1 10 Tf 40 662 Td (- Issue: requireAdmin\(\) allows moderator, admin, and superadmin, and sensitive /api/admin routes dep) Tj ET
+BT /F1 10 Tf 40 646 Td (end on that middleware.) Tj ET
+BT /F1 10 Tf 40 630 Td (- Why it matters: A lower-privilege role can access cross-tenant data and destructive admin operatio) Tj ET
+BT /F1 10 Tf 40 614 Td (ns.) Tj ET
+BT /F1 10 Tf 40 598 Td (- Evidence:) Tj ET
+BT /F1 10 Tf 40 582 Td (  - server/db/auth.js includes moderator in requireAdmin\(\).) Tj ET
+BT /F1 10 Tf 40 566 Td (  - server/api/admin.js uses requireAdmin for /summary, /users, /audit, and tree deletion.) Tj ET
+BT /F1 10 Tf 40 550 Td (- Recommended fix: Split moderator privileges from admin privileges and gate sensitive routes behind) Tj ET
+BT /F1 10 Tf 40 534 Td ( admin or superadmin only.) Tj ET
+BT /F1 10 Tf 40 518 Td (- Actions:) Tj ET
+BT /F1 10 Tf 40 502 Td (  - Restrict sensitive admin routes to admin and superadmin \(P1, owner: backend\)) Tj ET
+BT /F1 10 Tf 40 486 Td () Tj ET
+BT /F1 10 Tf 40 470 Td (### Service-role storage operations are reachable from user-controlled flows) Tj ET
+BT /F1 10 Tf 40 454 Td () Tj ET
+BT /F1 10 Tf 40 438 Td (- Severity: High) Tj ET
+BT /F1 10 Tf 40 422 Td (- File/path: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/server/api/uploads.js) Tj ET
+BT /F1 10 Tf 40 406 Td (- Issue: Upload and delete endpoints accept caller-controlled storage parameters and use a service_r) Tj ET
+BT /F1 10 Tf 40 390 Td (ole storage client without verifying ownership.) Tj ET
+BT /F1 10 Tf 40 374 Td (- Why it matters: Any authenticated user can write into another tree namespace or delete files they ) Tj ET
+BT /F1 10 Tf 40 358 Td (do not own.) Tj ET
+BT /F1 10 Tf 40 342 Td (- Evidence:) Tj ET
+BT /F1 10 Tf 40 326 Td (  - server/api/uploads.js trusts treeId, personId, category, and url/path from the request.) Tj ET
+BT /F1 10 Tf 40 310 Td (  - server/services/file-storage.js uploads and removes objects through supabaseAdmin.) Tj ET
+BT /F1 10 Tf 40 294 Td (- Recommended fix: Derive storage paths on the server from verified ownership, persist file ownershi) Tj ET
+BT /F1 10 Tf 40 278 Td (p metadata, and authorize deletes against that metadata.) Tj ET
+BT /F1 10 Tf 40 262 Td (- Actions:) Tj ET
+BT /F1 10 Tf 40 246 Td (  - Enforce server-side ownership checks for upload and delete paths \(P1, owner: backend\)) Tj ET
+BT /F1 10 Tf 40 230 Td () Tj ET
+BT /F1 10 Tf 40 214 Td (### Any tree member can email the entire tree) Tj ET
+BT /F1 10 Tf 40 198 Td () Tj ET
+BT /F1 10 Tf 40 182 Td (- Severity: High) Tj ET
+BT /F1 10 Tf 40 166 Td (- File/path: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/server/api/notifications.js) Tj ET
+BT /F1 10 Tf 40 150 Td (- Issue: The family-update route only checks tree membership before emailing every other member.) Tj ET
+BT /F1 10 Tf 40 134 Td (- Why it matters: An invited member can spam the whole tree, generate cost, and send misleading mess) Tj ET
+BT /F1 10 Tf 40 118 Td (ages under the application identity.) Tj ET
+BT /F1 10 Tf 40 102 Td (- Evidence:) Tj ET
+BT /F1 10 Tf 40 86 Td (  - server/api/notifications.js only checks hasAccess\(treeId, userId\).) Tj ET
+BT /F1 10 Tf 40 70 Td (  - The same route sends email to all recipientIds derived from the tree member list.) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 14 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 4 0 R >>
+endobj
+6 0 obj
+<< /Length 3720 >>
+stream
+BT /F1 10 Tf 40 790 Td (- Recommended fix: Restrict bulk family notifications to tree owner or delegated admins and add rout) Tj ET
+BT /F1 10 Tf 40 774 Td (e-level rate limits.) Tj ET
+BT /F1 10 Tf 40 758 Td (- Actions:) Tj ET
+BT /F1 10 Tf 40 742 Td (  - Limit family-update email actions to authorized tree admins \(P1, owner: backend\)) Tj ET
+BT /F1 10 Tf 40 726 Td () Tj ET
+BT /F1 10 Tf 40 710 Td (### Public signup endpoint creates email-confirmed users and logs credentials) Tj ET
+BT /F1 10 Tf 40 694 Td () Tj ET
+BT /F1 10 Tf 40 678 Td (- Severity: High) Tj ET
+BT /F1 10 Tf 40 662 Td (- File/path: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/server/api/auth-secure.js) Tj ET
+BT /F1 10 Tf 40 646 Td (- Issue: The unauthenticated signup path creates users with email_confirm set true and logs temporar) Tj ET
+BT /F1 10 Tf 40 630 Td (y passwords on email failure.) Tj ET
+BT /F1 10 Tf 40 614 Td (- Why it matters: This bypasses normal verification and risks credential disclosure in logs.) Tj ET
+BT /F1 10 Tf 40 598 Td (- Evidence:) Tj ET
+BT /F1 10 Tf 40 582 Td (  - server/api/auth-secure.js uses supabaseAdmin.auth.admin.createUser with email_confirm: true.) Tj ET
+BT /F1 10 Tf 40 566 Td (  - The same route logs temp passwords when email is not configured or fails.) Tj ET
+BT /F1 10 Tf 40 550 Td (- Recommended fix: Remove or heavily restrict this route and use OTP or verified-email signup only. ) Tj ET
+BT /F1 10 Tf 40 534 Td (Never log credentials.) Tj ET
+BT /F1 10 Tf 40 518 Td (- Actions:) Tj ET
+BT /F1 10 Tf 40 502 Td (  - Retire public temp-password signup and eliminate credential logging \(P1, owner: auth\)) Tj ET
+BT /F1 10 Tf 40 486 Td () Tj ET
+BT /F1 10 Tf 40 470 Td (## Medium) Tj ET
+BT /F1 10 Tf 40 454 Td () Tj ET
+BT /F1 10 Tf 40 438 Td (### Stored XSS through unsanitized innerHTML rendering) Tj ET
+BT /F1 10 Tf 40 422 Td () Tj ET
+BT /F1 10 Tf 40 406 Td (- Severity: Medium) Tj ET
+BT /F1 10 Tf 40 390 Td (- File/path: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/app/js/member-profile.js) Tj ET
+BT /F1 10 Tf 40 374 Td (- Issue: User-controlled values like biographies, tree names, descriptions, and discovery messages a) Tj ET
+BT /F1 10 Tf 40 358 Td (re rendered via innerHTML without sanitization.) Tj ET
+BT /F1 10 Tf 40 342 Td (- Why it matters: Malicious content can execute in other users’ browsers, including admin sessions.) Tj ET
+BT /F1 10 Tf 40 326 Td (- Evidence:) Tj ET
+BT /F1 10 Tf 40 310 Td (  - app/js/member-profile.js injects member.biography into HTML.) Tj ET
+BT /F1 10 Tf 40 294 Td (  - app/js/app.js injects tree and discovery request fields into HTML templates.) Tj ET
+BT /F1 10 Tf 40 278 Td (- Recommended fix: Escape all untrusted content or render through text nodes. Only allow sanitized r) Tj ET
+BT /F1 10 Tf 40 262 Td (ich text where explicitly needed.) Tj ET
+BT /F1 10 Tf 40 246 Td (- Actions:) Tj ET
+BT /F1 10 Tf 40 230 Td (  - Sanitize persisted user content before HTML rendering \(P2, owner: frontend\)) Tj ET
+BT /F1 10 Tf 40 214 Td () Tj ET
+BT /F1 10 Tf 40 198 Td (### Invite and discovery actions are too broadly available) Tj ET
+BT /F1 10 Tf 40 182 Td () Tj ET
+BT /F1 10 Tf 40 166 Td (- Severity: Medium) Tj ET
+BT /F1 10 Tf 40 150 Td (- File/path: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/server/api/invites.js) Tj ET
+BT /F1 10 Tf 40 134 Td (- Issue: Any tree member can generate invites, review discovery requests, and invite discovery reque) Tj ET
+BT /F1 10 Tf 40 118 Td (sters. The allowMemberInvites tree setting is not enforced.) Tj ET
+BT /F1 10 Tf 40 102 Td (- Why it matters: Non-owner members can bring outsiders into a tree and access requester PII against) Tj ET
+BT /F1 10 Tf 40 86 Td ( product expectations.) Tj ET
+BT /F1 10 Tf 40 70 Td (- Evidence:) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 14 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Length 3828 >>
+stream
+BT /F1 10 Tf 40 790 Td (  - server/api/invites.js only checks tree access before creating invites.) Tj ET
+BT /F1 10 Tf 40 774 Td (  - server/api/discovery.js only checks tree access before listing or updating requests.) Tj ET
+BT /F1 10 Tf 40 758 Td (  - server/db/schema.sql defines allowMemberInvites in settings but server routes do not enforce it.) Tj ET
+BT /F1 10 Tf 40 742 Td (- Recommended fix: Enforce invite and discovery privileges on the server based on owner/admin role a) Tj ET
+BT /F1 10 Tf 40 726 Td (nd tree settings.) Tj ET
+BT /F1 10 Tf 40 710 Td (- Actions:) Tj ET
+BT /F1 10 Tf 40 694 Td (  - Apply allowMemberInvites and role checks to invite and discovery routes \(P2, owner: backend\)) Tj ET
+BT /F1 10 Tf 40 678 Td () Tj ET
+BT /F1 10 Tf 40 662 Td (### Intended security middleware is not active) Tj ET
+BT /F1 10 Tf 40 646 Td () Tj ET
+BT /F1 10 Tf 40 630 Td (- Severity: Medium) Tj ET
+BT /F1 10 Tf 40 614 Td (- File/path: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/server.js) Tj ET
+BT /F1 10 Tf 40 598 Td (- Issue: The live server disables CSP and does not wire in the project’s stronger security and valid) Tj ET
+BT /F1 10 Tf 40 582 Td (ation middleware.) Tj ET
+BT /F1 10 Tf 40 566 Td (- Why it matters: The app misses intended protections, making XSS and input-handling issues easier t) Tj ET
+BT /F1 10 Tf 40 550 Td (o exploit.) Tj ET
+BT /F1 10 Tf 40 534 Td (- Evidence:) Tj ET
+BT /F1 10 Tf 40 518 Td (  - server.js calls helmet\({ contentSecurityPolicy: false }\).) Tj ET
+BT /F1 10 Tf 40 502 Td (  - server/middleware/security.js and server/middleware/input-validation.js are present but unused.) Tj ET
+BT /F1 10 Tf 40 486 Td (- Recommended fix: Adopt a single security middleware stack, wire it into server.js, and verify CSP ) Tj ET
+BT /F1 10 Tf 40 470 Td (and validation behavior in tests.) Tj ET
+BT /F1 10 Tf 40 454 Td (- Actions:) Tj ET
+BT /F1 10 Tf 40 438 Td (  - Enable and validate the intended security middleware stack \(P2, owner: backend\)) Tj ET
+BT /F1 10 Tf 40 422 Td () Tj ET
+BT /F1 10 Tf 40 406 Td (### Admin list endpoints do full-table reads and filter in memory) Tj ET
+BT /F1 10 Tf 40 390 Td () Tj ET
+BT /F1 10 Tf 40 374 Td (- Severity: Medium) Tj ET
+BT /F1 10 Tf 40 358 Td (- File/path: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/server/api/admin.js) Tj ET
+BT /F1 10 Tf 40 342 Td (- Issue: Admin users and audit endpoints load large result sets into memory and only then filter, pa) Tj ET
+BT /F1 10 Tf 40 326 Td (ginate, and search.) Tj ET
+BT /F1 10 Tf 40 310 Td (- Why it matters: This will degrade with data growth and creates avoidable memory pressure and slow ) Tj ET
+BT /F1 10 Tf 40 294 Td (responses.) Tj ET
+BT /F1 10 Tf 40 278 Td (- Evidence:) Tj ET
+BT /F1 10 Tf 40 262 Td (  - server/api/admin.js loads all users before filtering.) Tj ET
+BT /F1 10 Tf 40 246 Td (  - server/api/admin.js loads all audit rows before filtering and slicing.) Tj ET
+BT /F1 10 Tf 40 230 Td (- Recommended fix: Move search, sort, and pagination into SQL and only return the requested page.) Tj ET
+BT /F1 10 Tf 40 214 Td (- Actions:) Tj ET
+BT /F1 10 Tf 40 198 Td (  - Push admin filtering and pagination down into SQL \(P2, owner: backend\)) Tj ET
+BT /F1 10 Tf 40 182 Td () Tj ET
+BT /F1 10 Tf 40 166 Td (### No Supabase RLS or storage policy definitions are present in this repo) Tj ET
+BT /F1 10 Tf 40 150 Td () Tj ET
+BT /F1 10 Tf 40 134 Td (- Severity: Medium) Tj ET
+BT /F1 10 Tf 40 118 Td (- File/path: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/server/db/schema.sql) Tj ET
+BT /F1 10 Tf 40 102 Td (- Issue: The codebase relies on application logic and a service_role backend client but contains no ) Tj ET
+BT /F1 10 Tf 40 86 Td (RLS or storage policy migrations.) Tj ET
+BT /F1 10 Tf 40 70 Td (- Why it matters: There is no database-level defense-in-depth if future code starts querying Supabas) Tj ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 14 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 8 0 R >>
+endobj
+10 0 obj
+<< /Length 3737 >>
+stream
+BT /F1 10 Tf 40 790 Td (e directly.) Tj ET
+BT /F1 10 Tf 40 774 Td (- Evidence:) Tj ET
+BT /F1 10 Tf 40 758 Td (  - server/db/schema.sql defines tables but no ENABLE ROW LEVEL SECURITY or CREATE POLICY statements) Tj ET
+BT /F1 10 Tf 40 742 Td (.) Tj ET
+BT /F1 10 Tf 40 726 Td (  - server/services/supabase.js creates a service_role Supabase client.) Tj ET
+BT /F1 10 Tf 40 710 Td (- Recommended fix: Add explicit Supabase SQL migrations for RLS and storage policies, even if curren) Tj ET
+BT /F1 10 Tf 40 694 Td (t access is mostly server-mediated.) Tj ET
+BT /F1 10 Tf 40 678 Td (- Actions:) Tj ET
+BT /F1 10 Tf 40 662 Td (  - Create explicit RLS and storage policy migrations for Supabase \(P2, owner: data\)) Tj ET
+BT /F1 10 Tf 40 646 Td () Tj ET
+BT /F1 10 Tf 40 630 Td (### Critical auth and authorization flows lack automated tests) Tj ET
+BT /F1 10 Tf 40 614 Td () Tj ET
+BT /F1 10 Tf 40 598 Td (- Severity: Medium) Tj ET
+BT /F1 10 Tf 40 582 Td (- File/path: /home/pyebwa-rasin/htdocs/rasin.pyebwa.com/__tests__/theme-toggle-simple.test.js) Tj ET
+BT /F1 10 Tf 40 566 Td (- Issue: The automated test surface is dominated by theme/UI tests, with limited coverage of authz, ) Tj ET
+BT /F1 10 Tf 40 550 Td (storage, admin permissions, and mutation flows.) Tj ET
+BT /F1 10 Tf 40 534 Td (- Why it matters: Security regressions are likely to ship unnoticed.) Tj ET
+BT /F1 10 Tf 40 518 Td (- Evidence:) Tj ET
+BT /F1 10 Tf 40 502 Td (  - package.json points test commands at Jest but the visible automated tests are mostly theme-relat) Tj ET
+BT /F1 10 Tf 40 486 Td (ed.) Tj ET
+BT /F1 10 Tf 40 470 Td (  - tests/html and tests/auth contain many manual HTML fixtures rather than enforced assertions.) Tj ET
+BT /F1 10 Tf 40 454 Td (- Recommended fix: Add integration tests for role authorization, invite flows, storage ownership, an) Tj ET
+BT /F1 10 Tf 40 438 Td (d destructive mutations.) Tj ET
+BT /F1 10 Tf 40 422 Td (- Actions:) Tj ET
+BT /F1 10 Tf 40 406 Td (  - Add integration tests for authz, storage ownership, and destructive mutations \(P2, owner: qa\)) Tj ET
+BT /F1 10 Tf 40 390 Td () Tj ET
+BT /F1 10 Tf 40 374 Td (## Missing tests) Tj ET
+BT /F1 10 Tf 40 358 Td () Tj ET
+BT /F1 10 Tf 40 342 Td (- Authorization matrix tests for member, moderator, admin, and superadmin across sensitive routes.) Tj ET
+BT /F1 10 Tf 40 326 Td (- Upload and delete tests proving users cannot write into or delete another tree namespace.) Tj ET
+BT /F1 10 Tf 40 310 Td (- Notification tests proving non-owners cannot email an entire tree.) Tj ET
+BT /F1 10 Tf 40 294 Td (- XSS regression tests for biographies, tree names, descriptions, and discovery request content.) Tj ET
+BT /F1 10 Tf 40 278 Td (- Invite and discovery tests enforcing allowMemberInvites and owner/admin restrictions.) Tj ET
+BT /F1 10 Tf 40 262 Td () Tj ET
+BT /F1 10 Tf 40 246 Td (## Quick wins) Tj ET
+BT /F1 10 Tf 40 230 Td () Tj ET
+BT /F1 10 Tf 40 214 Td (- Rotate all committed secrets and remove .env from version control.) Tj ET
+BT /F1 10 Tf 40 198 Td (- Restrict family-update, invite, and admin routes to the minimum required roles.) Tj ET
+BT /F1 10 Tf 40 182 Td (- Add ownership checks to all storage write and delete paths.) Tj ET
+BT /F1 10 Tf 40 166 Td (- Escape or sanitize all user-controlled content before rendering via innerHTML.) Tj ET
+BT /F1 10 Tf 40 150 Td () Tj ET
+BT /F1 10 Tf 40 134 Td (## Longer-term refactors) Tj ET
+BT /F1 10 Tf 40 118 Td () Tj ET
+BT /F1 10 Tf 40 102 Td (- Move route-level authorization checks into a shared policy layer.) Tj ET
+BT /F1 10 Tf 40 86 Td (- Create explicit Supabase SQL migrations for RLS, storage policies, and auth sync assumptions.) Tj ET
+BT /F1 10 Tf 40 70 Td (- Replace in-memory admin filtering with SQL pagination and search.) Tj ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 14 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 10 0 R >>
+endobj
+12 0 obj
+<< /Length 314 >>
+stream
+BT /F1 10 Tf 40 790 Td (- Expand automated integration coverage for auth, authorization, storage, and admin mutations.) Tj ET
+BT /F1 10 Tf 40 774 Td () Tj ET
+BT /F1 10 Tf 40 758 Td (## Tickets) Tj ET
+BT /F1 10 Tf 40 742 Td () Tj ET
+BT /F1 10 Tf 40 726 Td (- No tickets have been created from this audit yet.) Tj ET
+endstream
+endobj
+13 0 obj
+<< /Type /Page /Parent 14 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 12 0 R >>
+endobj
+14 0 obj
+<< /Type /Pages /Kids [3 0 R 5 0 R 7 0 R 9 0 R 11 0 R 13 0 R] /Count 6 >>
+endobj
+15 0 obj
+<< /Type /Catalog /Pages 14 0 R >>
+endobj
+xref
+0 16
+0000000000 65535 f 
+0000000009 00000 n 
+0000000079 00000 n 
+0000003769 00000 n 
+0000003896 00000 n 
+0000007658 00000 n 
+0000007785 00000 n 
+0000011557 00000 n 
+0000011684 00000 n 
+0000015564 00000 n 
+0000015691 00000 n 
+0000019481 00000 n 
+0000019610 00000 n 
+0000019976 00000 n 
+0000020105 00000 n 
+0000020195 00000 n 
+trailer
+<< /Size 16 /Root 15 0 R >>
+startxref
+20246
+%%EOF

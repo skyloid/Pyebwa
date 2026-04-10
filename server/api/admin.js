@@ -1,11 +1,12 @@
 const express = require('express');
-const { verifySession, requireAdmin } = require('../db/auth');
+const { verifySession, requireAdmin, requireSuperAdmin } = require('../db/auth');
 const { query } = require('../db/pool');
 const userQueries = require('../db/queries/users');
 const multer = require('multer');
 const { saveFile } = require('../services/file-storage');
 const slideshowManager = require('../services/slideshow-manager');
 const pageContentManager = require('../services/page-content-manager');
+const auditReportManager = require('../services/audit-report-manager');
 const { URL } = require('url');
 
 const router = express.Router();
@@ -297,7 +298,7 @@ router.get('/audit', verifySession, requireAdmin, async (req, res) => {
                 u.email AS user_email,
                 u.display_name AS user_display_name
             FROM admin_logs al
-            LEFT JOIN users u ON u.id = al.user_id
+            LEFT JOIN users u ON u.id::text = al.user_id
             ORDER BY al.created_at DESC
         `);
 
@@ -351,6 +352,142 @@ router.get('/audit', verifySession, requireAdmin, async (req, res) => {
     } catch (error) {
         console.error('Admin audit load error:', error);
         res.status(500).json({ error: 'Failed to load audit logs' });
+    }
+});
+
+router.get('/audit/report', verifySession, requireSuperAdmin, async (req, res) => {
+    try {
+        const bundle = await auditReportManager.getReportBundle();
+        res.json(bundle);
+    } catch (error) {
+        console.error('Admin audit report load error:', error);
+        res.status(500).json({ error: 'Failed to load audit report' });
+    }
+});
+
+router.get('/audit/report/download', verifySession, requireSuperAdmin, async (req, res) => {
+    try {
+        const format = String(req.query.format || 'markdown').trim().toLowerCase();
+        await auditReportManager.ensureDataFiles();
+        const asset = auditReportManager.getAssetPath(format);
+        res.setHeader('Content-Type', asset.contentType);
+        res.setHeader('Content-Disposition', `attachment; filename="${asset.downloadName}"`);
+        res.sendFile(asset.path);
+    } catch (error) {
+        console.error('Admin audit report download error:', error);
+        res.status(400).json({ error: error.message || 'Failed to download audit report' });
+    }
+});
+
+router.get('/audit/tickets', verifySession, requireSuperAdmin, async (req, res) => {
+    try {
+        const payload = await auditReportManager.getTickets();
+        const statusFilter = String(req.query.status || '').trim().toLowerCase();
+        const findingFilter = String(req.query.findingId || '').trim();
+
+        let tickets = payload.tickets;
+        if (statusFilter) {
+            tickets = tickets.filter((ticket) => String(ticket.status || '').toLowerCase() === statusFilter);
+        }
+        if (findingFilter) {
+            tickets = tickets.filter((ticket) => ticket.sourceFindingId === findingFilter);
+        }
+
+        res.json({
+            updatedAt: payload.updatedAt,
+            tickets
+        });
+    } catch (error) {
+        console.error('Admin ticket list error:', error);
+        res.status(500).json({ error: 'Failed to load audit tickets' });
+    }
+});
+
+router.post('/audit/tickets', verifySession, requireSuperAdmin, async (req, res) => {
+    try {
+        const findingId = String(req.body?.findingId || '').trim();
+        const actionId = String(req.body?.actionId || '').trim();
+        let ticket;
+
+        if (findingId && actionId) {
+            ticket = await auditReportManager.createTicketFromAction({
+                findingId,
+                actionId,
+                title: req.body?.title,
+                owner: req.body?.owner,
+                notes: req.body?.notes,
+                createdBy: req.user.uid
+            });
+        } else {
+            ticket = await auditReportManager.createManualTicket({
+                title: req.body?.title,
+                summary: req.body?.summary,
+                severity: req.body?.severity,
+                priority: req.body?.priority,
+                owner: req.body?.owner,
+                notes: req.body?.notes,
+                tags: Array.isArray(req.body?.tags) ? req.body.tags : [],
+                createdBy: req.user.uid
+            });
+        }
+
+        await query(
+            `INSERT INTO admin_logs (action, user_id, details, ip_address)
+             VALUES ($1, $2, $3::jsonb, $4)`,
+            [
+                'audit_ticket_created',
+                req.user.uid,
+                JSON.stringify({
+                    ticketId: ticket.id,
+                    findingId: findingId || null,
+                    actionId: actionId || null,
+                    manual: !(findingId && actionId)
+                }),
+                req.ip || null
+            ]
+        );
+
+        res.status(201).json({ success: true, ticket });
+    } catch (error) {
+        console.error('Admin ticket create error:', error);
+        res.status(400).json({ error: error.message || 'Failed to create audit ticket' });
+    }
+});
+
+router.patch('/audit/tickets/:ticketId', verifySession, requireSuperAdmin, async (req, res) => {
+    try {
+        const ticketId = String(req.params.ticketId || '').trim();
+        if (!ticketId) {
+            return res.status(400).json({ error: 'Ticket ID is required' });
+        }
+
+        const ticket = await auditReportManager.updateTicket(ticketId, {
+            status: req.body?.status,
+            owner: req.body?.owner,
+            notes: req.body?.notes,
+            priority: req.body?.priority
+        });
+
+        await query(
+            `INSERT INTO admin_logs (action, user_id, details, ip_address)
+             VALUES ($1, $2, $3::jsonb, $4)`,
+            [
+                'audit_ticket_updated',
+                req.user.uid,
+                JSON.stringify({
+                    ticketId,
+                    status: ticket.status,
+                    owner: ticket.owner,
+                    priority: ticket.priority
+                }),
+                req.ip || null
+            ]
+        );
+
+        res.json({ success: true, ticket });
+    } catch (error) {
+        console.error('Admin ticket update error:', error);
+        res.status(400).json({ error: error.message || 'Failed to update audit ticket' });
     }
 });
 

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rasin Application Security and Reliability Audit</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f3efe6;
+      --panel: #fffdfa;
+      --text: #1d241f;
+      --muted: #5d665f;
+      --border: #d9d2c3;
+      --critical: #a32020;
+      --high: #b35613;
+      --medium: #4a5c14;
+      --low: #1d5b7a;
+      --accent: #1b4332;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px 20px 56px;
+    }
+    .hero, .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 18px 40px rgba(27, 67, 50, 0.06);
+    }
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: 2rem;
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .risk-list li, .bullet-list li { margin-bottom: 8px; }
+    .finding {
+      border-top: 1px solid var(--border);
+      padding-top: 20px;
+      margin-top: 20px;
+    }
+    .finding:first-of-type {
+      border-top: 0;
+      margin-top: 0;
+      padding-top: 0;
+    }
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: #fff;
+    }
+    .severity-critical { background: var(--critical); }
+    .severity-high { background: var(--high); }
+    .severity-medium { background: var(--medium); }
+    .severity-low { background: var(--low); }
+    code {
+      background: #f3eee5;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 0.92em;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+    th, td {
+      text-align: left;
+      padding: 12px 10px;
+      border-top: 1px solid var(--border);
+      vertical-align: top;
+    }
+    th { color: var(--muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .ticket-pill {
+      display: inline-block;
+      margin: 4px 6px 0 0;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #edf5ee;
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    @media print {
+      body { background: #fff; }
+      .hero, .panel { box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <h1>Rasin Application Security and Reliability Audit</h1>
+      <div class="meta">Generated 2026-04-10 11:21:46 UTC • Updated 2026-04-10 11:21:46 UTC • Target https://rasin.pyebwa.com</div>
+      <ul class="bullet-list">
+        <li>The active application in this repository is an Express server plus static frontend assets using Supabase Auth and a proxied Supabase gateway. It is not a Next.js application.</li><li>The highest-risk findings are committed secrets, over-broad authorization, service_role-backed storage actions reachable from user-controlled flows, an unsafe signup path, and multiple stored XSS paths.</li><li>This report is persisted in admin so findings can be tracked and converted into tickets over time.</li>
+      </ul>
+    </section>
+    <section class="panel">
+      <h2>Top 10 risks</h2>
+      <ol class="risk-list">
+        <li>Committed live secrets and privileged Supabase credentials</li><li>Moderators are granted broad admin access</li><li>Service-role storage operations are reachable from user-controlled flows</li><li>Any tree member can email the entire tree</li><li>Public signup endpoint creates email-confirmed users and logs credentials</li><li>Stored XSS through unsanitized innerHTML rendering</li><li>Invite and discovery actions are too broadly available</li><li>Intended security middleware is not active</li><li>Admin list endpoints do full-table reads and filter in memory</li><li>No Supabase RLS or storage policy definitions are present in this repo</li>
+      </ol>
+    </section>
+    
+      <section class="panel">
+        <h2>Critical</h2>
+        
+          <article class="finding">
+            <div class="badge severity-critical">critical</div>
+            <h3>Committed live secrets and privileged Supabase credentials</h3>
+            <p><strong>File/path:</strong> <code>/home/pyebwa-rasin/htdocs/rasin.pyebwa.com/.env</code></p>
+            <p><strong>Issue:</strong> The repository contains a committed .env with live-looking database credentials, Supabase service_role, VAPID private key, Resend API key, and webhook secret.</p>
+            <p><strong>Why it matters:</strong> Anyone with repository access can impersonate the backend, bypass storage and database protections via service_role, send email as the application, and forge webhook requests.</p>
+            <p><strong>Evidence:</strong></p>
+            <ul class="bullet-list">
+              <li>.env contains DATABASE_URL, SUPABASE_SERVICE_ROLE_KEY, VAPID_PRIVATE_KEY, RESEND_API_KEY, and SEND_EMAIL_HOOK_SECRET.</li><li>server/services/supabase.js constructs a privileged Supabase client from SUPABASE_SERVICE_ROLE_KEY.</li>
+            </ul>
+            <p><strong>Recommended fix:</strong> Rotate all exposed secrets immediately, remove .env from version control, replace it with .env.example, and audit systems for misuse.</p>
+            
+              <table>
+                <thead>
+                  <tr>
+                    <th>Action</th>
+                    <th>Priority</th>
+                    <th>Owner</th>
+                    <th>Linked tickets</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                        <td>Rotate exposed secrets and remove committed .env</td>
+                        <td>P0</td>
+                        <td>platform</td>
+                        <td>No tickets yet</td>
+                      </tr>
+                </tbody>
+              </table>
+            
+          </article>
+        
+      </section>
+    
+      <section class="panel">
+        <h2>High</h2>
+        
+          <article class="finding">
+            <div class="badge severity-high">high</div>
+            <h3>Moderators are granted broad admin access</h3>
+            <p><strong>File/path:</strong> <code>/home/pyebwa-rasin/htdocs/rasin.pyebwa.com/server/db/auth.js</code></p>
+            <p><strong>Issue:</strong> requireAdmin() allows moderator, admin, and superadmin, and sensitive /api/admin routes depend on that middleware.</p>
+            <p><strong>Why it matters:</strong> A lower-privilege role can access cross-tenant data and destructive admin operations.</p>
+            <p><strong>Evidence:</strong></p>
+            <ul class="bullet-list">
+              <li>server/db/auth.js includes moderator in requireAdmin().</li><li>server/api/admin.js uses requireAdmin for /summary, /users, /audit, and tree deletion.</li>
+            </ul>
+            <p><strong>Recommended fix:</strong> Split moderator privileges from admin privileges and gate sensitive routes behind admin or superadmin only.</p>
+            
+              <table>
+                <thead>
+                  <tr>
+                    <th>Action</th>
+                    <th>Priority</th>
+                    <th>Owner</th>
+                    <th>Linked tickets</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                        <td>Restrict sensitive admin routes to admin and superadmin</td>
+                        <td>P1</td>
+                        <td>backend</td>
+                        <td>No tickets yet</td>
+                      </tr>
+                </tbody>
+              </table>
+            
+          </article>
+        
+          <article class="finding">
+            <div class="badge severity-high">high</div>
+            <h3>Service-role storage operations are reachable from user-controlled flows</h3>
+            <p><strong>File/path:</strong> <code>/home/pyebwa-rasin/htdocs/rasin.pyebwa.com/server/api/uploads.js</code></p>
+            <p><strong>Issue:</strong> Upload and delete endpoints accept caller-controlled storage parameters and use a service_role storage client without verifying ownership.</p>
+            <p><strong>Why it matters:</strong> Any authenticated user can write into another tree namespace or delete files they do not own.</p>
+            <p><strong>Evidence:</strong></p>
+            <ul class="bullet-list">
+              <li>server/api/uploads.js trusts treeId, personId, category, and url/path from the request.</li><li>server/services/file-storage.js uploads and removes objects through supabaseAdmin.</li>
+            </ul>
+            <p><strong>Recommended fix:</strong> Derive storage paths on the server from verified ownership, persist file ownership metadata, and authorize deletes against that metadata.</p>
+            
+              <table>
+                <thead>
+                  <tr>
+                    <th>Action</th>
+                    <th>Priority</th>
+                    <th>Owner</th>
+                    <th>Linked tickets</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                        <td>Enforce server-side ownership checks for upload and delete paths</td>
+                        <td>P1</td>
+                        <td>backend</td>
+                        <td>No tickets yet</td>
+                      </tr>
+                </tbody>
+              </table>
+            
+          </article>
+        
+          <article class="finding">
+            <div class="badge severity-high">high</div>
+            <h3>Any tree member can email the entire tree</h3>
+            <p><strong>File/path:</strong> <code>/home/pyebwa-rasin/htdocs/rasin.pyebwa.com/server/api/notifications.js</code></p>
+            <p><strong>Issue:</strong> The family-update route only checks tree membership before emailing every other member.</p>
+            <p><strong>Why it matters:</strong> An invited member can spam the whole tree, generate cost, and send misleading messages under the application identity.</p>
+            <p><strong>Evidence:</strong></p>
+            <ul class="bullet-list">
+              <li>server/api/notifications.js only checks hasAccess(treeId, userId).</li><li>The same route sends email to all recipientIds derived from the tree member list.</li>
+            </ul>
+            <p><strong>Recommended fix:</strong> Restrict bulk family notifications to tree owner or delegated admins and add route-level rate limits.</p>
+            
+              <table>
+                <thead>
+                  <tr>
+                    <th>Action</th>
+                    <th>Priority</th>
+                    <th>Owner</th>
+                    <th>Linked tickets</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                        <td>Limit family-update email actions to authorized tree admins</td>
+                        <td>P1</td>
+                        <td>backend</td>
+                        <td>No tickets yet</td>
+                      </tr>
+                </tbody>
+              </table>
+            
+          </article>
+        
+          <article class="finding">
+            <div class="badge severity-high">high</div>
+            <h3>Public signup endpoint creates email-confirmed users and logs credentials</h3>
+            <p><strong>File/path:</strong> <code>/home/pyebwa-rasin/htdocs/rasin.pyebwa.com/server/api/auth-secure.js</code></p>
+            <p><strong>Issue:</strong> The unauthenticated signup path creates users with email_confirm set true and logs temporary passwords on email failure.</p>
+            <p><strong>Why it matters:</strong> This bypasses normal verification and risks credential disclosure in logs.</p>
+            <p><strong>Evidence:</strong></p>
+            <ul class="bullet-list">
+              <li>server/api/auth-secure.js uses supabaseAdmin.auth.admin.createUser with email_confirm: true.</li><li>The same route logs temp passwords when email is not configured or fails.</li>
+            </ul>
+            <p><strong>Recommended fix:</strong> Remove or heavily restrict this route and use OTP or verified-email signup only. Never log credentials.</p>
+            
+              <table>
+                <thead>
+                  <tr>
+                    <th>Action</th>
+                    <th>Priority</th>
+                    <th>Owner</th>
+                    <th>Linked tickets</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                        <td>Retire public temp-password signup and eliminate credential logging</td>
+                        <td>P1</td>
+                        <td>auth</td>
+                        <td>No tickets yet</td>
+                      </tr>
+                </tbody>
+              </table>
+            
+          </article>
+        
+      </section>
+    
+      <section class="panel">
+        <h2>Medium</h2>
+        
+          <article class="finding">
+            <div class="badge severity-medium">medium</div>
+            <h3>Stored XSS through unsanitized innerHTML rendering</h3>
+            <p><strong>File/path:</strong> <code>/home/pyebwa-rasin/htdocs/rasin.pyebwa.com/app/js/member-profile.js</code></p>
+            <p><strong>Issue:</strong> User-controlled values like biographies, tree names, descriptions, and discovery messages are rendered via innerHTML without sanitization.</p>
+            <p><strong>Why it matters:</strong> Malicious content can execute in other users’ browsers, including admin sessions.</p>
+            <p><strong>Evidence:</strong></p>
+            <ul class="bullet-list">
+              <li>app/js/member-profile.js injects member.biography into HTML.</li><li>app/js/app.js injects tree and discovery request fields into HTML templates.</li>
+            </ul>
+            <p><strong>Recommended fix:</strong> Escape all untrusted content or render through text nodes. Only allow sanitized rich text where explicitly needed.</p>
+            
+              <table>
+                <thead>
+                  <tr>
+                    <th>Action</th>
+                    <th>Priority</th>
+                    <th>Owner</th>
+                    <th>Linked tickets</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                        <td>Sanitize persisted user content before HTML rendering</td>
+                        <td>P2</td>
+                        <td>frontend</td>
+                        <td>No tickets yet</td>
+                      </tr>
+                </tbody>
+              </table>
+            
+          </article>
+        
+          <article class="finding">
+            <div class="badge severity-medium">medium</div>
+            <h3>Invite and discovery actions are too broadly available</h3>
+            <p><strong>File/path:</strong> <code>/home/pyebwa-rasin/htdocs/rasin.pyebwa.com/server/api/invites.js</code></p>
+            <p><strong>Issue:</strong> Any tree member can generate invites, review discovery requests, and invite discovery requesters. The allowMemberInvites tree setting is not enforced.</p>
+            <p><strong>Why it matters:</strong> Non-owner members can bring outsiders into a tree and access requester PII against product expectations.</p>
+            <p><strong>Evidence:</strong></p>
+            <ul class="bullet-list">
+              <li>server/api/invites.js only checks tree access before creating invites.</li><li>server/api/discovery.js only checks tree access before listing or updating requests.</li><li>server/db/schema.sql defines allowMemberInvites in settings but server routes do not enforce it.</li>
+            </ul>
+            <p><strong>Recommended fix:</strong> Enforce invite and discovery privileges on the server based on owner/admin role and tree settings.</p>
+            
+              <table>
+                <thead>
+                  <tr>
+                    <th>Action</th>
+                    <th>Priority</th>
+                    <th>Owner</th>
+                    <th>Linked tickets</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                        <td>Apply allowMemberInvites and role checks to invite and discovery routes</td>
+                        <td>P2</td>
+                        <td>backend</td>
+                        <td>No tickets yet</td>
+                      </tr>
+                </tbody>
+              </table>
+            
+          </article>
+        
+          <article class="finding">
+            <div class="badge severity-medium">medium</div>
+            <h3>Intended security middleware is not active</h3>
+            <p><strong>File/path:</strong> <code>/home/pyebwa-rasin/htdocs/rasin.pyebwa.com/server.js</code></p>
+            <p><strong>Issue:</strong> The live server disables CSP and does not wire in the project’s stronger security and validation middleware.</p>
+            <p><strong>Why it matters:</strong> The app misses intended protections, making XSS and input-handling issues easier to exploit.</p>
+            <p><strong>Evidence:</strong></p>
+            <ul class="bullet-list">
+              <li>server.js calls helmet({ contentSecurityPolicy: false }).</li><li>server/middleware/security.js and server/middleware/input-validation.js are present but unused.</li>
+            </ul>
+            <p><strong>Recommended fix:</strong> Adopt a single security middleware stack, wire it into server.js, and verify CSP and validation behavior in tests.</p>
+            
+              <table>
+                <thead>
+                  <tr>
+                    <th>Action</th>
+                    <th>Priority</th>
+                    <th>Owner</th>
+                    <th>Linked tickets</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                        <td>Enable and validate the intended security middleware stack</td>
+                        <td>P2</td>
+                        <td>backend</td>
+                        <td>No tickets yet</td>
+                      </tr>
+                </tbody>
+              </table>
+            
+          </article>
+        
+          <article class="finding">
+            <div class="badge severity-medium">medium</div>
+            <h3>Admin list endpoints do full-table reads and filter in memory</h3>
+            <p><strong>File/path:</strong> <code>/home/pyebwa-rasin/htdocs/rasin.pyebwa.com/server/api/admin.js</code></p>
+            <p><strong>Issue:</strong> Admin users and audit endpoints load large result sets into memory and only then filter, paginate, and search.</p>
+            <p><strong>Why it matters:</strong> This will degrade with data growth and creates avoidable memory pressure and slow responses.</p>
+            <p><strong>Evidence:</strong></p>
+            <ul class="bullet-list">
+              <li>server/api/admin.js loads all users before filtering.</li><li>server/api/admin.js loads all audit rows before filtering and slicing.</li>
+            </ul>
+            <p><strong>Recommended fix:</strong> Move search, sort, and pagination into SQL and only return the requested page.</p>
+            
+              <table>
+                <thead>
+                  <tr>
+                    <th>Action</th>
+                    <th>Priority</th>
+                    <th>Owner</th>
+                    <th>Linked tickets</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                        <td>Push admin filtering and pagination down into SQL</td>
+                        <td>P2</td>
+                        <td>backend</td>
+                        <td>No tickets yet</td>
+                      </tr>
+                </tbody>
+              </table>
+            
+          </article>
+        
+          <article class="finding">
+            <div class="badge severity-medium">medium</div>
+            <h3>No Supabase RLS or storage policy definitions are present in this repo</h3>
+            <p><strong>File/path:</strong> <code>/home/pyebwa-rasin/htdocs/rasin.pyebwa.com/server/db/schema.sql</code></p>
+            <p><strong>Issue:</strong> The codebase relies on application logic and a service_role backend client but contains no RLS or storage policy migrations.</p>
+            <p><strong>Why it matters:</strong> There is no database-level defense-in-depth if future code starts querying Supabase directly.</p>
+            <p><strong>Evidence:</strong></p>
+            <ul class="bullet-list">
+              <li>server/db/schema.sql defines tables but no ENABLE ROW LEVEL SECURITY or CREATE POLICY statements.</li><li>server/services/supabase.js creates a service_role Supabase client.</li>
+            </ul>
+            <p><strong>Recommended fix:</strong> Add explicit Supabase SQL migrations for RLS and storage policies, even if current access is mostly server-mediated.</p>
+            
+              <table>
+                <thead>
+                  <tr>
+                    <th>Action</th>
+                    <th>Priority</th>
+                    <th>Owner</th>
+                    <th>Linked tickets</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                        <td>Create explicit RLS and storage policy migrations for Supabase</td>
+                        <td>P2</td>
+                        <td>data</td>
+                        <td>No tickets yet</td>
+                      </tr>
+                </tbody>
+              </table>
+            
+          </article>
+        
+          <article class="finding">
+            <div class="badge severity-medium">medium</div>
+            <h3>Critical auth and authorization flows lack automated tests</h3>
+            <p><strong>File/path:</strong> <code>/home/pyebwa-rasin/htdocs/rasin.pyebwa.com/__tests__/theme-toggle-simple.test.js</code></p>
+            <p><strong>Issue:</strong> The automated test surface is dominated by theme/UI tests, with limited coverage of authz, storage, admin permissions, and mutation flows.</p>
+            <p><strong>Why it matters:</strong> Security regressions are likely to ship unnoticed.</p>
+            <p><strong>Evidence:</strong></p>
+            <ul class="bullet-list">
+              <li>package.json points test commands at Jest but the visible automated tests are mostly theme-related.</li><li>tests/html and tests/auth contain many manual HTML fixtures rather than enforced assertions.</li>
+            </ul>
+            <p><strong>Recommended fix:</strong> Add integration tests for role authorization, invite flows, storage ownership, and destructive mutations.</p>
+            
+              <table>
+                <thead>
+                  <tr>
+                    <th>Action</th>
+                    <th>Priority</th>
+                    <th>Owner</th>
+                    <th>Linked tickets</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                        <td>Add integration tests for authz, storage ownership, and destructive mutations</td>
+                        <td>P2</td>
+                        <td>qa</td>
+                        <td>No tickets yet</td>
+                      </tr>
+                </tbody>
+              </table>
+            
+          </article>
+        
+      </section>
+    
+    <section class="panel">
+      <h2>Missing tests</h2>
+      <ul class="bullet-list">
+        <li>Authorization matrix tests for member, moderator, admin, and superadmin across sensitive routes.</li><li>Upload and delete tests proving users cannot write into or delete another tree namespace.</li><li>Notification tests proving non-owners cannot email an entire tree.</li><li>XSS regression tests for biographies, tree names, descriptions, and discovery request content.</li><li>Invite and discovery tests enforcing allowMemberInvites and owner/admin restrictions.</li>
+      </ul>
+      <h2>Quick wins</h2>
+      <ul class="bullet-list">
+        <li>Rotate all committed secrets and remove .env from version control.</li><li>Restrict family-update, invite, and admin routes to the minimum required roles.</li><li>Add ownership checks to all storage write and delete paths.</li><li>Escape or sanitize all user-controlled content before rendering via innerHTML.</li>
+      </ul>
+      <h2>Longer-term refactors</h2>
+      <ul class="bullet-list">
+        <li>Move route-level authorization checks into a shared policy layer.</li><li>Create explicit Supabase SQL migrations for RLS, storage policies, and auth sync assumptions.</li><li>Replace in-memory admin filtering with SQL pagination and search.</li><li>Expand automated integration coverage for auth, authorization, storage, and admin mutations.</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>
