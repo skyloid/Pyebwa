@@ -68,10 +68,7 @@
                 title: 'Story and Team',
                 fields: [
                     { key: 'ourStory', label: 'Story Section Title' },
-                    { key: 'story2023Text', label: '2023 Story Text', type: 'textarea', rows: 2 },
-                    { key: 'storyEarly2024Text', label: 'Early 2024 Story Text', type: 'textarea', rows: 2 },
-                    { key: 'storyMid2024Text', label: 'Mid 2024 Story Text', type: 'textarea', rows: 2 },
-                    { key: 'storyTodayText', label: 'Today Story Text', type: 'textarea', rows: 2 },
+                    { key: 'roadmap', label: 'Roadmap', type: 'roadmap' },
                     { key: 'meetOurTeam', label: 'Team Section Title' },
                     { key: 'teamDescription', label: 'Team Intro Text', type: 'textarea', rows: 2 },
                     { key: 'founderDescription', label: 'Founder Description', type: 'textarea', rows: 2 },
@@ -1635,6 +1632,11 @@
         return state.pageContentDraft?.pages?.[page]?.[lang] || {};
     }
 
+    function getAboutRoadmapCopy() {
+        const copy = getPageContentCopy('about', state.activePageContentLang);
+        return Array.isArray(copy.roadmap) ? copy.roadmap : [];
+    }
+
     function updatePageContentStatusBar() {
         const draftStatus = document.getElementById('pageContentDraftStatus');
         const publishedStatus = document.getElementById('pageContentPublishedStatus');
@@ -1704,6 +1706,54 @@
                 </div>
                 <div class="page-content-fields">
                     ${group.fields.map((field) => {
+                        if (field.type === 'roadmap') {
+                            const roadmap = getAboutRoadmapCopy();
+                            return `
+                                <div class="form-group page-content-field page-content-roadmap-field">
+                                    <div class="page-content-roadmap-header">
+                                        <label>${escapeHtml(field.label)}</label>
+                                        <button type="button" class="btn btn-secondary" id="pageContentAddRoadmapItem">
+                                            <span class="material-icons">add</span>
+                                            <span>Add Roadmap Item</span>
+                                        </button>
+                                    </div>
+                                    <div class="page-content-roadmap-list">
+                                        ${roadmap.map((item, index) => `
+                                            <div class="page-content-roadmap-item" data-roadmap-index="${index}">
+                                                <div class="form-group page-content-field">
+                                                    <label for="pageContent-roadmap-year-${index}">Year / Label</label>
+                                                    <input
+                                                        id="pageContent-roadmap-year-${index}"
+                                                        type="text"
+                                                        value="${escapeHtml(item.year || '')}"
+                                                        data-page-content-roadmap-index="${index}"
+                                                        data-page-content-roadmap-field="year"
+                                                    >
+                                                </div>
+                                                <div class="form-group page-content-field">
+                                                    <label for="pageContent-roadmap-text-${index}">Story Text</label>
+                                                    <textarea
+                                                        id="pageContent-roadmap-text-${index}"
+                                                        rows="2"
+                                                        data-page-content-roadmap-index="${index}"
+                                                        data-page-content-roadmap-field="text"
+                                                    >${escapeHtml(item.text || '')}</textarea>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-danger page-content-roadmap-remove"
+                                                    data-page-content-roadmap-remove="${index}"
+                                                >
+                                                    <span class="material-icons">delete</span>
+                                                    <span>Remove</span>
+                                                </button>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            `;
+                        }
+
                         const value = values[field.key] || '';
                         const rows = field.rows || 3;
                         if (field.type === 'textarea') {
@@ -1734,6 +1784,48 @@
                 </div>
             </section>
         `).join('');
+    }
+
+    function ensurePageContentLanguageBucket(page = state.activePageContentPage, lang = state.activePageContentLang) {
+        if (!state.pageContentDraft.pages?.[page]) {
+            state.pageContentDraft.pages[page] = {};
+        }
+        if (!state.pageContentDraft.pages[page][lang]) {
+            state.pageContentDraft.pages[page][lang] = {};
+        }
+        return state.pageContentDraft.pages[page][lang];
+    }
+
+    function updateRoadmapField(index, field, value) {
+        const bucket = ensurePageContentLanguageBucket('about', state.activePageContentLang);
+        const roadmap = Array.isArray(bucket.roadmap) ? [...bucket.roadmap] : [];
+        if (!roadmap[index]) {
+            roadmap[index] = { year: '', text: '' };
+        }
+        roadmap[index] = {
+            ...roadmap[index],
+            [field]: value
+        };
+        bucket.roadmap = roadmap;
+        markPageContentDirty();
+    }
+
+    function addRoadmapItem() {
+        const bucket = ensurePageContentLanguageBucket('about', state.activePageContentLang);
+        const roadmap = Array.isArray(bucket.roadmap) ? [...bucket.roadmap] : [];
+        roadmap.push({ year: '', text: '' });
+        bucket.roadmap = roadmap;
+        markPageContentDirty();
+        renderPageContentEditor();
+    }
+
+    function removeRoadmapItem(index) {
+        const bucket = ensurePageContentLanguageBucket('about', state.activePageContentLang);
+        const roadmap = Array.isArray(bucket.roadmap) ? [...bucket.roadmap] : [];
+        roadmap.splice(index, 1);
+        bucket.roadmap = roadmap;
+        markPageContentDirty();
+        renderPageContentEditor();
     }
 
     function renderPageContentTabs() {
@@ -1837,16 +1929,39 @@
         });
 
         document.getElementById('pageContentEditor')?.addEventListener('input', (event) => {
+            const roadmapField = event.target.closest('[data-page-content-roadmap-index]');
+            if (roadmapField && state.pageContentDraft) {
+                const index = Number(roadmapField.getAttribute('data-page-content-roadmap-index'));
+                const fieldName = roadmapField.getAttribute('data-page-content-roadmap-field');
+                if (!Number.isNaN(index) && fieldName) {
+                    updateRoadmapField(index, fieldName, roadmapField.value);
+                }
+                return;
+            }
+
             const field = event.target.closest('[data-page-content-key]');
             if (!field || !state.pageContentDraft) return;
             const key = field.getAttribute('data-page-content-key');
             if (!key) return;
 
-            if (!state.pageContentDraft.pages?.[state.activePageContentPage]?.[state.activePageContentLang]) {
-                state.pageContentDraft.pages[state.activePageContentPage][state.activePageContentLang] = {};
-            }
-            state.pageContentDraft.pages[state.activePageContentPage][state.activePageContentLang][key] = field.value;
+            ensurePageContentLanguageBucket(state.activePageContentPage, state.activePageContentLang)[key] = field.value;
             markPageContentDirty();
+        });
+
+        document.getElementById('pageContentEditor')?.addEventListener('click', (event) => {
+            const addButton = event.target.closest('#pageContentAddRoadmapItem');
+            if (addButton) {
+                addRoadmapItem();
+                return;
+            }
+
+            const removeButton = event.target.closest('[data-page-content-roadmap-remove]');
+            if (removeButton) {
+                const index = Number(removeButton.getAttribute('data-page-content-roadmap-remove'));
+                if (!Number.isNaN(index)) {
+                    removeRoadmapItem(index);
+                }
+            }
         });
     }
 

@@ -11,6 +11,12 @@ const baseTranslations = require('../../pyebwa.com/js/translations-pages.js');
 
 const VALID_PAGES = ['home', 'about', 'mission', 'contact'];
 const VALID_LANGS = ['en', 'fr', 'ht'];
+const DEFAULT_ABOUT_ROADMAP = [
+    { yearKey: 'story2023', textKey: 'story2023Text' },
+    { yearKey: 'storyEarly2024', textKey: 'storyEarly2024Text' },
+    { yearKey: 'storyMid2024', textKey: 'storyMid2024Text' },
+    { yearKey: 'storyToday', textKey: 'storyTodayText' }
+];
 const PAGE_CONTENT_FIELDS = {
     home: ['heroTitle', 'heroSubtitle', 'getStarted', 'featuresTitle', 'feature1Title', 'feature1Desc', 'feature2Title', 'feature2Desc', 'feature3Title', 'feature3Desc'],
     about: ['aboutPageTitle', 'aboutTitle', 'aboutSubtitle', 'aboutMissionTitle', 'aboutMissionText', 'ourValues', 'heritage', 'heritageText', 'connection', 'connectionText', 'privacy', 'privacyText', 'inclusivity', 'inclusivityText', 'ourStory', 'story2023Text', 'storyEarly2024Text', 'storyMid2024Text', 'storyTodayText', 'meetOurTeam', 'teamDescription', 'founderDescription', 'leadDeveloperDescription', 'communityManagerDescription', 'readyToStart', 'joinThousands', 'getStartedFree'],
@@ -34,6 +40,12 @@ function createSeedData() {
                 }
                 return copy;
             }, {});
+            if (page === 'about') {
+                langsAcc[lang].roadmap = DEFAULT_ABOUT_ROADMAP.map((item) => ({
+                    year: String(source[item.yearKey] ?? ''),
+                    text: String(source[item.textKey] ?? '')
+                }));
+            }
             return langsAcc;
         }, {});
         return pagesAcc;
@@ -54,9 +66,37 @@ function normalizeTextMap(value) {
     return Object.entries(value).reduce((acc, [key, text]) => {
         const normalizedKey = String(key || '').trim();
         if (!normalizedKey) return acc;
+        if (Array.isArray(text) || (text && typeof text === 'object')) {
+            return acc;
+        }
         acc[normalizedKey] = String(text ?? '');
         return acc;
     }, {});
+}
+
+function normalizeRoadmap(value, fallback = []) {
+    if (!Array.isArray(value)) {
+        return fallback.map((item) => ({
+            year: String(item.year ?? '').trim(),
+            text: String(item.text ?? '')
+        })).filter((item) => item.year || item.text);
+    }
+
+    return value.map((item) => ({
+        year: String(item?.year ?? '').trim(),
+        text: String(item?.text ?? '')
+        })).filter((item) => item.year || item.text);
+}
+
+function extractLegacyAboutRoadmap(pageValue = {}, fallback = []) {
+    const legacyEntries = [
+        { year: pageValue.story2023 || fallback[0]?.year || '2023', text: pageValue.story2023Text || '' },
+        { year: pageValue.storyEarly2024 || fallback[1]?.year || 'Early 2024', text: pageValue.storyEarly2024Text || '' },
+        { year: pageValue.storyMid2024 || fallback[2]?.year || 'Mid 2024', text: pageValue.storyMid2024Text || '' },
+        { year: pageValue.storyToday || fallback[3]?.year || 'Today', text: pageValue.storyTodayText || '' }
+    ];
+
+    return legacyEntries.filter((item) => item.year || item.text);
 }
 
 function normalizeDataset(data = {}) {
@@ -66,7 +106,16 @@ function normalizeDataset(data = {}) {
     for (const page of VALID_PAGES) {
         pages[page] = {};
         for (const lang of VALID_LANGS) {
-            pages[page][lang] = normalizeTextMap(data.pages?.[page]?.[lang]);
+            const sourcePage = data.pages?.[page]?.[lang] || {};
+            const normalizedPage = normalizeTextMap(sourcePage);
+            if (page === 'about') {
+                const fallbackRoadmap = seed.pages.about?.[lang]?.roadmap || [];
+                normalizedPage.roadmap = normalizeRoadmap(
+                    sourcePage.roadmap,
+                    extractLegacyAboutRoadmap(sourcePage, fallbackRoadmap)
+                );
+            }
+            pages[page][lang] = normalizedPage;
         }
     }
 

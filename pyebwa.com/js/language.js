@@ -101,6 +101,8 @@
         });
     }
 
+    let pageContentOverridesPayload = null;
+
     async function loadPageContentOverrides() {
         try {
             const baseUrl = typeof window.__PYEBWA_assetUrl === 'function'
@@ -136,6 +138,39 @@
                 translations[lang] = { ...translations[lang], ...overrides };
             });
         });
+    }
+
+    function getAboutRoadmapEntries() {
+        const roadmap = pageContentOverridesPayload?.pages?.about?.[currentLang]?.roadmap;
+        if (Array.isArray(roadmap) && roadmap.length > 0) {
+            return roadmap
+                .map((item) => ({
+                    year: String(item?.year || '').trim(),
+                    text: String(item?.text || '')
+                }))
+                .filter((item) => item.year || item.text);
+        }
+
+        const fallback = translations[currentLang] || {};
+        return [
+            { year: fallback.story2023 || '2023', text: fallback.story2023Text || '' },
+            { year: fallback.storyEarly2024 || 'Early 2024', text: fallback.storyEarly2024Text || '' },
+            { year: fallback.storyMid2024 || 'Mid 2024', text: fallback.storyMid2024Text || '' },
+            { year: fallback.storyToday || 'Today', text: fallback.storyTodayText || '' }
+        ].filter((item) => item.year || item.text);
+    }
+
+    function renderAboutRoadmap() {
+        const timeline = document.getElementById('aboutRoadmapTimeline');
+        if (!timeline) return;
+
+        const entries = getAboutRoadmapEntries();
+        timeline.innerHTML = entries.map((item) => `
+            <div class="timeline-item">
+                <h3>${item.year}</h3>
+                <p>${item.text}</p>
+            </div>
+        `).join('');
     }
     
     // Get current language with proper persistence
@@ -222,6 +257,7 @@
             }
         });
 
+        renderAboutRoadmap();
         updateAuthLinks();
     }
 
@@ -314,6 +350,7 @@
         const overrides = await loadPageContentOverrides();
         if (overrides) {
             console.log('Merging page content overrides...');
+            pageContentOverridesPayload = overrides;
             mergePageContentOverrides(overrides);
         }
         updateLanguage();

@@ -278,6 +278,30 @@ body.dark-theme .page-content-sidebar-text {
     color: var(--admin-text-secondary);
 }
 
+body.dark-theme .page-content-editor-panel .chart-header h3,
+body.dark-theme .page-content-roadmap-header label,
+body.dark-theme .page-content-field label,
+body.dark-theme .page-content-roadmap-item label {
+    color: var(--admin-text);
+}
+
+body.dark-theme .page-content-roadmap-item {
+    background: rgba(20, 32, 24, 0.98);
+    border-color: var(--admin-border);
+}
+
+body.dark-theme .page-content-field input,
+body.dark-theme .page-content-field textarea {
+    background: rgba(20, 32, 24, 0.98);
+    border-color: var(--admin-border);
+    color: var(--admin-text);
+}
+
+body.dark-theme .page-content-field input::placeholder,
+body.dark-theme .page-content-field textarea::placeholder {
+    color: var(--admin-text-secondary);
+}
+
 body.dark-theme .audit-toolbar-note {
     background: linear-gradient(135deg, rgba(64, 145, 108, 0.12), rgba(107, 79, 58, 0.12));
     border-color: rgba(64, 145, 108, 0.24);
