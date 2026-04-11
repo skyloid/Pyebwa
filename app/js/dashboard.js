@@ -141,66 +141,25 @@ function createDashboard() {
                 opacity: 0 !important;
             }
             .slideshow-image.active {
-                opacity: 0.4 !important;
+                opacity: 0.28 !important;
             }
         </style>
         <!-- Welcome Section -->
-        <div class="dashboard-welcome card" style="
-            position: relative; 
-            overflow: hidden; 
-            min-height: 250px; 
-            padding: 0;
-            background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 100%);
-        ">
+        <div class="dashboard-welcome card">
             ${hasPhotos ? `
                 <!-- Slideshow container for family photos -->
-                <div class="dashboard-bg-slideshow" style="
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                ">
-                    <div class="slideshow-image active" style="
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        right: 0;
-                        bottom: 0;
-                        background-size: cover;
-                        background-position: center;
-                        background-repeat: no-repeat;
-                        opacity: 0.4;
-                        transition: opacity 1.5s ease-in-out;
-                    "></div>
-                    <div class="slideshow-image" style="
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        right: 0;
-                        bottom: 0;
-                        background-size: cover;
-                        background-position: center;
-                        background-repeat: no-repeat;
-                        opacity: 0;
-                        transition: opacity 1.5s ease-in-out;
-                    "></div>
+                <div class="dashboard-bg-slideshow">
+                    <div class="slideshow-image active"></div>
+                    <div class="slideshow-image"></div>
                 </div>
             ` : ''}
-            <div style="
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: linear-gradient(135deg, rgba(27,67,50,0.75) 0%, rgba(45,106,79,0.6) 50%, rgba(107,79,58,0.5) 100%);
-            "></div>
-            <div style="position: relative; z-index: 2; padding: 40px;">
-                <h2 style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); margin-bottom: 15px;">${t('welcomeBack') || 'Welcome back'}, ${currentUser?.displayName || currentUser?.email || 'User'}!</h2>
-                <p style="color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); font-size: 18px; line-height: 1.5;">${t('familyTreeSummary') || 'Your family tree has'} <strong>${stats.totalMembers}</strong> ${t('members') || 'members'} ${t('acrossGenerations') || 'across'} <strong>${stats.generations}</strong> ${t('generations') || 'generations'}.</p>
+            <div class="dashboard-welcome-overlay"></div>
+            <div class="dashboard-welcome-content">
+                <h2>${t('welcomeBack') || 'Welcome back'}, ${currentUser?.displayName || currentUser?.email || 'User'}!</h2>
+                <p>${t('familyTreeSummary') || 'Your family tree has'} <strong>${stats.totalMembers}</strong> ${t('members') || 'members'} ${t('acrossGenerations') || 'across'} <strong>${stats.generations}</strong> ${t('generations') || 'generations'}.</p>
                 ${!hasPhotos && stats.totalMembers > 0 ? `
-                    <p style="color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); font-size: 14px; margin-top: 15px; opacity: 0.9;">
-                        <span class="material-icons" style="font-size: 16px; vertical-align: middle;">photo_camera</span>
+                    <p class="dashboard-photo-prompt">
+                        <span class="material-icons">photo_camera</span>
                         ${t('addPhotosPrompt') || 'Add photos to your family members to see them here!'}
                     </p>
                 ` : ''}
@@ -611,17 +570,70 @@ const dashboardStyles = `
 }
 
 .dashboard-welcome {
-    /* Removed conflicting styles - using inline styles for background */
+    position: relative;
+    overflow: hidden;
+    min-height: 250px;
+    padding: 0;
+    background:
+        linear-gradient(135deg, rgba(253, 252, 250, 0.96) 0%, rgba(245, 243, 239, 0.92) 55%, rgba(235, 233, 227, 0.9) 100%);
+    border: 1px solid rgba(196, 192, 182, 0.55);
 }
 
 .dashboard-welcome h2 {
-    margin-bottom: 8px;
-    /* Color handled by inline styles */
+    margin-bottom: 12px;
+    color: var(--gray-900);
+    text-shadow: none;
 }
 
 .dashboard-welcome p {
-    /* Color handled by inline styles */
     font-size: 16px;
+    color: var(--gray-700);
+}
+
+.dashboard-bg-slideshow,
+.dashboard-welcome-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.dashboard-bg-slideshow .slideshow-image {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: opacity 1.5s ease-in-out;
+}
+
+.dashboard-welcome-overlay {
+    background:
+        linear-gradient(135deg, rgba(253, 252, 250, 0.92) 0%, rgba(245, 243, 239, 0.82) 52%, rgba(218, 215, 205, 0.68) 100%);
+}
+
+.dashboard-welcome-content {
+    position: relative;
+    z-index: 2;
+    padding: 40px;
+}
+
+.dashboard-photo-prompt {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 15px;
+    font-size: 14px;
+    color: var(--gray-600);
+}
+
+.dashboard-photo-prompt .material-icons {
+    font-size: 16px;
+    color: var(--primary-moss);
 }
 
 .dashboard-stats-grid {
@@ -757,6 +769,7 @@ const dashboardStyles = `
 
 .dashboard-insights {
     padding: 24px;
+    transform: translateY(-14px);
 }
 
 .dashboard-insights h3 {
@@ -801,6 +814,38 @@ body.dark-mode .dashboard-activity,
 body.dark-mode .dashboard-insights,
 body.dark-mode .dashboard-welcome {
     background: var(--gray-100);
+}
+
+body.dark-mode .dashboard-welcome {
+    border: 1px solid var(--gray-200);
+    background:
+        linear-gradient(135deg, rgba(20, 32, 24, 0.96) 0%, rgba(16, 28, 23, 0.94) 55%, rgba(11, 20, 16, 0.92) 100%);
+}
+
+body.dark-mode .dashboard-welcome-overlay {
+    background:
+        linear-gradient(135deg, rgba(16, 28, 23, 0.56) 0%, rgba(20, 32, 24, 0.44) 52%, rgba(11, 20, 16, 0.66) 100%);
+}
+
+body.dark-mode .dashboard-welcome h2,
+body.dark-mode .dashboard-welcome p {
+    color: #F3F0E8;
+}
+
+body.dark-mode .dashboard-welcome h2 {
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.32);
+}
+
+body.dark-mode .dashboard-welcome p {
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.28);
+}
+
+body.dark-mode .dashboard-photo-prompt {
+    color: var(--gray-700);
+}
+
+body.dark-mode .dashboard-photo-prompt .material-icons {
+    color: var(--primary-moss);
 }
 
 body.dark-mode .action-card {

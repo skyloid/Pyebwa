@@ -1222,6 +1222,15 @@
         viewStory(storyId) {
             const story = this.currentMember.stories?.find(s => s.id === storyId);
             if (story) {
+                const contributionCount = Array.isArray(story.contributions) ? story.contributions.length : 0;
+                const canContribute = typeof window.pyebwaFamilyStories?.canContributeToStory === 'function'
+                    ? window.pyebwaFamilyStories.canContributeToStory(story)
+                    : false;
+                const audioMimeType = story.audioUrl?.includes('.wav')
+                    ? 'audio/wav'
+                    : story.audioUrl?.includes('.ogg')
+                        ? 'audio/ogg'
+                        : 'audio/mpeg';
                 // Create a modal to view the full story
                 const modal = document.createElement('div');
                 modal.className = 'story-view-modal';
@@ -1235,8 +1244,32 @@
                         <div class="story-full-content">${story.content.replace(/\n/g, '<br>')}</div>
                         ${story.audioUrl ? `
                             <audio controls class="story-audio">
-                                <source src="${story.audioUrl}" type="audio/mpeg">
+                                <source src="${story.audioUrl}" type="${audioMimeType}">
                             </audio>
+                        ` : ''}
+                        ${canContribute ? `
+                            <div class="story-view-actions">
+                                <button type="button" class="btn btn-primary add-story-contribution">
+                                    <i class="material-icons">post_add</i>
+                                    ${t('addToStory') || 'Add to Story'}
+                                </button>
+                            </div>
+                        ` : ''}
+                        ${contributionCount > 0 ? `
+                            <div class="story-contributions">
+                                <h3>${t('storyContributions') || 'Family Contributions'} (${contributionCount})</h3>
+                                <div class="story-contributions-list">
+                                    ${story.contributions.map(contribution => `
+                                        <article class="story-contribution-card">
+                                            <div class="story-contribution-header">
+                                                <strong>${contribution.contributorName || (t('familyMember') || 'Family Member')}</strong>
+                                                <span>${this.formatDate(contribution.createdAt || contribution.date)}</span>
+                                            </div>
+                                            <p>${(contribution.content || '').replace(/\n/g, '<br>')}</p>
+                                        </article>
+                                    `).join('')}
+                                </div>
+                            </div>
                         ` : ''}
                         ${story.tags?.length > 0 ? `
                             <div class="story-tags">
@@ -1246,6 +1279,10 @@
                     </div>
                 `;
                 document.body.appendChild(modal);
+                modal.querySelector('.add-story-contribution')?.addEventListener('click', () => {
+                    modal.remove();
+                    window.pyebwaFamilyStories?.contributeToStory?.(story.id);
+                });
             }
         },
         
@@ -2253,26 +2290,63 @@
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const formData = new FormData(form);
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const originalSubmitLabel = submitBtn?.innerHTML;
                 
                 // Get selected related members
                 const relatedMembersSelect = form.querySelector('select[name="relatedMembers"]');
                 const relatedMembers = relatedMembersSelect ? 
                     Array.from(relatedMembersSelect.selectedOptions).map(opt => opt.value) : [];
                 
-                const storyData = {
-                    title: formData.get('title'),
-                    content: formData.get('content'),
-                    date: formData.get('date'),
-                    tags: formData.get('tags').split(',').map(tag => tag.trim()).filter(tag => tag),
-                    storyType: formData.get('storyType') || 'personal',
-                    relatedMembers: relatedMembers,
-                    audioUrl: formData.get('audioUrl') || null,
-                    audioDuration: formData.get('audioDuration') || null,
-                    id: isEdit ? storyToEdit.id : Date.now().toString()
-                };
-                
-                await this.saveStory(storyData, isEdit ? storyToEdit.id : null);
-                modal.remove();
+                try {
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = `<i class="material-icons">hourglass_top</i>${t('saving') || 'Saving...'}`;
+                    }
+
+                    if (pendingAudioBlob && !audioUrlInput.value) {
+                        try {
+                            const uploadedAudioUrl = await Promise.race([
+                                this.uploadAudioBlob(pendingAudioBlob),
+                                new Promise(resolve => setTimeout(() => resolve(null), 4000))
+                            ]);
+
+                            if (uploadedAudioUrl) {
+                                audioUrlInput.value = uploadedAudioUrl;
+                                if (pendingAudioPreviewUrl) {
+                                    URL.revokeObjectURL(pendingAudioPreviewUrl);
+                                    pendingAudioPreviewUrl = null;
+                                }
+                                pendingAudioBlob = null;
+                                audioElement.src = uploadedAudioUrl;
+                            }
+                        } catch (error) {
+                            console.error('Audio upload did not finish before save:', error);
+                        }
+                    }
+
+                    const storyData = {
+                        title: formData.get('title'),
+                        content: formData.get('content'),
+                        date: formData.get('date'),
+                        tags: formData.get('tags').split(',').map(tag => tag.trim()).filter(tag => tag),
+                        storyType: formData.get('storyType') || 'personal',
+                        relatedMembers: relatedMembers,
+                        audioUrl: audioUrlInput.value || null,
+                        audioDuration: audioDurationInput.value || null,
+                        id: isEdit ? storyToEdit.id : Date.now().toString()
+                    };
+
+                    const saved = await this.saveStory(storyData, isEdit ? storyToEdit.id : null);
+                    if (saved) {
+                        modal.remove();
+                    }
+                } finally {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalSubmitLabel;
+                    }
+                }
             });
             
             // Handle audio recording
@@ -2285,10 +2359,57 @@
             const audioUrlInput = modal.querySelector('input[name="audioUrl"]');
             const audioDurationInput = modal.querySelector('input[name="audioDuration"]');
             
-            let mediaRecorder = null;
-            let audioChunks = [];
+            let audioStream = null;
+            let audioContext = null;
+            let audioSource = null;
+            let audioProcessor = null;
+            let recordedChunks = [];
             let recordingStartTime = null;
             let timerInterval = null;
+            let isStoppingRecording = false;
+            let pendingAudioBlob = null;
+            let pendingAudioPreviewUrl = null;
+
+            const resetRecordingUi = () => {
+                recordBtn.dataset.recording = 'false';
+                recordBtn.classList.remove('recording');
+                recordBtn.disabled = false;
+                recordBtn.querySelector('.record-text').textContent = t('startRecording') || 'Start Recording';
+                recordBtn.querySelector('.material-icons').textContent = 'mic';
+                recordingTimer.style.display = 'none';
+
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+            };
+
+            const cleanupAudioCapture = async () => {
+                try {
+                    audioProcessor?.disconnect();
+                } catch (error) {}
+                try {
+                    audioSource?.disconnect();
+                } catch (error) {}
+                if (audioProcessor) {
+                    audioProcessor.onaudioprocess = null;
+                }
+
+                audioStream?.getTracks().forEach(track => track.stop());
+                audioStream = null;
+
+                if (audioContext) {
+                    try {
+                        await audioContext.close();
+                    } catch (error) {}
+                }
+
+                audioContext = null;
+                audioSource = null;
+                audioProcessor = null;
+                recordedChunks = [];
+                recordingStartTime = null;
+            };
             
             // Initialize audio recording
             recordBtn?.addEventListener('click', async () => {
@@ -2297,36 +2418,29 @@
                 if (!isRecording) {
                     // Start recording
                     try {
-                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                        mediaRecorder = new MediaRecorder(stream);
-                        audioChunks = [];
-                        
-                        mediaRecorder.ondataavailable = (event) => {
-                            audioChunks.push(event.data);
+                        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                        if (!AudioContextClass) {
+                            throw new Error('Web Audio API not supported');
+                        }
+
+                        audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        audioContext = new AudioContextClass();
+                        audioSource = audioContext.createMediaStreamSource(audioStream);
+                        audioProcessor = audioContext.createScriptProcessor(4096, 1, 1);
+                        recordedChunks = [];
+
+                        audioProcessor.onaudioprocess = (event) => {
+                            const input = event.inputBuffer.getChannelData(0);
+                            recordedChunks.push(new Float32Array(input));
                         };
-                        
-                        mediaRecorder.onstop = async () => {
-                            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                            const duration = Math.floor((Date.now() - recordingStartTime) / 1000);
-                            
-                            // Upload audio to storage
-                            const audioUrl = await this.uploadAudioBlob(audioBlob);
-                            if (audioUrl) {
-                                audioUrlInput.value = audioUrl;
-                                audioDurationInput.value = duration;
-                                audioElement.src = audioUrl;
-                                audioPreview.style.display = 'block';
-                            }
-                            
-                            // Stop all tracks
-                            stream.getTracks().forEach(track => track.stop());
-                        };
-                        
-                        mediaRecorder.start();
+
+                        audioSource.connect(audioProcessor);
+                        audioProcessor.connect(audioContext.destination);
                         recordingStartTime = Date.now();
                         
                         // Update UI
                         recordBtn.dataset.recording = 'true';
+                        recordBtn.disabled = false;
                         recordBtn.classList.add('recording');
                         recordBtn.querySelector('.record-text').textContent = t('stopRecording') || 'Stop Recording';
                         recordBtn.querySelector('.material-icons').textContent = 'stop';
@@ -2350,28 +2464,49 @@
                         alert(t('microphoneError') || 'Could not access microphone. Please check your permissions.');
                     }
                 } else {
+                    if (isStoppingRecording) {
+                        return;
+                    }
+
+                    isStoppingRecording = true;
+                    recordBtn.disabled = true;
+
                     // Stop recording
-                    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-                        mediaRecorder.stop();
-                        
-                        // Update UI
-                        recordBtn.dataset.recording = 'false';
-                        recordBtn.classList.remove('recording');
-                        recordBtn.querySelector('.record-text').textContent = t('startRecording') || 'Start Recording';
-                        recordBtn.querySelector('.material-icons').textContent = 'mic';
-                        recordingTimer.style.display = 'none';
-                        
-                        // Stop timer
-                        if (timerInterval) {
-                            clearInterval(timerInterval);
-                            timerInterval = null;
+                    if (audioProcessor && audioContext) {
+                        const duration = Math.floor((Date.now() - recordingStartTime) / 1000);
+                        const sampleRate = audioContext.sampleRate;
+                        const chunksSnapshot = recordedChunks.slice();
+                        const wavBlob = this.float32ChunksToWavBlob(chunksSnapshot, sampleRate);
+
+                        resetRecordingUi();
+                        await cleanupAudioCapture();
+
+                        if (pendingAudioPreviewUrl) {
+                            URL.revokeObjectURL(pendingAudioPreviewUrl);
                         }
+                        pendingAudioBlob = wavBlob;
+                        pendingAudioPreviewUrl = URL.createObjectURL(wavBlob);
+                        audioUrlInput.value = '';
+                        audioDurationInput.value = duration;
+                        audioElement.src = pendingAudioPreviewUrl;
+                        audioPreview.style.display = 'block';
+                        recordBtn.disabled = false;
+                        isStoppingRecording = false;
+                    } else {
+                        resetRecordingUi();
+                        await cleanupAudioCapture();
+                        isStoppingRecording = false;
                     }
                 }
             });
             
             // Remove audio
             removeAudioBtn?.addEventListener('click', () => {
+                if (pendingAudioPreviewUrl) {
+                    URL.revokeObjectURL(pendingAudioPreviewUrl);
+                    pendingAudioPreviewUrl = null;
+                }
+                pendingAudioBlob = null;
                 audioUrlInput.value = '';
                 audioDurationInput.value = '';
                 audioElement.src = '';
@@ -2525,10 +2660,50 @@
         
         // Save story
         // Upload audio blob to storage
+        float32ChunksToWavBlob(chunks, sampleRate) {
+            const samples = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+            const bytesPerSample = 2;
+            const numberOfChannels = 1;
+            const blockAlign = bytesPerSample;
+            const buffer = new ArrayBuffer(44 + (samples * bytesPerSample));
+            const view = new DataView(buffer);
+
+            const writeString = (offset, value) => {
+                for (let i = 0; i < value.length; i += 1) {
+                    view.setUint8(offset + i, value.charCodeAt(i));
+                }
+            };
+
+            writeString(0, 'RIFF');
+            view.setUint32(4, 36 + (samples * blockAlign), true);
+            writeString(8, 'WAVE');
+            writeString(12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, numberOfChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * blockAlign, true);
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, 16, true);
+            writeString(36, 'data');
+            view.setUint32(40, samples * bytesPerSample, true);
+
+            let offset = 44;
+            for (const chunk of chunks) {
+                for (let i = 0; i < chunk.length; i += 1) {
+                    const sample = Math.max(-1, Math.min(1, chunk[i] || 0));
+                    view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+                    offset += bytesPerSample;
+                }
+            }
+
+            return new Blob([buffer], { type: 'audio/wav' });
+        },
+
         async uploadAudioBlob(audioBlob) {
             try {
-                const file = new File([audioBlob], `story_${Date.now()}.webm`, {
-                    type: audioBlob.type || 'audio/webm'
+                const file = new File([audioBlob], `story_${Date.now()}.wav`, {
+                    type: 'audio/wav'
                 });
                 return await PyebwaAPI.uploadFile(file, {
                     treeId: window.userFamilyTreeId,
@@ -2596,26 +2771,34 @@
                                 relatedMember.relatedStories.push(storyReference);
                             }
                             
-                            // Update the related member
-                            await window.updateFamilyMember(memberId, {
-                                relatedStories: relatedMember.relatedStories
-                            });
+                            // Update related references without blocking the primary story save
+                            try {
+                                await window.updateFamilyMember(memberId, {
+                                    relatedStories: relatedMember.relatedStories
+                                });
+                            } catch (relatedError) {
+                                console.warn('Unable to update related member story reference:', relatedError);
+                            }
                         }
                     }
                 }
                 
                 // Refresh stories tab
                 const storiesContainer = document.getElementById('stories-tab');
-                this.loadStories(storiesContainer);
+                if (storiesContainer) {
+                    this.loadStories(storiesContainer);
+                }
                 
                 if (window.showSuccess) {
                     window.showSuccess(storyId ? t('storyUpdated') || 'Story updated successfully' : t('storyAdded') || 'Story added successfully');
                 }
+                return true;
             } catch (error) {
                 console.error('Error saving story:', error);
                 if (window.showError) {
                     window.showError(t('errorSavingStory') || 'Error saving story');
                 }
+                return false;
             }
         },
         

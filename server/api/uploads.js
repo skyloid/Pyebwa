@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const { verifySession } = require('../db/auth');
-const { saveFile, deleteFile } = require('../services/file-storage');
+const { saveFile, saveLocalFile, deleteFile } = require('../services/file-storage');
 
 // Configure multer for memory storage (we'll save to disk ourselves)
 const upload = multer({
@@ -19,6 +19,14 @@ const upload = multer({
         } else {
             cb(new Error('Only image files (JPEG, PNG, GIF, WebP) are allowed'));
         }
+    }
+});
+
+const uploadAny = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 20 * 1024 * 1024,
+        files: 1
     }
 });
 
@@ -67,6 +75,54 @@ router.delete('/photo', verifySession, async (req, res) => {
         res.json({ success: true, message: 'File deleted' });
     } catch (error) {
         console.error('Delete error:', error);
+        res.status(500).json({ error: 'Failed to delete file' });
+    }
+});
+
+router.post('/file', verifySession, uploadAny.single('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        const { treeId, personId, type, category } = req.body;
+        const baseCategory = category || (treeId ? `trees/${treeId}` : `users/${req.user.uid}`);
+        const baseId = personId || req.user.uid || 'shared';
+        const bucketFolder = type || 'files';
+        const targetId = `${bucketFolder}/${baseId}`;
+        const url = type === 'audio-stories'
+            ? await saveLocalFile(
+                baseCategory,
+                targetId,
+                req.file.buffer,
+                req.file.originalname
+            )
+            : await saveFile(
+                baseCategory,
+                targetId,
+                req.file.buffer,
+                req.file.originalname,
+                req.file.mimetype === 'video/webm' ? 'audio/webm' : req.file.mimetype
+            );
+
+        res.json({ success: true, url });
+    } catch (error) {
+        console.error('Generic upload error:', error);
+        res.status(500).json({ error: 'Failed to upload file' });
+    }
+});
+
+router.delete('/file', verifySession, async (req, res) => {
+    try {
+        const { url } = req.body;
+        if (!url) {
+            return res.status(400).json({ error: 'File URL required' });
+        }
+
+        await deleteFile(url);
+        res.json({ success: true, message: 'File deleted' });
+    } catch (error) {
+        console.error('Generic delete error:', error);
         res.status(500).json({ error: 'Failed to delete file' });
     }
 });

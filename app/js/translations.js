@@ -587,6 +587,16 @@ const translations = {
         audioHelp: "Record your story in your own voice (max 5 minutes)",
         microphoneError: "Could not access microphone. Please check your permissions.",
         audioUploadError: "Failed to upload audio. Please try again.",
+        addToStory: "Add to Story",
+        addStoryContributionHelp: "Add your memory, perspective, or detail to this family story.",
+        storyContribution: "Your Contribution",
+        storyContributionPlaceholder: "Write what you remember...",
+        addContribution: "Add Contribution",
+        contribution: "contribution",
+        contributions: "contributions",
+        contributionAdded: "Contribution added successfully",
+        reactToStory: "React to story",
+        removeReaction: "Remove reaction",
         
         // Footer
         poweredBy: "Powered by",
@@ -1003,6 +1013,16 @@ const translations = {
         removeAudio: "Supprimer l'audio",
         audioHelp: "Enregistrez votre histoire avec votre propre voix (max 5 minutes)",
         microphoneError: "Impossible d'accéder au microphone. Veuillez vérifier vos autorisations.",
+        addToStory: "Ajouter à l'histoire",
+        addStoryContributionHelp: "Ajoutez votre souvenir, votre point de vue ou un détail à cette histoire familiale.",
+        storyContribution: "Votre contribution",
+        storyContributionPlaceholder: "Écrivez ce dont vous vous souvenez...",
+        addContribution: "Ajouter la contribution",
+        contribution: "contribution",
+        contributions: "contributions",
+        contributionAdded: "Contribution ajoutée avec succès",
+        reactToStory: "Reagir a l'histoire",
+        removeReaction: "Retirer la reaction",
         audioUploadError: "Échec du téléchargement de l'audio. Veuillez réessayer.",
         
         // Footer
@@ -1402,6 +1422,16 @@ const translations = {
         audioHelp: "Anrejistre istwa ou ak pwòp vwa ou (maksimòm 5 minit)",
         microphoneError: "Pa ka jwenn aksè nan mikwofòn. Tanpri tcheke otorizasyon ou yo.",
         audioUploadError: "Pa kapab voye odyo a. Tanpri eseye ankò.",
+        addToStory: "Ajoute nan istwa a",
+        addStoryContributionHelp: "Ajoute souvni ou, pwendvi ou, oswa yon detay nan istwa fanmi sa a.",
+        storyContribution: "Kontribisyon ou",
+        storyContributionPlaceholder: "Ekri sa ou sonje...",
+        addContribution: "Ajoute kontribisyon",
+        contribution: "kontribisyon",
+        contributions: "kontribisyon",
+        contributionAdded: "Kontribisyon an ajoute avèk siksè",
+        reactToStory: "Reaji sou istwa a",
+        removeReaction: "Retire reyaksyon an",
         
         // Footer
         poweredBy: "Pwodwi pa",
@@ -1590,5 +1620,10 @@ window.setLanguage = function(lang) {
 
     if (currentView.id === 'membersView' && window.renderMembersList) {
         window.renderMembersList();
+        return;
+    }
+
+    if (currentView.id === 'storiesView' && window.loadStories) {
+        window.loadStories();
     }
 }
