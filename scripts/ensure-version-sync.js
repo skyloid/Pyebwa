@@ -37,10 +37,15 @@ function makeBuildId() {
     return `${yyyy}${mm}${dd}T${hh}${mi}${ss}Z-version-sync`;
 }
 
-function bumpPatchVersion() {
+function bumpVersion() {
     const current = fs.readFileSync(versionFile, 'utf8').trim();
     const [major = '1', minor = '0', patch = '0'] = current.split('.');
-    const next = `${Number(major) || 1}.${Number(minor) || 0}.${(Number(patch) || 0) + 1}`;
+    const normalizedMajor = Number(major) || 1;
+    const normalizedMinor = Number(minor) || 0;
+    const normalizedPatch = Number(patch) || 0;
+    const next = normalizedPatch >= 99
+        ? `${normalizedMajor}.${normalizedMinor + 1}.0`
+        : `${normalizedMajor}.${normalizedMinor}.${normalizedPatch + 1}`;
     fs.writeFileSync(versionFile, `${next}\n`);
     return next;
 }
@@ -54,7 +59,7 @@ function main() {
     }
 
     if (!stagedFiles.includes('VERSION')) {
-        bumpPatchVersion();
+        bumpVersion();
     }
 
     const buildId = makeBuildId();
