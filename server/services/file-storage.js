@@ -2,10 +2,84 @@ const crypto = require('crypto');
 const fs = require('fs/promises');
 const fsSync = require('fs');
 const path = require('path');
+const { execFile } = require('child_process');
+const { promisify } = require('util');
 const { supabaseAdmin } = require('./supabase');
 
 const DEFAULT_BUCKET = 'photos';
 const LOCAL_UPLOADS_ROOT = path.join(__dirname, '../../uploads');
+const execFileAsync = promisify(execFile);
+
+function trimTrailingSlash(value) {
+    return String(value || '').trim().replace(/\/+$/, '');
+}
+
+function getConfiguredPublicSupabaseUrl() {
+    const candidates = [
+        process.env.SUPABASE_PUBLIC_URL,
+        process.env.PUBLIC_SUPABASE_URL,
+        process.env.SUPABASE_STORAGE_PUBLIC_URL
+    ];
+
+    for (const candidate of candidates) {
+        const normalized = trimTrailingSlash(candidate);
+        if (normalized) {
+            return normalized;
+        }
+    }
+
+    return '';
+}
+
+function buildPublicStorageUrl(storagePath, fallbackUrl = '') {
+    const publicSupabaseUrl = getConfiguredPublicSupabaseUrl();
+    if (publicSupabaseUrl) {
+        return `${publicSupabaseUrl}/storage/v1/object/public/${DEFAULT_BUCKET}/${storagePath}`;
+    }
+
+    return fallbackUrl;
+}
+
+function getPublicSiteUrl() {
+    const configuredUrl = trimTrailingSlash(
+        process.env.PYEBWA_PUBLIC_SITE_URL
+        || process.env.PUBLIC_SITE_URL
+        || 'https://pyebwa.com'
+    );
+
+    try {
+        const parsed = new URL(configuredUrl);
+        if (parsed.hostname === 'rasin.pyebwa.com') {
+            return 'https://pyebwa.com';
+        }
+    } catch (_) {
+        // Keep the original configured value if it is not a valid absolute URL.
+    }
+
+    return configuredUrl;
+}
+
+async function deployLocalUpload(relativePath, diskPath) {
+    const remoteRoot = trimTrailingSlash(process.env.PYEBWA_PUBLIC_ROOT || '/home/u316621955/domains/pyebwa.com/public_html');
+    const remoteUser = String(process.env.PYEBWA_PUBLIC_SSH_USER || 'u316621955');
+    const remoteHost = String(process.env.PYEBWA_PUBLIC_SSH_HOST || '145.223.107.9');
+    const remotePort = String(process.env.PYEBWA_PUBLIC_SSH_PORT || '65002');
+    const remoteDir = path.posix.join(remoteRoot, 'uploads', path.posix.dirname(relativePath));
+    const remotePath = path.posix.join(remoteRoot, 'uploads', relativePath);
+    const remoteTarget = `${remoteUser}@${remoteHost}:${remotePath}`;
+
+    await execFileAsync('ssh', ['-p', remotePort, `${remoteUser}@${remoteHost}`, `mkdir -p '${remoteDir}'`], {
+        cwd: path.join(__dirname, '..', '..')
+    });
+
+    await execFileAsync('scp', ['-P', remotePort, diskPath, remoteTarget], {
+        cwd: path.join(__dirname, '..', '..')
+    });
+
+    await execFileAsync('ssh', ['-p', remotePort, `${remoteUser}@${remoteHost}`, `chmod 644 '${remotePath}'`], {
+        cwd: path.join(__dirname, '..', '..')
+    });
+}
 
 // Save a file buffer to Supabase Storage
 async function saveFile(category, id, fileBuffer, originalName, mimeType = null) {
@@ -24,19 +98,12 @@ async function saveFile(category, id, fileBuffer, originalName, mimeType = null)
         throw new Error(`Storage upload failed: ${error.message}`);
     }
 
-    // Return public URL — rewrite internal Docker URL to public-facing path
+    // Return the direct public storage URL when an external Supabase base is configured.
     const { data: urlData } = supabaseAdmin.storage
         .from(DEFAULT_BUCKET)
         .getPublicUrl(storagePath);
 
-    // The Supabase client returns internal URL (http://127.0.0.1:8100/storage/...)
-    // Rewrite to go through our public proxy (/supabase/storage/...)
-    const publicOrigin = process.env.PUBLIC_URL || 'https://rasin.pyebwa.com';
-    const publicUrl = urlData.publicUrl.replace(
-        /^https?:\/\/[^/]+/,
-        publicOrigin + '/supabase'
-    );
-    return publicUrl;
+    return buildPublicStorageUrl(storagePath, urlData.publicUrl);
 }
 
 async function saveLocalFile(category, id, fileBuffer, originalName) {
@@ -47,9 +114,9 @@ async function saveLocalFile(category, id, fileBuffer, originalName) {
 
     await fs.mkdir(path.dirname(diskPath), { recursive: true });
     await fs.writeFile(diskPath, fileBuffer);
-
-    const publicOrigin = process.env.PUBLIC_URL || 'https://rasin.pyebwa.com';
-    return `${publicOrigin}/uploads/${relativePath}`;
+    await fs.chmod(diskPath, 0o644);
+    await deployLocalUpload(relativePath, diskPath);
+    return `${getPublicSiteUrl()}/uploads/${relativePath}`;
 }
 
 // Delete a file from Supabase Storage
@@ -140,4 +207,11 @@ function getMimeType(ext) {
     return types[ext] || 'application/octet-stream';
 }
 
-module.exports = { saveFile, saveLocalFile, deleteFile, getFileInfo };
+module.exports = {
+    saveFile,
+    saveLocalFile,
+    deleteFile,
+    getFileInfo,
+    buildPublicStorageUrl,
+    getConfiguredPublicSupabaseUrl
+};

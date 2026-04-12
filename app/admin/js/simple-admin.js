@@ -71,8 +71,11 @@
                     { key: 'roadmap', label: 'Roadmap', type: 'roadmap' },
                     { key: 'meetOurTeam', label: 'Team Section Title' },
                     { key: 'teamDescription', label: 'Team Intro Text', type: 'textarea', rows: 2 },
+                    { key: 'founderCeo', label: 'Founder Title' },
                     { key: 'founderDescription', label: 'Founder Description', type: 'textarea', rows: 2 },
+                    { key: 'leadDeveloper', label: 'Lead Developer Title' },
                     { key: 'leadDeveloperDescription', label: 'Lead Developer Description', type: 'textarea', rows: 2 },
+                    { key: 'communityManager', label: 'Community Manager Title' },
                     { key: 'communityManagerDescription', label: 'Community Manager Description', type: 'textarea', rows: 2 }
                 ]
             },
@@ -281,10 +284,73 @@
             .replace(/'/g, '&#39;');
     }
 
-    function getAdminPreviewUrl(url) {
+    function getAdminPreviewUrl(url, version = '') {
         const value = String(url || '').trim();
         if (!value) return '';
-        return `/api/admin/slideshows/preview?url=${encodeURIComponent(value)}`;
+        const previewUrl = new URL('/api/admin/slideshows/preview', window.location.origin);
+        previewUrl.searchParams.set('url', value);
+        if (version) {
+            previewUrl.searchParams.set('v', String(version));
+        }
+        return `${previewUrl.pathname}${previewUrl.search}`;
+    }
+
+    function revokeSlidePreviewUrl(slide) {
+        if (slide?.tempPreviewUrl && String(slide.tempPreviewUrl).startsWith('blob:')) {
+            URL.revokeObjectURL(slide.tempPreviewUrl);
+        }
+        if (slide) {
+            delete slide.tempPreviewUrl;
+        }
+    }
+
+    function setSlidePreviewUrl(slide, file) {
+        if (!slide || !file) return;
+        revokeSlidePreviewUrl(slide);
+        slide.tempPreviewUrl = URL.createObjectURL(file);
+    }
+
+    function getSlidePreviewSrc(slide) {
+        if (!slide) return '';
+        if (slide.tempPreviewUrl) {
+            return slide.tempPreviewUrl;
+        }
+        return getAdminPreviewUrl(slide.url, slide.updatedAt || slide.createdAt || '');
+    }
+
+    function findSlideById(slideId) {
+        if (!slideId || !state.slideshowDraft) return null;
+        for (const page of VALID_SLIDESHOW_PAGES) {
+            const slide = (state.slideshowDraft.pages?.[page] || []).find((item) => item.id === slideId);
+            if (slide) return slide;
+        }
+        return null;
+    }
+
+    function getPreviewHeroMinHeight(page) {
+        switch (page) {
+        case 'about':
+        case 'mission':
+        case 'contact':
+            return 620;
+        case 'home':
+        default:
+            return 600;
+        }
+    }
+
+    function syncPreviewSurfaceLayout(page = state.activeSlideshowPage) {
+        const previewSurface = document.getElementById('slideshowPreviewSurface');
+        if (!previewSurface) return;
+
+        const viewportWidth = Math.max(
+            document.documentElement?.clientWidth || 0,
+            window.innerWidth || 0,
+            320
+        );
+        const heroMinHeight = getPreviewHeroMinHeight(page);
+        const clampedWidth = Math.min(Math.max(viewportWidth, 320), 1920);
+        previewSurface.style.setProperty('--slideshow-preview-aspect-ratio', `${clampedWidth} / ${heroMinHeight}`);
     }
 
     function getOverlayForSelectedSlide() {
@@ -854,7 +920,7 @@
         list.innerHTML = slides.map((slide, index) => `
             <div class="slideshow-list-item${slide.id === state.selectedSlideId ? ' active' : ''}" data-slide-id="${escapeHtml(slide.id)}" draggable="true">
                 <div class="slideshow-thumb">
-                    <img src="${escapeHtml(getAdminPreviewUrl(slide.url))}" alt="Slide ${index + 1}">
+                    <img src="${escapeHtml(getSlidePreviewSrc(slide))}" alt="Slide ${index + 1}">
                 </div>
                 <div class="slideshow-meta">
                     <strong>Slide ${index + 1}</strong>
@@ -969,14 +1035,16 @@
     function syncPreviewCrop(slide) {
         const previewImage = document.getElementById('slideshowPreviewImage');
         const previewSurface = document.getElementById('slideshowPreviewSurface');
-        if (!previewImage || !slide) return;
+        if (!previewImage || !previewSurface || !slide) return;
+        syncPreviewSurfaceLayout(slide.page || state.activeSlideshowPage);
         const crop = slide.crop || { x: 50, y: 50, zoom: 100 };
         const filters = slide.filters || { brightness: 100, contrast: 100, saturate: 100 };
         const fitMode = 'cover';
         const effectiveZoom = Math.max(100, crop.zoom ?? 100);
-        const scale = effectiveZoom / 100;
         let translateX = 0;
         let translateY = 0;
+        let finalWidth = previewSurface.clientWidth || 0;
+        let finalHeight = previewSurface.clientHeight || 0;
 
         previewImage.style.objectFit = fitMode;
         previewImage.style.objectPosition = '50% 50%';
@@ -1001,15 +1069,17 @@
                 baseHeight = surfaceWidth / imageRatio;
             }
 
-            const scaledWidth = baseWidth * scale;
-            const scaledHeight = baseHeight * scale;
-            const overflowX = Math.max(0, scaledWidth - surfaceWidth);
-            const overflowY = Math.max(0, scaledHeight - surfaceHeight);
+            finalWidth = baseWidth * (effectiveZoom / 100);
+            finalHeight = baseHeight * (effectiveZoom / 100);
+            const overflowX = Math.max(0, finalWidth - surfaceWidth);
+            const overflowY = Math.max(0, finalHeight - surfaceHeight);
             translateX = ((50 - crop.x) / 50) * (overflowX / 2);
             translateY = ((50 - crop.y) / 50) * (overflowY / 2);
         }
 
-        previewImage.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+        previewImage.style.width = `${finalWidth}px`;
+        previewImage.style.height = `${finalHeight}px`;
+        previewImage.style.transform = `translate(-50%, -50%) translate(${translateX}px, ${translateY}px)`;
         previewImage.style.filter = `brightness(${filters.brightness}%) contrast(${filters.contrast}%) saturate(${filters.saturate}%)`;
         previewImage.style.cursor = 'grab';
         if (previewSurface) {
@@ -1039,6 +1109,7 @@
     function renderOverlayControls() {
         const colorInput = document.getElementById('slideshowOverlayColor');
         const opacityInput = document.getElementById('slideshowOverlayOpacity');
+        const opacityValue = document.getElementById('slideshowOverlayOpacityValue');
         const overrideInput = document.getElementById('slideshowOverlayOverride');
         const slide = findSelectedSlide();
         const overlay = getOverlayForSelectedSlide();
@@ -1046,6 +1117,7 @@
         if (overrideInput) overrideInput.checked = isOverride;
         if (colorInput) colorInput.value = overlay.color;
         if (opacityInput) opacityInput.value = overlay.opacity;
+        if (opacityValue) opacityValue.textContent = `${overlay.opacity}%`;
         if (colorInput) colorInput.disabled = !isOverride;
         if (opacityInput) opacityInput.disabled = !isOverride;
         syncPreviewOverlay();
@@ -1055,12 +1127,14 @@
         const toggle = document.getElementById('slideshowRandomizeToggle');
         const colorInput = document.getElementById('slideshowGlobalOverlayColor');
         const opacityInput = document.getElementById('slideshowGlobalOverlayOpacity');
+        const opacityValue = document.getElementById('slideshowGlobalOverlayOpacityValue');
         if (toggle) {
             toggle.checked = !!getPageSettings().randomize;
         }
         const overlay = getGlobalOverlayForPage();
         if (colorInput) colorInput.value = overlay.color;
         if (opacityInput) opacityInput.value = overlay.opacity;
+        if (opacityValue) opacityValue.textContent = `${overlay.opacity}%`;
     }
 
     function resetSlideImageState(slide) {
@@ -1092,11 +1166,12 @@
         if (editor) editor.style.display = 'block';
         if (previewSurface) {
             previewSurface.dataset.page = slide.page || state.activeSlideshowPage;
+            syncPreviewSurfaceLayout(slide.page || state.activeSlideshowPage);
         }
 
         const previewImage = document.getElementById('slideshowPreviewImage');
         if (previewImage) {
-            previewImage.src = getAdminPreviewUrl(slide.url);
+            previewImage.src = getSlidePreviewSrc(slide);
             previewImage.alt = 'Slideshow image';
             previewImage.onload = () => {
                 const currentSlide = findSelectedSlide();
@@ -1155,6 +1230,7 @@
 
     async function saveSlideshowDraft() {
         if (!state.slideshowDraft) return;
+        const selectedSlideId = state.selectedSlideId;
 
         await flushPendingSlideshowInputs();
         syncSlideshowControlsToState();
@@ -1170,6 +1246,9 @@
 
         const payload = await response.json();
         state.slideshowDraft = payload.draft;
+        if (selectedSlideId && findSlideById(selectedSlideId)) {
+            state.selectedSlideId = selectedSlideId;
+        }
         state.slideshowDirty = false;
         updateSlideStatusBar();
         renderSlideshowList();
@@ -1471,15 +1550,21 @@
     async function handleSlideshowUpload(file) {
         if (!file) return;
 
-        const page = state.replacingSlideId ? (findSelectedSlide()?.page || state.activeSlideshowPage) : state.activeSlideshowPage;
+        const replacingSlide = state.replacingSlideId ? findSlideById(state.replacingSlideId) : null;
+        const page = replacingSlide?.page || state.activeSlideshowPage;
+        if (replacingSlide) {
+            setSlidePreviewUrl(replacingSlide, file);
+            renderSlideshowList();
+            renderSlideEditor();
+        }
         const uploadResult = await uploadSlideshowImage(file, page);
+        let nextSelectedSlideId = null;
 
-        if (state.replacingSlideId) {
-            const slide = findSelectedSlide();
-            if (slide) {
-                slide.url = uploadResult.url;
-                slide.updatedAt = new Date().toISOString();
-            }
+        if (replacingSlide) {
+            replacingSlide.url = uploadResult.url;
+            replacingSlide.updatedAt = new Date().toISOString();
+            state.selectedSlideId = replacingSlide.id;
+            nextSelectedSlideId = replacingSlide.id;
             state.replacingSlideId = null;
         } else {
             const now = new Date().toISOString();
@@ -1499,13 +1584,19 @@
                 createdAt: now,
                 updatedAt: now
             };
+            setSlidePreviewUrl(slide, file);
             state.slideshowDraft.pages[page].push(slide);
             state.selectedSlideId = slide.id;
+            nextSelectedSlideId = slide.id;
         }
 
         markSlideshowDirty();
         renderSlideshowList();
         renderSlideEditor();
+        if (nextSelectedSlideId) {
+            state.selectedSlideId = nextSelectedSlideId;
+        }
+        await saveSlideshowDraft();
     }
 
     function moveSelectedSlide(delta) {
@@ -1533,6 +1624,7 @@
     function deleteSelectedSlide() {
         const slide = findSelectedSlide();
         if (!slide || !window.confirm('Delete this draft slide?')) return;
+        revokeSlidePreviewUrl(slide);
 
         state.slideshowDraft.pages[slide.page] = state.slideshowDraft.pages[slide.page]
             .filter((item) => item.id !== slide.id)
@@ -1561,6 +1653,13 @@
         previewSurface?.addEventListener('pointerup', endSlideshowDrag);
         previewSurface?.addEventListener('pointercancel', endSlideshowDrag);
         previewSurface?.addEventListener('wheel', handleSlideshowWheelZoom, { passive: false });
+        window.addEventListener('resize', () => {
+            const slide = findSelectedSlide();
+            syncPreviewSurfaceLayout(slide?.page || state.activeSlideshowPage);
+            if (slide) {
+                syncPreviewCrop(slide);
+            }
+        }, { passive: true });
 
         document.querySelectorAll('.slideshow-page-tab').forEach((button) => {
             button.addEventListener('click', async () => {
@@ -1601,7 +1700,11 @@
             if (!file) return;
             try {
                 await handleSlideshowUpload(file);
+            } catch (error) {
+                console.error('Slideshow upload failed:', error);
+                window.alert(error?.message || 'Failed to replace slideshow image.');
             } finally {
+                state.replacingSlideId = null;
                 event.target.value = '';
             }
         });
@@ -3073,6 +3176,18 @@
     async function loadAdminData() {
         try {
             const response = await authFetch('/api/admin/summary');
+            if (response.status === 429) {
+                renderSummary({
+                    currentUserRole: state.adminRole || 'admin',
+                    totalUsers: 0,
+                    activeUsers30d: 0,
+                    totalTrees: 0,
+                    totalMembers: 0,
+                    recentUsers: [],
+                    recentTrees: []
+                });
+                return;
+            }
             if (!response.ok) {
                 throw new Error('Failed to load admin summary');
             }

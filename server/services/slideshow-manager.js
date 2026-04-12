@@ -3,6 +3,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { execFile } = require('child_process');
 const { promisify } = require('util');
+const { buildPublicStorageUrl, getConfiguredPublicSupabaseUrl } = require('./file-storage');
 
 const DATA_DIR = path.join(__dirname, '..', '..', 'pyebwa.com', 'data');
 const DRAFT_PATH = path.join(DATA_DIR, 'slideshows.draft.json');
@@ -155,6 +156,23 @@ function normalizeOverlay(overlay = {}, page) {
     };
 }
 
+function normalizeSlideUrl(url) {
+    const value = String(url || '').trim();
+    if (!value) return '';
+
+    const publicSupabaseUrl = getConfiguredPublicSupabaseUrl();
+    if (!publicSupabaseUrl) {
+        return value;
+    }
+
+    const storageMatch = value.match(/\/storage\/v1\/object\/public\/[^/]+\/(.+)$/);
+    if (!storageMatch) {
+        return value;
+    }
+
+    return buildPublicStorageUrl(storageMatch[1], value);
+}
+
 function normalizeSlide(page, slide = {}, index = 0, pageOverlay = null) {
     const normalizedSlideOverlay = normalizeOverlay(slide.overlay || pageOverlay || {}, page);
     const overlayExplicit = slide.overlayExplicit === true;
@@ -163,7 +181,7 @@ function normalizeSlide(page, slide = {}, index = 0, pageOverlay = null) {
     return {
         id: slide.id || `${page}-${index + 1}-${crypto.randomBytes(4).toString('hex')}`,
         page,
-        url: String(slide.url || '').trim(),
+        url: normalizeSlideUrl(slide.url),
         title: String(slide.title || '').trim(),
         caption: String(slide.caption || '').trim(),
         alt: String(slide.alt || '').trim(),
@@ -222,7 +240,14 @@ async function ensureDataFiles() {
 async function readJson(filePath) {
     await ensureDataFiles();
     const raw = await fs.readFile(filePath, 'utf8');
-    return normalizeDataset(JSON.parse(raw));
+    const parsed = JSON.parse(raw);
+    const normalized = normalizeDataset(parsed);
+
+    if (JSON.stringify(parsed) !== JSON.stringify(normalized)) {
+        await fs.writeFile(filePath, JSON.stringify(normalized, null, 2), 'utf8');
+    }
+
+    return normalized;
 }
 
 async function writeJson(filePath, data) {

@@ -71,11 +71,19 @@
             return;
         }
 
-        const response = await fetch('/api/admin/summary', {
+        const requestSummary = () => fetch('/api/admin/summary', {
             headers: {
                 Authorization: `Bearer ${session.access_token}`
             }
         });
+
+        let response = await requestSummary();
+
+        if (response.status === 429) {
+            const retryAfter = Number(response.headers.get('retry-after')) || 1;
+            await new Promise((resolve) => setTimeout(resolve, Math.max(1000, retryAfter * 1000)));
+            response = await requestSummary();
+        }
 
         if (response.status === 401) {
             redirectToLogin();
@@ -84,6 +92,20 @@
 
         if (response.status === 403) {
             showDenied("You don't have permission to access the admin dashboard.");
+            return;
+        }
+
+        if (response.status === 429) {
+            const detail = {
+                user: session.user,
+                role: session.user.user_metadata?.role || session.user.app_metadata?.role || 'admin',
+                userData: {
+                    displayName: session.user.user_metadata?.display_name || session.user.user_metadata?.full_name || session.user.email,
+                    photoURL: session.user.user_metadata?.avatar_url || ''
+                }
+            };
+
+            window.dispatchEvent(new CustomEvent('adminAuthSuccess', { detail }));
             return;
         }
 

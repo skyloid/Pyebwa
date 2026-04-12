@@ -12,6 +12,7 @@ const { setupAdminEndpoint } = require('./server-admin-setup');
 
 const app = express();
 const PORT = process.env.PORT || 9111;
+const supabaseProxyTarget = (process.env.SUPABASE_URL || 'http://127.0.0.1:8001').replace(/\/$/, '');
 
 // Trust proxy for correct req.ip behind reverse proxy
 app.set('trust proxy', 1);
@@ -36,12 +37,28 @@ const authLimiter = rateLimit({
     legacyHeaders: false,
 });
 
+const adminLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 300,
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
 // CORS
 app.use(cors({
     origin: ['https://www.pyebwa.com', 'https://pyebwa.com', 'https://secure.pyebwa.com', 'https://rasin.pyebwa.com'],
     credentials: true
 }));
 app.use(compression());
+
+// Supabase proxy - keep ahead of body parsers so auth/storage POST bodies stream through untouched
+app.use('/supabase', createProxyMiddleware({
+    target: supabaseProxyTarget,
+    changeOrigin: true,
+    pathRewrite: { '^/supabase': '' },
+    ws: true
+}));
+
 app.use(express.json({
     limit: '10mb',
     verify: (req, res, buf) => {
@@ -53,32 +70,16 @@ app.use(express.json({
 
 // Legacy /uploads path - photos now stored in Supabase Storage
 // Keep for backward compat if any old URLs exist
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+    setHeaders: (res, filePath) => {
+        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+        setAssetHeaders(res, filePath);
+    }
+}));
 
 // Admin dashboard route
 app.get('/admin', (req, res) => {
     res.redirect('/app/admin/');
-});
-
-// Admin page routes
-app.get('/app/admin/setup-admin.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'app/admin/setup-admin.html'));
-});
-
-app.get('/app/admin/setup-simple.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'app/admin/setup-simple.html'));
-});
-
-app.get('/app/admin/manual-setup.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'app/admin/manual-setup.html'));
-});
-
-app.get('/app/admin/promote-claude.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'app/admin/promote-claude.html'));
-});
-
-app.get('/app/admin/promote-claude-auth.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'app/admin/promote-claude-auth.html'));
 });
 
 app.get('/app/admin', (req, res) => {
@@ -130,6 +131,11 @@ app.get('/app/version.json', (req, res) => {
 
 // Serve static files from the app directory
 app.use('/app', express.static(path.join(__dirname, 'app'), {
+    setHeaders: setAssetHeaders
+}));
+
+// Serve public-site assets locally for admin previews and shared tooling
+app.use('/site-assets', express.static(path.join(__dirname, 'pyebwa.com'), {
     setHeaders: setAssetHeaders
 }));
 
@@ -197,10 +203,13 @@ const systemRoutes = require('./server/api/system');
 app.use('/api/system', apiLimiter, systemRoutes);
 
 const adminRoutes = require('./server/api/admin');
-app.use('/api/admin', apiLimiter, adminRoutes);
+app.use('/api/admin', adminLimiter, adminRoutes);
 
 const inviteRoutes = require('./server/api/invites');
 app.use('/api/invites', apiLimiter, inviteRoutes);
+
+const discoveryRoutes = require('./server/api/discovery');
+app.use('/api/discovery', apiLimiter, discoveryRoutes);
 
 // Tree CRUD API
 const treeRoutes = require('./server/api/trees');
@@ -214,13 +223,8 @@ app.use('/api/uploads', apiLimiter, uploadRoutes);
 const authRoutes = require('./server/api/auth-secure');
 app.use('/api/auth', authLimiter, authRoutes);
 
-// Supabase proxy - forward /supabase/* to local Supabase Kong gateway
-app.use('/supabase', createProxyMiddleware({
-    target: 'http://127.0.0.1:8100',
-    changeOrigin: true,
-    pathRewrite: { '^/supabase': '' },
-    ws: true
-}));
+const recoveryRoutes = require('./server/api/recovery');
+app.use('/api/recovery', apiLimiter, recoveryRoutes);
 
 // Handle 404s
 app.use((req, res) => {

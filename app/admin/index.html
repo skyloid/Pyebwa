@@ -7,12 +7,12 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     
     <!-- CSS -->
-    <link rel="stylesheet" href="/app/admin/css/admin-base.css?v=1.2.03">
-    <link rel="stylesheet" href="/app/admin/css/admin-components.css?v=1.2.03">
-    <link rel="stylesheet" href="/app/admin/css/admin-dark.css?v=1.2.03">
-    <link rel="stylesheet" href="/app/admin/css/content.css?v=1.2.03">
-    <link rel="stylesheet" href="/app/admin/css/communications.css?v=1.2.03">
-    <link rel="stylesheet" href="/app/admin/css/backup-system.css?v=1.2.03">
+    <link rel="stylesheet" href="/app/admin/css/admin-base.css?v=20260412T074200Z-overlay-opacity-label">
+    <link rel="stylesheet" href="/app/admin/css/admin-components.css?v=20260412T074200Z-overlay-opacity-label">
+    <link rel="stylesheet" href="/app/admin/css/admin-dark.css?v=20260412T074200Z-overlay-opacity-label">
+    <link rel="stylesheet" href="/app/admin/css/content.css?v=20260412T074200Z-overlay-opacity-label">
+    <link rel="stylesheet" href="/app/admin/css/communications.css?v=20260412T074200Z-overlay-opacity-label">
+    <link rel="stylesheet" href="/app/admin/css/backup-system.css?v=20260412T074200Z-overlay-opacity-label">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
@@ -610,7 +610,7 @@
                                     <input type="color" id="slideshowGlobalOverlayColor" value="#000000">
                                 </label>
                                 <label class="form-group" style="margin:0; min-width:180px;">
-                                    <span>Global Opacity</span>
+                                    <span>Global Opacity <span id="slideshowGlobalOverlayOpacityValue">0%</span></span>
                                     <input type="range" id="slideshowGlobalOverlayOpacity" min="0" max="100" value="0">
                                 </label>
                             </div>
@@ -645,21 +645,6 @@
                                         <div class="slideshow-preview-surface" id="slideshowPreviewSurface">
                                             <img id="slideshowPreviewImage" alt="">
                                             <div id="slideshowPreviewOverlay" style="position:absolute;inset:0;pointer-events:none;z-index:1;"></div>
-                                            <div class="slideshow-preview-guides" aria-hidden="true">
-                                                <div class="guide-mask top"></div>
-                                                <div class="guide-mask bottom"></div>
-                                                <div class="guide-mask left"></div>
-                                                <div class="guide-mask right"></div>
-                                                <div class="guide-frame"></div>
-                                                <div class="guide-line edge vertical left"></div>
-                                                <div class="guide-line edge vertical right"></div>
-                                                <div class="guide-line vertical one"></div>
-                                                <div class="guide-line vertical two"></div>
-                                                <div class="guide-line horizontal one"></div>
-                                                <div class="guide-line horizontal two"></div>
-                                                <div class="guide-line center vertical"></div>
-                                                <div class="guide-line center horizontal"></div>
-                                            </div>
                                         </div>
                                         <div class="slideshow-zoom-rail">
                                             <label for="slideshowCropZoom">Zoom</label>
@@ -680,7 +665,7 @@
                                         <input type="color" id="slideshowOverlayColor" value="#000000">
                                     </div>
                                     <div class="form-group">
-                                        <label for="slideshowOverlayOpacity">Overlay Opacity</label>
+                                        <label for="slideshowOverlayOpacity">Overlay Opacity <span id="slideshowOverlayOpacityValue">0%</span></label>
                                         <input type="range" id="slideshowOverlayOpacity" min="0" max="100" value="0">
                                     </div>
                                 </div>
@@ -1316,8 +1301,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/app/js/supabase-client.js"></script>
     <script src="/app/js/api-client.js"></script>
-    <script src="/app/js/back-to-top.js?v=1.1.99"></script>
-    <script src="/app/js/admin/auth-guard.js?v=1.2.03"></script>
-    <script src="/app/admin/js/simple-admin.js?v=1.2.03"></script>
+    <script src="/app/js/back-to-top.js?v=20260412T074200Z-overlay-opacity-label"></script>
+    <script src="/app/js/admin/auth-guard.js?v=20260412T074200Z-overlay-opacity-label"></script>
+    <script src="/app/admin/js/simple-admin.js?v=20260412T074200Z-overlay-opacity-label"></script>
 </body>
 </html>

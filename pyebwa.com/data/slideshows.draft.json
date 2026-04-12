@@ -1,0 +1,522 @@
+{
+  "updatedAt": "2026-04-12T13:41:48.706Z",
+  "publishedAt": "2026-04-09T04:15:43.587Z",
+  "overlays": {
+    "home": {
+      "color": "#4d8289",
+      "opacity": 55
+    },
+    "about": {
+      "color": "#72b027",
+      "opacity": 30
+    },
+    "mission": {
+      "color": "#f4bc1f",
+      "opacity": 24
+    },
+    "contact": {
+      "color": "#000000",
+      "opacity": 0
+    }
+  },
+  "settings": {
+    "home": {
+      "randomize": false
+    },
+    "about": {
+      "randomize": false
+    },
+    "mission": {
+      "randomize": false
+    },
+    "contact": {
+      "randomize": false
+    }
+  },
+  "pages": {
+    "home": [
+      {
+        "id": "home-9-2c377b77",
+        "page": "home",
+        "url": "https://pyebwa.com/images/SlideShow/expedia_group-793013-161452384-777434.jpg?v=20260407T223900Z-upscaled-slides",
+        "title": "",
+        "caption": "",
+        "alt": "",
+        "fit": "cover",
+        "crop": {
+          "x": 50,
+          "y": 50,
+          "zoom": 100
+        },
+        "filters": {
+          "brightness": 100,
+          "contrast": 100,
+          "saturate": 100
+        },
+        "overlayExplicit": true,
+        "overlayOverride": false,
+        "overlay": {
+          "color": "#4d8289",
+          "opacity": 55
+        },
+        "order": 0,
+        "createdAt": "2026-04-09T04:15:43.587Z",
+        "updatedAt": "2026-04-12T13:41:48.706Z"
+      },
+      {
+        "id": "home-12-8b153b04",
+        "page": "home",
+        "url": "https://pyebwa.com/images/SlideShow/sun-rise-on-cormier.jpg?v=20260407T223900Z-upscaled-slides",
+        "title": "",
+        "caption": "",
+        "alt": "",
+        "fit": "cover",
+        "crop": {
+          "x": 50,
+          "y": 50,
+          "zoom": 100
+        },
+        "filters": {
+          "brightness": 100,
+          "contrast": 100,
+          "saturate": 100
+        },
+        "overlayExplicit": false,
+        "overlayOverride": false,
+        "overlay": {
+          "color": "#000000",
+          "opacity": 0
+        },
+        "order": 1,
+        "createdAt": "2026-04-09T04:15:43.587Z",
+        "updatedAt": "2026-04-12T13:41:48.706Z"
+      },
+      {
+        "id": "home-4-a73bb489",
+        "page": "home",
+        "url": "https://pyebwa.com/images/SlideShow/HD-wallpaper-haitian-flag-silk-wavy-flags-north-american-countries-national-symbols-flag-of-haiti-fabric-flags-haiti-flag-3d-art-haiti-north-america-haiti-3d-flag.jpg?v=20260407T223900Z-upscaled-slides",
+        "title": "",
+        "caption": "",
+        "alt": "",
+        "fit": "cover",
+        "crop": {
+          "x": 50,
+          "y": 50,
+          "zoom": 100
+        },
+        "filters": {
+          "brightness": 100,
+          "contrast": 100,
+          "saturate": 100
+        },
+        "overlayExplicit": false,
+        "overlayOverride": false,
+        "overlay": {
+          "color": "#000000",
+          "opacity": 0
+        },
+        "order": 2,
+        "createdAt": "2026-04-09T04:15:43.587Z",
+        "updatedAt": "2026-04-12T13:41:48.706Z"
+      },
+      {
+        "id": "home-15-a3d8333c",
+        "page": "home",
+        "url": "https://pyebwa.com/images/SlideShow/wp2203260.webp?v=20260407T223900Z-upscaled-slides",
+        "title": "",
+        "caption": "",
+        "alt": "",
+        "fit": "cover",
+        "crop": {
+          "x": 50,
+          "y": 50,
+          "zoom": 100
+        },
+        "filters": {
+          "brightness": 100,
+          "contrast": 100,
+          "saturate": 100
+        },
+        "overlayExplicit": false,
+        "overlayOverride": false,
+        "overlay": {
+          "color": "#000000",
+          "opacity": 0
+        },
+        "order": 3,
+        "createdAt": "2026-04-09T04:15:43.587Z",
+        "updatedAt": "2026-04-12T13:41:48.706Z"
+      },
+      {
+        "id": "home-3-6ed745b1",
+        "page": "home",
+        "url": "https://pyebwa.com/images/SlideShow/20140508-094914.jpg?v=20260407T223900Z-upscaled-slides",
+        "title": "",
+        "caption": "",
+        "alt": "",
+        "fit": "cover",
+        "crop": {
+          "x": 50,
+          "y": 50,
+          "zoom": 100
+        },
+        "filters": {
+          "brightness": 100,
+          "contrast": 100,
+          "saturate": 100
+        },
+        "overlayExplicit": true,
+        "overlayOverride": false,
+        "overlay": {
+          "color": "#000000",
+          "opacity": 55
+        },
+        "order": 4,
+        "createdAt": "2026-04-09T04:15:43.587Z",
+        "updatedAt": "2026-04-12T13:41:48.706Z"
+      },
+      {
+        "id": "home-5-3ddcd80e",
+        "page": "home",
+        "url": "https://pyebwa.com/images/SlideShow/LaCitadelle.jpg?v=20260407T223900Z-upscaled-slides",
+        "title": "",
+        "caption": "",
+        "alt": "",
+        "fit": "cover",
+        "crop": {
+          "x": 50,
+          "y": 50,
+          "zoom": 100
+        },
+        "filters": {
+          "brightness": 100,
+          "contrast": 100,
+          "saturate": 100
+        },
+        "overlayExplicit": false,
+        "overlayOverride": false,
+        "overlay": {
+          "color": "#000000",
+          "opacity": 0
+        },
+        "order": 5,
+        "createdAt": "2026-04-09T04:15:43.587Z",
+        "updatedAt": "2026-04-12T13:41:48.706Z"
+      },
+      {
+        "id": "home-6-1da5a7e9",
+        "page": "home",
+        "url": "https://pyebwa.com/images/SlideShow/5e0a0e49e91b8e0f8379e91e7dee11f9.jpg?v=20260407T223900Z-upscaled-slides",
+        "title": "",
+        "caption": "",
+        "alt": "",
+        "fit": "cover",
+        "crop": {
+          "x": 50,
+          "y": 50,
+          "zoom": 100
+        },
+        "filters": {
+          "brightness": 100,
+          "contrast": 100,
+          "saturate": 100
+        },
+        "overlayExplicit": false,
+        "overlayOverride": false,
+        "overlay": {
+          "color": "#000000",
+          "opacity": 0
+        },
+        "order": 6,
+        "createdAt": "2026-04-09T04:15:43.587Z",
+        "updatedAt": "2026-04-12T13:41:48.706Z"
+      },
+      {
+        "id": "home-7-d060f370",
+        "page": "home",
+        "url": "https://pyebwa.com/images/SlideShow/citadelle-laferriere-and-cannon-balls-47ko900hbv2okyxp.jpg?v=20260407T223900Z-upscaled-slides",
+        "title": "",
+        "caption": "",
+        "alt": "",
+        "fit": "cover",
+        "crop": {
+          "x": 50,
+          "y": 50,
+          "zoom": 100
+        },
+        "filters": {
+          "brightness": 100,
+          "contrast": 100,
+          "saturate": 100
+        },
+        "overlayExplicit": false,
+        "overlayOverride": false,
+        "overlay": {
+          "color": "#000000",
+          "opacity": 0
+        },
+        "order": 7,
+        "createdAt": "2026-04-09T04:15:43.587Z",
+        "updatedAt": "2026-04-12T13:41:48.706Z"
+      },
+      {
+        "id": "home-8-59b03d64",
+        "page": "home",
+        "url": "https://pyebwa.com/images/SlideShow/concert-philharmonique.jpg?v=20260407T223900Z-upscaled-slides",
+        "title": "",
+        "caption": "",
+        "alt": "",
+        "fit": "cover",
+        "crop": {
+          "x": 50,
+          "y": 50,
+          "zoom": 100
+        },
+        "filters": {
+          "brightness": 100,
+          "contrast": 100,
+          "saturate": 100
+        },
+        "overlayExplicit": false,
+        "overlayOverride": false,
+        "overlay": {
+          "color": "#000000",
+          "opacity": 0
+        },
+        "order": 8,
+        "createdAt": "2026-04-09T04:15:43.587Z",
+        "updatedAt": "2026-04-12T13:41:48.706Z"
+      },
+      {
+        "id": "home-10-a7623024",
+        "page": "home",
+        "url": "https://pyebwa.com/images/SlideShow/haiti-flag-art-wbkozdm492j96815.jpg?v=20260407T223900Z-upscaled-slides",
+        "title": "",
+        "caption": "",
+        "alt": "",
+        "fit": "cover",
+        "crop": {
+          "x": 50,
+          "y": 50,
+          "zoom": 100
+        },
+        "filters": {
+          "brightness": 100,
+          "contrast": 100,
+          "saturate": 100
+        },
+        "overlayExplicit": false,
+        "overlayOverride": false,
+        "overlay": {
+          "color": "#000000",
+          "opacity": 0
+        },
+        "order": 9,
+        "createdAt": "2026-04-09T04:15:43.587Z",
+        "updatedAt": "2026-04-12T13:41:48.706Z"
+      },
+      {
+        "id": "home-11-bb0fabf0",
+        "page": "home",
+        "url": "https://pyebwa.com/images/SlideShow/istockphoto-637815386-612x612.jpg?v=20260407T223900Z-upscaled-slides",
+        "title": "",
+        "caption": "",
+        "alt": "",
+        "fit": "cover",
+        "crop": {
+          "x": 50,
+          "y": 50,
+          "zoom": 100
+        },
+        "filters": {
+          "brightness": 100,
+          "contrast": 100,
+          "saturate": 100
+        },
+        "overlayExplicit": false,
+        "overlayOverride": false,
+        "overlay": {
+          "color": "#000000",
+          "opacity": 0
+        },
+        "order": 10,
+        "createdAt": "2026-04-09T04:15:43.587Z",
+        "updatedAt": "2026-04-12T13:41:48.706Z"
+      },
+      {
+        "id": "home-13-45b535a4",
+        "page": "home",
+        "url": "https://pyebwa.com/images/SlideShow/tumblr_nsbo1mpejL1qjcl7eo4_1280.jpg?v=20260407T223900Z-upscaled-slides",
+        "title": "",
+        "caption": "",
+        "alt": "",
+        "fit": "cover",
+        "crop": {
+          "x": 50,
+          "y": 50,
+          "zoom": 100
+        },
+        "filters": {
+          "brightness": 100,
+          "contrast": 100,
+          "saturate": 100
+        },
+        "overlayExplicit": false,
+        "overlayOverride": false,
+        "overlay": {
+          "color": "#000000",
+          "opacity": 0
+        },
+        "order": 11,
+        "createdAt": "2026-04-09T04:15:43.587Z",
+        "updatedAt": "2026-04-12T13:41:48.706Z"
+      },
+      {
+        "id": "home-14-9c3be632",
+        "page": "home",
+        "url": "https://pyebwa.com/images/SlideShow/us-occupation-of-haiti-16323314377941.jpg?v=20260407T223900Z-upscaled-slides",
+        "title": "",
+        "caption": "",
+        "alt": "",
+        "fit": "cover",
+        "crop": {
+          "x": 50,
+          "y": 50,
+          "zoom": 100
+        },
+        "filters": {
+          "brightness": 100,
+          "contrast": 100,
+          "saturate": 100
+        },
+        "overlayExplicit": false,
+        "overlayOverride": false,
+        "overlay": {
+          "color": "#000000",
+          "opacity": 0
+        },
+        "order": 12,
+        "createdAt": "2026-04-09T04:15:43.587Z",
+        "updatedAt": "2026-04-12T13:41:48.706Z"
+      },
+      {
+        "id": "home-2-b3519371",
+        "page": "home",
+        "url": "https://pyebwa.com/images/SlideShow/5e0a0e49e91b8e0f8379e91e7dee11f9.jpg?v=20260407T223900Z-upscaled-slides",
+        "title": "",
+        "caption": "",
+        "alt": "",
+        "fit": "cover",
+        "crop": {
+          "x": 50,
+          "y": 50,
+          "zoom": 100
+        },
+        "filters": {
+          "brightness": 100,
+          "contrast": 100,
+          "saturate": 100
+        },
+        "overlayExplicit": false,
+        "overlayOverride": false,
+        "overlay": {
+          "color": "#000000",
+          "opacity": 0
+        },
+        "order": 13,
+        "createdAt": "2026-04-09T04:15:43.587Z",
+        "updatedAt": "2026-04-12T13:41:48.706Z"
+      }
+    ],
+    "about": [
+      {
+        "id": "about-fallback-1-5d19fce9",
+        "page": "about",
+        "url": "https://pyebwa.com/uploads/slideshows/about/165fc141324c5488d9b46c7aaa824c85.png",
+        "title": "",
+        "caption": "",
+        "alt": "",
+        "fit": "cover",
+        "crop": {
+          "x": 59,
+          "y": 39,
+          "zoom": 100
+        },
+        "filters": {
+          "brightness": 100,
+          "contrast": 100,
+          "saturate": 100
+        },
+        "overlayExplicit": true,
+        "overlayOverride": false,
+        "overlay": {
+          "color": "#72b027",
+          "opacity": 30
+        },
+        "order": 0,
+        "createdAt": "2026-04-12T05:06:29.097Z",
+        "updatedAt": "2026-04-12T13:41:48.706Z"
+      }
+    ],
+    "mission": [
+      {
+        "id": "mission-fallback-1-1039ca36",
+        "page": "mission",
+        "url": "https://pyebwa.com/uploads/slideshows/mission/2c724746e0dd51c7c0dfc194a4836740.png",
+        "title": "",
+        "caption": "",
+        "alt": "",
+        "fit": "cover",
+        "crop": {
+          "x": 2,
+          "y": 86,
+          "zoom": 105
+        },
+        "filters": {
+          "brightness": 100,
+          "contrast": 100,
+          "saturate": 100
+        },
+        "overlayExplicit": true,
+        "overlayOverride": false,
+        "overlay": {
+          "color": "#f4bc1f",
+          "opacity": 24
+        },
+        "order": 0,
+        "createdAt": "2026-04-12T05:06:29.098Z",
+        "updatedAt": "2026-04-12T13:41:48.706Z"
+      }
+    ],
+    "contact": [
+      {
+        "id": "contact-fallback-1-9f9f5f64",
+        "page": "contact",
+        "url": "https://pyebwa.com/uploads/slideshows/contact/42a7e372fd8f085081f65a6cab8efb8a.png",
+        "title": "",
+        "caption": "",
+        "alt": "",
+        "fit": "cover",
+        "crop": {
+          "x": 50,
+          "y": 50,
+          "zoom": 100
+        },
+        "filters": {
+          "brightness": 100,
+          "contrast": 100,
+          "saturate": 100
+        },
+        "overlayExplicit": true,
+        "overlayOverride": true,
+        "overlay": {
+          "color": "#000000",
+          "opacity": 59
+        },
+        "order": 0,
+        "createdAt": "2026-04-12T05:06:29.098Z",
+        "updatedAt": "2026-04-12T13:41:48.706Z"
+      }
+    ]
+  }
+}

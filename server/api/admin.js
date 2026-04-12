@@ -3,9 +3,10 @@ const { verifySession, requireAdmin, requireSuperAdmin } = require('../db/auth')
 const { query } = require('../db/pool');
 const userQueries = require('../db/queries/users');
 const multer = require('multer');
-const { saveFile } = require('../services/file-storage');
+const { saveFile, saveLocalFile } = require('../services/file-storage');
 const slideshowManager = require('../services/slideshow-manager');
 const pageContentManager = require('../services/page-content-manager');
+const { getConfiguredPublicSupabaseUrl } = require('../services/file-storage');
 const auditReportManager = require('../services/audit-report-manager');
 const { URL } = require('url');
 
@@ -575,7 +576,15 @@ router.post('/slideshows/upload', verifySession, requireAdmin, upload.single('im
         }
 
         const page = slideshowManager.VALID_PAGES.includes(req.body.page) ? req.body.page : 'home';
-        const url = await saveFile('slideshows', page, req.file.buffer, req.file.originalname);
+        let url;
+
+        try {
+            url = await saveFile('slideshows', page, req.file.buffer, req.file.originalname, req.file.mimetype);
+        } catch (storageError) {
+            console.warn('Admin slideshow upload falling back to local storage:', storageError.message);
+            url = await saveLocalFile('slideshows', page, req.file.buffer, req.file.originalname);
+        }
+
         res.json({ success: true, url });
     } catch (error) {
         console.error('Admin slideshow upload error:', error);
@@ -597,6 +606,15 @@ router.get('/slideshows/preview', async (req, res) => {
             'images.unsplash.com',
             'rasin.pyebwa.com'
         ]);
+
+        const configuredPublicSupabaseUrl = getConfiguredPublicSupabaseUrl();
+        if (configuredPublicSupabaseUrl) {
+            try {
+                allowedHosts.add(new URL(configuredPublicSupabaseUrl).hostname);
+            } catch (_) {
+                // Ignore invalid optional config and keep existing preview hosts.
+            }
+        }
 
         if (!allowedHosts.has(target.hostname)) {
             return res.status(400).json({ error: 'Preview host is not allowed' });

@@ -11,6 +11,11 @@
 
     let visibilityHandlerBound = false;
     const intervalRegistry = new Set();
+    const resizeObserverRegistry = new WeakMap();
+
+    function getPageScaleAdjustment() {
+        return 1;
+    }
 
     function shuffleSlides(slides) {
         const items = [...slides];
@@ -29,7 +34,9 @@
     }
 
     async function loadPublishedSlides() {
-        const response = await fetch(getAssetUrl('data/slideshows.published.json'), {
+        const slideshowUrl = new URL(getAssetUrl('data/slideshows.published.json'), window.location.href);
+        slideshowUrl.searchParams.set('t', String(Date.now()));
+        const response = await fetch(slideshowUrl.toString(), {
             cache: 'no-store',
             headers: { 'Cache-Control': 'no-cache' }
         });
@@ -59,6 +66,7 @@
                 background-repeat: no-repeat;
                 background-position: center center;
                 background-size: cover;
+                background: #0B1410;
             }
             .managed-hero-slide.active {
                 opacity: 1;
@@ -70,29 +78,92 @@
                 pointer-events: none;
             }
             .managed-slide-image {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                display: block;
                 position: absolute;
-                inset: 0;
+                top: 50%;
+                left: 50%;
+                display: block;
+                max-width: none;
+                max-height: none;
+                background: #0B1410;
+                object-fit: contain !important;
+                object-position: center center !important;
             }
         `;
         document.head.appendChild(style);
     }
 
-    function getFitMode(slide = {}) {
-        const value = String(slide.fit || '').trim().toLowerCase();
-        return new Set(['cover', 'contain', 'fill', 'scale-down', 'none']).has(value) ? value : 'cover';
+    function getSlideshowFallbackBackground() {
+        return '#0B1410';
     }
 
-    function applyCropToImage(img, crop = {}) {
+    function getFitMode() {
+        return 'cover';
+    }
+
+    function applyCropToImage(img, crop = {}, fit = 'cover') {
         const x = Number.isFinite(Number(crop.x)) ? Number(crop.x) : 50;
         const y = Number.isFinite(Number(crop.y)) ? Number(crop.y) : 50;
         const zoom = Number.isFinite(Number(crop.zoom)) ? Number(crop.zoom) : 100;
-        img.style.objectPosition = `${x}% ${y}%`;
-        img.style.transform = `scale(${zoom / 100})`;
-        img.style.transformOrigin = `${x}% ${y}%`;
+        const effectiveZoom = Math.max(100, zoom);
+        const container = img.parentElement;
+        let translateX = 0;
+        let translateY = 0;
+        let finalWidth = container?.clientWidth || 0;
+        let finalHeight = container?.clientHeight || 0;
+
+        const naturalWidth = img.naturalWidth;
+        const naturalHeight = img.naturalHeight;
+        const containerWidth = container?.clientWidth || 0;
+        const containerHeight = container?.clientHeight || 0;
+
+        if (naturalWidth > 0 && naturalHeight > 0 && containerWidth > 0 && containerHeight > 0) {
+            const imageRatio = naturalWidth / naturalHeight;
+            const containerRatio = containerWidth / containerHeight;
+            let baseWidth = containerWidth;
+            let baseHeight = containerHeight;
+
+            if (imageRatio > containerRatio) {
+                baseHeight = containerHeight;
+                baseWidth = containerHeight * imageRatio;
+            } else {
+                baseWidth = containerWidth;
+                baseHeight = containerWidth / imageRatio;
+            }
+
+            const pageScale = getPageScaleAdjustment();
+            finalWidth = baseWidth * (effectiveZoom / 100) * pageScale;
+            finalHeight = baseHeight * (effectiveZoom / 100) * pageScale;
+            const overflowX = Math.max(0, finalWidth - containerWidth);
+            const overflowY = Math.max(0, finalHeight - containerHeight);
+
+            translateX = ((50 - x) / 50) * (overflowX / 2);
+            translateY = ((50 - y) / 50) * (overflowY / 2);
+        }
+
+        img.style.width = `${finalWidth}px`;
+        img.style.height = `${finalHeight}px`;
+        img.style.transform = `translate(-50%, -50%) translate(${translateX}px, ${translateY}px)`;
+    }
+
+    function bindResponsiveCrop(container, images, slides) {
+        if (!container || !Array.isArray(images) || images.length === 0) return;
+
+        const reapply = () => {
+            images.forEach((img, index) => applyCropToImage(img, slides[index]?.crop, getFitMode(slides[index])));
+        };
+
+        window.requestAnimationFrame(() => {
+            window.requestAnimationFrame(reapply);
+        });
+
+        window.addEventListener('load', reapply, { once: true });
+        window.addEventListener('resize', reapply, { passive: true });
+
+        if (typeof ResizeObserver === 'function' && !resizeObserverRegistry.has(container)) {
+            const observer = new ResizeObserver(reapply);
+            observer.observe(container);
+            resizeObserverRegistry.set(container, observer);
+        }
     }
 
     function applyFiltersToImage(img, slide = {}) {
@@ -122,15 +193,11 @@
             return;
         }
 
-        if (page === 'mission') {
-            const element = document.querySelector('.hero-overlay');
-            if (!element) return;
-            element.style.background = overlay.color;
-            element.style.opacity = String(opacity);
-            return;
-        }
-
-        const heroSelector = page === 'about' ? '.about-hero' : '.contact-hero';
+        const heroSelector = page === 'about'
+            ? '.about-hero'
+            : page === 'contact'
+                ? '.contact-hero'
+                : '.cause-hero';
         const hero = document.querySelector(heroSelector);
         if (!hero) return;
 
@@ -184,17 +251,22 @@
         const container = document.querySelector('.slideshow-container');
         if (!container || slides.length === 0) return;
 
+        ensureSharedStyles();
         container.innerHTML = slides.map((slide, index) => `
             <div class="slide${index === 0 ? ' active' : ''}">
                 <img src="${slide.url}" alt="${(slide.alt || slide.title || `Slide ${index + 1}`).replace(/"/g, '&quot;')}" class="managed-slide-image">
             </div>
         `).join('');
 
-        container.querySelectorAll('.managed-slide-image').forEach((img, index) => {
-            img.style.objectFit = getFitMode(slides[index]);
-            applyCropToImage(img, slides[index].crop);
+        const images = Array.from(container.querySelectorAll('.managed-slide-image'));
+        images.forEach((img, index) => {
+            const fitMode = getFitMode(slides[index]);
+            const applyCurrentCrop = () => applyCropToImage(img, slides[index].crop, fitMode);
+            applyCurrentCrop();
+            img.addEventListener('load', applyCurrentCrop, { once: true });
             applyFiltersToImage(img, slides[index]);
         });
+        bindResponsiveCrop(container, images, slides);
         const applyOverlayForIndex = (index) => {
             const slide = slides[index] || slides[0];
             const useSlideOverlay = slide?.overlayExplicit === true && slide?.overlayOverride === true;
@@ -204,37 +276,17 @@
         startRotation('.slideshow-container .slide', 'active', 5000, applyOverlayForIndex);
     }
 
-    function renderMission(slides, payload) {
-        const container = document.querySelector('.cause-hero .slideshow-container');
-        if (!container || slides.length === 0) return;
-
-        container.innerHTML = slides.map((slide, index) => `
-            <div class="forest-slide${index === 0 ? ' active' : ''}">
-                <img src="${slide.url}" alt="${(slide.alt || slide.title || `Slide ${index + 1}`).replace(/"/g, '&quot;')}" class="managed-slide-image">
-            </div>
-        `).join('');
-
-        container.querySelectorAll('.managed-slide-image').forEach((img, index) => {
-            img.style.objectFit = getFitMode(slides[index]);
-            applyCropToImage(img, slides[index].crop);
-            applyFiltersToImage(img, slides[index]);
-        });
-        const applyOverlayForIndex = (index) => {
-            const slide = slides[index] || slides[0];
-            const useSlideOverlay = slide?.overlayExplicit === true && slide?.overlayOverride === true;
-            applyPageOverlay('mission', getOverlayConfig(useSlideOverlay ? slide?.overlay : (payload?.overlays?.mission || slide?.overlay || {})));
-        };
-        applyOverlayForIndex(0);
-        startRotation('.cause-hero .forest-slide', 'active', 5000, applyOverlayForIndex);
-    }
-
     function renderSimpleHero(page, slides, payload) {
-        const heroSelector = page === 'about' ? '.about-hero' : '.contact-hero';
+        const heroSelector = page === 'about'
+            ? '.about-hero'
+            : page === 'contact'
+                ? '.contact-hero'
+                : '.cause-hero';
         const hero = document.querySelector(heroSelector);
         if (!hero || slides.length === 0) return;
 
         ensureSharedStyles();
-        hero.style.background = '#000';
+        hero.style.background = getSlideshowFallbackBackground();
 
         let slideshow = hero.querySelector('.managed-hero-slideshow');
         if (!slideshow) {
@@ -249,11 +301,15 @@
             </div>
         `).join('');
 
-        slideshow.querySelectorAll('.managed-slide-image').forEach((img, index) => {
-            img.style.objectFit = getFitMode(slides[index]);
-            applyCropToImage(img, slides[index].crop);
+        const images = Array.from(slideshow.querySelectorAll('.managed-slide-image'));
+        images.forEach((img, index) => {
+            const fitMode = getFitMode(slides[index]);
+            const applyCurrentCrop = () => applyCropToImage(img, slides[index].crop, fitMode);
+            applyCurrentCrop();
+            img.addEventListener('load', applyCurrentCrop, { once: true });
             applyFiltersToImage(img, slides[index]);
         });
+        bindResponsiveCrop(slideshow, images, slides);
         const applyOverlayForIndex = (index) => {
             const slide = slides[index] || slides[0];
             const useSlideOverlay = slide?.overlayExplicit === true && slide?.overlayOverride === true;
@@ -273,11 +329,6 @@
 
             if (PAGE_KEY === 'home') {
                 renderHome(slides, payload);
-                return;
-            }
-
-            if (PAGE_KEY === 'mission') {
-                renderMission(slides, payload);
                 return;
             }
 
