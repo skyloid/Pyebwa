@@ -2,9 +2,10 @@
 .app-footer {
     margin-top: auto;
     padding: 20px 0;
-    background: var(--primary-blue);
-    color: var(--white);
+    background: var(--gray-100);
+    color: var(--gray-800);
     text-align: center;
+    border-top: 1px solid rgba(27, 67, 50, 0.12);
 }
 
 .footer-container {
@@ -19,13 +20,13 @@
 }
 
 .app-footer a {
-    color: var(--gray-300);
+    color: var(--primary-blue);
     text-decoration: none;
     transition: all 0.3s ease;
 }
 
 .app-footer a:hover {
-    color: var(--white);
+    color: var(--primary-red);
     text-decoration: underline;
 }
 

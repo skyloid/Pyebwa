@@ -2884,10 +2884,11 @@ body.dark-mode .theme-toggle {
 
 /* Footer */
 .app-footer {
-    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--blue-dark) 100%);
-    color: white;
+    background: var(--gray-100);
+    color: var(--gray-800);
     padding: 24px 0;
     margin-top: auto;
+    border-top: 1px solid rgba(27, 67, 50, 0.12);
 }
 
 .footer-container {
@@ -2904,14 +2905,14 @@ body.dark-mode .theme-toggle {
 }
 
 .footer-container a {
-    color: var(--accent-yellow);
+    color: var(--primary-blue);
     text-decoration: none;
     font-weight: 500;
     transition: all var(--transition-fast);
 }
 
 .footer-container a:hover {
-    color: var(--yellow-light);
+    color: var(--primary-red);
     text-decoration: underline;
 }
 

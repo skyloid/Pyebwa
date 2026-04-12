@@ -40,6 +40,7 @@ function updateVersionJson(filePath, version, buildId, deployedAt) {
 }
 
 function updateHtmlFallback(filePath, version) {
+    const buildId = process.env.PYEWA_BUILD_ID || process.env.PYEBWA_BUILD_ID || makeBuildId();
     const original = fs.readFileSync(filePath, 'utf8');
     let updated = original.replace(
         /(<span data-build-version>)(.*?)(<\/span>)/g,
@@ -47,23 +48,28 @@ function updateHtmlFallback(filePath, version) {
     );
 
     updated = updated.replace(
+        /(window\.__PYEBWA_BUILD_ID__\s*=\s*['"])([^'"]*)(['"])/g,
+        `$1${buildId}$3`
+    );
+
+    updated = updated.replace(
         /(\/app\/admin\/css\/[^"?]+\?v=)([^"]+)/g,
-        `$1${version}`
+        `$1${buildId}`
     );
 
     updated = updated.replace(
         /(\/app\/js\/back-to-top\.js\?v=)([^"]+)/g,
-        `$1${version}`
+        `$1${buildId}`
     );
 
     updated = updated.replace(
         /(\/app\/js\/admin\/auth-guard\.js\?v=)([^"]+)/g,
-        `$1${version}`
+        `$1${buildId}`
     );
 
     updated = updated.replace(
         /(\/app\/admin\/js\/simple-admin\.js\?v=)([^"]+)/g,
-        `$1${version}`
+        `$1${buildId}`
     );
 
     if (updated !== original) {
