@@ -280,7 +280,7 @@
         </div>
     </div>
     
-    <!-- Session-based auth (Firebase removed) -->
+    <!-- Session-based auth -->
     <script>
         // Get invite token from URL
         const pathParts = window.location.pathname.split('/');
@@ -345,7 +345,7 @@
                     <h3>Sign in to claim your profile</h3>
 
                     <div class="auth-buttons">
-                        <a href="/signup.html" class="auth-btn email">
+                        <a href="/signup" class="auth-btn email">
                             <i class="material-icons">person_add</i>
                             Create Account
                         </a>
@@ -354,7 +354,7 @@
                             <span>Already have an account?</span>
                         </div>
 
-                        <a href="/login-standalone.html?redirect=/app/invite/${inviteToken}" class="auth-btn signin">
+                        <a href="/login?redirect=/app/invite/${inviteToken}" class="auth-btn signin">
                             <i class="material-icons">login</i>
                             Sign In
                         </a>
@@ -417,5 +417,6 @@
             }
         }
     </script>
+    <script src="/app/js/back-to-top.js?v=1.1.67"></script>
 </body>
 </html>

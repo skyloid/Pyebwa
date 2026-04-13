@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (signupBtn) {
         signupBtn.addEventListener('click', function(e) {
             var lang = getCurrentLang();
-            var baseUrl = signupBtn.getAttribute('href') || 'https://rasin.pyebwa.com/signup.html';
+            var baseUrl = signupBtn.getAttribute('href') || 'https://rasin.pyebwa.com/signup';
             var separator = baseUrl.indexOf('?') === -1 ? '?' : '&';
             window.location.href = baseUrl + separator + 'lang=' + lang;
             e.preventDefault();
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (ctaBtn) {
         ctaBtn.addEventListener('click', function(e) {
             var lang = getCurrentLang();
-            var baseUrl = ctaBtn.getAttribute('href') || 'https://rasin.pyebwa.com/signup.html';
+            var baseUrl = ctaBtn.getAttribute('href') || 'https://rasin.pyebwa.com/signup';
             var separator = baseUrl.indexOf('?') === -1 ? '?' : '&';
             window.location.href = baseUrl + separator + 'lang=' + lang;
             e.preventDefault();

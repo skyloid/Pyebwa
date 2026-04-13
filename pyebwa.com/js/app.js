@@ -28,7 +28,7 @@ const translations = {
         poweredBy: "Powered by",
         home: "Home",
         about: "About",
-        ourMission: "Our Mission",
+        ourMission: "Mission",
         contact: "Contact",
         humanLevelTech: "Humanitarian Technologies"
     },
@@ -49,7 +49,7 @@ const translations = {
         poweredBy: "Propulsé par",
         home: "Accueil",
         about: "À propos",
-        ourMission: "Notre Mission",
+        ourMission: "Mission",
         contact: "Contact",
         humanLevelTech: "Technologies Humanitaires"
     },
@@ -70,7 +70,7 @@ const translations = {
         poweredBy: "Pwodwi pa",
         home: "Akèy",
         about: "Konsènan",
-        ourMission: "Misyon Nou",
+        ourMission: "Misyon",
         contact: "Kontak",
         humanLevelTech: "Technologies Humanitaires"
     }
@@ -107,18 +107,18 @@ function updateLanguage() {
     });
 }
 
-// Authentication functions - redirects to rasin.pyebwa.com/login.html
+// Authentication functions - redirects to rasin.pyebwa.com clean auth routes
 function redirectToLogin() {
     console.log('Redirecting to login page on rasin.pyebwa.com');
-    window.location.href = 'https://rasin.pyebwa.com/login.html';
+    window.location.href = 'https://rasin.pyebwa.com/login';
 }
 
 function redirectToSignup() {
     console.log('Redirecting to signup page on rasin.pyebwa.com');
-    window.location.href = 'https://rasin.pyebwa.com/signup.html';
+    window.location.href = 'https://rasin.pyebwa.com/signup';
 }
 
-// Event listeners - Redirect to rasin.pyebwa.com/login.html for auth
+// Event listeners - Redirect to rasin.pyebwa.com clean auth routes
 if (loginBtn) {
     loginBtn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -230,4 +230,4 @@ navLinks.forEach(link => {
 updateLanguage();
 
 // Debug: Log initialization complete
-console.log('App initialization complete - Authentication redirects to rasin.pyebwa.com/login.html');
+console.log('App initialization complete - Authentication redirects to rasin.pyebwa.com/login');

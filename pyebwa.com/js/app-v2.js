@@ -115,10 +115,10 @@ function redirectToLogin() {
 
 function redirectToSignup() {
     console.log('Redirecting to standalone signup page on rasin.pyebwa.com');
-    window.location.href = 'https://rasin.pyebwa.com/signup.html';
+    window.location.href = 'https://rasin.pyebwa.com/signup';
 }
 
-// Event listeners - Redirect to rasin.pyebwa.com/login.html for auth
+// Event listeners - Redirect to rasin.pyebwa.com clean auth routes
 if (loginBtn) {
     loginBtn.addEventListener('click', (e) => {
         e.preventDefault();

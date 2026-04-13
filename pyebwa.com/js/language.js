@@ -263,10 +263,10 @@
 
     function updateAuthLinks() {
         const authTargets = [
-            { id: 'loginBtn', fallback: 'https://rasin.pyebwa.com/login-standalone.html' },
-            { id: 'signupBtn', fallback: 'https://rasin.pyebwa.com/signup.html' },
+            { id: 'loginBtn', fallback: 'https://rasin.pyebwa.com/login' },
+            { id: 'signupBtn', fallback: 'https://rasin.pyebwa.com/signup' },
             { id: 'dashboardBtn', fallback: 'https://rasin.pyebwa.com/app/' },
-            { id: 'ctaBtn', fallback: 'https://rasin.pyebwa.com/signup.html' }
+            { id: 'ctaBtn', fallback: 'https://rasin.pyebwa.com/signup' }
         ];
 
         authTargets.forEach(({ id, fallback }) => {
