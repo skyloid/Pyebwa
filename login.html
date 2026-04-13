@@ -233,6 +233,7 @@
             }
         }
     </style>
+    <script src="/runtime-config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -271,7 +272,7 @@
                 </form>
                 <p class="helper-text" data-i18n="magicLinkHelp">Open the email on this device and tap the link to sign in automatically.</p>
                 <div class="links">
-                    <span data-i18n="noAccount">Don't have an account?</span> <a href="/signup.html?lang=en" id="signupLink" data-i18n="signUp">Sign Up</a><br>
+                    <span data-i18n="noAccount">Don't have an account?</span> <a href="/signup?lang=en" id="signupLink" data-i18n="signUp">Sign Up</a><br>
                     <a href="https://pyebwa.com" data-i18n="backToHomepage">&larr; Back to Homepage</a>
                 </div>
             </div>
@@ -279,6 +280,13 @@
     </div>
 
     <script>
+        try {
+            sessionStorage.removeItem('lastRedirectTime');
+            localStorage.removeItem('lastRedirectTime');
+        } catch (error) {
+            console.warn('Unable to clear redirect cooldown state:', error);
+        }
+
         const translations = {
             en: { tagline: "Your Family Tree", signIn: "Sign In", loginSubtitle: "Enter your email and we'll send you a secure sign-in link.", emailAddress: "Email Address", noAccount: "Don't have an account?", signUp: "Sign Up", backToHomepage: "\u2190 Back to Homepage", sendMagicLink: "Email Me a Sign-In Link", magicLinkHelp: "Open the email on this device and tap the link to sign in automatically.", sendingMagicLink: "Sending link...", alreadyLoggedIn: "Already logged in as", redirecting: "Redirecting...", loginSuccess: "Success! Welcome back,", magicLinkSent: "Check your email for your sign-in link.", loginFailed: "Login failed. Please try again.", invalidEmail: "Please enter a valid email address.", networkError: "Network error. Please check your connection and try again.", magicLinkFailed: "Failed to send sign-in link. Please try again.", accountNotFound: "We couldn't find an account with that email. Check the spelling or sign up first.", backToTop: "Back to top" },
             fr: { tagline: "Votre Arbre G\u00e9n\u00e9alogique", signIn: "Se Connecter", loginSubtitle: "Entrez votre email et nous vous enverrons un lien de connexion s\u00e9curis\u00e9.", emailAddress: "Adresse Email", noAccount: "Vous n'avez pas de compte?", signUp: "S'inscrire", backToHomepage: "\u2190 Retour \u00e0 l'Accueil", sendMagicLink: "M'envoyer un lien de connexion", magicLinkHelp: "Ouvrez l'email sur cet appareil et appuyez sur le lien pour vous connecter automatiquement.", sendingMagicLink: "Envoi du lien...", alreadyLoggedIn: "D\u00e9j\u00e0 connect\u00e9 en tant que", redirecting: "Redirection...", loginSuccess: "Succ\u00e8s! Bon retour,", magicLinkSent: "V\u00e9rifiez votre email pour votre lien de connexion.", loginFailed: "\u00c9chec de la connexion.", invalidEmail: "Veuillez saisir une adresse email valide.", networkError: "Erreur r\u00e9seau.", magicLinkFailed: "Impossible d'envoyer le lien de connexion.", accountNotFound: "Nous n'avons trouv\u00e9 aucun compte avec cette adresse email. V\u00e9rifiez l'orthographe ou inscrivez-vous d'abord.", backToTop: "Retour en haut" },
@@ -368,7 +376,7 @@
             }
             const signupLink = document.getElementById('signupLink');
             if (signupLink) {
-                signupLink.href = '/signup.html?lang=' + encodeURIComponent(currentLang);
+                signupLink.href = '/signup?lang=' + encodeURIComponent(currentLang);
             }
         }
         document.querySelectorAll('.lang-btn').forEach(btn => {
@@ -445,6 +453,44 @@
             clearCrossDomainCookie('pyebwa_user_name');
         }
 
+        async function hasUsableAppSession(session) {
+            if (!session || !session.access_token) {
+                return false;
+            }
+
+            try {
+                const response = await fetch('/api/auth/me', {
+                    headers: {
+                        Authorization: 'Bearer ' + session.access_token
+                    }
+                });
+                return response.ok;
+            } catch (error) {
+                console.warn('[Login] Unable to verify app session:', error);
+                return false;
+            }
+        }
+
+        async function redirectToAppIfReady(session, successMessage) {
+            if (window.__pyebwaLoginRedirectInFlight) {
+                return true;
+            }
+
+            if (!(await hasUsableAppSession(session))) {
+                syncPublicWebsiteAuthState(null);
+                return false;
+            }
+
+            window.__pyebwaLoginRedirectInFlight = true;
+            syncPublicWebsiteAuthState(session);
+            clearLogoutIntent();
+            if (successMessage) {
+                showMessage(messageDiv, successMessage, 'success');
+            }
+            setTimeout(() => { window.location.href = '/app/?lang=' + encodeURIComponent(currentLang); }, 1200);
+            return true;
+        }
+
         const logoutIntentActive = hasRecentLogoutIntent();
 
         const messageDiv = document.getElementById('message');
@@ -477,25 +523,76 @@
             }
         }
 
-        // Initialize Supabase client
-        const _sb = supabase.createClient(window.location.origin + '/supabase', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzc1MTk5NDM4LCJleHAiOjE5MzI4Nzk0Mzh9.t_O46hoypu8qZjZgiM_GjMkwhDBhwFa-IXRMjnQ5m7o');
+        const hasAuthCallbackTokens = /(?:[#&]|^)(access_token|refresh_token|expires_in|token_type)=/.test(window.location.hash || '');
+        const originalDateNow = Date.now.bind(Date);
+        if (hasAuthCallbackTokens) {
+            Date.now = () => originalDateNow() + 120000;
+        }
 
-        // Check if already logged in
-        _sb.auth.getSession().then(({ data: { session } }) => {
+        // Initialize Supabase client
+        const _sb = supabase.createClient(
+            window.location.origin + '/supabase',
+            window.__PYEBWA_SUPABASE_ANON_KEY__ || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzc1MTk5NDM4LCJleHAiOjE5MzI4Nzk0Mzh9.t_O46hoypu8qZjZgiM_GjMkwhDBhwFa-IXRMjnQ5m7o'
+        );
+
+        function restoreAuthCallbackClock() {
+            if (hasAuthCallbackTokens) {
+                Date.now = originalDateNow;
+            }
+        }
+
+        function buildLoginRedirectUrl() {
+            const url = new URL(window.location.origin + '/login');
+            if (currentLang) {
+                url.searchParams.set('lang', currentLang);
+            }
+            return url;
+        }
+
+        async function handleQueryAuthCallback() {
+            const url = new URL(window.location.href);
+            const token = url.searchParams.get('token');
+            const type = url.searchParams.get('type');
+
+            if (token && type && !window.__pyebwaLoginQueryVerifyStarted) {
+                window.__pyebwaLoginQueryVerifyStarted = true;
+                const verifyUrl = new URL(window.location.origin + '/supabase/auth/v1/verify');
+                verifyUrl.searchParams.set('token', token);
+                verifyUrl.searchParams.set('type', type);
+                verifyUrl.searchParams.set('redirect_to', buildLoginRedirectUrl().toString());
+                window.location.replace(verifyUrl.toString());
+                return true;
+            }
+
+            return false;
+        }
+
+        async function processResolvedSession(session, successMessage) {
             if (logoutIntentActive) {
                 if (session) {
-                    _sb.auth.signOut({ scope: 'global' }).catch(() => {});
+                    await _sb.auth.signOut({ scope: 'global' }).catch(() => {});
                 }
                 syncPublicWebsiteAuthState(null);
                 clearLogoutIntent();
+                restoreAuthCallbackClock();
                 return;
             }
-            if (session) {
-                syncPublicWebsiteAuthState(session);
-                showMessage(messageDiv, t('alreadyLoggedIn') + ' ' + session.user.email + '. ' + t('redirecting'), 'success');
-                setTimeout(() => { window.location.href = '/app/?lang=' + encodeURIComponent(currentLang); }, 1500);
+
+            if (!session || !session.access_token) {
+                restoreAuthCallbackClock();
+                return;
             }
-        });
+
+            const sessionKey = session.access_token || session.refresh_token || session.user?.id || '';
+            if (window.__pyebwaLoginHandledSessionKey === sessionKey) {
+                restoreAuthCallbackClock();
+                return;
+            }
+
+            window.__pyebwaLoginHandledSessionKey = sessionKey;
+            restoreAuthCallbackClock();
+            await redirectToAppIfReady(session, successMessage);
+        }
 
         _sb.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_OUT') {
@@ -503,14 +600,29 @@
                 clearLogoutIntent();
                 return;
             }
-            if (logoutIntentActive) {
+
+            if (event !== 'SIGNED_IN' && event !== 'TOKEN_REFRESHED' && event !== 'INITIAL_SESSION') {
                 return;
             }
-            if (!session) return;
-            syncPublicWebsiteAuthState(session);
-            clearLogoutIntent();
-            showMessage(messageDiv, t('loginSuccess') + ' ' + session.user.email + '. ' + t('redirecting'), 'success');
-            setTimeout(() => { window.location.href = '/app/?lang=' + encodeURIComponent(currentLang); }, 1200);
+
+            const message = event === 'INITIAL_SESSION'
+                ? t('alreadyLoggedIn') + ' ' + session?.user?.email + '. ' + t('redirecting')
+                : t('loginSuccess') + ' ' + session?.user?.email + '. ' + t('redirecting');
+
+            processResolvedSession(session, message);
+        });
+
+        handleQueryAuthCallback().then((handledQueryCallback) => {
+            if (handledQueryCallback) {
+                return;
+            }
+
+            _sb.auth.getSession().then(({ data: { session } }) => {
+                processResolvedSession(
+                    session,
+                    t('alreadyLoggedIn') + ' ' + session?.user?.email + '. ' + t('redirecting')
+                );
+            });
         });
 
         magicLinkForm.addEventListener('submit', async (e) => {
@@ -525,15 +637,20 @@
             magicLinkBtn.innerHTML = '<span class="loading"></span> ' + t('sendingMagicLink');
             try {
                 await persistEmailLanguagePreference(email, currentLang);
-                const { error } = await _sb.auth.signInWithOtp({
-                    email,
-                    options: {
-                        shouldCreateUser: false,
-                        data: { lang: currentLang },
-                        emailRedirectTo: window.location.origin + '/login.html?lang=' + encodeURIComponent(currentLang)
-                    }
+                const response = await fetch('/api/auth/magic-link', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email,
+                        lang: currentLang
+                    })
                 });
-                if (error) throw new Error(error.message);
+                const payload = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(payload.error || 'Failed to send magic link');
+                }
                 clearLogoutIntent();
                 showMessage(messageDiv, t('magicLinkSent'), 'success');
             } catch (error) {

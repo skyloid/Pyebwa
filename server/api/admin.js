@@ -43,6 +43,10 @@ function deriveUserStatus(user) {
     return isActiveRecently ? 'active' : 'inactive';
 }
 
+function buildImgproxyPreviewPath(sourceUrl, width = 480, height = 320) {
+    return `/imgproxy/unsafe/rs:fill:${width}:${height}:0/g:sm/plain/${encodeURIComponent(sourceUrl)}@jpg`;
+}
+
 router.get('/summary', verifySession, requireAdmin, async (req, res) => {
     try {
         const [usersResult, activeUsersResult, treesResult, membersResult, recentUsersResult, recentTreesResult] = await Promise.all([
@@ -620,7 +624,8 @@ router.get('/slideshows/preview', async (req, res) => {
             return res.status(400).json({ error: 'Preview host is not allowed' });
         }
 
-        const response = await fetch(target.toString());
+        const imgproxyUrl = `http://127.0.0.1:${process.env.PORT || 9111}${buildImgproxyPreviewPath(target.toString())}`;
+        const response = await fetch(imgproxyUrl);
         if (!response.ok) {
             return res.status(response.status).json({ error: 'Unable to fetch preview image' });
         }

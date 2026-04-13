@@ -1,6 +1,39 @@
 // Service Worker for Pyebwa Family Tree
 const CACHE_NAME = 'pyebwa-runtime-v9';
 const CACHEABLE_DESTINATIONS = new Set(['style', 'script', 'image', 'font']);
+const AUTH_ROUTE_PATTERNS = [
+  /^\/login(?:\.html)?$/i,
+  /^\/signup(?:\.html)?$/i,
+  /^\/register(?:\.html)?$/i,
+  /^\/forgot-password(?:\.html)?$/i,
+  /^\/reset-password(?:\.html)?$/i,
+  /^\/auth\/callback(?:\.html)?$/i,
+  /^\/oauth-callback(?:\.html)?$/i,
+  /^\/supabase\/auth(?:\/|$)/i,
+  /^\/supabase\/auth\/v1(?:\/|$)/i,
+  /^\/auth\/v1(?:\/|$)/i
+];
+
+function isSensitiveAuthPath(pathname) {
+  return AUTH_ROUTE_PATTERNS.some((pattern) => pattern.test(pathname));
+}
+
+function getRequestReferrerUrl(request) {
+  try {
+    return request.referrer ? new URL(request.referrer) : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function isSensitiveAuthRequest(request, requestUrl) {
+  if (isSensitiveAuthPath(requestUrl.pathname)) {
+    return true;
+  }
+
+  const referrerUrl = getRequestReferrerUrl(request);
+  return !!referrerUrl && isSensitiveAuthPath(referrerUrl.pathname);
+}
 
 // Install event
 self.addEventListener('install', event => {
@@ -17,6 +50,11 @@ self.addEventListener('fetch', event => {
   }
 
   if (requestUrl.pathname.endsWith('/version.json')) {
+    event.respondWith(fetch(event.request, { cache: 'no-store' }));
+    return;
+  }
+
+  if (isSensitiveAuthRequest(event.request, requestUrl)) {
     event.respondWith(fetch(event.request, { cache: 'no-store' }));
     return;
   }

@@ -455,7 +455,7 @@
         if (avatarEl) {
             const fallbackAvatar = '/app/images/default-avatar.png?v=1.0.98';
             const avatarUrl = detail?.userData?.photoURL || detail?.user?.user_metadata?.avatar_url || sessionData.photoURL || fallbackAvatar;
-            avatarEl.src = avatarUrl || fallbackAvatar;
+            avatarEl.src = window.PyebwaImageUtils?.getMemberPhotoUrl(avatarUrl, 'avatar') || avatarUrl || fallbackAvatar;
         }
         applyRoleAccess();
     }
@@ -2149,7 +2149,7 @@
                 await client.auth.signOut({ scope: 'global' });
             }
             sessionStorage.removeItem('adminUser');
-            window.location.href = '/login.html';
+            window.location.href = '/login';
         });
 
         document.getElementById('adminBackToAppLink')?.addEventListener('click', (event) => {

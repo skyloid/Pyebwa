@@ -2,7 +2,7 @@
 function getTreeInteractionState() {
     if (!window.pyebwaTreeInteractionState) {
         window.pyebwaTreeInteractionState = {
-            mode: localStorage.getItem('pyebwaTreeMode') || 'view',
+            mode: 'view',
             focusPersonId: localStorage.getItem('pyebwaTreeFocusPerson') || null
         };
     }
@@ -160,8 +160,9 @@ function getDirectFamilyMembers(member) {
 
 function renderTreeFocusDetailMember(member, relationshipLabel) {
     const memberName = getTreeDisplayName(member);
+    const photoUrl = window.PyebwaImageUtils?.getMemberPhotoUrl(member.photoUrl, 'memberCard') || member.photoUrl;
     const photoHtml = member.photoUrl
-        ? `<div class="focus-member-photo" style="background-image:url('${member.photoUrl.replace(/'/g, "\\'")}')"></div>`
+        ? `<div class="focus-member-photo" style="background-image:url('${photoUrl.replace(/'/g, "\\'")}')"></div>`
         : `<div class="focus-member-photo"><span class="material-icons">${member.gender === 'female' ? 'face_3' : 'face'}</span></div>`;
 
     return `
@@ -369,8 +370,9 @@ function applyTreeFocusState(options = {}) {
         }
     });
 
+    const focusDetailPhotoUrl = window.PyebwaImageUtils?.getMemberPhotoUrl(focusMember.photoUrl, 'profile') || focusMember.photoUrl;
     const photoHtml = focusMember.photoUrl
-        ? `<img class="focus-detail-photo" src="${focusMember.photoUrl}" alt="${focusMember.firstName} ${focusMember.lastName}">`
+        ? `<img class="focus-detail-photo" src="${focusDetailPhotoUrl}" alt="${focusMember.firstName} ${focusMember.lastName}">`
         : `<div class="focus-detail-avatar"><span class="material-icons">${focusMember.gender === 'female' ? 'face_3' : 'face'}</span></div>`;
     const focusMemberName = getTreeDisplayName(focusMember);
     const slideshowPhotos = getFocusSlideshowPhotos(focusMember);
@@ -406,7 +408,7 @@ function applyTreeFocusState(options = {}) {
                 <div class="focus-detail-slides">
                     ${slideshowPhotos.map((photo, index) => `
                         <div class="focus-detail-slide ${index === 0 ? 'active' : ''}">
-                            <img src="${photo.url}" alt="${focusMemberName}">
+                            <img src="${window.PyebwaImageUtils?.getMemberPhotoUrl(photo.url, 'dashboard') || photo.url}" alt="${focusMemberName}">
                         </div>
                     `).join('')}
                 </div>
@@ -456,7 +458,6 @@ function focusTreeMember(memberId, options = {}) {
 function setTreeInteractionMode(mode) {
     const state = getTreeInteractionState();
     state.mode = mode === 'edit' ? 'edit' : 'view';
-    localStorage.setItem('pyebwaTreeMode', state.mode);
 
     const toggle = document.getElementById('treeModeToggle');
     if (toggle) {
@@ -1336,7 +1337,8 @@ function createMemberCard(node) {
     const photo = document.createElement('div');
     photo.className = 'member-photo';
     if (member.photoUrl) {
-        photo.style.backgroundImage = `url(${member.photoUrl})`;
+        const photoUrl = window.PyebwaImageUtils?.getMemberPhotoUrl(member.photoUrl, 'memberCard') || member.photoUrl;
+        photo.style.backgroundImage = `url(${photoUrl})`;
     } else {
         photo.innerHTML = `<span class="material-icons">${member.gender === 'female' ? 'face_3' : 'face'}</span>`;
     }

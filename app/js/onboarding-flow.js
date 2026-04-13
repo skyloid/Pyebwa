@@ -107,6 +107,9 @@
                         <div class="onboarding-step step-1 active" data-step="1">
                             <h2 class="step-title">${t('welcomeToPyebwaFanmi') || 'Welcome to Pyebwa Fanmi!'}</h2>
                             <p class="step-subtitle">${t('letsSetupYourFamilyTree') || "Let's set up your family tree"}</p>
+                            ${window.pyebwaLegacyRecovery && typeof window.pyebwaLegacyRecovery.getRecoveryPanelHtml === 'function'
+                                ? window.pyebwaLegacyRecovery.getRecoveryPanelHtml()
+                                : ''}
                             
                             <form class="onboarding-form" id="step1Form">
                                 <div class="form-grid">
@@ -294,6 +297,10 @@
             `;
             
             document.body.appendChild(modal);
+
+            if (window.pyebwaLegacyRecovery && typeof window.pyebwaLegacyRecovery.bindRecoveryPanel === 'function') {
+                window.pyebwaLegacyRecovery.bindRecoveryPanel();
+            }
 
             modal.querySelectorAll('.choice-btn').forEach((btn) => {
                 btn.addEventListener('click', () => {
@@ -700,7 +707,7 @@
                         <div class="tree-node">
                             <div class="node-content">
                                 ${member.photoUrl ? 
-                                    `<img src="${member.photoUrl}" alt="${member.fullName}">` : 
+                                    `<img src="${window.PyebwaImageUtils?.getMemberPhotoUrl(member.photoUrl, 'memberCard') || member.photoUrl}" alt="${member.fullName}">` : 
                                     '<i class="material-icons">person</i>'
                                 }
                                 <span>${member.fullName}</span>
@@ -1008,6 +1015,10 @@
     window.shouldShowEnhancedOnboarding = async function() {
         try {
             if (localStorage.getItem(getOnboardingStorageKey('Complete')) === 'true') {
+                return false;
+            }
+
+            if (Array.isArray(window.userFamilyTrees) && window.userFamilyTrees.length > 0) {
                 return false;
             }
 

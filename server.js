@@ -9,10 +9,14 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const { setupAdminEndpoint } = require('./server-admin-setup');
+const {
+    getSupabaseUrl,
+    getSupabaseAnonKey
+} = require('./server/services/pyebwa-supabase-config');
 
 const app = express();
 const PORT = process.env.PORT || 9111;
-const supabaseProxyTarget = (process.env.SUPABASE_URL || 'http://127.0.0.1:8001').replace(/\/$/, '');
+const supabaseProxyTarget = getSupabaseUrl() || 'http://127.0.0.1:8001';
 
 // Trust proxy for correct req.ip behind reverse proxy
 app.set('trust proxy', 1);
@@ -56,6 +60,14 @@ app.use('/supabase', createProxyMiddleware({
     target: supabaseProxyTarget,
     changeOrigin: true,
     pathRewrite: { '^/supabase': '' },
+    ws: true
+}));
+
+// Imgproxy route via the isolated Kong gateway
+app.use('/imgproxy', createProxyMiddleware({
+    target: supabaseProxyTarget,
+    changeOrigin: true,
+    pathRewrite: (path) => `/imgproxy${path}`,
     ws: true
 }));
 
@@ -124,6 +136,20 @@ app.get('/version.json', (req, res) => {
     res.sendFile(path.join(__dirname, 'app', 'version.json'));
 });
 
+app.get('/runtime-config.js', (req, res) => {
+    res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+    setVersionHeaders(res);
+
+    const runtimeConfig = {
+        supabaseAnonKey: getSupabaseAnonKey()
+    };
+
+    res.send(
+        `window.__PYEBWA_RUNTIME_CONFIG__ = ${JSON.stringify(runtimeConfig)};\n`
+        + `window.__PYEBWA_SUPABASE_ANON_KEY__ = window.__PYEBWA_RUNTIME_CONFIG__.supabaseAnonKey || '';\n`
+    );
+});
+
 app.get('/app/version.json', (req, res) => {
     setVersionHeaders(res);
     res.sendFile(path.join(__dirname, 'app', 'version.json'));
@@ -152,35 +178,60 @@ app.get('/sw.js', (req, res) => {
 });
 
 // Serve login/signup pages
-app.get('/login.html', (req, res) => {
+app.get('/login', (req, res) => {
     setVersionHeaders(res);
     res.sendFile(path.join(__dirname, 'login.html'));
 });
 
-app.get('/signup.html', (req, res) => {
+app.get('/login.html', (req, res) => {
+    setVersionHeaders(res);
+    const query = req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : '';
+    res.redirect(302, '/login' + query);
+});
+
+app.get('/signup', (req, res) => {
     setVersionHeaders(res);
     res.sendFile(path.join(__dirname, 'signup.html'));
+});
+
+app.get('/signup.html', (req, res) => {
+    setVersionHeaders(res);
+    const query = req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : '';
+    res.redirect(302, '/signup' + query);
 });
 
 app.get('/signup-standalone.html', (req, res) => {
     setVersionHeaders(res);
     const query = req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : '';
-    res.redirect(302, '/signup.html' + query);
+    res.redirect(302, '/signup' + query);
 });
 
 app.get('/login-standalone.html', (req, res) => {
     setVersionHeaders(res);
-    res.sendFile(path.join(__dirname, 'login-standalone.html'));
+    const query = req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : '';
+    res.redirect(302, '/login' + query);
+});
+
+app.get('/reset-password', (req, res) => {
+    setVersionHeaders(res);
+    res.sendFile(path.join(__dirname, 'reset-password.html'));
 });
 
 app.get('/reset-password.html', (req, res) => {
     setVersionHeaders(res);
-    res.sendFile(path.join(__dirname, 'reset-password.html'));
+    const query = req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : '';
+    res.redirect(302, '/reset-password' + query);
 });
 
 // Redirect root to /app (preserving query parameters)
 app.get('/', (req, res) => {
     const queryString = req.originalUrl.includes('?') ? req.originalUrl.substring(req.originalUrl.indexOf('?')) : '';
+    const authLikeRequest = req.query.token || req.query.type || req.query.error || req.query.error_code;
+    if (authLikeRequest) {
+        res.redirect('/login' + queryString);
+        return;
+    }
+
     res.redirect('/app' + queryString);
 });
 

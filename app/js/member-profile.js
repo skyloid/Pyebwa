@@ -257,7 +257,9 @@
             datesElement.classList.toggle('is-empty', dates.length === 0);
             
             // Photo
-            const photoUrl = member.photoUrl || '/app/images/default-avatar.svg';
+            const photoUrl = member.photoUrl
+                ? (window.PyebwaImageUtils?.getMemberPhotoUrl(member.photoUrl, 'profile') || member.photoUrl)
+                : '/app/images/default-avatar.svg';
             const photo = modal.querySelector('.profile-photo');
             photo.src = photoUrl;
             photo.alt = `${displayName} ${t('profilePhoto') || 'profile photo'}`;
@@ -679,9 +681,10 @@
                     </div>
                     <div class="photo-gallery">
                         ${allPhotos.map((photo, index) => {
+                            const galleryThumbUrl = window.PyebwaImageUtils?.getMemberPhotoUrl(photo.url, 'memberCard') || photo.url;
                             return `
                                 <div class="gallery-item" onclick="pyebwaMemberProfile.viewPhoto(${index})">
-                                    <img src="${photo.url}" alt="${photo.caption || ''}">
+                                    <img src="${galleryThumbUrl}" alt="${photo.caption || ''}">
                                     ${photo.isMain ? '<span class="photo-badge">Main</span>' : ''}
                                     ${photo.caption && !photo.isMain ? `<div class="photo-caption">${photo.caption}</div>` : ''}
                                     <button class="photo-delete-btn" onclick="event.stopPropagation(); pyebwaMemberProfile.deletePhoto(${index})" title="${t('deletePhoto') || 'Delete photo'}">
@@ -1100,7 +1103,9 @@
         // Render family member card
         renderFamilyMember(member) {
             const age = this.calculateAge(member);
-            const photoUrl = member.photoUrl || '/app/images/default-avatar.svg';
+            const photoUrl = member.photoUrl
+                ? (window.PyebwaImageUtils?.getMemberPhotoUrl(member.photoUrl, 'memberCard') || member.photoUrl)
+                : '/app/images/default-avatar.svg';
             
             return `
                 <div class="family-member-card" onclick="pyebwaMemberProfile.viewProfile('${member.id}')">
@@ -2035,7 +2040,7 @@
                         await window.updateFamilyMember(member.id, { photoUrl: photoUrl });
                         member.photoUrl = photoUrl;
                         var profileImg = document.querySelector('.profile-photo');
-                        if (profileImg) profileImg.src = photoUrl;
+                        if (profileImg) profileImg.src = window.PyebwaImageUtils?.getMemberPhotoUrl(photoUrl, 'profile') || photoUrl;
                     } else {
                         // Add to gallery
                         var photos = member.photos ? member.photos.slice() : [];
@@ -2828,6 +2833,7 @@
 
             function render() {
                 const photo = allPhotos[currentIndex];
+                const displayUrl = window.PyebwaImageUtils?.getMemberPhotoUrl(photo.url, 'dashboard') || photo.url;
                 const lightbox = document.createElement('div');
                 lightbox.className = 'photo-lightbox active';
                 lightbox.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;';
@@ -2843,7 +2849,7 @@
                             <span class="material-icons">chevron_right</span>
                         </button>
                     ` : ''}
-                    <img src="${photo.url}" style="max-width:90vw;max-height:85vh;object-fit:contain;border-radius:4px;" alt="${photo.caption || ''}">
+                    <img src="${displayUrl}" style="max-width:90vw;max-height:85vh;object-fit:contain;border-radius:4px;" alt="${photo.caption || ''}">
                     <div style="position:absolute;bottom:16px;color:#fff;font-size:14px;opacity:0.7;">${currentIndex + 1} / ${allPhotos.length}</div>
                 `;
                 document.body.appendChild(lightbox);

@@ -664,7 +664,9 @@
                     resolve();
                 };
                 
-                img.src = member.photoUrl || '/app/images/default-avatar.svg';
+                img.src = member.photoUrl
+                    ? (window.PyebwaImageUtils?.getMemberPhotoUrl(member.photoUrl, 'profile') || member.photoUrl)
+                    : '/app/images/default-avatar.svg';
             });
         },
         

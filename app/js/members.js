@@ -156,7 +156,8 @@ function createMemberListCard(member, rel) {
     const photo = document.createElement('div');
     photo.className = 'member-photo';
     if (member.photoUrl) {
-        photo.style.backgroundImage = `url(${member.photoUrl})`;
+        const photoUrl = window.PyebwaImageUtils?.getMemberPhotoUrl(member.photoUrl, 'memberCard') || member.photoUrl;
+        photo.style.backgroundImage = `url(${photoUrl})`;
     } else {
         const icon = document.createElement('span');
         icon.className = 'material-icons';

@@ -3,8 +3,14 @@ const crypto = require('crypto');
 const { Webhook } = require('standardwebhooks');
 const router = express.Router();
 const userQueries = require('../db/queries/users');
-const { verifySession, isAdmin } = require('../db/auth');
+const { verifySession, isAdmin, normalizeRole, normalizeDisplayName } = require('../db/auth');
 const { supabaseAdmin } = require('../services/supabase');
+const {
+    getAuthExternalUrl,
+    getSiteUrl,
+    getSupabaseAuthAdminUrl,
+    getSupabaseAuthJwtSecret
+} = require('../services/pyebwa-supabase-config');
 const { logSecurityEvent, logUnauthorizedAccess, SecurityEvents } = require('../services/security-logger');
 
 const SUPPORTED_LANGUAGES = new Set(['en', 'fr', 'ht']);
@@ -177,14 +183,71 @@ function escapeHtml(value) {
 }
 
 function buildConfirmationUrl(emailData) {
-    const baseUrl = (process.env.AUTH_EXTERNAL_URL || 'https://rasin.pyebwa.com/supabase').replace(/\/$/, '');
-    const params = new URLSearchParams({
-        token: emailData?.token_hash || '',
-        type: emailData?.email_action_type || '',
-        redirect_to: emailData?.redirect_to || 'https://rasin.pyebwa.com/login.html'
-    });
+    if (emailData?.action_link) {
+        return emailData.action_link;
+    }
+
+    const baseUrl = getAuthExternalUrl();
+    const params = new URLSearchParams();
+
+    if (emailData?.token_hash) {
+        params.set('token_hash', emailData.token_hash);
+    } else if (emailData?.token) {
+        params.set('token', emailData.token);
+    }
+
+    params.set('type', emailData?.email_action_type || '');
+    params.set('redirect_to', emailData?.redirect_to || 'https://rasin.pyebwa.com/login');
 
     return `${baseUrl}/auth/v1/verify?${params.toString()}`;
+}
+
+function createSupabaseAdminToken() {
+    const secret = getSupabaseAuthJwtSecret();
+    if (!secret) {
+        throw new Error('SUPABASE_AUTH_JWT_SECRET is not configured');
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+    const payload = Buffer.from(JSON.stringify({
+        role: 'service_role',
+        iss: 'supabase',
+        iat: now,
+        exp: now + 31536000
+    })).toString('base64url');
+    const signature = crypto
+        .createHmac('sha256', secret)
+        .update(`${header}.${payload}`)
+        .digest('base64url');
+
+    return `${header}.${payload}.${signature}`;
+}
+
+async function generateMagicLinkEmail(email, redirectTo) {
+    const authAdminUrl = getSupabaseAuthAdminUrl();
+    const adminToken = createSupabaseAdminToken();
+    const response = await fetch(`${authAdminUrl}/admin/generate_link`, {
+        method: 'POST',
+        headers: {
+            apikey: adminToken,
+            Authorization: `Bearer ${adminToken}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            type: 'magiclink',
+            email,
+            redirect_to: redirectTo
+        })
+    });
+
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        const message = payload?.msg || payload?.message || `Magic link generation failed with ${response.status}`;
+        throw new Error(message);
+    }
+
+    return payload;
 }
 
 function buildAuthEmailHtml(language, emailActionType, emailData) {
@@ -374,19 +437,36 @@ router.post('/signup', async (req, res) => {
 // Get current user info (JWT-based)
 router.get('/me', verifySession, async (req, res) => {
     try {
-        const user = await userQueries.findById(req.user.uid);
+        let user = null;
+        try {
+            user = await userQueries.findById(req.user.uid);
+        } catch (lookupError) {
+            console.warn('Get user info fallback:', lookupError.message);
+        }
+
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.json({
+                uid: req.user.uid,
+                email: req.user.email,
+                displayName: req.user.displayName || '',
+                role: req.user.role || 'member',
+                photoURL: null,
+                emailVerified: true
+            });
         }
 
         // Update last active timestamp
-        await userQueries.update(user.id, { last_active: new Date() });
+        try {
+            await userQueries.update(user.id, { last_active: new Date() });
+        } catch (updateError) {
+            console.warn('Last active update skipped:', updateError.message);
+        }
 
         res.json({
             uid: user.id,
             email: user.email,
-            displayName: user.display_name,
-            role: user.role,
+            displayName: normalizeDisplayName(user, { user_metadata: user.raw_user_meta_data || {} }),
+            role: normalizeRole(user, { user_metadata: user.raw_user_meta_data || {}, app_metadata: user.raw_app_meta_data || {} }),
             photoURL: user.photo_url,
             emailVerified: user.email_verified
         });
@@ -434,6 +514,41 @@ router.post('/email-language', async (req, res) => {
     } catch (error) {
         console.error('Email language preference error:', error);
         res.json({ success: true });
+    }
+});
+
+router.post('/magic-link', async (req, res) => {
+    try {
+        const email = String(req.body?.email || '').trim().toLowerCase();
+        const language = normalizeLanguage(req.body?.lang);
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: 'Invalid email address' });
+        }
+
+        const redirectTo = `${getSiteUrl()}/login?lang=${encodeURIComponent(language)}`;
+        const magicLink = await generateMagicLinkEmail(email, redirectTo);
+        const actionType = String(magicLink?.verification_type || 'magiclink').trim().toLowerCase();
+        const subject = (AUTH_EMAIL_SUBJECTS[language] || AUTH_EMAIL_SUBJECTS.en)[actionType] || AUTH_EMAIL_SUBJECTS.en.magiclink;
+        const html = buildAuthEmailHtml(language, actionType, {
+            action_link: magicLink?.action_link || '',
+            token_hash: magicLink?.hashed_token || '',
+            token: magicLink?.email_otp || '',
+            email_action_type: actionType,
+            redirect_to: magicLink?.redirect_to || redirectTo
+        });
+
+        await sendAuthEmailThroughResend({
+            to: email,
+            subject,
+            html
+        });
+
+        return res.json({ success: true });
+    } catch (error) {
+        console.error('Magic link email error:', error);
+        return res.status(400).json({ error: error.message || 'Failed to send magic link' });
     }
 });
 

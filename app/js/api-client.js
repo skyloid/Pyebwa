@@ -37,6 +37,7 @@
     }
 
     const PyebwaAPI = {
+        authFetch,
         // --- Auth (Supabase GoTrue) ---
         async login(email, lang = 'en') {
             const client = window.supabaseClient;
@@ -49,7 +50,7 @@
                 options: {
                     shouldCreateUser: false,
                     data: { lang },
-                    emailRedirectTo: window.location.origin + '/login.html?lang=' + encodeURIComponent(lang)
+                    emailRedirectTo: window.location.origin + '/login?lang=' + encodeURIComponent(lang)
                 }
             });
             if (error) throw new Error(error.message);
@@ -69,7 +70,7 @@
                 options: {
                     shouldCreateUser: true,
                     data: { display_name: fullName, role: 'member', lang },
-                    emailRedirectTo: window.location.origin + '/login.html?lang=' + encodeURIComponent(lang)
+                    emailRedirectTo: window.location.origin + '/login?lang=' + encodeURIComponent(lang)
                 }
             });
             if (error) throw new Error(error.message);
@@ -116,7 +117,7 @@
             if (!client) throw new Error('Supabase client not initialized');
 
             const { error } = await client.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.origin + '/reset-password.html'
+                redirectTo: window.location.origin + '/reset-password'
             });
             if (error) throw new Error(error.message);
             return { success: true, message: 'If an account exists with this email, a password reset link has been sent.' };

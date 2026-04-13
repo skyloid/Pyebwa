@@ -20,7 +20,7 @@ function getRandomFamilyMemberPhoto(excludeMemberId = null) {
     if (membersWithPhotos.length === 1) {
         const member = membersWithPhotos[0];
         return {
-            url: member.photoUrl,
+            url: window.PyebwaImageUtils?.getMemberPhotoUrl(member.photoUrl, 'dashboard') || member.photoUrl,
             memberId: member.id,
             memberName: `${member.firstName} ${member.lastName}`
         };
@@ -44,7 +44,7 @@ function getRandomFamilyMemberPhoto(excludeMemberId = null) {
     ];
     
     return {
-        url: randomMember.photoUrl,
+        url: window.PyebwaImageUtils?.getMemberPhotoUrl(randomMember.photoUrl, 'dashboard') || randomMember.photoUrl,
         memberId: randomMember.id,
         memberName: `${randomMember.firstName} ${randomMember.lastName}`
     };

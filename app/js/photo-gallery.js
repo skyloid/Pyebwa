@@ -156,15 +156,6 @@
             uploadBtn.innerHTML = '<i class="material-icons rotating">sync</i> Uploading...';
             
             try {
-                // Check if Firebase is initialized
-                if (!window.firebase) {
-                    throw new Error('Firebase not initialized');
-                }
-                
-                if (!window.firebase.storage) {
-                    throw new Error('Firebase Storage not initialized');
-                }
-                
                 if (!window.userFamilyTreeId) {
                     throw new Error('No family tree selected');
                 }
@@ -179,7 +170,7 @@
                     
                     console.log(`Uploading photo ${index + 1}:`, file.name);
                     
-                    // Upload to Firebase Storage
+                    // Upload to storage
                     const photoUrl = await this.uploadPhotoToStorage(file);
                     
                     console.log(`Photo uploaded, URL:`, photoUrl);
@@ -187,7 +178,7 @@
                     return { 
                         url: photoUrl, 
                         caption: caption || '',
-                        uploadedAt: firebase.firestore.Timestamp.now(),
+                        uploadedAt: new Date().toISOString(),
                         uploadedBy: window.currentUser?.uid || 'anonymous',
                         taggedMemberIds: this.currentMemberId ? [this.currentMemberId] : []
                     };
@@ -209,7 +200,7 @@
                 // Close modal and refresh gallery
                 document.querySelector('.photo-upload-modal').remove();
                 
-                // Reload member data from Firestore to get updated photos
+                // Reload member data to get updated photos
                 if (window.pyebwaMemberProfile && this.currentMemberId) {
                     await this.reloadMemberData(this.currentMemberId);
                     window.pyebwaMemberProfile.switchTab('gallery');
@@ -239,7 +230,7 @@
             }
         },
         
-        // Upload photo to Firebase Storage
+        // Upload photo to storage
         async uploadPhotoToStorage(file) {
             if (!this.currentMemberId || !window.userFamilyTreeId) {
                 throw new Error('Member or family tree not selected');
@@ -256,15 +247,7 @@
         async addMultiplePhotosToMember(newPhotos) {
             if (!this.currentMemberId || !newPhotos || newPhotos.length === 0) return;
             
-            const memberRef = firebase.firestore()
-                .collection('familyTrees')
-                .doc(window.userFamilyTreeId)
-                .collection('members')
-                .doc(this.currentMemberId);
-            
-            // Get current photos array
-            const doc = await memberRef.get();
-            const memberData = doc.data();
+            const memberData = await PyebwaAPI.getPerson(window.userFamilyTreeId, this.currentMemberId);
             const currentPhotos = memberData?.photos || [];
             
             console.log('Current photos before batch add:', currentPhotos.length);
@@ -279,19 +262,11 @@
             // Log the full array before saving
             console.log('About to save photos array:', JSON.stringify(updatedPhotos));
             
-            // Update member document with all photos at once
-            await memberRef.update({
+            await window.updateFamilyMember(this.currentMemberId, {
                 photos: updatedPhotos
             });
             
-            console.log('All photos saved to Firestore');
-            
-            // Verify what was saved
-            const verifyDoc = await memberRef.get();
-            const savedPhotos = verifyDoc.data()?.photos || [];
-            console.log('Verified saved photos count:', savedPhotos.length);
-            console.log('First saved photo:', savedPhotos[0]);
-            console.log('Last saved photo:', savedPhotos[savedPhotos.length - 1]);
+            console.log('All photos saved');
             
             // Update local cache
             const member = window.familyMembers.find(m => m.id === this.currentMemberId);
@@ -304,15 +279,7 @@
         async addPhotoToMember(photoUrl, caption) {
             if (!this.currentMemberId) return;
             
-            const memberRef = firebase.firestore()
-                .collection('familyTrees')
-                .doc(window.userFamilyTreeId)
-                .collection('members')
-                .doc(this.currentMemberId);
-            
-            // Get current photos array
-            const doc = await memberRef.get();
-            const memberData = doc.data();
+            const memberData = await PyebwaAPI.getPerson(window.userFamilyTreeId, this.currentMemberId);
             const currentPhotos = memberData?.photos || [];
             
             console.log('Current photos before adding:', currentPhotos.length);
@@ -322,7 +289,7 @@
             const newPhoto = {
                 url: photoUrl,
                 caption: caption || '',
-                uploadedAt: firebase.firestore.Timestamp.now(),
+                uploadedAt: new Date().toISOString(),
                 uploadedBy: window.currentUser?.uid || 'anonymous'
             };
             currentPhotos.push(newPhoto);
@@ -330,22 +297,8 @@
             console.log('Photos after adding:', currentPhotos.length);
             console.log('Updated photos array:', currentPhotos);
             
-            // Update member document using arrayUnion to ensure proper array handling
-            // First approach: Direct update with the full array
-            try {
-                await memberRef.update({
-                    photos: currentPhotos
-                });
-                console.log('Photos saved to Firestore using direct update');
-            } catch (error) {
-                console.error('Direct update failed, trying alternative method:', error);
-                
-                // Alternative approach: Use set with merge
-                await memberRef.set({
-                    photos: currentPhotos
-                }, { merge: true });
-                console.log('Photos saved using set with merge');
-            }
+            await window.updateFamilyMember(this.currentMemberId, { photos: currentPhotos });
+            console.log('Photos saved successfully');
             
             // Update local cache
             const member = window.familyMembers.find(m => m.id === this.currentMemberId);
@@ -426,7 +379,7 @@
             const caption = lightbox.querySelector('.lightbox-caption');
             const counter = lightbox.querySelector('.lightbox-counter');
             
-            img.src = photos[newIndex].url;
+            img.src = window.PyebwaImageUtils?.getMemberPhotoUrl(photos[newIndex].url, 'dashboard') || photos[newIndex].url;
             
             if (caption) {
                 caption.textContent = photos[newIndex].caption || '';
@@ -438,6 +391,10 @@
         
         // Show photo edit modal (for main profile photo)
         showPhotoEditModal() {
+            const currentPhotoUrl = window.pyebwaMemberProfile?.currentMember?.photoUrl
+                ? (window.PyebwaImageUtils?.getMemberPhotoUrl(window.pyebwaMemberProfile.currentMember.photoUrl, 'profile')
+                    || window.pyebwaMemberProfile.currentMember.photoUrl)
+                : '/app/images/default-avatar.svg';
             const modal = document.createElement('div');
             modal.className = 'photo-edit-modal active';
             modal.innerHTML = `
@@ -451,7 +408,7 @@
                     
                     <div class="photo-edit-body">
                         <div class="current-photo">
-                            <img src="${window.pyebwaMemberProfile?.currentMember?.photoUrl || '/app/images/default-avatar.svg'}" 
+                            <img src="${currentPhotoUrl}" 
                                  alt="Current photo">
                         </div>
                         
@@ -492,20 +449,13 @@
             this.currentMemberId = window.pyebwaMemberProfile?.currentMemberId;
         },
         
-        // Reload member data from Firestore
+        // Reload member data from API
         async reloadMemberData(memberId) {
             try {
                 console.log('Reloading member data for:', memberId);
+                const updatedData = await PyebwaAPI.getPerson(window.userFamilyTreeId, memberId);
                 
-                const memberDoc = await firebase.firestore()
-                    .collection('familyTrees')
-                    .doc(window.userFamilyTreeId)
-                    .collection('members')
-                    .doc(memberId)
-                    .get();
-                
-                if (memberDoc.exists) {
-                    const updatedData = memberDoc.data();
+                if (updatedData) {
                     console.log('Reloaded member data, photos count:', updatedData.photos?.length || 0);
                     console.log('Photos array:', updatedData.photos);
                     
@@ -581,7 +531,7 @@
                         </button>
                         
                         <div class="slideshow-image-container">
-                            <img class="slideshow-image" src="${allPhotos[0].url}" alt="">
+                            <img class="slideshow-image" src="${window.PyebwaImageUtils?.getMemberPhotoUrl(allPhotos[0].url, 'dashboard') || allPhotos[0].url}" alt="">
                             <div class="slideshow-caption">${allPhotos[0].caption || ''}</div>
                         </div>
                         
@@ -727,7 +677,7 @@
             // Update image with fade effect
             img.style.opacity = '0';
             setTimeout(() => {
-                img.src = photo.url;
+                img.src = window.PyebwaImageUtils?.getMemberPhotoUrl(photo.url, 'dashboard') || photo.url;
                 img.style.opacity = '1';
             }, 200);
             
@@ -810,7 +760,7 @@
                 }
 
                 const profileImg = document.querySelector('.profile-photo');
-                if (profileImg) profileImg.src = photoUrl;
+                if (profileImg) profileImg.src = window.PyebwaImageUtils?.getMemberPhotoUrl(photoUrl, 'profile') || photoUrl;
 
                 if (window.showSuccess) {
                     window.showSuccess('Profile photo updated successfully!');

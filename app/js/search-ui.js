@@ -76,10 +76,10 @@
         
         // Create search UI components
         createSearchComponents() {
-            // Quick search removed - no longer needed
-            
-            // Advanced search modal
-            this.createAdvancedSearchModal();
+        // Quick search removed - no longer needed
+        
+        // Advanced search modal
+        this.createAdvancedSearchModal();
             
             // Search results container
             this.createSearchResults();
@@ -594,10 +594,12 @@
                 return;
             }
             
-            const html = searchResults.results.map(person => `
+            const html = searchResults.results.map(person => {
+                const photoUrl = window.PyebwaImageUtils?.getMemberPhotoUrl(person.photoUrl, 'avatar') || person.photoUrl || '/app/images/default-avatar.svg';
+                return `
                 <div class="search-result-item" data-id="${person.id}">
                     <img class="result-photo" 
-                         src="${person.photoUrl || '/app/images/default-avatar.svg'}" 
+                         src="${photoUrl}" 
                          alt="${person.firstName} ${person.lastName}">
                     <div class="result-info">
                         <div class="result-name">
@@ -617,7 +619,8 @@
                         ${t('relevance')}: ${Math.round(person.score)}%
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
             
             container.innerHTML = html;
             

@@ -169,7 +169,9 @@
             if (!member) return;
             
             // Create full node content
-            const photoUrl = member.photoUrl || '/app/images/default-avatar.svg';
+            const photoUrl = member.photoUrl
+                ? (window.PyebwaImageUtils?.getMemberPhotoUrl(member.photoUrl, 'treeNode') || member.photoUrl)
+                : '/app/images/default-avatar.svg';
             const age = member.birthDate ? 
                 new Date().getFullYear() - new Date(member.birthDate).getFullYear() : '';
             

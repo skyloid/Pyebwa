@@ -1,7 +1,7 @@
 // Pyebwa Family Tree App - Main Application
 // UI helpers loaded from ui-helpers.js, debug from debug-utils.js
 
-if (window.preventRedirect || window.isSignupPage || sessionStorage.getItem('onSignupPage') === 'true' || window.location.href.includes('signup.html')) {
+if (window.preventRedirect || window.isSignupPage || sessionStorage.getItem('onSignupPage') === 'true' || window.location.pathname === '/signup' || window.location.pathname.endsWith('/signup.html')) {
     console.log('App.js: Detected signup page, skipping app.js execution');
 } else {
 
@@ -61,15 +61,31 @@ window.getMemberDisplayName = getMemberDisplayName;
 
 // Redirect cooldown
 const REDIRECT_COOLDOWN = window.DeviceDetection && window.DeviceDetection.isTablet() ? 60000 : 30000;
+const REDIRECT_COOLDOWN_KEY = 'lastRedirectTime';
+
+function getLastRedirectTime() {
+    const sessionValue = parseInt(sessionStorage.getItem(REDIRECT_COOLDOWN_KEY) || '0', 10);
+    const legacyLocalValue = parseInt(localStorage.getItem(REDIRECT_COOLDOWN_KEY) || '0', 10);
+    return Math.max(
+        Number.isFinite(sessionValue) ? sessionValue : 0,
+        Number.isFinite(legacyLocalValue) ? legacyLocalValue : 0
+    );
+}
+
+function clearRedirectCooldown() {
+    sessionStorage.removeItem(REDIRECT_COOLDOWN_KEY);
+    localStorage.removeItem(REDIRECT_COOLDOWN_KEY);
+}
 
 function canRedirect() {
-    const lastRedirect = parseInt(localStorage.getItem('lastRedirectTime') || '0');
+    const lastRedirect = getLastRedirectTime();
     const now = Date.now();
     if (now - lastRedirect < REDIRECT_COOLDOWN) {
         log(`[Redirect Cooldown] Active - ${Math.round((REDIRECT_COOLDOWN - (now - lastRedirect)) / 1000)}s remaining`);
         return false;
     }
-    localStorage.setItem('lastRedirectTime', now.toString());
+    sessionStorage.setItem(REDIRECT_COOLDOWN_KEY, now.toString());
+    localStorage.removeItem(REDIRECT_COOLDOWN_KEY);
     return true;
 }
 
@@ -561,6 +577,7 @@ async function initializeAuth() {
         const user = await PyebwaAPI.getCurrentUser();
 
         if (user) {
+            clearRedirectCooldown();
             currentUser = user;
             window.currentUser = currentUser;
             syncPublicWebsiteAuthState(currentUser);
@@ -570,7 +587,7 @@ async function initializeAuth() {
             sessionStorage.removeItem('pyebwaRedirectData');
 
             try {
-                await initializeUserFamilyTree();
+                const treeInit = await initializeUserFamilyTree();
                 if (discoveryNotificationRefreshTimer) {
                     clearInterval(discoveryNotificationRefreshTimer);
                 }
@@ -580,7 +597,22 @@ async function initializeAuth() {
                 hideLoadingState();
                 const onboardingParams = new URLSearchParams(window.location.search);
                 const forceOnboarding = ['1', 'true', 'yes'].includes((onboardingParams.get('onboarding') || '').toLowerCase());
-                const needsOnboarding = typeof window.shouldShowEnhancedOnboarding === 'function' && await window.shouldShowEnhancedOnboarding();
+                const hasExistingTrees = (treeInit?.treeCount || 0) > 0 || (Array.isArray(window.userFamilyTrees) && window.userFamilyTrees.length > 0);
+                const needsOnboarding = !hasExistingTrees
+                    && typeof window.shouldShowEnhancedOnboarding === 'function'
+                    && await window.shouldShowEnhancedOnboarding();
+
+                if (hasExistingTrees) {
+                    localStorage.setItem('pyebwaOnboardingComplete', 'true');
+                    if (currentUser?.id || currentUser?.uid || currentUser?.email) {
+                        const onboardingIdentity = currentUser.id || currentUser.uid || currentUser.email;
+                        localStorage.setItem(`pyebwaOnboardingComplete:${onboardingIdentity}`, 'true');
+                    }
+                    localStorage.removeItem('pyebwaOnboardingProgress');
+                    sessionStorage.removeItem('pyebwaOnboardingActive');
+                    document.getElementById('onboardingFlowModal')?.remove();
+                    document.querySelector('.onboarding-modal')?.remove();
+                }
 
                 if (forceOnboarding && typeof window.showEnhancedOnboarding === 'function') {
                     window.showEnhancedOnboarding();
@@ -606,9 +638,9 @@ async function initializeAuth() {
             hideLoadingState();
             document.body.dataset.appReady = 'false';
             if (canRedirect()) {
-                window.location.href = '/login.html';
+                window.location.href = '/login';
             } else {
-                showError('Please wait before trying to access this page again.');
+                window.location.href = '/login';
             }
         }
     } catch (error) {
@@ -617,7 +649,7 @@ async function initializeAuth() {
         hideLoadingState();
         document.body.dataset.appReady = 'false';
         showError('Authentication error. Please login again.');
-        setTimeout(() => { window.location.href = '/login.html'; }, 3000);
+        setTimeout(() => { window.location.href = '/login'; }, 3000);
     }
     })();
 
@@ -668,12 +700,23 @@ async function initializeUserFamilyTree() {
             : userFamilyTrees[0].id;
 
         await setActiveFamilyTree(initialTreeId, { persist: true, reloadMembers: true, suppressToast: true });
+        return {
+            initialized: true,
+            treeCount: userFamilyTrees.length,
+            memberCount: Array.isArray(familyMembers) ? familyMembers.length : 0
+        };
     } catch (error) {
         console.error('Error initializing family tree:', error);
         userFamilyTreeId = null;
         window.userFamilyTreeId = null;
         userFamilyTrees = [];
         window.userFamilyTrees = [];
+        return {
+            initialized: false,
+            treeCount: 0,
+            memberCount: 0,
+            error
+        };
     }
 }
 

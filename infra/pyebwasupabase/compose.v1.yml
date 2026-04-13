@@ -1,0 +1,220 @@
+
+services:
+  pyebwa-db:
+    image: ${POSTGRES_IMAGE}
+    container_name: pyebwa-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "127.0.0.1:${PYEBWA_DB_PORT:-5432}:5432"
+    volumes:
+      - pyebwa-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - pyebwasupabase_default
+
+  pyebwa-auth:
+    image: ${GOTRUE_IMAGE}
+    container_name: pyebwa-auth
+    restart: unless-stopped
+    depends_on:
+      pyebwa-db:
+        condition: service_healthy
+    environment:
+      API_EXTERNAL_URL: ${API_EXTERNAL_URL}
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${PYEBWA_DB_HOST}:5432/${POSTGRES_DB}?search_path=auth,public
+      GOTRUE_DISABLE_SIGNUP: ${GOTRUE_DISABLE_SIGNUP}
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_JWT_EXP: ${GOTRUE_JWT_EXP}
+      GOTRUE_JWT_SECRET: ${JWT_SECRET}
+      GOTRUE_SITE_URL: ${GOTRUE_SITE_URL}
+      GOTRUE_URI_ALLOW_LIST: ${GOTRUE_URI_ALLOW_LIST}
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_MAILER_AUTOCONFIRM: "true"
+    ports:
+      - "127.0.0.1:${PYEBWA_AUTH_DEBUG_PORT:-10998}:9999"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:9999/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - pyebwasupabase_default
+
+  pyebwa-rest:
+    image: ${POSTGREST_IMAGE}
+    container_name: pyebwa-rest
+    restart: unless-stopped
+    depends_on:
+      pyebwa-db:
+        condition: service_healthy
+    environment:
+      PGRST_DB_URI: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${PYEBWA_DB_HOST}:5432/${POSTGRES_DB}
+      PGRST_DB_SCHEMA: public,storage,graphql_public
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+      PGRST_SERVER_PORT: 3000
+    ports:
+      - "127.0.0.1:${PYEBWA_REST_DEBUG_PORT:-14939}:3000"
+    healthcheck:
+      disable: true
+    networks:
+      - pyebwasupabase_default
+
+  pyebwa-realtime:
+    image: ${REALTIME_IMAGE}
+    container_name: pyebwa-realtime
+    restart: unless-stopped
+    depends_on:
+      pyebwa-db:
+        condition: service_healthy
+    environment:
+      APP_NAME: pyebwa-realtime
+      DB_HOST: ${PYEBWA_DB_HOST}
+      DB_PORT: 5432
+      DB_USER: ${PYEBWA_REALTIME_DB_USER}
+      DB_PASSWORD: ${PYEBWA_REALTIME_DB_PASSWORD}
+      DB_NAME: ${POSTGRES_DB}
+      DB_AFTER_CONNECT_QUERY: SET search_path TO _realtime
+      PORT: 4000
+      JWT_SECRET: ${JWT_SECRET}
+      API_JWT_SECRET: ${JWT_SECRET}
+      SECRET_KEY_BASE: ${JWT_SECRET}
+      CLUSTER_STRATEGIES: EPMD
+      ERL_AFLAGS: -proto_dist inet_tcp
+      RLIMIT_NOFILE: 1048576
+    healthcheck:
+      test: ["CMD-SHELL", "true"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - pyebwasupabase_default
+
+  pyebwa-storage:
+    image: ${STORAGE_IMAGE}
+    container_name: pyebwa-storage
+    restart: unless-stopped
+    depends_on:
+      pyebwa-db:
+        condition: service_healthy
+      pyebwa-rest:
+        condition: service_started
+    environment:
+      ANON_KEY: ${ANON_KEY}
+      SERVICE_KEY: ${SERVICE_KEY}
+      POSTGREST_URL: http://${PYEBWA_REST_HOST}:3000
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${PYEBWA_DB_HOST}:5432/${POSTGRES_DB}
+      FILE_SIZE_LIMIT: 52428800
+      STORAGE_BACKEND: file
+      FILE_STORAGE_BACKEND_PATH: /var/lib/storage
+      TENANT_ID: stub
+      REGION: us-east-1
+      GLOBAL_S3_BUCKET: pyebwa-storage
+    volumes:
+      - pyebwa-storage-data:/var/lib/storage
+    networks:
+      - pyebwasupabase_default
+
+  pyebwa-meta:
+    image: ${META_IMAGE}
+    container_name: pyebwa-meta
+    restart: unless-stopped
+    depends_on:
+      pyebwa-db:
+        condition: service_healthy
+    environment:
+      PG_META_PORT: 8080
+      PG_META_DB_HOST: ${PYEBWA_DB_HOST}
+      PG_META_DB_PORT: 5432
+      PG_META_DB_NAME: ${POSTGRES_DB}
+      PG_META_DB_USER: ${POSTGRES_USER}
+      PG_META_DB_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - pyebwasupabase_default
+
+  pyebwa-imgproxy:
+    image: ${IMGPROXY_IMAGE}
+    container_name: pyebwa-imgproxy
+    restart: unless-stopped
+    environment:
+      IMGPROXY_BIND: ":5001"
+      IMGPROXY_ENABLE_WEBP_DETECTION: "true"
+    networks:
+      - pyebwasupabase_default
+
+  pyebwa-studio:
+    image: ${STUDIO_IMAGE}
+    container_name: pyebwa-studio
+    restart: unless-stopped
+    depends_on:
+      pyebwa-meta:
+        condition: service_started
+    environment:
+      STUDIO_DEFAULT_ORGANIZATION: ${STUDIO_DEFAULT_ORGANIZATION}
+      STUDIO_DEFAULT_PROJECT: ${STUDIO_DEFAULT_PROJECT}
+      HOSTNAME: 0.0.0.0
+      SUPABASE_URL: http://${PYEBWA_KONG_HOST}:8000
+      SUPABASE_PUBLIC_URL: ${SUPABASE_PUBLIC_URL}
+      SUPABASE_ANON_KEY: ${ANON_KEY}
+      SUPABASE_SERVICE_KEY: ${SERVICE_KEY}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"const { execSync } = require('child_process'); const ip = execSync('hostname -i').toString().trim().split(/\\s+/)[0]; fetch('http://' + ip + ':3000/api/platform/profile').then((r) => { if (r.status !== 200) process.exit(1); }).catch(() => process.exit(1));\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pyebwasupabase_default
+
+  pyebwa-kong:
+    image: ${KONG_IMAGE}
+    container_name: pyebwa-kong
+    restart: unless-stopped
+    depends_on:
+      pyebwa-auth:
+        condition: service_started
+      pyebwa-rest:
+        condition: service_started
+      pyebwa-storage:
+        condition: service_started
+      pyebwa-realtime:
+        condition: service_started
+      pyebwa-meta:
+        condition: service_started
+      pyebwa-imgproxy:
+        condition: service_started
+      pyebwa-studio:
+        condition: service_started
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /var/lib/kong/kong.yml
+      KONG_DNS_ORDER: LAST,A,CNAME
+      KONG_PLUGINS: request-transformer,cors,key-auth,acl,basic-auth
+    ports:
+      - "127.0.0.1:${PYEBWA_KONG_HTTP_PORT:-8201}:8000"
+    volumes:
+      - ./kong.yml:/var/lib/kong/kong.yml:ro
+    networks:
+      - pyebwasupabase_default
+
+volumes:
+  pyebwa-db-data:
+  pyebwa-storage-data:
+
+networks:
+  pyebwasupabase_default:
+    name: pyebwasupabase_default

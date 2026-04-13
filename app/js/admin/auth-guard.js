@@ -42,7 +42,7 @@
     }
 
     function redirectToLogin() {
-        const url = new URL('/login.html', window.location.origin);
+        const url = new URL('/login', window.location.origin);
         const params = new URLSearchParams(window.location.search);
         const lang = params.get('lang');
         if (lang) {
