@@ -187,13 +187,54 @@ body.dark-mode .lang-btn.active {
     text-decoration: none;
     font-weight: 500;
     white-space: nowrap;
-    transition: color 0.3s;
+    transition: color 0.2s ease, background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
     pointer-events: auto;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 10px 14px;
+    border-radius: 999px;
 }
 
 .nav-link:hover {
     color: var(--primary-red);
+    transform: translateY(-1px);
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 7px;
+    height: 2px;
+    border-radius: 999px;
+    background: currentColor;
+    opacity: 0;
+    transform: scaleX(0.4);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.nav-link:hover::after,
+.nav-link:focus-visible::after,
+.nav-link.active::after,
+.nav-link[aria-current="page"]::after {
+    opacity: 1;
+    transform: scaleX(1);
+}
+
+.nav-link:focus-visible {
+    outline: 2px solid rgba(45, 106, 79, 0.32);
+    outline-offset: 3px;
+    color: var(--primary-blue);
+}
+
+.nav-link.active,
+.nav-link[aria-current="page"] {
+    color: var(--primary-blue);
 }
 
 .nav-menu .nav-link[data-i18n="about"] {
@@ -230,6 +271,16 @@ body.dark-mode .nav-menu .nav-link {
 
 body.dark-mode .nav-menu .nav-link:hover {
     color: var(--primary-red);
+}
+
+body.dark-mode .nav-link:focus-visible {
+    outline-color: rgba(150, 174, 160, 0.32);
+    color: #F5F3EF;
+}
+
+body.dark-mode .nav-link.active,
+body.dark-mode .nav-link[aria-current="page"] {
+    color: #F5F3EF;
 }
 
 /* Hide mobile elements on desktop */
@@ -1130,12 +1181,26 @@ body:not(.dark-mode) h1,
 body:not(.dark-mode) h2,
 body:not(.dark-mode) h3,
 body:not(.dark-mode) h4,
-body:not(.dark-mode) .hero-title,
-body:not(.dark-mode) .hero-subtitle,
-body:not(.dark-mode) .subtitle,
 body:not(.dark-mode) .section-title,
 body:not(.dark-mode) .modal-title {
-    color: #EDE6DA !important;
+    color: var(--primary-blue) !important;
+}
+
+body:not(.dark-mode) .hero-title,
+body:not(.dark-mode) .hero-subtitle,
+body:not(.dark-mode) .about-hero h1,
+body:not(.dark-mode) .about-hero .subtitle,
+body:not(.dark-mode) .contact-hero h1,
+body:not(.dark-mode) .contact-hero .subtitle,
+body:not(.dark-mode) .cause-hero h1,
+body:not(.dark-mode) .cause-hero .subtitle {
+    color: #FFD700 !important;
+}
+
+body:not(.dark-mode) .feature-card h4,
+body:not(.dark-mode) .find-roots-section-title,
+body:not(.dark-mode) .find-roots-divider {
+    color: var(--primary-blue) !important;
 }
 
 /* End of main styles - Mobile styles moved to mobile.css */

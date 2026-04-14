@@ -7,8 +7,54 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script>
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            var lang = params.get('lang');
+
+            if (!lang) {
+                var cookieMatch = document.cookie.match(/(?:^|;\s*)pyebwa_lang=([^;]+)/);
+                if (cookieMatch) {
+                    lang = decodeURIComponent(cookieMatch[1]);
+                }
+            }
+
+            if (!lang) {
+                try {
+                    lang = localStorage.getItem('pyebwaLang') || localStorage.getItem('language');
+                } catch (error) {}
+            }
+
+            if (!lang) {
+                var browserLang = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
+                if (browserLang.indexOf('fr') === 0) lang = 'fr';
+                else if (browserLang.indexOf('ht') === 0) lang = 'ht';
+                else lang = 'en';
+            }
+
+            if (!/^(en|fr|ht)$/.test(lang)) {
+                lang = 'en';
+            }
+
+            document.documentElement.lang = lang;
+            document.documentElement.setAttribute('data-lang-pending', '1');
+            window.__PYEBWA_INITIAL_LANG__ = lang;
+
+            window.setTimeout(function() {
+                document.documentElement.removeAttribute('data-lang-pending');
+            }, 2500);
+        })();
+    </script>
+    <style>
+        html[data-lang-pending="1"] body {
+            opacity: 0;
+        }
+        html body {
+            transition: opacity 0.18s ease;
+        }
+    </style>
+    <script>
         window.__PYEBWA_VERSION_URL__ = 'version.json';
-        window.__PYEBWA_BUILD_ID__ = '20260414T233021Z-version-sync';
+        window.__PYEBWA_BUILD_ID__ = '20260414T234730Z-version-sync';
         window.__PYEBWA_VERSION__ = null;
         window.__PYEBWA_LOCAL_CSS__ = ['css/styles.css', 'css/mobile.css'];
         window.__PYEBWA_LOCAL_SCRIPTS__ = [
@@ -581,7 +627,7 @@
     <!-- Footer -->
     <footer class="footer" style="padding: 20px 0;">
         <div class="container" style="text-align: center;">
-            <p>&copy; 2026 Pyebwa version <span data-build-version>1.2.7</span> - <span data-i18n="poweredBy">Powered by</span> <a href="https://humanlevel.ai" target="_blank" style="color: var(--accent-yellow); text-decoration: none; transition: all 0.3s;" data-i18n="humanLevelTech">Technologies Humanitaires Inc.</a></p>
+            <p>&copy; 2026 Pyebwa version <span data-build-version>1.2.8</span> - <span data-i18n="poweredBy">Powered by</span> <a href="https://humanlevel.ai" target="_blank" style="color: var(--accent-yellow); text-decoration: none; transition: all 0.3s;" data-i18n="humanLevelTech">Technologies Humanitaires Inc.</a></p>
         </div>
     </footer>
 

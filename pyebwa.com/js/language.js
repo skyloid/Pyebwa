@@ -305,6 +305,30 @@
         setButtonDisplay(dashboardBtn, isAuthenticated ? 'inline-flex' : 'none');
     }
 
+    function syncCurrentNavLink() {
+        const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
+        const navLinks = document.querySelectorAll('.nav-link[href]');
+
+        navLinks.forEach((link) => {
+            link.classList.remove('active');
+            link.removeAttribute('aria-current');
+
+            try {
+                const target = new URL(link.getAttribute('href'), window.location.href);
+                const targetPath = target.pathname.replace(/\/+$/, '') || '/';
+                const isIndexMatch = currentPath === '/' && /\/index\.html$/.test(targetPath);
+                const isMatch = targetPath === currentPath || isIndexMatch;
+
+                if (isMatch) {
+                    link.classList.add('active');
+                    link.setAttribute('aria-current', 'page');
+                }
+            } catch (error) {
+                console.warn('Unable to evaluate nav link state for', link, error);
+            }
+        });
+    }
+
     // Initialize language selector if it exists
     function initLanguageSelector() {
         const langButtons = document.querySelectorAll('.lang-btn');
@@ -356,16 +380,25 @@
     window.currentLang = currentLang;
     window.translations = translations;
     
+    function revealLocalizedPage() {
+        document.documentElement.removeAttribute('data-lang-pending');
+    }
+
     async function initializeLanguageSystem() {
-        const overrides = await loadPageContentOverrides();
-        if (overrides) {
-            console.log('Merging page content overrides...');
-            pageContentOverridesPayload = overrides;
-            mergePageContentOverrides(overrides);
+        try {
+            const overrides = await loadPageContentOverrides();
+            if (overrides) {
+                console.log('Merging page content overrides...');
+                pageContentOverridesPayload = overrides;
+                mergePageContentOverrides(overrides);
+            }
+            updateLanguage();
+            initLanguageSelector();
+            syncPublicAuthButtons();
+            syncCurrentNavLink();
+        } finally {
+            revealLocalizedPage();
         }
-        updateLanguage();
-        initLanguageSelector();
-        syncPublicAuthButtons();
     }
     
     // Initialize on DOMContentLoaded
