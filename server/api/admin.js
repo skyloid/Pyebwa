@@ -625,7 +625,11 @@ router.get('/slideshows/preview', async (req, res) => {
         }
 
         const imgproxyUrl = `http://127.0.0.1:${process.env.PORT || 9111}${buildImgproxyPreviewPath(target.toString())}`;
-        const response = await fetch(imgproxyUrl);
+        let response = await fetch(imgproxyUrl);
+        if (!response.ok) {
+            console.warn(`Admin slideshow preview imgproxy fallback: ${response.status} for ${target.toString()}`);
+            response = await fetch(target.toString());
+        }
         if (!response.ok) {
             return res.status(response.status).json({ error: 'Unable to fetch preview image' });
         }

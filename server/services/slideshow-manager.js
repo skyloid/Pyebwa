@@ -28,10 +28,10 @@ function createDefaultOverlays() {
 
 function createDefaultSettings() {
     return {
-        home: { randomize: false },
-        about: { randomize: false },
-        mission: { randomize: false },
-        contact: { randomize: false }
+        home: { randomize: false, intervalSeconds: 5, fixedSlideId: '' },
+        about: { randomize: false, intervalSeconds: 5, fixedSlideId: '' },
+        mission: { randomize: false, intervalSeconds: 5, fixedSlideId: '' },
+        contact: { randomize: false, intervalSeconds: 5, fixedSlideId: '' }
     };
 }
 
@@ -103,9 +103,14 @@ function createSeedData() {
 }
 
 function normalizePageSettings(settings = {}, page) {
-    const defaults = createDefaultSettings()[page] || { randomize: false };
+    const defaults = createDefaultSettings()[page] || { randomize: false, intervalSeconds: 5, fixedSlideId: '' };
+    const intervalSeconds = Number.isFinite(Number(settings.intervalSeconds))
+        ? Number(settings.intervalSeconds)
+        : defaults.intervalSeconds;
     return {
-        randomize: typeof settings.randomize === 'boolean' ? settings.randomize : defaults.randomize
+        randomize: typeof settings.randomize === 'boolean' ? settings.randomize : defaults.randomize,
+        intervalSeconds: Math.min(30, Math.max(1, Math.round(intervalSeconds))),
+        fixedSlideId: String(settings.fixedSlideId || '').trim()
     };
 }
 

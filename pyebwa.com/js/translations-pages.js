@@ -64,7 +64,7 @@ const pageTranslations = {
         feature2Desc: "Preserve memories and family stories for future generations",
         feature3Title: "Connect Family",
         feature3Desc: "Find and connect with family members everywhere",
-        tagline: "Know Your Roots",
+        tagline: "Keep Your Roots Alive",
         
         // About Page
         aboutTitle: "About Pyebwa",
@@ -84,14 +84,14 @@ const pageTranslations = {
         inclusivityText: "We celebrate all families and cultures, providing tools that work for everyone.",
         
         ourStory: "Our Story",
-        story2023: "2023",
+        story2023: "2025",
         story2023Text: "Pyebwa was born from a simple idea: families should have an easy way to preserve their stories.",
-        storyEarly2024: "Early 2024",
+        storyEarly2024: "Early 2026",
         storyEarly2024Text: "We launched our beta version, working closely with Haitian families to build the perfect platform.",
-        storyMid2024: "Mid 2024",
-        storyMid2024Text: "Expanded to support multiple languages and cultures, making Pyebwa accessible to more families.",
-        storyToday: "Today",
-        storyTodayText: "Thousands of families use Pyebwa to connect, share stories, and preserve their heritage.",
+        storyMid2024: "2027",
+        storyMid2024Text: "We plan to expand to support multiple languages and cultures, making Pyebwa accessible to more families.",
+        storyToday: "",
+        storyTodayText: "",
         
         meetOurTeam: "Meet Our Team",
         teamDescription: "Passionate about families, technology, and preserving heritage.",
@@ -275,7 +275,7 @@ const pageTranslations = {
         feature2Desc: "Préservez les souvenirs et les histoires familiales pour les générations futures",
         feature3Title: "Connectez la Famille",
         feature3Desc: "Trouvez et connectez-vous avec des membres de la famille partout",
-        tagline: "Connaissez Vos Racines",
+        tagline: "Faites vivre vos racines",
         
         // Page À propos
         aboutTitle: "À propos de Pyebwa",
@@ -295,14 +295,14 @@ const pageTranslations = {
         inclusivityText: "Nous célébrons toutes les familles et toutes les cultures, en fournissant des outils qui fonctionnent pour tout le monde.",
         
         ourStory: "Notre Histoire",
-        story2023: "2023",
+        story2023: "2025",
         story2023Text: "Pyebwa est né d'une idée simple : les familles devraient avoir un moyen facile de préserver leurs histoires.",
-        storyEarly2024: "Début 2024",
-        storyEarly2024Text: "Nous avons lancé notre version bêta, en travaillant étroitement avec les familles haïtiennes pour créer la plateforme parfaite.",
-        storyMid2024: "Mi-2024",
-        storyMid2024Text: "Expansion pour prendre en charge plusieurs langues et cultures, rendant Pyebwa accessible à plus de familles.",
-        storyToday: "Aujourd'hui",
-        storyTodayText: "Des milliers de familles utilisent Pyebwa pour se connecter, partager des histoires et préserver leur héritage.",
+        storyEarly2024: "2026",
+        storyEarly2024Text: "Nous lançons notre version bêta et travaillerons en étroite collaboration avec les familles haïtiennes pour créer la plateforme idéale.",
+        storyMid2024: "2027",
+        storyMid2024Text: "Nous prévoyons d'étendre la plateforme pour prendre en charge plusieurs langues et cultures, afin de rendre Pyebwa accessible à davantage de familles.",
+        storyToday: "",
+        storyTodayText: "",
         
         meetOurTeam: "Rencontrez Notre Équipe",
         teamDescription: "Passionnés par les familles, la technologie et la préservation du patrimoine.",
@@ -486,7 +486,7 @@ const pageTranslations = {
         feature2Desc: "Prezève memwa ak istwa fanmi pou jenerasyon k ap vini yo",
         feature3Title: "Konekte Fanmi",
         feature3Desc: "Jwenn ak konekte ak fanmi ou toupatou",
-        tagline: "Konnen Rasin-ou",
+        tagline: "Kenbe rasin ou vivan",
         
         // Paj Konsènan
         aboutTitle: "Konsènan Pyebwa",
@@ -506,14 +506,14 @@ const pageTranslations = {
         inclusivityText: "Nou selebre tout fanmi ak kilti, nou bay zouti ki fonksyone pou tout moun.",
         
         ourStory: "Istwa Nou",
-        story2023: "2023",
+        story2023: "2025",
         story2023Text: "Pyebwa te fèt de yon lide senp: fanmi yo ta dwe gen yon fason fasil pou prezève istwa yo.",
-        storyEarly2024: "Kòmansman 2024",
-        storyEarly2024Text: "Nou te lanse vèsyon beta nou an, travay pwòch ak fanmi ayisyen yo pou konstwi platfòm pafè a.",
-        storyMid2024: "Mitan 2024",
-        storyMid2024Text: "Elaji pou sipòte plizyè lang ak kilti, fè Pyebwa aksesib pou plis fanmi.",
-        storyToday: "Jodi a",
-        storyTodayText: "Dè milye fanmi itilize Pyebwa pou konekte, pataje istwa epi prezève eritaj yo.",
+        storyEarly2024: "2026",
+        storyEarly2024Text: "Nou ap lanse vèsyon beta nou an epi n ap travay kole kole ak fanmi ayisyen yo pou konstwi platfòm pafè a.",
+        storyMid2024: "2027",
+        storyMid2024Text: "Nou prevwa elaji platfòm la pou sipòte plis lang ak kilti, pou fè Pyebwa vin pi aksesib pou plis fanmi.",
+        storyToday: "",
+        storyTodayText: "",
         
         meetOurTeam: "Rankontre Ekip Nou an",
         teamDescription: "Pasyone konsènan fanmi, teknoloji, ak prezèvasyon eritaj.",

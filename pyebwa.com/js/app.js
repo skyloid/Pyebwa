@@ -12,7 +12,7 @@ console.log('App.js loaded - Modal functionality removed, null checks added');
 // Translations
 const translations = {
     en: {
-        tagline: "Know Your Roots",
+        tagline: "Keep Your Roots Alive",
         login: "Login",
         signup: "Sign Up",
         heroTitle: "Keep Your Family History Alive",
@@ -33,7 +33,7 @@ const translations = {
         humanLevelTech: "Humanitarian Technologies"
     },
     fr: {
-        tagline: "Connaissez Vos Racines",
+        tagline: "Faites vivre vos racines",
         login: "Connexion",
         signup: "S'inscrire",
         heroTitle: "Gardez Votre Histoire Familiale Vivante",
@@ -54,7 +54,7 @@ const translations = {
         humanLevelTech: "Technologies Humanitaires"
     },
     ht: {
-        tagline: "Konnen Rasin-ou",
+        tagline: "Kenbe rasin ou vivan",
         login: "Konekte",
         signup: "Enskri",
         heroTitle: "Kenbe Istwa Fanmi Ou Vivan",

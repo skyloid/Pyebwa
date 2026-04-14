@@ -247,6 +247,27 @@
         }
     }
 
+    function getRotationIntervalMs(payload, pageKey) {
+        const seconds = Number(payload?.settings?.[pageKey]?.intervalSeconds);
+        const normalizedSeconds = Number.isFinite(seconds) ? Math.min(30, Math.max(1, Math.round(seconds))) : 5;
+        return normalizedSeconds * 1000;
+    }
+
+    function resolveSlidesForPage(payload, pageKey) {
+        const baseSlides = Array.isArray(payload?.pages?.[pageKey]) ? payload.pages[pageKey] : [];
+        const settings = payload?.settings?.[pageKey] || {};
+        const fixedSlideId = String(settings.fixedSlideId || '').trim();
+
+        if (fixedSlideId) {
+            const fixedSlide = baseSlides.find((slide) => slide?.id === fixedSlideId);
+            if (fixedSlide) {
+                return [fixedSlide];
+            }
+        }
+
+        return !!settings.randomize ? shuffleSlides(baseSlides) : baseSlides;
+    }
+
     function renderHome(slides, payload) {
         const container = document.querySelector('.slideshow-container');
         if (!container || slides.length === 0) return;
@@ -273,7 +294,7 @@
             applyPageOverlay('home', getOverlayConfig(useSlideOverlay ? slide?.overlay : (payload?.overlays?.home || slide?.overlay || {})));
         };
         applyOverlayForIndex(0);
-        startRotation('.slideshow-container .slide', 'active', 5000, applyOverlayForIndex);
+        startRotation('.slideshow-container .slide', 'active', getRotationIntervalMs(payload, 'home'), applyOverlayForIndex);
     }
 
     function renderSimpleHero(page, slides, payload) {
@@ -316,15 +337,13 @@
             applyPageOverlay(page, getOverlayConfig(useSlideOverlay ? slide?.overlay : (payload?.overlays?.[page] || slide?.overlay || {})));
         };
         applyOverlayForIndex(0);
-        startRotation('.managed-hero-slideshow .managed-hero-slide', 'active', 5000, applyOverlayForIndex);
+        startRotation('.managed-hero-slideshow .managed-hero-slide', 'active', getRotationIntervalMs(payload, page), applyOverlayForIndex);
     }
 
     async function init() {
         try {
             const payload = await loadPublishedSlides();
-            const baseSlides = Array.isArray(payload?.pages?.[PAGE_KEY]) ? payload.pages[PAGE_KEY] : [];
-            const shouldRandomize = !!payload?.settings?.[PAGE_KEY]?.randomize;
-            const slides = shouldRandomize ? shuffleSlides(baseSlides) : baseSlides;
+            const slides = resolveSlidesForPage(payload, PAGE_KEY);
             if (slides.length === 0) return;
 
             if (PAGE_KEY === 'home') {

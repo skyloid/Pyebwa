@@ -374,9 +374,18 @@
 
     function getPageSettings(page = state.activeSlideshowPage) {
         if (!state.slideshowDraft) {
-            return { randomize: false };
+            return { randomize: false, intervalSeconds: 5, fixedSlideId: '' };
         }
-        return state.slideshowDraft.settings?.[page] || { randomize: false };
+        return state.slideshowDraft.settings?.[page] || { randomize: false, intervalSeconds: 5, fixedSlideId: '' };
+    }
+
+    function getDefaultFixedSlideId(slides = getSlidesForPage()) {
+        if (!Array.isArray(slides) || slides.length === 0) {
+            return '';
+        }
+
+        const selectedSlide = slides.find((slide) => slide.id === state.selectedSlideId);
+        return selectedSlide?.id || slides[0]?.id || '';
     }
 
     function getGlobalOverlayForPage(page = state.activeSlideshowPage) {
@@ -1125,11 +1134,34 @@
 
     function renderPageSettings() {
         const toggle = document.getElementById('slideshowRandomizeToggle');
+        const intervalInput = document.getElementById('slideshowIntervalSeconds');
+        const fixedSlideToggle = document.getElementById('slideshowFixedSlideToggle');
+        const fixedSlideSelect = document.getElementById('slideshowFixedSlideSelect');
         const colorInput = document.getElementById('slideshowGlobalOverlayColor');
         const opacityInput = document.getElementById('slideshowGlobalOverlayOpacity');
         const opacityValue = document.getElementById('slideshowGlobalOverlayOpacityValue');
+        const settings = getPageSettings();
+        const slides = getSlidesForPage();
         if (toggle) {
-            toggle.checked = !!getPageSettings().randomize;
+            toggle.checked = !!settings.randomize;
+        }
+        if (intervalInput) {
+            intervalInput.value = String(settings.intervalSeconds ?? 5);
+        }
+        if (fixedSlideSelect) {
+            const options = ['<option value="">Use full slideshow</option>'].concat(
+                slides.map((slide, index) => `<option value="${escapeHtml(slide.id)}">Slide ${index + 1}</option>`)
+            );
+            fixedSlideSelect.innerHTML = options.join('');
+            fixedSlideSelect.value = slides.some((slide) => slide.id === settings.fixedSlideId) ? settings.fixedSlideId : '';
+            fixedSlideSelect.disabled = !(fixedSlideToggle?.checked);
+        }
+        if (fixedSlideToggle) {
+            const hasFixedSlide = !!settings.fixedSlideId && slides.some((slide) => slide.id === settings.fixedSlideId);
+            fixedSlideToggle.checked = hasFixedSlide;
+            if (fixedSlideSelect) {
+                fixedSlideSelect.disabled = !hasFixedSlide;
+            }
         }
         const overlay = getGlobalOverlayForPage();
         if (colorInput) colorInput.value = overlay.color;
@@ -1262,9 +1294,7 @@
             await flushPendingSlideshowInputs();
             syncSlideshowControlsToState();
 
-            if (state.slideshowDirty) {
-                await saveSlideshowDraft();
-            }
+            await saveSlideshowDraft();
 
             const response = await authFetch('/api/admin/slideshows/publish', { method: 'POST' });
             if (!response.ok) {
@@ -1286,6 +1316,7 @@
             activeElement.id === 'slideshowOverlayColor' ||
             activeElement.id === 'slideshowGlobalOverlayOpacity' ||
             activeElement.id === 'slideshowOverlayOpacity' ||
+            activeElement.id === 'slideshowIntervalSeconds' ||
             activeElement.id === 'slideshowCropX' ||
             activeElement.id === 'slideshowCropY' ||
             activeElement.id === 'slideshowCropZoom' ||
@@ -1315,11 +1346,18 @@
         }
 
         const randomizeToggle = document.getElementById('slideshowRandomizeToggle');
-        if (randomizeToggle) {
+        const intervalInput = document.getElementById('slideshowIntervalSeconds');
+        const fixedSlideToggle = document.getElementById('slideshowFixedSlideToggle');
+        const fixedSlideSelect = document.getElementById('slideshowFixedSlideSelect');
+        if (randomizeToggle || intervalInput || fixedSlideToggle || fixedSlideSelect) {
+            const intervalSeconds = Number(intervalInput?.value ?? getPageSettings().intervalSeconds ?? 5);
+            const fixedSlideId = fixedSlideToggle?.checked ? String(fixedSlideSelect?.value || '').trim() : '';
             if (!state.slideshowDraft.settings) state.slideshowDraft.settings = {};
             state.slideshowDraft.settings[state.activeSlideshowPage] = {
                 ...getPageSettings(),
-                randomize: !!randomizeToggle.checked
+                randomize: !!randomizeToggle?.checked,
+                intervalSeconds: Math.min(30, Math.max(1, Math.round(Number.isFinite(intervalSeconds) ? intervalSeconds : 5))),
+                fixedSlideId
             };
         }
 
@@ -1383,6 +1421,39 @@
             renderPageSettings();
             renderSlideshowList();
             renderSlideEditor();
+            return;
+        }
+
+        if (field === 'intervalSeconds') {
+            if (!state.slideshowDraft.settings) {
+                state.slideshowDraft.settings = {};
+            }
+            const inputValue = Number(document.getElementById('slideshowIntervalSeconds')?.value);
+            state.slideshowDraft.settings[state.activeSlideshowPage] = {
+                ...getPageSettings(),
+                intervalSeconds: Math.min(30, Math.max(1, Math.round(Number.isFinite(inputValue) ? inputValue : 5)))
+            };
+            markSlideshowDirty();
+            renderPageSettings();
+            return;
+        }
+
+        if (field === 'fixedSlide') {
+            if (!state.slideshowDraft.settings) {
+                state.slideshowDraft.settings = {};
+            }
+            const toggle = document.getElementById('slideshowFixedSlideToggle');
+            const select = document.getElementById('slideshowFixedSlideSelect');
+            const slides = getSlidesForPage();
+            const selectedFixedSlideId = String(select?.value || '').trim();
+            state.slideshowDraft.settings[state.activeSlideshowPage] = {
+                ...getPageSettings(),
+                fixedSlideId: toggle?.checked
+                    ? (selectedFixedSlideId || getDefaultFixedSlideId(slides))
+                    : ''
+            };
+            markSlideshowDirty();
+            renderPageSettings();
             return;
         }
 
@@ -1714,6 +1785,10 @@
         document.getElementById('moveSlideUp')?.addEventListener('click', () => moveSelectedSlide(-1));
         document.getElementById('moveSlideDown')?.addEventListener('click', () => moveSelectedSlide(1));
         document.getElementById('slideshowRandomizeToggle')?.addEventListener('change', () => updateSlideField('randomize'));
+        document.getElementById('slideshowIntervalSeconds')?.addEventListener('input', () => updateSlideField('intervalSeconds'));
+        document.getElementById('slideshowIntervalSeconds')?.addEventListener('change', () => updateSlideField('intervalSeconds'));
+        document.getElementById('slideshowFixedSlideToggle')?.addEventListener('change', () => updateSlideField('fixedSlide'));
+        document.getElementById('slideshowFixedSlideSelect')?.addEventListener('change', () => updateSlideField('fixedSlide'));
         document.getElementById('slideshowGlobalOverlayColor')?.addEventListener('input', () => updateSlideField('globalOverlay'));
         document.getElementById('slideshowGlobalOverlayColor')?.addEventListener('change', () => updateSlideField('globalOverlay'));
         document.getElementById('slideshowGlobalOverlayOpacity')?.addEventListener('input', () => updateSlideField('globalOverlay'));
