@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "prepare": "bash scripts/install-git-hooks.sh",
+    "deploy:public": "node scripts/deploy-public-site.js",
     "start": "node server.js",
     "dev": "nodemon server.js",
     "db:init": "psql $DATABASE_URL < server/db/schema.sql",

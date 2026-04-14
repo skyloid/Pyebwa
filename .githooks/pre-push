@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+cd "$ROOT_DIR"
+
+MANIFEST="$(mktemp)"
+trap 'rm -f "$MANIFEST"' EXIT
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+    [[ -z "${local_sha:-}" ]] && continue
+
+    if [[ "$local_sha" =~ ^0+$ ]]; then
+        continue
+    fi
+
+    if [[ "$remote_sha" =~ ^0+$ ]]; then
+        git diff-tree --no-commit-id --name-status --find-renames -r "$local_sha" >> "$MANIFEST"
+    else
+        git diff --name-status --find-renames "$remote_sha" "$local_sha" >> "$MANIFEST"
+    fi
+done
+
+node scripts/deploy-public-site.js --manifest "$MANIFEST"
