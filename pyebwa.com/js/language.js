@@ -319,12 +319,21 @@
                 
                 // Add click handler
                 btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const button = e.currentTarget;
+                    const nextLang = button?.dataset.lang;
+                    if (!nextLang || !translations[nextLang]) {
+                        return;
+                    }
+
                     // Remove active from all buttons
                     document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
                     // Add active to clicked button
-                    e.target.classList.add('active');
+                    button.classList.add('active');
                     // Update language
-                    currentLang = e.target.dataset.lang;
+                    currentLang = nextLang;
                     
                     // Save to both localStorage keys for compatibility
                     localStorage.setItem('pyebwaLang', currentLang); // New consistent key
@@ -334,6 +343,7 @@
                     setCookie('pyebwa_lang', currentLang, 365);
                     
                     window.currentLang = currentLang; // Update global reference
+                    document.documentElement.lang = currentLang;
                     console.log('Language changed to:', currentLang);
                     updateLanguage();
                 });

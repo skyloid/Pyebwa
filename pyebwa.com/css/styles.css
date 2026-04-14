@@ -81,6 +81,8 @@ body.dark-mode {
     gap: 12px;
     margin-left: auto;
     flex-shrink: 0;
+    position: relative;
+    z-index: 110;
 }
 
 .language-selector {
@@ -93,6 +95,7 @@ body.dark-mode {
     border-radius: 999px;
     box-shadow: var(--shadow-sm);
     border: 1px solid rgba(84, 81, 74, 0.08);
+    pointer-events: auto;
 }
 
 .lang-btn {
@@ -104,6 +107,7 @@ body.dark-mode {
     border-radius: 999px;
     font-weight: 600;
     transition: all 0.2s;
+    pointer-events: auto;
 }
 
 .lang-btn:hover {
@@ -144,6 +148,7 @@ body.dark-mode .lang-btn.active {
     position: relative;
     z-index: 100;
     border-bottom: 1px solid rgba(84, 81, 74, 0.08);
+    pointer-events: auto;
 }
 
 .navbar .container {
@@ -172,6 +177,9 @@ body.dark-mode .lang-btn.active {
     margin-left: 40px !important;
     padding-left: 0;
     min-width: 0;
+    position: relative;
+    z-index: 110;
+    pointer-events: auto;
 }
 
 .nav-link {
@@ -180,6 +188,8 @@ body.dark-mode .lang-btn.active {
     font-weight: 500;
     white-space: nowrap;
     transition: color 0.3s;
+    cursor: pointer;
+    pointer-events: auto;
 }
 
 .nav-link:hover {
@@ -234,6 +244,9 @@ body.dark-mode .nav-menu .nav-link:hover {
     margin-left: auto;
     padding-left: 28px;
     border-left: 1px solid rgba(84, 81, 74, 0.12);
+    position: relative;
+    z-index: 110;
+    pointer-events: auto;
 }
 
 .nav-dashboard-btn {
