@@ -6,33 +6,36 @@ This plan translates `docs/PYEBWA_ENV_EXTRACTION_HANDOFF.md` into a concrete imp
 
 The target outcome is an isolated Pyebwa-only Supabase environment that no longer depends on the shared default auth/network/DB/JWT boundary after cutover.
 
-## Current-State Audit Summary
+## Current-State Summary
 
 ### Current auth shape
 
-- Auth is still centered on `https://rasin.pyebwa.com/login.html`, not clean app routes.
-- Magic-link login returns to `login.html` and that page completes session pickup client-side.
-- Password reset returns to `reset-password.html`.
-- Public-site login links still point to `https://rasin.pyebwa.com/login.html`.
+- Auth now uses clean routes:
+  - `https://rasin.pyebwa.com/login`
+  - `https://rasin.pyebwa.com/signup`
+  - `https://rasin.pyebwa.com/reset-password`
+- Magic-link login returns to `/login` and that page completes session pickup client-side.
+- Legacy `.html` auth routes are compatibility shims only.
+- Public-site login links now point to `https://rasin.pyebwa.com/login`.
 
 ### Concrete route and file inventory
 
-- Live login page: `login.html`
-- Password reset page: `app/reset-password.html`
+- Live login page: `login.html`, served at `/login`
+- Password reset page: `app/reset-password.html`, served at `/reset-password`
 - Public redirect shim: `pyebwa.com/login/index.html`
 - Auth email template: `app/auth-templates/magic-link.html`
 - Auth server landing redirect: `auth-server/public/index.html`
 
 ### Auth client/runtime findings
 
-- Magic-link redirect target is hard-coded in:
+- Magic-link redirect target is now wired through:
   - `app/js/api-client.js`
   - `server/api/auth-secure.js`
   - `app/auth-templates/magic-link.html`
-- Auth admin direct URL is currently shared-env shaped:
-  - `.env`: `SUPABASE_AUTH_ADMIN_URL=http://127.0.0.1:9998`
-- External auth URL is currently shared-env shaped:
-  - `.env`: `AUTH_EXTERNAL_URL=https://rasin.pyebwa.com/supabase`
+- Auth admin direct URL is now Pyebwa-isolated:
+  - `.env`: `PYEBWA_SUPABASE_AUTH_ADMIN_URL=http://127.0.0.1:10998`
+- External auth URL is now Pyebwa-isolated:
+  - `.env`: `PYEBWA_AUTH_EXTERNAL_URL=https://rasin.pyebwa.com/supabase`
 - Login callback/session pickup currently happens inside `login.html` using:
   - `supabase.createClient(window.location.origin + '/supabase', anonKey)`
   - `_sb.auth.getSession()`
@@ -45,11 +48,11 @@ The target outcome is an isolated Pyebwa-only Supabase environment that no longe
   - `_sb.auth.onAuthStateChange(...)`
 - There is some guard logic (`window.__pyebwaLoginRedirectInFlight`), but callback processing is still page-local and should be simplified before cutover.
 
-### Static-page hijack risk
+### Static-page drift risk
 
-- The live auth entrypoint is itself a static file: `login.html`.
-- The public site contains a redirecting login directory entrypoint: `pyebwa.com/login/index.html`.
-- This is not the exact Hub stale-file failure mode, but it is still a static auth surface that can drift independently of backend fixes.
+- The live auth entrypoint is still backed by `login.html`, but now served intentionally at `/login`.
+- The public site still contains a redirecting login directory entrypoint: `pyebwa.com/login/index.html`.
+- This is lower risk than before cutover, but these shims still need to stay aligned with the clean-route surface.
 
 ### Service worker findings
 
@@ -66,6 +69,21 @@ The target outcome is an isolated Pyebwa-only Supabase environment that no longe
   - CSS/JS to immutable long-cache
 - `pyebwa.com/.htaccess` also applies long-cache headers for static assets.
 - No clean-route auth rewrite layer is currently present in the Apache config checked into this repo.
+
+## Status
+
+Completed:
+- isolated `pyebwasupabase` stack
+- isolated Pyebwa DB and auth cutover
+- Magic Link-only route normalization
+- `/supabase` live proxy cutover
+- `imgproxy` integration
+- `pyebwa-rest`, `pyebwa-realtime`, and `pyebwa-studio` stabilization
+
+Remaining cleanup:
+- remove legacy env fallbacks once confidence is high
+- keep docs/tests aligned with clean auth routes
+- add regression checks for the isolated stack
 
 ## Migration Principles For This Repo
 
@@ -86,7 +104,7 @@ The target outcome is an isolated Pyebwa-only Supabase environment that no longe
 ## Phase 0: Freeze The Auth Surface
 
 Goal:
-- stop auth-route drift while infra work is underway
+- keep auth-route drift from reappearing after cutover
 
 Tasks:
 - inventory all links and redirects that point to `login.html`
@@ -99,8 +117,8 @@ Deliverable:
 
 ## Phase 1: Build Isolated Pyebwa Supabase Stack
 
-Goal:
-- create the new environment without touching production routing
+Status:
+- completed
 
 Tasks:
 - create a new infra directory for the Pyebwa-only stack
@@ -134,8 +152,8 @@ Validation:
 
 ## Phase 2: Seed And Validate The New Pyebwa DB
 
-Goal:
-- ensure the new DB is compatible with the running GoTrue version before traffic is switched
+Status:
+- completed
 
 Tasks:
 - export/import only Pyebwa-required auth and app data
@@ -156,23 +174,21 @@ Validation:
 
 ## Phase 3: Repoint Repo Config To The New Auth Stack
 
-Goal:
-- make the app and helper endpoints capable of using the new stack before proxy cutover
+Status:
+- completed
 
 Tasks:
 - change env/config references from old shared auth debug/admin targets to the new Pyebwa auth targets
 - update:
-  - `AUTH_EXTERNAL_URL`
-  - `SUPABASE_AUTH_ADMIN_URL`
+  - `PYEBWA_AUTH_EXTERNAL_URL`
+  - `PYEBWA_SUPABASE_AUTH_ADMIN_URL`
   - any Supabase client config using the old shared boundary
 - review and tighten `GOTRUE_URI_ALLOW_LIST`
 
 Required real allow-list targets to validate:
-- `https://rasin.pyebwa.com/login.html`
-- `https://rasin.pyebwa.com/reset-password.html` or actual reset target in production
-- if introduced during migration:
-  - `https://rasin.pyebwa.com/login`
-  - `https://rasin.pyebwa.com/register`
+- `https://rasin.pyebwa.com/login`
+- `https://rasin.pyebwa.com/reset-password`
+- `https://rasin.pyebwa.com/signup`
 - Pyebwa target state is Magic Link only; OAuth callback routes are intentionally excluded.
 
 Repo touchpoints:
@@ -183,8 +199,8 @@ Repo touchpoints:
 
 ## Phase 4: Normalize Auth Entry Routes
 
-Goal:
-- eliminate stale/static auth ambiguity before cutover
+Status:
+- completed
 
 Recommended approach:
 - introduce clean routes:
@@ -194,11 +210,8 @@ Recommended approach:
 - keep existing `.html` routes as explicit no-cache shims during migration
 
 Tasks:
-- decide whether `login.html` remains the callback landing route temporarily or is replaced by `/login`
-- if moving to clean routes:
-  - update all email redirects and app links
-  - keep `.html` entrypoints as 302/301 shims during transition
-- ensure no Apache/static file takes precedence over the intended live route behavior
+- keep `.html` entrypoints as 302 shims while external references are cleaned up
+- ensure no static file or redirect shim drifts away from the clean-route surface
 
 Repo touchpoints:
 - `login.html`
@@ -211,8 +224,8 @@ Repo touchpoints:
 
 ## Phase 5: Simplify Login Callback Handling
 
-Goal:
-- remove mixed/duplicated session processing before cutover
+Status:
+- partially completed
 
 Tasks:
 - isolate callback/session pickup logic in one code path
@@ -230,18 +243,15 @@ Validation:
 
 ## Phase 6: Service Worker Hardening For Auth
 
-Goal:
-- ensure auth behavior does not survive deploys incorrectly
+Status:
+- completed for auth-route cache bypass
 
 Tasks:
 - exclude auth entrypoints and callback surfaces from service-worker caching logic
 - consider bypassing all requests whose pathname matches:
   - `/login`
-  - `/login.html`
   - `/signup`
-  - `/signup.html`
   - `/reset-password`
-  - `/reset-password.html`
 - Magic Link routes only; no OAuth callback paths should be required for cutover.
   - `/supabase/auth/`
 - ensure auth pages and callback pages are served with `no-store` where possible
@@ -254,8 +264,8 @@ Repo touchpoints:
 
 ## Phase 7: Repoint Reverse Proxy To New Kong
 
-Goal:
-- shift production auth/API traffic to the isolated environment
+Status:
+- completed
 
 Tasks:
 - update `rasin.pyebwa.com` proxying so `/supabase` and any auth helper endpoints hit the new Pyebwa Kong on `127.0.0.1:8201`
