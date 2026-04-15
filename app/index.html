@@ -26,13 +26,13 @@
         }
 
         html.dark-mode-preload {
-            background: #0B1410;
-            color: #DAD7CD;
+            background: #322114;
+            color: #FAF0E6;
         }
 
         html.dark-mode-preload body {
-            background: #0B1410;
-            color: #DAD7CD;
+            background: #322114;
+            color: #FAF0E6;
         }
 
         html.dark-mode-preload #loadingView,
@@ -41,12 +41,12 @@
         }
 
         html.dark-mode-preload .loading-spinner p {
-            color: #DAD7CD;
+            color: #FAF0E6;
         }
 
         html.dark-mode-preload .loading-spinner .spinner {
-            border-color: #253A30;
-            border-top-color: #40916C;
+            border-color: #BF7C45;
+            border-top-color: #DAA520;
         }
     </style>
     
@@ -255,8 +255,8 @@
     <script>
         if (window.__PYEBWA_INITIAL_THEME__ === 'dark') {
             document.body.classList.add('dark-mode');
-            document.body.style.backgroundColor = '#0B1410';
-            document.body.style.color = '#DAD7CD';
+            document.body.style.backgroundColor = '#322114';
+            document.body.style.color = '#FAF0E6';
         }
     </script>
     <!-- App Container -->
@@ -390,15 +390,15 @@
                     if (theme === 'dark' && loadingView) {
                         loadingView.style.background = 'transparent';
                         if (spinner) {
-                            spinner.style.borderColor = '#253A30';
-                            spinner.style.borderTopColor = '#40916C';
+                            spinner.style.borderColor = '#BF7C45';
+                            spinner.style.borderTopColor = '#DAA520';
                         }
                     }
 
                     if (loadingMessage) {
                         loadingMessage.textContent = window.__PYEBWA_INITIAL_TEXT__?.[lang]?.loading || 'Loading...';
                         if (theme === 'dark') {
-                            loadingMessage.style.color = '#DAD7CD';
+                            loadingMessage.style.color = '#FAF0E6';
                         }
                     }
                 })();
@@ -657,7 +657,7 @@
     <!-- Footer -->
     <footer class="app-footer">
         <div class="footer-container">
-            <p>&copy; 2026 Pyebwa version <span data-build-version>1.2.9</span> - <span data-i18n="poweredBy">Powered by</span> <a class="footer-company-link" href="https://humanlevel.ai" target="_blank" rel="noopener noreferrer" data-i18n="humanLevelTech">Technologies Humanitaires Inc.</a></p>
+            <p>&copy; 2026 Pyebwa version <span data-build-version>1.2.10</span> - <span data-i18n="poweredBy">Powered by</span> <a class="footer-company-link" href="https://humanlevel.ai" target="_blank" rel="noopener noreferrer" data-i18n="humanLevelTech">Technologies Humanitaires Inc.</a></p>
         </div>
     </footer>
 
