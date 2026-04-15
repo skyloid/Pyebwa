@@ -6,22 +6,22 @@
 }
 
 :root {
-    /* Shared palette aligned with dashboard */
-    --primary-red: #2D6A4F;
-    --primary-blue: #1B4332;
-    --accent-yellow: #8A6A4A;
-    --white: #DDE5D8;
-    --black: #1B1B18;
-    --gray-50: #DDE5D8;
-    --gray-100: #EBE9E3;
-    --gray-200: #DAD7CD;
-    --gray-300: #C4C0B6;
-    --gray-400: #9C9890;
-    --gray-500: #706C64;
-    --gray-600: #54514A;
-    --gray-700: #3A3832;
-    --gray-800: #26241F;
-    --gray-900: #1B1B18;
+    /* Light palette extracted from the public reference image */
+    --primary-red: #A1724B;
+    --primary-blue: #513219;
+    --accent-yellow: #DC9F68;
+    --white: #FDEED6;
+    --black: #28180D;
+    --gray-50: #FDEED6;
+    --gray-100: #F9D8AB;
+    --gray-200: #D5B389;
+    --gray-300: #B39F8B;
+    --gray-400: #A1724B;
+    --gray-500: #926131;
+    --gray-600: #714A29;
+    --gray-700: #513219;
+    --gray-800: #3D2614;
+    --gray-900: #28180D;
     
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -31,21 +31,21 @@
 
 /* Dark Mode Variables */
 body.dark-mode {
-    --white: #0B1410;
-    --black: #DAD7CD;
-    --gray-50: #0B1410;
-    --gray-100: #101C17;
-    --gray-200: #1A2B23;
-    --gray-300: #253A30;
-    --gray-400: #4A6858;
-    --gray-500: #6E8C7C;
-    --gray-600: #96AEA0;
-    --gray-700: #B8CAC0;
-    --gray-800: #CCD8D0;
-    --gray-900: #DAD7CD;
-    --primary-red: #40916C;
-    --primary-blue: #2D6A4F;
-    --accent-yellow: #8A6A4A;
+    --white: #291811;
+    --black: #F6EDE1;
+    --gray-50: #291811;
+    --gray-100: #352116;
+    --gray-200: #492E21;
+    --gray-300: #6B4B2F;
+    --gray-400: #755C47;
+    --gray-500: #96714B;
+    --gray-600: #BCA995;
+    --gray-700: #C09960;
+    --gray-800: #E9CC85;
+    --gray-900: #F6EDE1;
+    --primary-red: #906431;
+    --primary-blue: #6B4B2F;
+    --accent-yellow: #EEA610;
     --shadow-sm: 0 1px 2px 0 rgba(255, 255, 255, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(255, 255, 255, 0.1);
     --shadow-lg: 0 10px 15px -3px rgba(255, 255, 255, 0.1);
@@ -57,15 +57,15 @@ body {
     color: var(--gray-900);
     background-color: var(--white);
     background-image:
-        radial-gradient(circle at top left, rgba(45, 106, 79, 0.08), transparent 35%),
-        radial-gradient(circle at top right, rgba(138, 106, 74, 0.08), transparent 32%);
+        radial-gradient(circle at top left, rgba(220, 159, 104, 0.18), transparent 35%),
+        radial-gradient(circle at top right, rgba(161, 114, 75, 0.14), transparent 32%);
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 body.dark-mode {
     background-image:
-        radial-gradient(circle at top left, rgba(64, 145, 108, 0.18), transparent 38%),
-        radial-gradient(circle at top right, rgba(138, 106, 74, 0.14), transparent 34%);
+        radial-gradient(circle at top left, rgba(238, 166, 16, 0.18), transparent 38%),
+        radial-gradient(circle at top right, rgba(144, 100, 49, 0.18), transparent 34%);
 }
 
 .container {
@@ -90,11 +90,11 @@ body.dark-mode {
     z-index: auto;
     display: flex;
     gap: 2px;
-    background: rgba(255, 255, 255, 0.92);
+    background: rgba(253, 238, 214, 0.94);
     padding: 4px;
     border-radius: 999px;
     box-shadow: var(--shadow-sm);
-    border: 1px solid rgba(84, 81, 74, 0.08);
+    border: 1px solid rgba(81, 50, 25, 0.1);
     pointer-events: auto;
 }
 
@@ -122,8 +122,8 @@ body.dark-mode {
 }
 
 body.dark-mode .language-selector {
-    background: rgba(11, 20, 16, 0.92);
-    border: 1px solid rgba(150, 174, 160, 0.16);
+    background: rgba(41, 24, 17, 0.92);
+    border: 1px solid rgba(188, 169, 149, 0.16);
 }
 
 body.dark-mode .lang-btn {
@@ -137,17 +137,17 @@ body.dark-mode .lang-btn:hover {
 
 body.dark-mode .lang-btn.active {
     background: var(--primary-red);
-    color: #F5F3EF;
+    color: #F6EDE1;
 }
 
 /* Navbar */
 .navbar {
     padding: 24px 0;
-    background: rgba(245, 243, 239, 0.9);
+    background: #FDEED6;
     backdrop-filter: blur(10px);
     position: relative;
     z-index: 100;
-    border-bottom: 1px solid rgba(84, 81, 74, 0.08);
+    border-bottom: 1px solid rgba(81, 50, 25, 0.1);
     pointer-events: auto;
 }
 
@@ -227,7 +227,7 @@ body.dark-mode .lang-btn.active {
 }
 
 .nav-link:focus-visible {
-    outline: 2px solid rgba(45, 106, 79, 0.32);
+    outline: 2px solid rgba(161, 114, 75, 0.32);
     outline-offset: 3px;
     color: var(--primary-blue);
 }
@@ -242,7 +242,7 @@ body.dark-mode .lang-btn.active {
 }
 
 body.dark-mode .navbar {
-    background: rgba(11, 20, 16, 0.9);
+    background: rgba(41, 24, 17, 0.92);
     border-bottom-color: rgba(150, 174, 160, 0.14);
 }
 
@@ -274,13 +274,13 @@ body.dark-mode .nav-menu .nav-link:hover {
 }
 
 body.dark-mode .nav-link:focus-visible {
-    outline-color: rgba(150, 174, 160, 0.32);
-    color: #F5F3EF;
+    outline-color: rgba(188, 169, 149, 0.32);
+    color: #F6EDE1;
 }
 
 body.dark-mode .nav-link.active,
 body.dark-mode .nav-link[aria-current="page"] {
-    color: #F5F3EF;
+    color: #F6EDE1;
 }
 
 /* Hide mobile elements on desktop */
@@ -294,7 +294,7 @@ body.dark-mode .nav-link[aria-current="page"] {
     gap: 14px;
     margin-left: auto;
     padding-left: 28px;
-    border-left: 1px solid rgba(84, 81, 74, 0.12);
+    border-left: 1px solid rgba(81, 50, 25, 0.14);
     position: relative;
     z-index: 110;
     pointer-events: auto;
@@ -411,7 +411,7 @@ body.dark-mode .nav-link[aria-current="page"] {
         top: 70px;
         left: 0;
         right: 0;
-        background: white;
+        background: var(--white);
         flex-direction: column;
         padding: 20px;
         gap: 15px;
@@ -429,7 +429,7 @@ body.dark-mode .nav-link[aria-current="page"] {
     .nav-menu .nav-link {
         padding: 10px;
         text-align: center;
-        border-bottom: 1px solid #eee;
+        border-bottom: 1px solid rgba(81, 50, 25, 0.12);
     }
 
     .nav-menu .nav-link[data-i18n="about"] {
@@ -533,25 +533,25 @@ body.dark-mode .nav-link[aria-current="page"] {
 }
 
 body.dark-mode .btn-ghost {
-    background: rgba(150, 174, 160, 0.08);
+    background: rgba(188, 169, 149, 0.08);
     color: var(--gray-800);
-    border: 1px solid rgba(150, 174, 160, 0.2);
+    border: 1px solid rgba(188, 169, 149, 0.2);
 }
 
 body.dark-mode .btn-ghost:hover {
-    background: rgba(150, 174, 160, 0.14);
-    border-color: rgba(150, 174, 160, 0.32);
+    background: rgba(188, 169, 149, 0.14);
+    border-color: rgba(188, 169, 149, 0.32);
 }
 
 body.dark-mode .btn-primary {
     background: var(--primary-blue);
-    color: #F5F3EF;
-    border: 1px solid rgba(150, 174, 160, 0.16);
+    color: #F6EDE1;
+    border: 1px solid rgba(188, 169, 149, 0.16);
 }
 
 body.dark-mode .btn-primary:hover {
     background: var(--primary-red);
-    border-color: rgba(150, 174, 160, 0.28);
+    border-color: rgba(188, 169, 149, 0.28);
 }
 
 .btn-cta {
@@ -989,10 +989,10 @@ body.dark-mode .btn-social:hover {
 /* Footer */
 .footer {
     padding: 40px 0;
-    background: var(--gray-100);
+    background: transparent;
     color: var(--gray-800);
     text-align: center;
-    border-top: 1px solid rgba(27, 67, 50, 0.12);
+    border-top: 1px solid rgba(81, 50, 25, 0.12);
 }
 
 .footer a {
@@ -1051,13 +1051,13 @@ body.dark-mode .return-to-top {
 
 body.dark-mode .return-to-top:hover {
     background: var(--primary-red);
-    box-shadow: 0 6px 20px rgba(64, 145, 108, 0.32);
+    box-shadow: 0 6px 20px rgba(144, 100, 49, 0.32);
 }
 
 /* dark-mode .theme-toggle styles moved to #themeToggle block */
 
 body.dark-mode .language-selector {
-    background: rgba(11, 20, 16, 0.92);
+    background: rgba(41, 24, 17, 0.92);
 }
 
 body.dark-mode .modal {
@@ -1066,11 +1066,11 @@ body.dark-mode .modal {
 }
 
 body.dark-mode .hero {
-    background: linear-gradient(180deg, #0B1410 0%, #101C17 100%);
+    background: linear-gradient(180deg, #291811 0%, #492E21 100%);
 }
 
 body.dark-mode .navbar {
-    background: rgba(11, 20, 16, 0.9);
+    background: rgba(41, 24, 17, 0.92);
     backdrop-filter: blur(10px);
 }
 
@@ -1083,25 +1083,25 @@ body.dark-mode .nav-brand .tagline {
 }
 
 body.dark-mode .btn-ghost {
-    background: rgba(150, 174, 160, 0.08);
+    background: rgba(188, 169, 149, 0.08);
     color: var(--gray-800);
-    border: 1px solid rgba(150, 174, 160, 0.2);
+    border: 1px solid rgba(188, 169, 149, 0.2);
 }
 
 body.dark-mode .btn-ghost:hover {
-    background: rgba(150, 174, 160, 0.14);
-    border-color: rgba(150, 174, 160, 0.32);
+    background: rgba(188, 169, 149, 0.14);
+    border-color: rgba(188, 169, 149, 0.32);
 }
 
 body.dark-mode .btn-primary {
     background: var(--primary-blue);
-    color: #F5F3EF;
-    border: 1px solid rgba(150, 174, 160, 0.16);
+    color: #F6EDE1;
+    border: 1px solid rgba(188, 169, 149, 0.16);
 }
 
 body.dark-mode .btn-primary:hover {
     background: var(--primary-red);
-    border-color: rgba(150, 174, 160, 0.28);
+    border-color: rgba(188, 169, 149, 0.28);
     transform: translateY(-1px);
 }
 
@@ -1119,16 +1119,43 @@ body.dark-mode .feature-card {
 }
 
 body.dark-mode .footer {
-    background: #101C17;
-    color: #F5F3EF;
+    background: #291811;
+    color: #BCA995;
 }
 
 body.dark-mode .footer a {
-    color: #CCD8D0;
+    color: #E9CC85;
 }
 
 body.dark-mode .footer a:hover {
-    color: #F5F3EF;
+    color: #F6EDE1;
+}
+
+body.dark-mode .feature-card h4,
+body.dark-mode .find-roots-section-title,
+body.dark-mode .find-roots-divider {
+    color: #E9CC85 !important;
+}
+
+body.dark-mode .hero-title,
+body.dark-mode .hero-subtitle,
+body.dark-mode .about-hero h1,
+body.dark-mode .about-hero .subtitle,
+body.dark-mode .contact-hero h1,
+body.dark-mode .contact-hero .subtitle,
+body.dark-mode .cause-hero h1,
+body.dark-mode .cause-hero .subtitle {
+    color: #BCA995 !important;
+}
+
+body.dark-mode p:not(.hero-subtitle):not(.subtitle),
+body.dark-mode li,
+body.dark-mode .find-roots-note,
+body.dark-mode .find-roots-empty,
+body.dark-mode .find-roots-meta,
+body.dark-mode .find-roots-request-copy,
+body.dark-mode .feature-card p {
+    color: #BCA995 !important;
 }
 
 body.dark-mode input,
@@ -1194,7 +1221,7 @@ body:not(.dark-mode) .contact-hero h1,
 body:not(.dark-mode) .contact-hero .subtitle,
 body:not(.dark-mode) .cause-hero h1,
 body:not(.dark-mode) .cause-hero .subtitle {
-    color: #FFD700 !important;
+    color: #BCA995 !important;
 }
 
 body:not(.dark-mode) .feature-card h4,

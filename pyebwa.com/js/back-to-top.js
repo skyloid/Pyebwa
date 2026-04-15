@@ -1,5 +1,10 @@
 // Back to Top Button Functionality
-document.addEventListener('DOMContentLoaded', function() {
+(function() {
+    function initBackToTop() {
+        if (document.getElementById('backToTop')) {
+            return;
+        }
+
     // Create back to top button
     const backToTopBtn = document.createElement('button');
     backToTopBtn.id = 'backToTop';
@@ -20,8 +25,8 @@ document.addEventListener('DOMContentLoaded', function() {
             right: 30px;
             width: 50px;
             height: 50px;
-            background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 100%);
-            border: 2px solid #FFC72C;
+            background: linear-gradient(135deg, rgba(81, 50, 25, 0.94) 0%, rgba(113, 74, 41, 0.88) 100%);
+            border: none;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
@@ -35,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .back-to-top:hover {
             transform: translateY(-3px);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-            background: linear-gradient(135deg, #2D6A4F 0%, #1B4332 100%);
+            background: linear-gradient(135deg, rgba(113, 74, 41, 0.94) 0%, rgba(81, 50, 25, 0.9) 100%);
         }
         
         .back-to-top:active {
@@ -43,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         .back-to-top .material-icons {
-            color: #FFC72C;
+            color: #B7B2A7;
             font-size: 24px;
         }
         
@@ -65,12 +70,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         /* Dark mode support */
         body.dark-mode .back-to-top {
-            background: linear-gradient(135deg, #2D6A4F 0%, #1B4332 100%);
-            border-color: #FFC72C;
+            background: linear-gradient(135deg, rgba(41, 24, 17, 0.94) 0%, rgba(107, 75, 47, 0.9) 100%);
         }
         
         body.dark-mode .back-to-top:hover {
-            background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 100%);
+            background: linear-gradient(135deg, rgba(144, 100, 49, 0.94) 0%, rgba(41, 24, 17, 0.92) 100%);
         }
         
         /* Mobile adjustments */
@@ -131,4 +135,11 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
-});
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initBackToTop, { once: true });
+    } else {
+        initBackToTop();
+    }
+})();

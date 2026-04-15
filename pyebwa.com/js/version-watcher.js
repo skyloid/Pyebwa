@@ -64,8 +64,8 @@
                 bottom: 20px;
                 transform: translateX(-50%);
                 z-index: 20000;
-                background: #1B4332;
-                color: #FDFCFA;
+                background: #513219;
+                color: #FDEED6;
                 border-radius: 999px;
                 box-shadow: 0 16px 40px rgba(17, 24, 39, 0.22);
                 padding: 12px 18px;
@@ -81,8 +81,8 @@
                 border: none;
                 border-radius: 999px;
                 padding: 8px 14px;
-                background: #FDFCFA;
-                color: #1B4332;
+                background: #FDEED6;
+                color: #513219;
                 font-weight: 700;
                 cursor: pointer;
             }

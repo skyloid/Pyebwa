@@ -1,10 +1,10 @@
 {
-  "updatedAt": "2026-04-09T18:47:32.561Z",
-  "publishedAt": "2026-04-09T18:47:32.561Z",
+  "updatedAt": "2026-04-11T14:18:11.726Z",
+  "publishedAt": "2026-04-11T14:18:11.726Z",
   "pages": {
     "home": {
       "en": {
-        "heroTitle": "Keep Your Family Story Alive",
+        "heroTitle": "Preserve Your Heritage",
         "heroSubtitle": "Create your family tree, share stories, and connect generations",
         "getStarted": "Get Started Now",
         "featuresTitle": "Why Pyebwa?",
@@ -16,7 +16,7 @@
         "feature3Desc": "Find and connect with family members everywhere"
       },
       "fr": {
-        "heroTitle": "Gardez Vivante l'Histoire de Votre Famille",
+        "heroTitle": "Preservez Votre Heritage",
         "heroSubtitle": "Créez votre arbre généalogique, partagez des histoires et connectez les générations",
         "getStarted": "Commencer Maintenant",
         "featuresTitle": "Pourquoi Pyebwa?",
@@ -28,11 +28,11 @@
         "feature3Desc": "Trouvez et connectez-vous avec des membres de la famille partout"
       },
       "ht": {
-        "heroTitle": "Kenbe Istwa Fanmiy-ou vivan!",
+        "heroTitle": "Prezève Eritaj Ou",
         "heroSubtitle": "Kreye pyebwa fanmiy-ou, pataje istwa, epi konekte jenerasyon yo",
         "getStarted": "Kòmanse Kounye a",
         "featuresTitle": "Poukisa Pyebwa?",
-        "feature1Title": "Bati Pyebwa w",
+        "feature1Title": "Bati Pyebwa ou",
         "feature1Desc": "Ajoute manm fanmi, foto, ak dat enpòtan yo fasil",
         "feature2Title": "Pataje Istwa",
         "feature2Desc": "Prezève memwa ak istwa fanmi pou jenerasyon k ap vini yo",
@@ -68,7 +68,24 @@
         "communityManagerDescription": "Helping families make the most of their Pyebwa experience.",
         "readyToStart": "Ready to Start Your Family Tree?",
         "joinThousands": "Join thousands of families preserving their heritage with Pyebwa.",
-        "getStartedFree": "Get Started Free"
+        "getStartedFree": "Get Started Free",
+        "founderCeo": "Founder",
+        "leadDeveloper": "Developer",
+        "communityManager": "Community Manager",
+        "roadmap": [
+          {
+            "year": "2025",
+            "text": "Pyebwa was born from a simple idea: families should have an easy way to preserve their stories."
+          },
+          {
+            "year": "2026",
+            "text": "We are launching our beta version and will be working closely with Haitian families to build the perfect platform."
+          },
+          {
+            "year": "2027",
+            "text": "We plan to expand to support multiple languages and cultures, making Pyebwa accessible to more families."
+          }
+        ]
       },
       "fr": {
         "aboutPageTitle": "À propos de Pyebwa - Votre Plateforme d'Arbre Généalogique",
@@ -92,12 +109,29 @@
         "storyTodayText": "Des milliers de familles utilisent Pyebwa pour se connecter, partager des histoires et préserver leur héritage.",
         "meetOurTeam": "Rencontrez Notre Équipe",
         "teamDescription": "Passionnés par les familles, la technologie et la préservation du patrimoine.",
+        "founderCeo": "Fondateur et PDG",
         "founderDescription": "Passionné par la connexion des familles grâce à la technologie.",
+        "leadDeveloper": "Développeur Principal",
         "leadDeveloperDescription": "Créer des expériences d'arbre généalogique sécurisées et intuitives.",
+        "communityManager": "Gestionnaire de Communauté",
         "communityManagerDescription": "Aider les familles à tirer le meilleur parti de leur expérience Pyebwa.",
         "readyToStart": "Prêt à Commencer Votre Arbre Généalogique?",
         "joinThousands": "Rejoignez des milliers de familles qui préservent leur héritage avec Pyebwa.",
-        "getStartedFree": "Commencer Gratuitement"
+        "getStartedFree": "Commencer Gratuitement",
+        "roadmap": [
+          {
+            "year": "2025",
+            "text": "Pyebwa est né d'une idée simple : les familles devraient avoir un moyen facile de préserver leurs histoires."
+          },
+          {
+            "year": "2026",
+            "text": "Nous lançons notre version bêta et travaillerons en étroite collaboration avec les familles haïtiennes pour créer la plateforme idéale."
+          },
+          {
+            "year": "2027",
+            "text": "Nous prévoyons d'étendre la plateforme pour prendre en charge plusieurs langues et cultures, afin de rendre Pyebwa accessible à davantage de familles."
+          }
+        ]
       },
       "ht": {
         "aboutPageTitle": "Konsènan Pyebwa - Platfòm Pyebwa Fanmi Ou",
@@ -121,12 +155,29 @@
         "storyTodayText": "Dè milye fanmi itilize Pyebwa pou konekte, pataje istwa epi prezève eritaj yo.",
         "meetOurTeam": "Rankontre Ekip Nou an",
         "teamDescription": "Pasyone konsènan fanmi, teknoloji, ak prezèvasyon eritaj.",
+        "founderCeo": "Fondatè ak Direktè Jeneral",
         "founderDescription": "Pasyone pou konekte fanmi yo gras ak teknoloji.",
+        "leadDeveloper": "Devlopè Prensipal",
         "leadDeveloperDescription": "Konstwi eksperyans pyebwa fanmi ki an sekirite e ki entwi.",
+        "communityManager": "Manadjè Kominote",
         "communityManagerDescription": "Ede fanmi yo jwenn pi bon eksperyans Pyebwa yo.",
         "readyToStart": "Pare pou Kòmanse Pyebwa Fanmi Ou?",
         "joinThousands": "Rantre nan milye fanmi k ap prezève eritaj yo ak Pyebwa.",
-        "getStartedFree": "Kòmanse Gratis"
+        "getStartedFree": "Kòmanse Gratis",
+        "roadmap": [
+          {
+            "year": "2025",
+            "text": "Pyebwa te fèt de yon lide senp: fanmi yo ta dwe gen yon fason fasil pou prezève istwa yo."
+          },
+          {
+            "year": "2026",
+            "text": "Nou ap lanse vèsyon beta nou an epi n ap travay kole kole ak fanmi ayisyen yo pou konstwi platfòm pafè a."
+          },
+          {
+            "year": "2027",
+            "text": "Nou prevwa elaji platfòm la pou sipòte plis lang ak kilti, pou fè Pyebwa vin pi aksesib pou plis fanmi."
+          }
+        ]
       }
     },
     "mission": {
