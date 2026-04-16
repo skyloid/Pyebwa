@@ -60,6 +60,7 @@
         --accent-cream: #FDEED6 !important;
     }
     .navbar {
+        padding: 20px 0 !important;
         background: #FDEED6CC !important;
     }
     body.dark-mode .navbar {
@@ -67,10 +68,23 @@
         border-bottom: 1px solid rgba(188, 169, 149, 0.14) !important;
     }
     .nav-menu {
+        display: flex !important;
+        align-items: center !important;
+        gap: 22px !important;
+        flex: 1 !important;
+        justify-content: flex-start !important;
+        margin-left: 24px !important;
+        padding-left: 0 !important;
+        min-width: 0 !important;
         position: relative !important;
         top: 0 !important;
     }
     .nav-buttons {
+        display: flex !important;
+        gap: 12px !important;
+        margin-left: auto !important;
+        padding-left: 24px !important;
+        border-left: 1px solid rgba(84, 81, 74, 0.12) !important;
         position: relative !important;
         top: 0 !important;
     }
@@ -79,18 +93,40 @@
         display: inline-flex !important;
         align-items: center !important;
     }
+    .nav-link {
+        color: var(--gray-800) !important;
+        text-decoration: none !important;
+        font-weight: 500 !important;
+        white-space: nowrap !important;
+        transition: color 0.3s !important;
+        outline: none !important;
+        box-shadow: none !important;
+        -webkit-tap-highlight-color: transparent !important;
+    }
+    .nav-link:focus,
+    .nav-link:focus-visible,
+    .nav-link:active {
+        outline: none !important;
+        box-shadow: none !important;
+    }
     #dashboardBtn {
         display: none !important;
     }
-    .nav-link,
-    .nav-link:hover,
-    .nav-link.active {
-        color: #513219 !important;
+    .nav-link:hover {
+        color: var(--primary-red) !important;
     }
-    body.dark-mode .nav-link,
-    body.dark-mode .nav-link:hover,
+    .nav-link.active {
+        color: var(--primary-blue) !important;
+        font-weight: 600 !important;
+    }
+    body.dark-mode .nav-link {
+        color: var(--gray-800) !important;
+    }
+    body.dark-mode .nav-link:hover {
+        color: var(--primary-red) !important;
+    }
     body.dark-mode .nav-link.active {
-        color: #E9CC85 !important;
+        color: #F6EDE1 !important;
     }
     .btn-primary,
     .btn-primary:hover,
@@ -377,7 +413,7 @@
     
     <script>
         window.__PYEBWA_VERSION_URL__ = 'version.json';
-        window.__PYEBWA_BUILD_ID__ = '20260415T230430Z-version-sync';
+        window.__PYEBWA_BUILD_ID__ = '20260416T115307Z-version-sync';
         window.__PYEBWA_VERSION__ = null;
         window.__PYEBWA_LOCAL_CSS__ = [
             'css/styles.css',
@@ -681,7 +717,7 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2026 Pyebwa version <span data-build-version>1.2.10</span> - <span data-i18n="poweredBy">Powered by</span> <a href="https://humanlevel.ai" target="_blank" rel="noopener noreferrer" data-i18n="humanLevelTech">Technologies Humanitaires Inc.</a></p>
+            <p>&copy; 2026 Pyebwa version <span data-build-version>1.2.11</span> - <span data-i18n="poweredBy">Powered by</span> <a href="https://humanlevel.ai" target="_blank" rel="noopener noreferrer" data-i18n="humanLevelTech">Technologies Humanitaires Inc.</a></p>
         </div>
     </footer>
     

@@ -79,14 +79,14 @@
             }
             .managed-slide-image {
                 position: absolute;
-                top: 50%;
-                left: 50%;
+                inset: 0;
                 display: block;
-                max-width: none;
-                max-height: none;
+                width: 100%;
+                height: 100%;
                 background: #0B1410;
-                object-fit: contain !important;
-                object-position: center center !important;
+                object-fit: cover;
+                object-position: center center;
+                transform-origin: center center;
             }
         `;
         document.head.appendChild(style);
@@ -105,44 +105,12 @@
         const y = Number.isFinite(Number(crop.y)) ? Number(crop.y) : 50;
         const zoom = Number.isFinite(Number(crop.zoom)) ? Number(crop.zoom) : 100;
         const effectiveZoom = Math.max(100, zoom);
-        const container = img.parentElement;
-        let translateX = 0;
-        let translateY = 0;
-        let finalWidth = container?.clientWidth || 0;
-        let finalHeight = container?.clientHeight || 0;
-
-        const naturalWidth = img.naturalWidth;
-        const naturalHeight = img.naturalHeight;
-        const containerWidth = container?.clientWidth || 0;
-        const containerHeight = container?.clientHeight || 0;
-
-        if (naturalWidth > 0 && naturalHeight > 0 && containerWidth > 0 && containerHeight > 0) {
-            const imageRatio = naturalWidth / naturalHeight;
-            const containerRatio = containerWidth / containerHeight;
-            let baseWidth = containerWidth;
-            let baseHeight = containerHeight;
-
-            if (imageRatio > containerRatio) {
-                baseHeight = containerHeight;
-                baseWidth = containerHeight * imageRatio;
-            } else {
-                baseWidth = containerWidth;
-                baseHeight = containerWidth / imageRatio;
-            }
-
-            const pageScale = getPageScaleAdjustment();
-            finalWidth = baseWidth * (effectiveZoom / 100) * pageScale;
-            finalHeight = baseHeight * (effectiveZoom / 100) * pageScale;
-            const overflowX = Math.max(0, finalWidth - containerWidth);
-            const overflowY = Math.max(0, finalHeight - containerHeight);
-
-            translateX = ((50 - x) / 50) * (overflowX / 2);
-            translateY = ((50 - y) / 50) * (overflowY / 2);
-        }
-
-        img.style.width = `${finalWidth}px`;
-        img.style.height = `${finalHeight}px`;
-        img.style.transform = `translate(-50%, -50%) translate(${translateX}px, ${translateY}px)`;
+        const pageScale = getPageScaleAdjustment();
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = fit === 'contain' ? 'contain' : 'cover';
+        img.style.objectPosition = `${x}% ${y}%`;
+        img.style.transform = `scale(${(effectiveZoom / 100) * pageScale})`;
     }
 
     function bindResponsiveCrop(container, images, slides) {

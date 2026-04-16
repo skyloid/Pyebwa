@@ -203,6 +203,19 @@ body.dark-mode .lang-btn.active {
     min-height: 42px;
     padding: 10px 14px;
     border-radius: 999px;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.nav-link:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.nav-link:active,
+.nav-link:focus-visible {
+    outline: none;
+    box-shadow: none;
 }
 
 .nav-link:hover {
@@ -225,17 +238,10 @@ body.dark-mode .lang-btn.active {
 }
 
 .nav-link:hover::after,
-.nav-link:focus-visible::after,
 .nav-link.active::after,
 .nav-link[aria-current="page"]::after {
     opacity: 1;
     transform: scaleX(1);
-}
-
-.nav-link:focus-visible {
-    outline: 2px solid rgba(161, 114, 75, 0.32);
-    outline-offset: 3px;
-    color: var(--primary-blue);
 }
 
 .nav-link.active,
@@ -277,11 +283,6 @@ body.dark-mode .nav-menu .nav-link {
 
 body.dark-mode .nav-menu .nav-link:hover {
     color: var(--primary-red);
-}
-
-body.dark-mode .nav-link:focus-visible {
-    outline-color: rgba(188, 169, 149, 0.32);
-    color: #F6EDE1;
 }
 
 body.dark-mode .nav-link.active,
@@ -752,6 +753,15 @@ body.dark-mode .btn-primary:hover {
     margin-left: auto;
     margin-right: auto;
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.hero .hero-subtitle {
+    font-size: 28px;
+    max-width: 720px;
+}
+
+html[lang="fr"] .hero .hero-subtitle {
+    max-width: 980px;
 }
 
 /* Pattern Overlay - Removed */
