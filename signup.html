@@ -658,6 +658,7 @@
             }
         }
     </style>
+    <script src="/runtime-config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -1053,7 +1054,13 @@
         });
         
         // Initialize Supabase
-        const _sb = supabase.createClient(window.location.origin + '/supabase', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzc1MTk5NDM4LCJleHAiOjE5MzI4Nzk0Mzh9.t_O46hoypu8qZjZgiM_GjMkwhDBhwFa-IXRMjnQ5m7o');
+        if (!window.__PYEBWA_SUPABASE_ANON_KEY__) {
+            console.error('[Signup] Missing runtime Supabase anon key');
+        }
+        const _sb = window.__PYEBWA_SUPABASE_ANON_KEY__
+            ? supabase.createClient(window.location.origin + '/supabase', window.__PYEBWA_SUPABASE_ANON_KEY__)
+            : null;
+        window._sb = _sb;
 
         function setCrossDomainCookie(name, value, days = 30) {
             const expiresAt = new Date();
@@ -1075,13 +1082,15 @@
         }
 
         // Check if user is already logged in
-        _sb.auth.getSession().then(({ data: { session } }) => {
-            if (session) {
-                syncPublicWebsiteAuthState(session);
-                const signoutLink = `<a href="#" onclick="_sb.auth.signOut().then(()=>window.location.reload());return false;" style="color: var(--primary-blue);">Sign out</a>`;
-                showMessage(`You're logged in as ${session.user.email}. ${signoutLink} to create a new account.`, 'info');
-            }
-        }).catch(() => {});
+        if (_sb) {
+            _sb.auth.getSession().then(({ data: { session } }) => {
+                if (session) {
+                    syncPublicWebsiteAuthState(session);
+                    const signoutLink = `<a href="#" onclick="_sb.auth.signOut().then(()=>window.location.reload());return false;" style="color: var(--primary-blue);">Sign out</a>`;
+                    showMessage(`You're logged in as ${session.user.email}. ${signoutLink} to create a new account.`, 'info');
+                }
+            }).catch(() => {});
+        }
         
         // DOM elements
         const signupView = document.getElementById('signupView');
@@ -1116,6 +1125,11 @@
 
             const fullName = document.getElementById('fullName').value.trim();
             const email = document.getElementById('email').value.trim();
+            if (!_sb) {
+                hideSuccessState();
+                showMessage(t('signupFailed'), 'error');
+                return;
+            }
             if (!fullName || !email) {
                 hideSuccessState();
                 showMessage(t('fillAllFields'), 'error');

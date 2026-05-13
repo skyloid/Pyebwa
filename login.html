@@ -530,10 +530,15 @@
         }
 
         // Initialize Supabase client
-        const _sb = supabase.createClient(
-            window.location.origin + '/supabase',
-            window.__PYEBWA_SUPABASE_ANON_KEY__ || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzc1MTk5NDM4LCJleHAiOjE5MzI4Nzk0Mzh9.t_O46hoypu8qZjZgiM_GjMkwhDBhwFa-IXRMjnQ5m7o'
-        );
+        if (!window.__PYEBWA_SUPABASE_ANON_KEY__) {
+            console.error('[Login] Missing runtime Supabase anon key');
+        }
+        const _sb = window.__PYEBWA_SUPABASE_ANON_KEY__
+            ? supabase.createClient(
+                window.location.origin + '/supabase',
+                window.__PYEBWA_SUPABASE_ANON_KEY__
+            )
+            : null;
 
         function restoreAuthCallbackClock() {
             if (hasAuthCallbackTokens) {
@@ -569,7 +574,7 @@
 
         async function processResolvedSession(session, successMessage) {
             if (logoutIntentActive) {
-                if (session) {
+                if (session && _sb) {
                     await _sb.auth.signOut({ scope: 'global' }).catch(() => {});
                 }
                 syncPublicWebsiteAuthState(null);
@@ -594,26 +599,33 @@
             await redirectToAppIfReady(session, successMessage);
         }
 
-        _sb.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_OUT') {
-                syncPublicWebsiteAuthState(null);
-                clearLogoutIntent();
-                return;
-            }
+        if (_sb) {
+            _sb.auth.onAuthStateChange((event, session) => {
+                if (event === 'SIGNED_OUT') {
+                    syncPublicWebsiteAuthState(null);
+                    clearLogoutIntent();
+                    return;
+                }
 
-            if (event !== 'SIGNED_IN' && event !== 'TOKEN_REFRESHED' && event !== 'INITIAL_SESSION') {
-                return;
-            }
+                if (event !== 'SIGNED_IN' && event !== 'TOKEN_REFRESHED' && event !== 'INITIAL_SESSION') {
+                    return;
+                }
 
-            const message = event === 'INITIAL_SESSION'
-                ? t('alreadyLoggedIn') + ' ' + session?.user?.email + '. ' + t('redirecting')
-                : t('loginSuccess') + ' ' + session?.user?.email + '. ' + t('redirecting');
+                const message = event === 'INITIAL_SESSION'
+                    ? t('alreadyLoggedIn') + ' ' + session?.user?.email + '. ' + t('redirecting')
+                    : t('loginSuccess') + ' ' + session?.user?.email + '. ' + t('redirecting');
 
-            processResolvedSession(session, message);
-        });
+                processResolvedSession(session, message);
+            });
+        }
 
         handleQueryAuthCallback().then((handledQueryCallback) => {
             if (handledQueryCallback) {
+                return;
+            }
+
+            if (!_sb) {
+                restoreAuthCallbackClock();
                 return;
             }
 

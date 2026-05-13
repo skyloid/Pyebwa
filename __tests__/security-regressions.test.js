@@ -520,4 +520,18 @@ describe('security regressions', () => {
     expect(schema).toMatch(/CREATE POLICY users_update_admin/);
     expect(schema).not.toMatch(/CREATE POLICY users_update_own_limited/);
   });
+
+  test('client auth entry points do not hardcode Supabase JWT keys', () => {
+    const clientAuthFiles = [
+      'app/js/supabase-client.js',
+      'login.html',
+      'signup.html'
+    ];
+    const jwtPattern = /eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/;
+
+    for (const relativePath of clientAuthFiles) {
+      const contents = fs.readFileSync(path.join(__dirname, '..', relativePath), 'utf8');
+      expect(contents).not.toMatch(jwtPattern);
+    }
+  });
 });

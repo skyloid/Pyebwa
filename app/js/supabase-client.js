@@ -3,12 +3,16 @@
     'use strict';
 
     const SUPABASE_URL = window.location.origin + '/supabase';
-    const SUPABASE_ANON_KEY = window.__PYEBWA_SUPABASE_ANON_KEY__ || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzc1MTk5NDM4LCJleHAiOjE5MzI4Nzk0Mzh9.t_O46hoypu8qZjZgiM_GjMkwhDBhwFa-IXRMjnQ5m7o';
+    const SUPABASE_ANON_KEY = window.__PYEBWA_SUPABASE_ANON_KEY__;
 
     // Wait for Supabase JS to be loaded
     function initSupabase() {
         if (typeof supabase === 'undefined' || !supabase.createClient) {
             console.error('[supabase-client] Supabase JS library not loaded');
+            return null;
+        }
+        if (!SUPABASE_ANON_KEY) {
+            console.error('[supabase-client] Missing runtime Supabase anon key');
             return null;
         }
 
