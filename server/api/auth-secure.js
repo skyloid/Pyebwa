@@ -359,11 +359,12 @@ router.post('/signup', async (req, res) => {
         // Generate a secure random password
         const tempPassword = crypto.randomBytes(12).toString('base64url');
 
-        // Create user in Supabase Auth (on_auth_user_created trigger syncs to public.users)
+        // Create user in Supabase Auth (on_auth_user_created trigger syncs to public.users).
+        // Keep email unconfirmed and send a verification/magic link instead of exposing credentials.
         const { data, error } = await supabaseAdmin.auth.admin.createUser({
             email: email,
             password: tempPassword,
-            email_confirm: true,
+            email_confirm: false,
             user_metadata: {
                 display_name: fullName,
                 role: 'member'
@@ -398,22 +399,24 @@ router.post('/signup', async (req, res) => {
             console.warn('User sync fallback:', syncErr.message);
         }
 
-        // Send welcome email with temporary password
+        // Send an auth link. Never log or email the generated bootstrap password.
         try {
-            const emailService = require('../services/email');
-            if (emailService.isConfigured) {
-                await emailService.sendWelcomeEmail(email, {
-                    displayName: fullName,
-                    tempPassword: tempPassword,
-                    loginUrl: 'https://rasin.pyebwa.com/login-standalone.html'
-                });
-            } else {
-                console.log(`[SIGNUP] Email not configured. Temp password for ${email}: ${tempPassword}`);
-            }
+            const redirectTo = `${getSiteUrl()}/login`;
+            const magicLink = await generateMagicLinkEmail(email, redirectTo);
+            const language = 'en';
+            const actionType = String(magicLink?.verification_type || 'magiclink').trim().toLowerCase();
+            const subject = (AUTH_EMAIL_SUBJECTS[language] || AUTH_EMAIL_SUBJECTS.en)[actionType] || AUTH_EMAIL_SUBJECTS.en.magiclink;
+            const html = buildAuthEmailHtml(language, actionType, {
+                action_link: magicLink?.action_link || '',
+                token_hash: magicLink?.hashed_token || '',
+                token: magicLink?.email_otp || '',
+                email_action_type: actionType,
+                redirect_to: magicLink?.redirect_to || redirectTo
+            });
+
+            await sendAuthEmailThroughResend({ to: email, subject, html });
         } catch (emailErr) {
             console.error('Welcome email failed:', emailErr.message);
-            // Don't fail signup if email fails — log the password so admin can share it
-            console.log(`[SIGNUP] Temp password for ${email}: ${tempPassword}`);
         }
 
         await logSecurityEvent(
@@ -548,7 +551,7 @@ router.post('/magic-link', async (req, res) => {
         return res.json({ success: true });
     } catch (error) {
         console.error('Magic link email error:', error);
-        return res.status(400).json({ error: error.message || 'Failed to send magic link' });
+        return res.json({ success: true });
     }
 });
 

@@ -105,9 +105,9 @@ router.post('/family-update', verifySession, async (req, res) => {
             return res.status(404).json({ error: 'Family tree not found' });
         }
 
-        const hasAccess = await treeQueries.hasAccess(treeId, userId);
-        if (!hasAccess) {
-            return res.status(403).json({ error: 'Access denied to this family tree' });
+        const hasWriteAccess = await treeQueries.hasWriteAccess(treeId, userId);
+        if (!hasWriteAccess) {
+            return res.status(403).json({ error: 'Write access required for this family tree' });
         }
 
         const actor = await userQueries.findById(userId);
@@ -123,7 +123,7 @@ router.post('/family-update', verifySession, async (req, res) => {
         }
 
         const baseUrl = process.env.APP_URL || 'https://rasin.pyebwa.com';
-        let viewUrl = `${baseUrl}/app/dashboard.html`;
+        let viewUrl = `${baseUrl}/app/`;
         if (targetPersonId) {
             viewUrl = `${baseUrl}/app/member-profile.html?personId=${targetPersonId}`;
         }

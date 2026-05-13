@@ -1,3 +1,7 @@
+/**
+ * @jest-environment jsdom
+ */
+
 // Theme Toggle Tests
 // Tests for the theme toggle functionality on pyebwa.com
 
@@ -162,8 +166,8 @@ describe('Theme Toggle Functionality', () => {
       button.click();
       button.click();
 
-      expect(mockLocalStorage.setItem).toHaveBeenLastCalledWith('theme', 'light');
       expect(mockLocalStorage.setItem).toHaveBeenLastCalledWith('darkMode', 'disabled');
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('theme', 'light');
     });
 
     test('should load saved dark theme on initialization', () => {
@@ -180,14 +184,16 @@ describe('Theme Toggle Functionality', () => {
     });
 
     test('should handle missing localStorage gracefully', () => {
+      jest.resetModules();
+
       // Make localStorage throw an error
       Object.defineProperty(window, 'localStorage', {
+        configurable: true,
         get: () => { throw new Error('localStorage not available'); }
       });
 
       // Should not throw when loading
       expect(() => {
-        jest.resetModules();
         require('../app/js/theme-toggle.js');
       }).not.toThrow();
 

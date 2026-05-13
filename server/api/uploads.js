@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const path = require('path');
 const { verifySession } = require('../db/auth');
 const { saveFile, saveLocalFile, deleteFile } = require('../services/file-storage');
+const treeQueries = require('../db/queries/family-trees');
+const personQueries = require('../db/queries/persons');
 
 // Configure multer for memory storage (we'll save to disk ourselves)
 const upload = multer({
@@ -30,6 +31,44 @@ const uploadAny = multer({
     }
 });
 
+async function requireTreeWriteAccess(treeId, userId) {
+    if (!treeId) return false;
+    return treeQueries.hasWriteAccess(treeId, userId);
+}
+
+async function requirePersonInTree(personId, treeId) {
+    if (!personId) return true;
+    const person = await personQueries.findById(personId);
+    return !!person && person.family_tree_id === treeId;
+}
+
+function extractStoragePathFromUrl(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+
+    const publicMatch = raw.match(/\/storage\/v1\/object\/public\/[^/]+\/(.+)$/);
+    if (publicMatch) return publicMatch[1];
+
+    const uploadMatch = raw.match(/\/uploads\/(.+)$/);
+    if (uploadMatch) return uploadMatch[1];
+
+    return raw.replace(/^\/+/, '');
+}
+
+async function canMutateStoragePath(fileUrl, userId) {
+    const storagePath = extractStoragePathFromUrl(fileUrl);
+    if (!storagePath || storagePath.includes('..')) return false;
+
+    if (storagePath.startsWith(`users/${userId}/`)) {
+        return true;
+    }
+
+    const treeMatch = storagePath.match(/^trees\/([^/]+)\//);
+    if (!treeMatch) return false;
+
+    return requireTreeWriteAccess(treeMatch[1], userId);
+}
+
 // Upload photo
 router.post('/photo', verifySession, upload.single('photo'), async (req, res) => {
     try {
@@ -44,9 +83,20 @@ router.post('/photo', verifySession, upload.single('photo'), async (req, res) =>
             category = `users/${req.user.uid}`;
             id = 'photos';
         } else if (treeId && personId) {
+            const [hasAccess, personBelongsToTree] = await Promise.all([
+                requireTreeWriteAccess(treeId, req.user.uid),
+                requirePersonInTree(personId, treeId)
+            ]);
+            if (!hasAccess || !personBelongsToTree) {
+                return res.status(403).json({ error: 'Access denied' });
+            }
             category = `trees/${treeId}`;
             id = `photos/${personId}`;
         } else if (treeId) {
+            const hasAccess = await requireTreeWriteAccess(treeId, req.user.uid);
+            if (!hasAccess) {
+                return res.status(403).json({ error: 'Access denied' });
+            }
             category = `trees/${treeId}`;
             id = 'photos';
         } else {
@@ -71,7 +121,11 @@ router.delete('/photo', verifySession, async (req, res) => {
             return res.status(400).json({ error: 'File path required' });
         }
 
-        deleteFile(filePath);
+        if (!(await canMutateStoragePath(filePath, req.user.uid))) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
+        await deleteFile(filePath);
         res.json({ success: true, message: 'File deleted' });
     } catch (error) {
         console.error('Delete error:', error);
@@ -85,8 +139,22 @@ router.post('/file', verifySession, uploadAny.single('file'), async (req, res) =
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        const { treeId, personId, type, category } = req.body;
-        const baseCategory = category || (treeId ? `trees/${treeId}` : `users/${req.user.uid}`);
+        const { treeId, personId, type } = req.body;
+        let baseCategory;
+        if (treeId) {
+            const [hasAccess, personBelongsToTree] = await Promise.all([
+                requireTreeWriteAccess(treeId, req.user.uid),
+                requirePersonInTree(personId, treeId)
+            ]);
+            if (!hasAccess || !personBelongsToTree) {
+                return res.status(403).json({ error: 'Access denied' });
+            }
+            baseCategory = `trees/${treeId}`;
+        } else if (req.body.category) {
+            return res.status(403).json({ error: 'Access denied' });
+        } else {
+            baseCategory = `users/${req.user.uid}`;
+        }
         const baseId = personId || req.user.uid || 'shared';
         const bucketFolder = type || 'files';
         const targetId = `${bucketFolder}/${baseId}`;
@@ -117,6 +185,10 @@ router.delete('/file', verifySession, async (req, res) => {
         const { url } = req.body;
         if (!url) {
             return res.status(400).json({ error: 'File URL required' });
+        }
+
+        if (!(await canMutateStoragePath(url, req.user.uid))) {
+            return res.status(403).json({ error: 'Access denied' });
         }
 
         await deleteFile(url);

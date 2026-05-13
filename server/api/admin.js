@@ -596,7 +596,7 @@ router.post('/slideshows/upload', verifySession, requireAdmin, upload.single('im
     }
 });
 
-router.get('/slideshows/preview', async (req, res) => {
+router.get('/slideshows/preview', verifySession, requireAdmin, async (req, res) => {
     try {
         const source = String(req.query.url || '').trim();
         if (!source) {

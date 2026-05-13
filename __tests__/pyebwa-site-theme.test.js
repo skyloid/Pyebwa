@@ -1,3 +1,7 @@
+/**
+ * @jest-environment jsdom
+ */
+
 // Theme Toggle Tests for pyebwa.com Production Site
 // Tests specific to the production site implementation
 

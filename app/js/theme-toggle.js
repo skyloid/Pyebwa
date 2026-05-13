@@ -1,9 +1,29 @@
 // Theme Toggle functionality for Pyebwa App
 (function() {
+    function resolveThemePreference() {
+        if (window.getUserPreference) {
+            const stored = window.getUserPreference('theme', null);
+            if (stored === 'dark' || stored === 'light') {
+                return stored;
+            }
+        }
+
+        try {
+            const saved = localStorage.getItem('theme');
+            if (saved === 'dark' || saved === 'light') {
+                return saved;
+            }
+        } catch (error) {}
+
+        const hour = new Date().getHours();
+        return (hour >= 19 || hour < 6) ? 'dark' : 'light';
+    }
+
     // Create theme toggle button
     const themeToggle = document.createElement('button');
     themeToggle.id = 'themeToggle';
     themeToggle.className = 'theme-toggle-btn';
+    themeToggle.type = 'button';
     themeToggle.setAttribute('aria-label', 'Toggle dark mode');
     themeToggle.innerHTML = '<span class="material-icons">brightness_4</span>';
     
@@ -55,6 +75,7 @@
             --gray-800: #cccccc;
             --gray-900: #e6e6e6;
             --black: #ffffff;
+            --primary: #7da7ce;
             
             background: #121212;
             color: #e0e0e0;
@@ -146,10 +167,6 @@
         }
         
         body.dark-mode .tree-node {
-            background: linear-gradient(180deg,
-                color-mix(in srgb, var(--gray-100, #1F2723) 94%, var(--primary-green, #1B4332) 6%) 0%,
-                color-mix(in srgb, var(--gray-100, #1F2723) 97%, black 3%) 100%);
-            border-color: color-mix(in srgb, var(--primary-moss, #2D6A4F) 28%, transparent 72%);
             color: var(--accent-cream, #FDFCFA);
         }
         
@@ -168,19 +185,29 @@
         document.body.classList.toggle('dark-mode');
         const isDark = document.body.classList.contains('dark-mode');
         
-        // Store preference in both cookie and localStorage
-        if (window.storeUserPreference) {
-            window.storeUserPreference('theme', isDark ? 'dark' : 'light');
-        } else {
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        const nextTheme = isDark ? 'dark' : 'light';
+
+        try {
+            // Store preference in both cookie and localStorage
+            if (window.storeUserPreference) {
+                window.storeUserPreference('theme', nextTheme);
+            } else {
+                localStorage.setItem('theme', nextTheme);
+                localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+            }
+        } catch (error) {
+            // Visual theme changes should still work when storage is blocked.
         }
         
         // Update icon
-        themeToggle.querySelector('.material-icons').textContent = isDark ? 'brightness_7' : 'brightness_4';
+        const icon = themeToggle.querySelector('.material-icons');
+        if (icon) {
+            icon.textContent = isDark ? 'brightness_7' : 'brightness_4';
+        }
     }
     
     // Apply saved theme on load
-    const savedTheme = window.getUserPreference ? window.getUserPreference('theme', 'light') : (localStorage.getItem('theme') || 'light');
+    const savedTheme = resolveThemePreference();
     if (savedTheme === 'dark') {
         document.body.classList.add('dark-mode');
         themeToggle.querySelector('.material-icons').textContent = 'brightness_7';

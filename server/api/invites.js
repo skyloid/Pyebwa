@@ -26,8 +26,8 @@ router.post('/generate', verifySession, async (req, res) => {
             return res.status(404).json({ error: 'Family tree not found' });
         }
 
-        const hasAccess = await treeQueries.hasAccess(treeId, userId);
-        if (!hasAccess) {
+        const hasWriteAccess = await treeQueries.hasWriteAccess(treeId, userId);
+        if (!hasWriteAccess) {
             return res.status(403).json({ error: 'Access denied to this family tree' });
         }
 
@@ -108,8 +108,8 @@ router.get('/details/:token', async (req, res) => {
             return res.status(410).json({ error: 'This invite link has expired' });
         }
 
-        if (invite.status === 'accepted') {
-            return res.status(410).json({ error: 'This invite has already been used' });
+        if (invite.status !== 'pending') {
+            return res.status(410).json({ error: 'This invite is no longer available' });
         }
 
         const tree = await treeQueries.findById(invite.tree_id);
@@ -148,8 +148,8 @@ router.post('/accept/:token', verifySession, async (req, res) => {
             return res.status(410).json({ error: 'This invite link has expired' });
         }
 
-        if (invite.status === 'accepted') {
-            return res.status(410).json({ error: 'This invite has already been used' });
+        if (invite.status !== 'pending') {
+            return res.status(410).json({ error: 'This invite is no longer available' });
         }
 
         // Use transaction for atomicity
@@ -166,7 +166,9 @@ router.post('/accept/:token', verifySession, async (req, res) => {
 
             // Add user as tree member
             await client.query(
-                'INSERT INTO family_tree_members (family_tree_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+                `INSERT INTO family_tree_members (family_tree_id, user_id, role)
+                 VALUES ($1, $2, 'viewer')
+                 ON CONFLICT DO NOTHING`,
                 [invite.tree_id, userId]
             );
 
@@ -249,8 +251,8 @@ router.get('/list/:treeId', verifySession, async (req, res) => {
         const { treeId } = req.params;
         const userId = req.user.uid;
 
-        const hasAccess = await treeQueries.hasAccess(treeId, userId);
-        if (!hasAccess) {
+        const hasWriteAccess = await treeQueries.hasWriteAccess(treeId, userId);
+        if (!hasWriteAccess) {
             const user = await userQueries.findById(userId);
             if (!['admin', 'superadmin'].includes(user?.role)) {
                 return res.status(403).json({ error: 'Access denied' });

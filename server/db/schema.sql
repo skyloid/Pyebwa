@@ -42,8 +42,24 @@ CREATE TABLE IF NOT EXISTS family_trees (
 CREATE TABLE IF NOT EXISTS family_tree_members (
     family_tree_id UUID NOT NULL REFERENCES family_trees(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    role VARCHAR(20) DEFAULT 'viewer' CHECK (role IN ('owner', 'editor', 'viewer')),
     PRIMARY KEY (family_tree_id, user_id)
 );
+
+ALTER TABLE family_tree_members
+    ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'viewer';
+
+ALTER TABLE family_tree_members
+    DROP CONSTRAINT IF EXISTS family_tree_members_role_check;
+
+ALTER TABLE family_tree_members
+    ADD CONSTRAINT family_tree_members_role_check CHECK (role IN ('owner', 'editor', 'viewer'));
+
+UPDATE family_tree_members ftm
+SET role = 'owner'
+FROM family_trees ft
+WHERE ftm.family_tree_id = ft.id
+  AND ftm.user_id = ft.owner_id;
 
 -- Persons (family tree entries - the actual people in the tree)
 CREATE TABLE IF NOT EXISTS persons (
@@ -167,6 +183,9 @@ CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire");
 
 -- Add foreign key for primary_family_tree_id after family_trees exists
 ALTER TABLE users
+    DROP CONSTRAINT IF EXISTS fk_users_primary_tree;
+
+ALTER TABLE users
     ADD CONSTRAINT fk_users_primary_tree
     FOREIGN KEY (primary_family_tree_id)
     REFERENCES family_trees(id)
@@ -199,3 +218,222 @@ CREATE INDEX IF NOT EXISTS idx_admin_logs_action ON admin_logs(action);
 CREATE INDEX IF NOT EXISTS idx_admin_logs_created ON admin_logs(created_at);
 CREATE INDEX IF NOT EXISTS idx_family_tree_members_user ON family_tree_members(user_id);
 CREATE INDEX IF NOT EXISTS idx_announcements_tree ON announcements(tree_id);
+
+-- Supabase row-level security helpers and policies.
+-- The Express API still performs authorization checks, but these policies protect
+-- direct Supabase REST/storage access through the public anon/authenticated keys.
+CREATE OR REPLACE FUNCTION current_user_role()
+RETURNS TEXT
+LANGUAGE sql
+STABLE
+AS $$
+    SELECT COALESCE(
+        auth.jwt() -> 'user_metadata' ->> 'role',
+        auth.jwt() -> 'app_metadata' ->> 'role',
+        'member'
+    );
+$$;
+
+CREATE OR REPLACE FUNCTION is_app_admin()
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+AS $$
+    SELECT current_user_role() IN ('admin', 'superadmin');
+$$;
+
+CREATE OR REPLACE FUNCTION is_tree_member(target_tree_id UUID)
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+    SELECT EXISTS (
+        SELECT 1
+        FROM family_trees ft
+        WHERE ft.id = target_tree_id
+          AND ft.owner_id = auth.uid()
+    )
+    OR EXISTS (
+        SELECT 1
+        FROM family_tree_members ftm
+        WHERE ftm.family_tree_id = target_tree_id
+          AND ftm.user_id = auth.uid()
+    );
+$$;
+
+CREATE OR REPLACE FUNCTION is_tree_owner(target_tree_id UUID)
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+    SELECT EXISTS (
+        SELECT 1
+        FROM family_trees ft
+        WHERE ft.id = target_tree_id
+          AND ft.owner_id = auth.uid()
+    );
+$$;
+
+CREATE OR REPLACE FUNCTION is_tree_writer(target_tree_id UUID)
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+    SELECT EXISTS (
+        SELECT 1
+        FROM family_trees ft
+        WHERE ft.id = target_tree_id
+          AND ft.owner_id = auth.uid()
+    )
+    OR EXISTS (
+        SELECT 1
+        FROM family_tree_members ftm
+        WHERE ftm.family_tree_id = target_tree_id
+          AND ftm.user_id = auth.uid()
+          AND ftm.role IN ('owner', 'editor')
+    );
+$$;
+
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE family_trees ENABLE ROW LEVEL SECURITY;
+ALTER TABLE family_tree_members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE persons ENABLE ROW LEVEL SECURITY;
+ALTER TABLE invites ENABLE ROW LEVEL SECURITY;
+ALTER TABLE discovery_requests ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS users_select_own_or_admin ON users;
+CREATE POLICY users_select_own_or_admin ON users
+    FOR SELECT USING (id = auth.uid() OR is_app_admin());
+
+DROP POLICY IF EXISTS users_update_own_limited ON users;
+DROP POLICY IF EXISTS users_update_admin ON users;
+CREATE POLICY users_update_admin ON users
+    FOR UPDATE USING (is_app_admin())
+    WITH CHECK (is_app_admin());
+
+DROP POLICY IF EXISTS family_trees_select_member_or_public ON family_trees;
+CREATE POLICY family_trees_select_member_or_public ON family_trees
+    FOR SELECT USING (is_public = true OR is_tree_member(id) OR is_app_admin());
+
+DROP POLICY IF EXISTS family_trees_insert_owner ON family_trees;
+CREATE POLICY family_trees_insert_owner ON family_trees
+    FOR INSERT WITH CHECK (owner_id = auth.uid() OR is_app_admin());
+
+DROP POLICY IF EXISTS family_trees_update_writer ON family_trees;
+CREATE POLICY family_trees_update_writer ON family_trees
+    FOR UPDATE USING (is_tree_writer(id) OR is_app_admin())
+    WITH CHECK (is_tree_writer(id) OR is_app_admin());
+
+DROP POLICY IF EXISTS family_trees_delete_owner_or_admin ON family_trees;
+CREATE POLICY family_trees_delete_owner_or_admin ON family_trees
+    FOR DELETE USING (owner_id = auth.uid() OR is_app_admin());
+
+DROP POLICY IF EXISTS family_tree_members_select_tree_member ON family_tree_members;
+CREATE POLICY family_tree_members_select_tree_member ON family_tree_members
+    FOR SELECT USING (is_tree_member(family_tree_id) OR is_app_admin());
+
+DROP POLICY IF EXISTS family_tree_members_insert_writer ON family_tree_members;
+DROP POLICY IF EXISTS family_tree_members_insert_owner ON family_tree_members;
+CREATE POLICY family_tree_members_insert_owner ON family_tree_members
+    FOR INSERT WITH CHECK (is_tree_owner(family_tree_id) OR is_app_admin());
+
+DROP POLICY IF EXISTS family_tree_members_update_writer ON family_tree_members;
+DROP POLICY IF EXISTS family_tree_members_update_owner ON family_tree_members;
+CREATE POLICY family_tree_members_update_owner ON family_tree_members
+    FOR UPDATE USING (is_tree_owner(family_tree_id) OR is_app_admin())
+    WITH CHECK (is_tree_owner(family_tree_id) OR is_app_admin());
+
+DROP POLICY IF EXISTS family_tree_members_delete_writer ON family_tree_members;
+DROP POLICY IF EXISTS family_tree_members_delete_owner ON family_tree_members;
+CREATE POLICY family_tree_members_delete_owner ON family_tree_members
+    FOR DELETE USING (is_tree_owner(family_tree_id) OR is_app_admin());
+
+DROP POLICY IF EXISTS persons_select_tree_member ON persons;
+CREATE POLICY persons_select_tree_member ON persons
+    FOR SELECT USING (is_tree_member(family_tree_id) OR is_app_admin());
+
+DROP POLICY IF EXISTS persons_insert_tree_writer ON persons;
+CREATE POLICY persons_insert_tree_writer ON persons
+    FOR INSERT WITH CHECK (is_tree_writer(family_tree_id) OR is_app_admin());
+
+DROP POLICY IF EXISTS persons_update_tree_writer ON persons;
+CREATE POLICY persons_update_tree_writer ON persons
+    FOR UPDATE USING (is_tree_writer(family_tree_id) OR is_app_admin())
+    WITH CHECK (is_tree_writer(family_tree_id) OR is_app_admin());
+
+DROP POLICY IF EXISTS persons_delete_tree_writer ON persons;
+CREATE POLICY persons_delete_tree_writer ON persons
+    FOR DELETE USING (is_tree_writer(family_tree_id) OR is_app_admin());
+
+DROP POLICY IF EXISTS invites_select_tree_member ON invites;
+CREATE POLICY invites_select_tree_member ON invites
+    FOR SELECT USING (is_tree_member(tree_id) OR is_app_admin());
+
+DROP POLICY IF EXISTS invites_insert_tree_writer ON invites;
+CREATE POLICY invites_insert_tree_writer ON invites
+    FOR INSERT WITH CHECK (is_tree_writer(tree_id) OR is_app_admin());
+
+DROP POLICY IF EXISTS invites_update_tree_writer ON invites;
+CREATE POLICY invites_update_tree_writer ON invites
+    FOR UPDATE USING (is_tree_writer(tree_id) OR accepted_by = auth.uid() OR is_app_admin())
+    WITH CHECK (is_tree_writer(tree_id) OR accepted_by = auth.uid() OR is_app_admin());
+
+DROP POLICY IF EXISTS discovery_requests_select_tree_member ON discovery_requests;
+CREATE POLICY discovery_requests_select_tree_member ON discovery_requests
+    FOR SELECT USING (is_tree_member(tree_id) OR is_app_admin());
+
+DROP POLICY IF EXISTS discovery_requests_insert_public ON discovery_requests;
+CREATE POLICY discovery_requests_insert_public ON discovery_requests
+    FOR INSERT WITH CHECK (
+        EXISTS (
+            SELECT 1
+            FROM family_trees ft
+            WHERE ft.id = tree_id
+              AND COALESCE((ft.settings -> 'discovery' ->> 'enabled')::boolean, false) = true
+        )
+    );
+
+DROP POLICY IF EXISTS discovery_requests_update_tree_writer ON discovery_requests;
+CREATE POLICY discovery_requests_update_tree_writer ON discovery_requests
+    FOR UPDATE USING (is_tree_writer(tree_id) OR is_app_admin())
+    WITH CHECK (is_tree_writer(tree_id) OR is_app_admin());
+
+DO $$
+BEGIN
+    IF to_regclass('storage.objects') IS NOT NULL THEN
+        EXECUTE 'DROP POLICY IF EXISTS storage_photos_select_public ON storage.objects';
+        EXECUTE 'CREATE POLICY storage_photos_select_public ON storage.objects FOR SELECT USING (bucket_id = ''photos'')';
+
+        EXECUTE 'DROP POLICY IF EXISTS storage_photos_insert_owner_or_tree_writer ON storage.objects';
+        EXECUTE 'CREATE POLICY storage_photos_insert_owner_or_tree_writer ON storage.objects FOR INSERT WITH CHECK (
+            bucket_id = ''photos''
+            AND (
+                ((storage.foldername(name))[1] = ''users'' AND (storage.foldername(name))[2] = auth.uid()::text)
+                OR (
+                    (storage.foldername(name))[1] = ''trees''
+                    AND (storage.foldername(name))[2] ~ ''^[0-9a-fA-F-]{36}$''
+                    AND is_tree_writer(((storage.foldername(name))[2])::uuid)
+                )
+            )
+        )';
+
+        EXECUTE 'DROP POLICY IF EXISTS storage_photos_delete_owner_or_tree_writer ON storage.objects';
+        EXECUTE 'CREATE POLICY storage_photos_delete_owner_or_tree_writer ON storage.objects FOR DELETE USING (
+            bucket_id = ''photos''
+            AND (
+                ((storage.foldername(name))[1] = ''users'' AND (storage.foldername(name))[2] = auth.uid()::text)
+                OR (
+                    (storage.foldername(name))[1] = ''trees''
+                    AND (storage.foldername(name))[2] ~ ''^[0-9a-fA-F-]{36}$''
+                    AND is_tree_writer(((storage.foldername(name))[2])::uuid)
+                )
+            )
+        )';
+    END IF;
+END $$;

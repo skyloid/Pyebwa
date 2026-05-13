@@ -149,8 +149,8 @@ router.post('/request', async (req, res) => {
 router.get('/trees/:treeId/requests', verifySession, async (req, res) => {
     try {
         const { treeId } = req.params;
-        const hasAccess = await treeQueries.hasAccess(treeId, req.user.uid);
-        if (!hasAccess) {
+        const hasWriteAccess = await treeQueries.hasWriteAccess(treeId, req.user.uid);
+        if (!hasWriteAccess) {
             return res.status(403).json({ error: 'Access denied' });
         }
 
@@ -172,8 +172,8 @@ router.put('/trees/:treeId/requests/:requestId', verifySession, async (req, res)
             return res.status(400).json({ error: 'Invalid request status' });
         }
 
-        const hasAccess = await treeQueries.hasAccess(treeId, req.user.uid);
-        if (!hasAccess) {
+        const hasWriteAccess = await treeQueries.hasWriteAccess(treeId, req.user.uid);
+        if (!hasWriteAccess) {
             return res.status(403).json({ error: 'Access denied' });
         }
 

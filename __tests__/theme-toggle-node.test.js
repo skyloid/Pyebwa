@@ -32,7 +32,10 @@ describe('Theme Toggle Functionality (Node Compatible)', () => {
       })
     };
     
-    window.localStorage = localStorage;
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorage,
+      configurable: true
+    });
     
     // Make globals available
     global.window = window;
@@ -237,7 +240,8 @@ describe('Theme Toggle Functionality (Node Compatible)', () => {
       expect(button).toBeTruthy();
       expect(button.getAttribute('onclick')).toBe('window.toggleDarkMode()');
 
-      // Test clicking
+      // jsdom does not execute inline onclick attributes without script execution.
+      button.onclick = () => window.toggleDarkMode();
       button.click();
       expect(window.toggleDarkMode).toHaveBeenCalled();
     });

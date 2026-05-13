@@ -4,7 +4,8 @@ module.exports = {
   
   // Test file patterns
   testMatch: [
-    '**/__tests__/**/*.js',
+    '**/__tests__/**/*.test.js',
+    '**/__tests__/**/*.spec.js',
     '**/?(*.)+(spec|test).js'
   ],
   
@@ -15,7 +16,7 @@ module.exports = {
   ],
   
   // Coverage settings
-  collectCoverage: true,
+  collectCoverage: false,
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   collectCoverageFrom: [
@@ -54,6 +55,10 @@ module.exports = {
   
   // Clear mocks between tests
   clearMocks: true,
+
+  // Browser scripts in the DOM tests execute at import time, so each test needs
+  // a fresh module instance after resetting document state.
+  resetModules: true,
   
   // Verbose output for development
   verbose: process.env.NODE_ENV === 'development',

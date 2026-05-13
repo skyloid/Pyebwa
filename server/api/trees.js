@@ -144,6 +144,42 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+router.patch('/:id/members/:userId/role', async (req, res) => {
+    try {
+        const { id, userId } = req.params;
+        const role = String(req.body?.role || '').trim().toLowerCase();
+        const allowedRoles = ['viewer', 'editor'];
+
+        if (!allowedRoles.includes(role)) {
+            return res.status(400).json({ error: 'Invalid member role' });
+        }
+
+        const tree = await treeQueries.findById(id);
+        if (!tree) {
+            return res.status(404).json({ error: 'Family tree not found' });
+        }
+
+        const isAppAdmin = ['admin', 'superadmin'].includes(req.user.role);
+        if (tree.owner_id !== req.user.uid && !isAppAdmin) {
+            return res.status(403).json({ error: 'Only tree owners or admins can update member roles' });
+        }
+
+        if (tree.owner_id === userId) {
+            return res.status(400).json({ error: 'Tree owner role cannot be changed' });
+        }
+
+        const member = await treeQueries.updateMemberRole(id, userId, role);
+        if (!member) {
+            return res.status(404).json({ error: 'Tree member not found' });
+        }
+
+        res.json({ success: true, member });
+    } catch (error) {
+        console.error('Error updating tree member role:', error);
+        res.status(500).json({ error: 'Failed to update member role' });
+    }
+});
+
 // --- Persons (nested under tree) ---
 
 // List persons in tree
@@ -217,8 +253,8 @@ router.get('/:id/persons/:pid', async (req, res) => {
 router.post('/:id/persons', async (req, res) => {
     try {
         const { id } = req.params;
-        const hasAccess = await treeQueries.hasAccess(id, req.user.uid);
-        if (!hasAccess) {
+        const hasWriteAccess = await treeQueries.hasWriteAccess(id, req.user.uid);
+        if (!hasWriteAccess) {
             return res.status(403).json({ error: 'Access denied' });
         }
 
@@ -259,8 +295,8 @@ router.post('/:id/persons', async (req, res) => {
 router.put('/:id/persons/:pid', async (req, res) => {
     try {
         const { id, pid } = req.params;
-        const hasAccess = await treeQueries.hasAccess(id, req.user.uid);
-        if (!hasAccess) {
+        const hasWriteAccess = await treeQueries.hasWriteAccess(id, req.user.uid);
+        if (!hasWriteAccess) {
             return res.status(403).json({ error: 'Access denied' });
         }
 
@@ -323,8 +359,8 @@ router.put('/:id/persons/:pid', async (req, res) => {
 router.delete('/:id/persons/:pid', async (req, res) => {
     try {
         const { id, pid } = req.params;
-        const hasAccess = await treeQueries.hasAccess(id, req.user.uid);
-        if (!hasAccess) {
+        const hasWriteAccess = await treeQueries.hasWriteAccess(id, req.user.uid);
+        if (!hasWriteAccess) {
             return res.status(403).json({ error: 'Access denied' });
         }
 

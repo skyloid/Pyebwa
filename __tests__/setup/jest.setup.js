@@ -126,6 +126,9 @@ expect.extend({
 // Setup and teardown
 beforeEach(() => {
   jest.clearAllMocks();
+  if (typeof document !== 'undefined' && document.body) {
+    document.body.className = '';
+  }
 });
 
 afterEach(() => {

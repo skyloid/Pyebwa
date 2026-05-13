@@ -49,7 +49,9 @@ async function create(data) {
 
         // Add owner as member
         await client.query(
-            'INSERT INTO family_tree_members (family_tree_id, user_id) VALUES ($1, $2)',
+            `INSERT INTO family_tree_members (family_tree_id, user_id, role)
+             VALUES ($1, $2, 'owner')
+             ON CONFLICT (family_tree_id, user_id) DO UPDATE SET role = 'owner'`,
             [tree.id, data.owner_id]
         );
 
@@ -91,7 +93,9 @@ async function update(id, data) {
 
 async function addMember(treeId, userId) {
     await query(
-        'INSERT INTO family_tree_members (family_tree_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+        `INSERT INTO family_tree_members (family_tree_id, user_id, role)
+         VALUES ($1, $2, 'viewer')
+         ON CONFLICT DO NOTHING`,
         [treeId, userId]
     );
 }
@@ -105,7 +109,7 @@ async function removeMember(treeId, userId) {
 
 async function getMembers(treeId) {
     const result = await query(
-        `SELECT u.id, u.email, u.display_name, u.photo_url, u.role
+        `SELECT u.id, u.email, u.display_name, u.photo_url, u.role, ftm.role AS tree_role
          FROM users u
          INNER JOIN family_tree_members ftm ON u.id = ftm.user_id
          WHERE ftm.family_tree_id = $1`,
@@ -137,6 +141,35 @@ async function hasAccess(treeId, userId) {
     return isMember(treeId, userId);
 }
 
+async function hasWriteAccess(treeId, userId) {
+    const tree = await findById(treeId);
+    if (!tree) return false;
+    if (tree.owner_id === userId) return true;
+
+    const result = await query(
+        `SELECT 1
+         FROM family_tree_members
+         WHERE family_tree_id = $1
+           AND user_id = $2
+           AND role IN ('owner', 'editor')
+         LIMIT 1`,
+        [treeId, userId]
+    );
+    return result.rows.length > 0;
+}
+
+async function updateMemberRole(treeId, userId, role) {
+    const result = await query(
+        `UPDATE family_tree_members
+         SET role = $3
+         WHERE family_tree_id = $1
+           AND user_id = $2
+         RETURNING family_tree_id, user_id, role`,
+        [treeId, userId, role]
+    );
+    return result.rows[0] || null;
+}
+
 async function deleteTree(id) {
     await query('DELETE FROM family_trees WHERE id = $1', [id]);
 }
@@ -144,5 +177,5 @@ async function deleteTree(id) {
 module.exports = {
     findById, findByOwner, findByMember, findAllForUser,
     create, update, addMember, removeMember, getMembers, getMemberIds,
-    isMember, hasAccess, deleteTree
+    isMember, hasAccess, hasWriteAccess, updateMemberRole, deleteTree
 };
