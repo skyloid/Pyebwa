@@ -26,6 +26,7 @@
     "security:audit": "npm audit",
     "security:fix": "npm audit fix",
     "security:check": "npm audit --audit-level moderate",
+    "security:scan-secrets": "node scripts/scan-secrets.js",
     "outdated:check": "npm outdated"
   },
   "keywords": [
